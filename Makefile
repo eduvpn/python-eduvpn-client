@@ -2,7 +2,13 @@
 .PHONEY: deb  notebook-dev notebook-vent
 
 deb:
-	sudo apt install -y python-networkmanager network-manager-openvpn-gnome python-dbus dev jupyter-notebook python-nacl
+	sudo apt install -y \
+		python-networkmanager \
+		network-manager-openvpn-gnome \
+		python-dbus \
+		jupyter-notebook \
+		python-nacl \
+		python-requests-oauthlib
 
 .virtualenv/:
 	virtualenv -p python2 .virtualenv
