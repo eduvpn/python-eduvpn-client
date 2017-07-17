@@ -302,8 +302,3 @@ def main():
     nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
 
     add_nm_config(nm_config)
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    main()
