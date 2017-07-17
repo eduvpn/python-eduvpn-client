@@ -1,3 +1,5 @@
 requests
 pynacl
 requests_oauthlib
+python-networkmanager
+

@@ -8,7 +8,7 @@ install_requires = [
     'notebook',
     'pynacl',
     'requests_oauthlib',
-
+    'python-networkmanager',
 ]
 
 scripts = [
