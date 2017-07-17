@@ -1,22 +1,22 @@
 
-.PHONEY: deb  notebook-dev notebook-venv
+.PHONEY: deb fedora
 
 deb:
 	sudo apt install -y \
 		python-networkmanager \
 		network-manager-openvpn-gnome \
 		python-dbus \
-		jupyter-notebook \
 		python-nacl \
 		python-requests-oauthlib
 
+fedora:
+	sudo install \
+		python2 \
+		python2-requests-oauthlib \
+		python2-networkmanager \
+		python2-pynacl
+
 .virtualenv/:
 	virtualenv -p python2 .virtualenv
-	.virtualenv/bin/pip install -r requirements.txt
+	.virtualenv/bin/pip install -e .
 
-notebook-venv: .virtualenv
-	.virtualenv/bin/jupyter notebook
-
-
-notebook-deb: debs
-	/usr/bin/jupyter-notebook
