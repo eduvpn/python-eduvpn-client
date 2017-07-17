@@ -1,5 +1,5 @@
 
-.PHONEY: deb  notebook-dev notebook-vent
+.PHONEY: deb  notebook-dev notebook-venv
 
 deb:
 	sudo apt install -y \

@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+from eduvpn import main
+
+main()

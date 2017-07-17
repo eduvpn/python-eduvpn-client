@@ -8,17 +8,25 @@ import requests
 import base64
 import random
 import BaseHTTPServer
-from os.path import expanduser
+import base64
 import hashlib
 import json
-import nacl.signing
-import urlparse
-import re
-import uuid
-import subprocess
 import logging
 import os
+import random
+import re
+import socket
+import subprocess
 import sys
+import urlparse
+import uuid
+import webbrowser
+from os.path import expanduser
+
+import nacl.signing
+import requests
+from requests_oauthlib import OAuth2Session
+
 
 eduvpn_base_uri = 'https://static.eduvpn.nl/'
 eduvpn_key = 'E5On0JTtyUVZmcWd+I/FXRm32nSq8R2ioyW7dcu/U88='
