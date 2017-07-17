@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.1pre"
+__version__ = "0.1"
 
 
 install_requires = [
