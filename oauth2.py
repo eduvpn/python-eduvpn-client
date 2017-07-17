@@ -1,4 +1,7 @@
+#!/usr/bin/env python2
+
 from requests_oauthlib import OAuth2Session
+import NetworkManager
 import socket
 import webbrowser
 import requests
@@ -208,9 +211,10 @@ def parse_ovpn(configtext):
     return config
 
 
-def write_cert(content, type, short_instance_name):
+def write_cert(content, type_, short_instance_name):
     home = expanduser("~")
-    path = home + "/.cert/nm-openvpn/" + short_instance_name + "_" + type + ".pem"
+    path = home + "/.cert/nm-openvpn/" + short_instance_name + "_" + type_ + ".pem"
+    logger.info("writing {} file to {}".format(type_, path))
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     with open(path, "w") as f:
@@ -218,11 +222,11 @@ def write_cert(content, type, short_instance_name):
     return path
 
 
-def gen_nm_settings(config):
+def gen_nm_settings(config, name):
     """
     Generate a NetworkManager style config dict from a parsed ovpn config dict
     """
-    settings = {'connection': {'id': 'eduvpn',
+    settings = {'connection': {'id': name,
                                'type': 'vpn',
                                'uuid': str(uuid.uuid4())},
                 'ipv4': {
@@ -232,16 +236,12 @@ def gen_nm_settings(config):
                     'method': 'auto',
                 },
                 'vpn': {'data': {'auth': config.get('auth', 'SHA256'),
-                                 'ca': config['ca'],
-                                 'cert': config['cert'],
                                  'cipher': config.get('cipher', 'AES-256-CBC'),
                                  'comp-lzo': config.get('auth', 'adaptive'),
                                  'connection-type': config.get('connection-type', 'tls'),
                                  'dev': 'tun',
-                                 'key': config['key'],
                                  'remote': ":".join(config['remote']),
                                  'remote-cert-tls': 'server',
-                                 'ta': config['tls-auth'],
                                  'ta-dir': config.get('key-direction', '1'),
                                  'tls-cipher': config.get('tls-cipher', 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384')},
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
@@ -254,6 +254,12 @@ def write_and_open_ovpn(ovpn_text, filename='eduvpn.ovpn'):
         f.write(filename)
     open_file('eduvpn.ovpn')
 
+
+def add_nm_config(settings):
+    name = settings['connection']['id']
+    logger.info("generating or updating OpenVPN configuration with name {}".format(name))
+    connection = NetworkManager.Settings.AddConnection(settings)
+    return connection
 
 
 def main():
@@ -278,15 +284,16 @@ def main():
     profile_config = get_profile_config(oauth, api_base_uri)
     ovpn_text = format_like_ovpn(profile_config, cert, key)
     config_dict = parse_ovpn(ovpn_text)
-    nm_config = gen_nm_settings(config_dict)
+    nm_config = gen_nm_settings(config_dict, name=short_instance_name)
 
     cert_path = write_cert(cert, 'cert', short_instance_name)
     key_path = write_cert(key, 'key', short_instance_name)
     ca_path = write_cert(config_dict.pop('ca'), 'ca', short_instance_name)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', short_instance_name)
 
-    nm_config.update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
+    nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
 
+    add_nm_config(nm_config)
 
 
 if __name__ == '__main__':
