@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=EduVPN client
+Comment=a configuration tool to connect to EduVPN using OpenVPN
+Exec=eduvpn-client
+Icon=eduvpn-client.png
+Terminal=true
+
