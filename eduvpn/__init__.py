@@ -147,7 +147,7 @@ def create_oauth_session(port):
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):
-    logger.info("Geenrating authorisation URL using auth endport {}".format(auth_endpoint))
+    logger.info("Generating authorisation URL using auth endport {}".format(auth_endpoint))
     code_challenge_method = "S256"
     code_challenge = gen_code_challenge(code_verifier)
     authorization_url, state = oauth.authorization_url(auth_endpoint,
