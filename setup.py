@@ -8,6 +8,7 @@ install_requires = [
     'pynacl',
     'requests_oauthlib',
     'python-networkmanager',
+    'future',
 ]
 
 scripts = [
