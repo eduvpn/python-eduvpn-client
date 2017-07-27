@@ -9,6 +9,7 @@ install_requires = [
     'requests_oauthlib',
     'python-networkmanager',
     'future',
+    'configparser',
 ]
 
 scripts = [

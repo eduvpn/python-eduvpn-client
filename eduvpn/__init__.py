@@ -3,17 +3,15 @@
 import logging
 from future.moves.urllib.parse import urlparse
 
-import nacl.signing
-
-from eduvpn.crypto import gen_code_verifier
+from eduvpn.crypto import gen_code_verifier, make_verifier
 from eduvpn.local_oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
 from eduvpn.local_io import write_cert
 #from eduvpn.nm import gen_nm_settings, add_nm_config
+from eduvpn.config import read as read_config
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
 from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url
 
-eduvpn_base_uri = 'https://static.eduvpn.nl/'
-eduvpn_key = 'E5On0JTtyUVZmcWd+I/FXRm32nSq8R2ioyW7dcu/U88='
+
 
 # we manually pick this one now
 default_instance = 'https://demo.eduvpn.nl/'
@@ -22,11 +20,13 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    # used for verifying signatures
-    verify_key = nacl.signing.VerifyKey(eduvpn_key, encoder=nacl.encoding.Base64Encoder)
-    instances = get_instances(eduvpn_base_uri, verify_key)
+    config = read_config()
+    discovery_uri = config['eduvpn']['discovery_uri']
+    key = config['eduvpn']['key']
+    verifier = make_verifier(key)
+    instances = get_instances(discovery_uri, verifier)
 
-    instance_urls = get_instance_info(default_instance, verify_key)
+    instance_urls = get_instance_info(default_instance, verifier)
 
     short_instance_name = urlparse(default_instance).hostname.replace(".", "")
 

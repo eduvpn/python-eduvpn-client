@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 def get_instances(base_uri, verify_key):
     """
     retrieve a list of instances
+
+    generates (display_name, base_uri, logo)
     """
     logger.info("retrieving a list of instances from {}".format(base_uri))
     inst_doc_url = base_uri + '/instances.json'
@@ -21,7 +23,15 @@ def get_instances(base_uri, verify_key):
     logger.info("verifying signature of {}".format(inst_doc_url))
     _ = verify_key.verify(smessage=inst_doc.content, signature=inst_doc_sig.content.decode('base64'))
 
-    return inst_doc.json()
+    parsed = inst_doc.json()
+
+    for instance in parsed['instances']:
+        display_name = instance['display_name']
+        base_uri = instance['base_uri']
+        logo_uri = instance['logo_uri']
+        logo = requests.get(logo_uri)
+        yield display_name, base_uri, logo.content
+
 
 
 def get_instance_info(instance_uri, verify_key):
@@ -46,23 +56,39 @@ def create_keypair(oauth, api_base_uri):
     return cert, key
 
 
-def _remote_calls(oauth, api_base_uri):
-    """currently unused API endpoints"""
-    profile_list = oauth.get(api_base_uri + '/profile_list').content
-    user_info = oauth.get(api_base_uri + '/user_info').content
-    user_messages = oauth.get(api_base_uri + '/user_messages').content
-    system_messages = oauth.get(api_base_uri + '/system_messages').content
-    create_config = oauth.post(api_base_uri + '/create_config',
-                               data={'display_name': 'notebook', 'profile_id': 'internet'})
+def profile_list(oauth, api_base_uri):
+    logger.info("Retrieving profile list from {}".format(api_base_uri))
+    return json.loads(oauth.get(api_base_uri + '/profile_list').content)
 
 
-def get_profile_config(oauth, api_base_uri):
+def user_info(oauth, api_base_uri):
+    logger.info("Retrieving user info from {}".format(api_base_uri))
+    return json.loads(oauth.get(api_base_uri + '/user_info').content)
+
+
+def user_messages(oauth, api_base_uri):
+    logger.info("Retrieving user messages from {}".format(api_base_uri))
+    return json.loads(oauth.get(api_base_uri + '/user_messages').content)
+
+
+def system_messages(oauth, api_base_uri):
+    logger.info("Retrieving system messages from {}".format(api_base_uri))
+    return json.loads(oauth.get(api_base_uri + '/system_messages').content)
+
+
+def create_config(oauth, api_base_uri, display_name, profile_id):
+    logger.info("Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
+    return json.loads(oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
+                                                                        'profile_id': profile_id}))
+
+
+def get_profile_config(oauth, api_base_uri, profile_id):
     logger.info("Retrieving profile config from {}".format(api_base_uri))
-    return oauth.get(api_base_uri + '/profile_config?profile_id=internet').content
+    return oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id)).content
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):
-    logger.info("Generating authorisation URL using auth endport {}".format(auth_endpoint))
+    logger.info("Generating authorisation URL using auth endpoint {}".format(auth_endpoint))
     code_challenge_method = "S256"
     code_challenge = gen_code_challenge(code_verifier)
     authorization_url, state = oauth.authorization_url(auth_endpoint,

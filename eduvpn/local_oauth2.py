@@ -2,7 +2,6 @@ import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
 import webbrowser
-
 from future.moves.urllib.parse import urlparse, parse_qs
 from requests_oauthlib import OAuth2Session
 
