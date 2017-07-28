@@ -6,7 +6,7 @@ from os import path, makedirs
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 
 from eduvpn.ui.list_vpn import ListVpnWindow
 from eduvpn.ui.add_vpn import AddVpnWindow
@@ -78,8 +78,9 @@ class MainFlow:
             code = get_oauth_token_code(auth_url, port)
             logger.info("calling callback")
             self.we_have_oauth_token(code)
-        thread = threading.Thread(target=inner, args=(auth_url, port))
-        thread.start()
+        #thread = threading.Thread(target=inner, args=(auth_url, port))
+        #thread.start()
+        inner(auth_url, port)
         logger.info("thread running in background")
 
     def we_have_oauth_token(self, code):
@@ -110,6 +111,7 @@ class MainFlow:
 def main():
     logging.basicConfig(level=logging.INFO)
     MainFlow()
+    GObject.threads_init()
     Gtk.main()
 
 if __name__ == '__main__':

@@ -12,8 +12,8 @@ class TokenWaitWindow(Gtk.Window):
         label = Gtk.Label("Waiting for callback from browser")
         box_outer.pack_start(label, True, True, 0)
 
-        self.button = Gtk.Button(label="open webbrower again")
-        box_outer.pack_start(self.button, True, True, 0)
+        #self.button = Gtk.Button(label="open webbrower again")
+        #box_outer.pack_start(self.button, True, True, 0)
 
 
 def main():

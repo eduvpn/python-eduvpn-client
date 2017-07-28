@@ -63,5 +63,5 @@ def list_vpn():
         return list_vpn_no_networkmanager()
 
     all_connections = NetworkManager.Settings.ListConnections()
-    vpn_connections = [c for c in all_connections if c.GetSettings()['connection']['type'] == 'vpn']
+    vpn_connections = [c.GetSettings()['connection']['id'] for c in all_connections if c.GetSettings()['connection']['type'] == 'vpn']
     return vpn_connections
