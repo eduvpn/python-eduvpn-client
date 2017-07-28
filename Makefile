@@ -7,7 +7,8 @@ deb:
 		network-manager-openvpn-gnome \
 		python-dbus \
 		python-nacl \
-		python-requests-oauthlib
+		python-requests-oauthlib \
+		python-gi
 
 fedora:
 	sudo install \

@@ -56,9 +56,9 @@ def create_keypair(oauth, api_base_uri):
     return cert, key
 
 
-def profile_list(oauth, api_base_uri):
+def list_profiles(oauth, api_base_uri):
     logger.info("Retrieving profile list from {}".format(api_base_uri))
-    return json.loads(oauth.get(api_base_uri + '/profile_list').content)
+    return oauth.get(api_base_uri + '/profile_list').json()['profile_list']['data']
 
 
 def user_info(oauth, api_base_uri):

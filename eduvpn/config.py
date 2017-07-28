@@ -1,7 +1,7 @@
 from configparser import ConfigParser
-from os import path
+from os import path, makedirs
 
-config_file = path.expanduser('~/.config/eduvpn')
+config_file = path.expanduser('~/.config/eduvpn/settings')
 
 defaults = {
     'discovery_uri': 'https://static.eduvpn.nl/',
@@ -17,6 +17,7 @@ def read():
 
 
 def write(config):
+    makedirs(path.basename(config_file))
     with open(config_file, 'w') as f:
         config.write(f)
 

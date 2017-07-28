@@ -1,6 +1,116 @@
 #!/usr/bin/env python
 import logging
-from eduvpn import main
+import threading
+from future.moves.urllib.parse import urlparse
+from os import path, makedirs
 
-logging.basicConfig(level=logging.INFO)
-main()
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
+from eduvpn.ui.list_vpn import ListVpnWindow
+from eduvpn.ui.add_vpn import AddVpnWindow
+from eduvpn.ui.token_wait import TokenWaitWindow
+from eduvpn.ui.list_profiles import ProfileListWindow
+
+from eduvpn.config import read as read_config
+from eduvpn.crypto import make_verifier, gen_code_verifier
+from eduvpn.local_oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
+from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, list_profiles
+from eduvpn.openvpn import format_like_ovpn
+
+logger = logging.getLogger(__name__)
+
+
+class MainFlow:
+    def __init__(self):
+        self.list_win = ListVpnWindow()
+        self.list_win.connect("delete-event", Gtk.main_quit)
+        self.list_win.add_button.connect('button-press-event', self.add_clicked)
+
+        self.add_win = AddVpnWindow()
+        self.add_win.connect("delete-event", Gtk.main_quit)
+        self.add_win.instances_listbox.connect('row-activated', self.instance_select)
+
+        self.token_win = TokenWaitWindow()
+        self.token_win.connect("delete-event", Gtk.main_quit)
+
+        self.list_profiles_win = ProfileListWindow()
+        self.list_profiles_win.connect("delete-event", Gtk.main_quit)
+        self.list_profiles_win.listbox.connect('row-activated', self.profile_selected)
+
+        self.start()
+
+    def start(self):
+        self.list_win.update_list()
+        self.list_win.show_all()
+
+    def add_clicked(self, widget, event):
+        self.list_win.hide()
+
+        config = read_config()
+        self.discovery_uri = config['eduvpn']['discovery_uri']
+        key = config['eduvpn']['key']
+        self.verifier = make_verifier(key)
+        instances = get_instances(self.discovery_uri, self.verifier)
+        self.add_win.update_instances(instances)
+
+        self.add_win.show_all()
+
+    def instance_select(self, widget, row):
+        self.add_win.hide()
+        self.token_win.show_all()
+
+        self.new_instance = urlparse(row.base_uri).hostname
+
+        instance_info = get_instance_info(row.base_uri, self.verifier)
+        self.auth_endpoint = instance_info['authorization_endpoint']
+        self.token_endpoint = instance_info['token_endpoint']
+        self.api_base_uri = instance_info['api_base_uri']
+        self.code_verifier = gen_code_verifier()
+        port = get_open_port()
+        self.oauth = create_oauth_session(port)
+        auth_url = get_auth_url(self.oauth, self.code_verifier, self.auth_endpoint)
+        self.get_oauth_token_code_in_thread(auth_url=auth_url, port=port)
+
+    def get_oauth_token_code_in_thread(self, auth_url, port):
+        def inner(auth_url, port):
+            code = get_oauth_token_code(auth_url, port)
+            logger.info("calling callback")
+            self.we_have_oauth_token(code)
+        thread = threading.Thread(target=inner, args=(auth_url, port))
+        thread.start()
+        logger.info("thread running in background")
+
+    def we_have_oauth_token(self, code):
+        self.token_win.hide()
+        token = self.oauth.fetch_token(self.token_endpoint, code=code, code_verifier=self.code_verifier)
+        profiles = list_profiles(self.oauth, self.api_base_uri)
+        self.list_profiles_win.update_list(profiles=profiles)
+        self.list_profiles_win.show_all()
+
+    def profile_selected(self, widget, row):
+        self.list_profiles_win.hide()
+        cert, key = create_keypair(self.oauth, self.api_base_uri)
+        profile_config = get_profile_config(self.oauth, self.api_base_uri, row.profile_id)
+        ovpn_text = format_like_ovpn(profile_config, cert, key)
+        config_file = path.expanduser('~/.config/eduvpn/{}_{}.ovpn'.format(self.new_instance, row.profile_id))
+
+        parent = path.dirname(config_file)
+
+        if not path.exists(parent):
+            makedirs(path.dirname(parent))
+
+        with open(config_file, 'w') as f:
+            f.write(ovpn_text)
+
+        self.start()
+
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+    MainFlow()
+    Gtk.main()
+
+if __name__ == '__main__':
+    main()

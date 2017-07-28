@@ -6,11 +6,10 @@ from future.moves.urllib.parse import urlparse
 from eduvpn.crypto import gen_code_verifier, make_verifier
 from eduvpn.local_oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
 from eduvpn.local_io import write_cert
-#from eduvpn.nm import gen_nm_settings, add_nm_config
+from eduvpn.nm import gen_nm_settings, add_nm_config
 from eduvpn.config import read as read_config
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
-from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url
-
+from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, list_profiles
 
 
 # we manually pick this one now
@@ -40,7 +39,9 @@ def main():
     code = get_oauth_token_code(auth_url, port)
     token = oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
     cert, key = create_keypair(oauth, api_base_uri)
-    profile_config = get_profile_config(oauth, api_base_uri)
+    profiles = list_profiles(oauth, api_base_uri)
+    profile_id = profiles[0]['profile_id']
+    profile_config = get_profile_config(oauth, api_base_uri, profile_id)
     ovpn_text = format_like_ovpn(profile_config, cert, key)
     config_dict = parse_ovpn(ovpn_text)
 
@@ -49,6 +50,6 @@ def main():
     ca_path = write_cert(config_dict.pop('ca'), 'ca', short_instance_name)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', short_instance_name)
 
-    #nm_config = gen_nm_settings(config_dict, name=short_instance_name)
-    #nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
-    #add_nm_config(nm_config)
+    nm_config = gen_nm_settings(config_dict, name=short_instance_name)
+    nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
+    add_nm_config(nm_config)

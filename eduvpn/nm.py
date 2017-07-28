@@ -1,9 +1,16 @@
 import uuid
 import logging
+import os
+import sys
 
-import NetworkManager
+if os.name == 'posix' and not sys.platform.startswith('darwin'):
+    import NetworkManager
 
-logger = logging.basicConfig(__name__)
+logger = logging.getLogger(__name__)
+
+# only used if network manager is not available
+config_store = os.path.expanduser('~/.config/eduvpn')
+
 
 
 def gen_nm_settings(config, name):
@@ -36,5 +43,25 @@ def gen_nm_settings(config, name):
 def add_nm_config(settings):
     name = settings['connection']['id']
     logger.info("generating or updating OpenVPN configuration with name {}".format(name))
+    if os.name != 'posix' or sys.platform.startswith('darwin'):
+        logger.error('Adding an OpenVPN config on a non Linux platform is not supported for now.')
+        return
     connection = NetworkManager.Settings.AddConnection(settings)
     return connection
+
+
+def list_vpn_no_networkmanager():
+    if os.path.isdir(config_store):
+        return [x[:-5] for x in os.listdir(config_store) if x.endswith('.ovpn')]
+    else:
+        return []
+
+
+def list_vpn():
+    if os.name != 'posix' or sys.platform.startswith('darwin'):
+        logger.warning('Listing VPN connections on non Linux platform is not supported for now.')
+        return list_vpn_no_networkmanager()
+
+    all_connections = NetworkManager.Settings.ListConnections()
+    vpn_connections = [c for c in all_connections if c.GetSettings()['connection']['type'] == 'vpn']
+    return vpn_connections
