@@ -10,7 +10,8 @@ Welcome to python-eduvpn-client's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   introduction
+   API
 
 Indices and tables
 ==================
