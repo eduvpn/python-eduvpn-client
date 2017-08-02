@@ -1,0 +1,17 @@
+language: python
+addons:
+  apt:
+    packages:
+      - network-manager-openvpn-gnome
+      - python-networkmanager
+      - python-dbus
+      - python-nacl
+      - python-requests-oauthlib
+      - python-gi
+      - python3-dbus
+      - python3-nacl
+      - python3-requests-oauthlib
+      - python3-gi
+
+
+
