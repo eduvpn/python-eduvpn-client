@@ -51,6 +51,9 @@ def one_request(port):
 
 
 def create_oauth_session(port):
+    """
+    Create a callback oauth2 session object
+    """
     logger.info("Creating an oauth session, temporarly starting webserver on port {} for auth callback".format(port))
     client_id = "org.eduvpn.app"
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
@@ -60,6 +63,9 @@ def create_oauth_session(port):
 
 
 def get_oauth_token_code(auth_url, port):
+    """
+    Start webserver, open browser, wait for callback response.
+    """
     logger.info("Opening default webbrowser with {} and waiting for callback on port {}".format(auth_url, port))
     webbrowser.open(auth_url)
     response = one_request(port)

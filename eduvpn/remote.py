@@ -33,8 +33,10 @@ def get_instances(base_uri, verify_key):
         yield display_name, base_uri, logo.content
 
 
-
 def get_instance_info(instance_uri, verify_key):
+    """
+    Retrieve information from instance
+    """
     logger.info("Retrieving info from instance {}".format(instance_uri))
     info_uri = instance_uri + '/info.json'
     info = requests.get(info_uri)
@@ -48,6 +50,9 @@ def get_instance_info(instance_uri, verify_key):
 
 
 def create_keypair(oauth, api_base_uri):
+    """
+    Create remote keypare and return results
+    """
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     create_keypair = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'notebook'})
     keypair = json.loads(create_keypair.content)['create_keypair']['data']
@@ -57,37 +62,58 @@ def create_keypair(oauth, api_base_uri):
 
 
 def list_profiles(oauth, api_base_uri):
+    """
+    Return a list of available profiles on the instance
+    """
     logger.info("Retrieving profile list from {}".format(api_base_uri))
     return oauth.get(api_base_uri + '/profile_list').json()['profile_list']['data']
 
 
 def user_info(oauth, api_base_uri):
+    """
+    returns the user information
+    """
     logger.info("Retrieving user info from {}".format(api_base_uri))
     return json.loads(oauth.get(api_base_uri + '/user_info').content)
 
 
 def user_messages(oauth, api_base_uri):
+    """
+    Returns user messages
+    """
     logger.info("Retrieving user messages from {}".format(api_base_uri))
     return json.loads(oauth.get(api_base_uri + '/user_messages').content)
 
 
 def system_messages(oauth, api_base_uri):
+    """
+    Return all system messages
+    """
     logger.info("Retrieving system messages from {}".format(api_base_uri))
     return json.loads(oauth.get(api_base_uri + '/system_messages').content)
 
 
 def create_config(oauth, api_base_uri, display_name, profile_id):
+    """
+    Create a configuration for a given profile.
+    """
     logger.info("Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
     return json.loads(oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
                                                                         'profile_id': profile_id}))
 
 
 def get_profile_config(oauth, api_base_uri, profile_id):
+    """
+    Return a profile configuration
+    """
     logger.info("Retrieving profile config from {}".format(api_base_uri))
     return oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id)).content
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):
+    """"
+    generate a authorization URL.
+    """
     logger.info("Generating authorisation URL using auth endpoint {}".format(auth_endpoint))
     code_challenge_method = "S256"
     code_challenge = gen_code_challenge(code_verifier)

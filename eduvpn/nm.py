@@ -41,6 +41,9 @@ def gen_nm_settings(config, name):
 
 
 def add_nm_config(settings):
+    """
+    Add a configuration to the networkmanager
+    """
     name = settings['connection']['id']
     logger.info("generating or updating OpenVPN configuration with name {}".format(name))
     if os.name != 'posix' or sys.platform.startswith('darwin'):
@@ -51,6 +54,9 @@ def add_nm_config(settings):
 
 
 def list_vpn_no_networkmanager():
+    """
+    List network configurations in our local eduvpn config. useful if OS doesnt have network manager.
+    """
     if os.path.isdir(config_store):
         return [x[:-5] for x in os.listdir(config_store) if x.endswith('.ovpn')]
     else:
@@ -58,6 +64,9 @@ def list_vpn_no_networkmanager():
 
 
 def list_vpn():
+    """
+    List all OpenVPN connections.
+    """
     if os.name != 'posix' or sys.platform.startswith('darwin'):
         logger.warning('Listing VPN connections on non Linux platform is not supported for now.')
         return list_vpn_no_networkmanager()

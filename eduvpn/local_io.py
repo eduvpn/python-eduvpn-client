@@ -8,12 +8,18 @@ logger = logging.getLogger(__name__)
 
 
 def write_and_open_ovpn(ovpn_text, filename='eduvpn.ovpn'):
+    """
+    Write a OpenVPN config file and open it with the default OS assosiated file handler
+    """
     with open(filename, 'w') as f:
         f.write(ovpn_text)
     open_file('eduvpn.ovpn')
 
 
 def write_cert(content, type_, short_instance_name):
+    """
+    Write a certificate to the filesystem
+    """
     home = expanduser("~")
     path = home + "/.cert/nm-openvpn/" + short_instance_name + "_" + type_ + ".pem"
     logger.info("writing {} file to {}".format(type_, path))

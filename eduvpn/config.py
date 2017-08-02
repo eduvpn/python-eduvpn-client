@@ -10,6 +10,9 @@ defaults = {
 
 
 def read():
+    """
+    Read config from filesystem
+    """
     config = ConfigParser()
     config['eduvpn'] = defaults
     config.read(config_file)
@@ -17,6 +20,9 @@ def read():
 
 
 def write(config):
+    """
+    Write config to filesystem
+    """
     makedirs(path.basename(config_file))
     with open(config_file, 'w') as f:
         config.write(f)

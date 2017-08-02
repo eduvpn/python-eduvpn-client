@@ -21,4 +21,7 @@ def gen_code_challenge(code_verifier):
 
 
 def make_verifier(key):
+    """
+    Create a NaCL verifier
+    """
     return nacl.signing.VerifyKey(key, encoder=nacl.encoding.Base64Encoder)
