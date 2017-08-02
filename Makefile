@@ -1,5 +1,5 @@
 
-.PHONEY: deb fedora
+.PHONY: deb fedora doc
 
 deb:
 	sudo apt install -y \
@@ -25,3 +25,6 @@ fedora:
 	virtualenv --system-site-packages -p python3 .virtualenv3
 	.virtualenv3/bin/pip install -e .
 
+doc:
+	.virtualenv/bin/pip install -r doc/requirements.txt
+	.virtualenv/bin/python -msphinx doc doc/_build
