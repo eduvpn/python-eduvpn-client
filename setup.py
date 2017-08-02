@@ -1,7 +1,6 @@
 from setuptools import setup, find_packages
-import glob
 
-__version__ = "0.2"
+__version__ = "0.2.1"
 
 
 install_requires = [
@@ -23,8 +22,8 @@ scripts = [
 
 data_files = [
     ('share/applications', ['data/eduvpn-client.desktop']),
-    ('share/icons/hicolor/48x48/apps', glob.glob('data/icons/hicolor/48x48/apps/*.png')),
-    ('share/icons/hicolor/128x128/apps', glob.glob('data/icons/hicolor/128x128/apps/*.png')),
+    ('share/icons/hicolor/48x48/apps', ['data/icons/hicolor/48x48/apps/eduvpn-client.png']),
+    ('share/icons/hicolor/128x128/apps', ['data/icons/hicolor/128x128/apps/eduvpn-client.png']),
 ]
 
 
