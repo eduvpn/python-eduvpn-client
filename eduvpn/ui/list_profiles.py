@@ -16,6 +16,9 @@ class ProfileListWindow(Gtk.Window):
         box_outer.pack_start(self.listbox, True, True, 0)
 
     def update_list(self, profiles):
+        for child in self.listbox.get_children():
+            self.listbox.remove(child)
+
         for profile in profiles:
             row = Gtk.ListBoxRow()
             row.profile_id = profile['profile_id']

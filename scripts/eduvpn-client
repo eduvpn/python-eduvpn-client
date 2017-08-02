@@ -17,7 +17,10 @@ from eduvpn.config import read as read_config
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.local_oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
 from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, list_profiles
-from eduvpn.openvpn import format_like_ovpn
+from eduvpn.openvpn import format_like_ovpn, parse_ovpn
+from eduvpn.local_io import write_cert
+from eduvpn.nm import add_nm_config, gen_nm_settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +33,7 @@ class MainFlow:
 
         self.add_win = AddVpnWindow()
         self.add_win.connect("delete-event", Gtk.main_quit)
-        self.add_win.instances_listbox.connect('row-activated', self.instance_select)
+        self.add_win.listbox.connect('row-activated', self.instance_select)
 
         self.token_win = TokenWaitWindow()
         self.token_win.connect("delete-event", Gtk.main_quit)
@@ -95,15 +98,16 @@ class MainFlow:
         cert, key = create_keypair(self.oauth, self.api_base_uri)
         profile_config = get_profile_config(self.oauth, self.api_base_uri, row.profile_id)
         ovpn_text = format_like_ovpn(profile_config, cert, key)
-        config_file = path.expanduser('~/.config/eduvpn/{}_{}.ovpn'.format(self.new_instance, row.profile_id))
+        config_dict = parse_ovpn(ovpn_text)
 
-        parent = path.dirname(config_file)
+        cert_path = write_cert(cert, 'cert', self.new_instance)
+        key_path = write_cert(key, 'key', self.new_instance)
+        ca_path = write_cert(config_dict.pop('ca'), 'ca', self.new_instance)
+        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', self.new_instance)
 
-        if not path.exists(parent):
-            makedirs(path.dirname(parent))
-
-        with open(config_file, 'w') as f:
-            f.write(ovpn_text)
+        nm_config = gen_nm_settings(config_dict, name=self.new_instance)
+        nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
+        add_nm_config(nm_config)
 
         self.start()
 
