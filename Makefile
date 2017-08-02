@@ -2,13 +2,20 @@
 .PHONY: deb fedora doc
 
 deb:
+	sudo apt update
 	sudo apt install -y \
-		python-networkmanager \
 		network-manager-openvpn-gnome \
+		python-networkmanager \
 		python-dbus \
 		python-nacl \
 		python-requests-oauthlib \
-		python-gi
+		python-gi \
+		python3-dbus \
+		python3-nacl \
+		python3-requests-oauthlib \
+		python3-gi \
+
+
 
 fedora:
 	sudo install \
@@ -28,3 +35,12 @@ fedora:
 doc:  .virtualenv/
 	.virtualenv/bin/pip install -r doc/requirements.txt
 	.virtualenv/bin/python -msphinx doc doc/_build
+
+test: .virtualenv/
+	.virtualenv/bin/pip install -r tests/requirements.txt
+	.virtualenv/bin/nosetests
+
+test3: .virtualenv3/
+	.virtualenv3/bin/pip install -r tests/requirements.txt
+	.virtualenv3/bin/nosenosetests
+
