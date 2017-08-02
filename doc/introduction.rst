@@ -42,5 +42,4 @@ Contributing
 
 Contributions are more than welcome! If you experience any problems let us know in the bug tracker. We accept patches
 in the form of github pull requests. Please make sure your code works with python 2 and python3, and is pep8 compatible.
-Also make sure the test suit actually passes all tests. We use docker in some of the tests so you need to have that
-installed and configured.
+Also make sure the test suit actually passes all tests. 
