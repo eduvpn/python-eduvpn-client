@@ -7,10 +7,14 @@ install_requires = [
     'requests',
     'pynacl',
     'requests_oauthlib',
-    'python-networkmanager',
     'future',
     'configparser',
 ]
+
+extras_require = {
+    'nm': ['python-networkmanager'],
+    'ui': ['pygobject'],
+}
 
 scripts = [
     'scripts/eduvpn-client',
