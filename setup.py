@@ -26,6 +26,7 @@ setup(
     packages=find_packages(),
     scripts=scripts,
     install_requires=install_requires,
+    extras_require=extras_require,
     author="Gijs Molenaar",
     author_email="gijs@pythonic.nl",
     description="EduVPN client",
