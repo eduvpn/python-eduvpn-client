@@ -1,19 +1,31 @@
 language: python
 matrix:
   include:
-    - env: DIST=centos_7_py2
-    - env: DIST=debian_jessie_py2
-    - env: DIST=debian_jessie_py3
-    - env: DIST=fedora_25_py2
-    - env: DIST=fedora_25_py3
-    - env: DIST=fedora_26_py2
-    - env: DIST=fedora_26_py3
-    - env: DIST=ubuntu_xenial_py2
-    - env: DIST=ubuntu_xenial_py3
+  - env: DIST=centos_7_py2
+  - env: DIST=debian_jessie_py2
+  - env: DIST=debian_jessie_py3
+  - env: DIST=fedora_25_py2
+  - env: DIST=fedora_25_py3
+  - env: DIST=fedora_26_py2
+  - env: DIST=fedora_26_py3
+  - env: DIST=ubuntu_xenial_py2
+  - env: DIST=ubuntu_xenial_py3
 sudo: required
 services:
-  - docker
-before_install:
-    - docker build . -t ${DIST} -f docker/Dockerfile.${DIST}
+- docker
+before_install: "-true"
+install:
+- docker build . -t ${DIST} -f docker/Dockerfile.${DIST}
+before_script:
+- true
 script:
- - docker run ${DIST} nosetests
+- true
+deploy:
+  provider: pypi
+  user: gijzelaerr
+  password:
+    secure: UmNyza2wtRHeborBa6VuOt/BKNE4jIzMD56awj1iEKOI0s8++rzCdZBf9MJLK6lvTEha76bZt0DEqEH5CANch5SpCRz9IISYlJv6QnoUsC26d/eytg5xN8s7FWOrLJ1lOnOHZBiAaL5zIDh/n5YTa8zBZk05pe07B91hfwj2GNTULXhRxDfPJv4O+OJdsNhsChEV2+EXTzsHc6jvYWgVt413i0YJIAbwJSvdbPoNjqg5BrsKh9nCIm8RTd6wPzkoy57qdE2zEA/kD6PvSczojSY2L49QYvtVrZ9RNIHY0m2x9oxIvrLQU+IFr2qMXADlgW1p8ykgC7X5b/4HOCNENbsJO4LQfuFYvoCh1/ZV1f31YF/SIHQB4ul9Ip4gsEB/R7gmx4Vb978IxYP+4RuDYkEzouy87wWSd2RDgNZtUkt3PUzHwwmnqOb7jn6vlxMgGRgXj20SgzbGrrKQcPCJHVjCiSWVD/ioTKxzOQF8Vyb+KBgDaQcL42swN7imRSGsnjRSf3EpbPAaFEFZJIpAY5SHy1qjqEnR0SL+8dBAUhnDscpDUXDIRDwczpTfEdC7hZfKILL6TNqHe7vOrwgl2yndFybstOUjjq9NoEoC/sdwRqTQcJ/Dlu0Tm50jQ5o7+sN3fVAPBaMwFxmnoqeOxV07hC6Rp9zcFIFJXdFA/Do=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: gijzelaerr/python-eduvpn-client
