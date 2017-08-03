@@ -28,15 +28,18 @@ class AddVpnWindow(Gtk.Window):
 
         box_outer.pack_start(label, True, True, 0)
 
-        self.instances_listbox = Gtk.ListBox()
+        self.listbox = Gtk.ListBox()
 
-        box_outer.pack_start(self.instances_listbox, True, True, 0)
-        self.instances_listbox.show_all()
+        box_outer.pack_start(self.listbox, True, True, 0)
+        self.listbox.show_all()
 
     def update_instances(self, instances):
+        for child in self.listbox.get_children():
+            self.listbox.remove(child)
+
         for display_name, base_uri, logo in instances:
             row = InstanceBoxRow(display_name, base_uri)
-            self.instances_listbox.add(row)
+            self.listbox.add(row)
 
 
 def main():

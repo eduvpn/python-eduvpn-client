@@ -1,0 +1,18 @@
+FROM ubuntu:xenial
+
+ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
+RUN docker-apt-install \
+        #python3-networkmanager \
+        python3-dbus \
+        python3-nacl \
+        python3-requests-oauthlib \
+        python3-gi \
+	    python3-pip \
+        python3-future \
+        python3-nose \
+        python3-mock
+
+ADD . /code
+WORKDIR /code
+RUN pip3 install .
+
