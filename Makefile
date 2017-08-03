@@ -18,11 +18,28 @@ deb:
 
 
 fedora:
-	sudo install \
-		python2 \
-		python2-requests-oauthlib \
+	sudo dnf install -y \
+		python-gobject \
 		python2-networkmanager \
-		python2-pynacl
+		python2-pydbus \
+		python2-pynacl \
+		python2-requests-oauthlib \
+		python2-pip \
+		python2-configparser \
+		python2-future \
+		python2-nose \
+		python2-mock \
+		python2-virtualenv \
+		python3-networkmanager \
+		python3-pydbus \
+		python3-pynacl \
+		python3-requests-oauthlib \
+		python3-gobject \
+		python3-pip \
+		python3-configparser \
+		python3-future \
+		python3-nose \
+		python3-mock
 
 .virtualenv/:
 	virtualenv --system-site-packages -p python2 .virtualenv
