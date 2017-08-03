@@ -1,15 +1,19 @@
 language: python
-addons:
-  apt:
-    packages:
-      - network-manager-openvpn-gnome
-      - python-networkmanager
-      - python-dbus
-      - python-requests-oauthlib
-      - python-gi
-      - python3-dbus
-      - python3-requests-oauthlib
-      - python3-gi
-
-
-
+matrix:
+  include:
+    - env: DIST=centos_7_py2
+    - env: DIST=debian_jessie_py2
+    - env: DIST=debian_jessie_py3
+    - env: DIST=fedora_25_py2
+    - env: DIST=fedora_25_py3
+    - env: DIST=fedora_26_py2
+    - env: DIST=fedora_26_py3
+    - env: DIST=ubuntu_xenial_py2
+    - env: DIST=ubuntu_xenial_py3
+sudo: required
+services:
+  - docker
+before_install:
+    - docker build . -t ${DIST} -f docker/Dockerfile.${DIST}
+script:
+ - docker run ${DIST} nosetests
