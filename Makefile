@@ -44,3 +44,5 @@ test3: .virtualenv3/
 	.virtualenv3/bin/pip install -r tests/requirements.txt
 	.virtualenv3/bin/nosenosetests
 
+dockers:
+	for i in `ls docker/Dockerfile*`; do docker build . -f $$i; done

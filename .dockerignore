@@ -1,0 +1,10 @@
+.DS_Store
+.git
+.gitignore
+.idea
+.ipynb_checkpoints
+.virtualenv
+.virtualenv3
+build
+dist
+*.egg-info
