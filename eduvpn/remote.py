@@ -18,10 +18,20 @@ def get_instances(base_uri, verify_key):
     inst_doc_url = base_uri + '/instances.json'
     inst_doc_sig_url = base_uri + '/instances.json.sig'
     inst_doc = requests.get(inst_doc_url)
-    inst_doc_sig = requests.get(inst_doc_sig_url)
+    if inst_doc.status_code != 200:
+        msg = "Got error code {} requesting {}".format(inst_doc.status_code, inst_doc_url)
+        logger.error(msg)
+        raise IOError(msg)
 
-    logger.info("verifying signature of {}".format(inst_doc_url))
-    _ = verify_key.verify(smessage=inst_doc.content, signature=inst_doc_sig.content.decode('base64'))
+    inst_doc_sig = requests.get(inst_doc_sig_url)
+    if inst_doc_sig.status_code != 200:
+        msg = "Can't verify signature, requesting {} gave error code {}".format(inst_doc_url,
+                                                                                inst_doc_sig_url.status_code)
+        logger.warning(msg)
+    else:
+        logger.info("verifying signature of {}".format(inst_doc_url))
+        logger.warning(inst_doc_sig.content)
+        _ = verify_key.verify(smessage=inst_doc.content, signature=inst_doc_sig.content.decode('base64'))
 
     parsed = inst_doc.json()
 
