@@ -1,33 +1,58 @@
 import os
 import gi
+import logging
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk
+from eduvpn.nm import list_vpn
 
+logger = logging.getLogger(__name__)
 here = os.path.dirname(__file__)
 
 
 class EduVpnApp:
-    def add_configuration(self, button):
-        print("add configuration clicked")
-        self.stack.set_visible_child_name('instance_page')
+    def add_config(self, button):
+        logger.info("add configuration clicked")
+
+    def del_config(self, button):
+        logger.info("del configuration clicked")
+        dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
+                                   Gtk.ButtonsType.YES_NO, "Are you sure you want to remove this configuration?")
+        dialog.format_secondary_text("This action can't be undone.")
+        response = dialog.run()
+        if response == Gtk.ResponseType.YES:
+            logger.info("QUESTION dialog closed by clicking YES button")
+        elif response == Gtk.ResponseType.NO:
+            logger.info("QUESTION dialog closed by clicking NO button")
+        dialog.destroy()
+
+    def select_config(self, something):
+        logger.info("a configuration was selected")
 
     def __init__(self):
         handlers = {
-            "onDeleteWindow": Gtk.main_quit,
-            "addConfiguration": self.add_configuration,
+            "delete_window": Gtk.main_quit,
+            "add_config": self.add_config,
+            "del_config": self.del_config,
+            "select_config": self.select_config,
         }
 
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(here, "../data/eduvpn.glade"))
+        self.builder.add_from_file(os.path.join(here, "../data/eduvpn.ui"))
         self.builder.connect_signals(handlers)
 
-        self.window = self.builder.get_object('main_window')
-        self.stack = self.builder.get_object('main_stack')
-        self.config_list = self.builder.get_object('configlist')
-        self.config_list.append((u'gijs',))
+        self.window = self.builder.get_object('eduvpn-window')
+        self.config_list = self.builder.get_object('configs-model')
+
+        for vpn in list_vpn():
+            self.config_list.append((vpn,))
+
         self.window.show_all()
 
 
-if __name__ == '__main__':
+def main():
+    logging.basicConfig(level=logging.INFO)
     eduVpnApp = EduVpnApp()
     Gtk.main()
+
+if __name__ == '__main__':
+    main()

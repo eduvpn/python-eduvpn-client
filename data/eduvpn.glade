@@ -38,13 +38,16 @@
                 <property name="name">config_box</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">8</property>
+                <property name="margin_right">8</property>
+                <property name="margin_top">8</property>
+                <property name="margin_bottom">8</property>
                 <property name="orientation">vertical</property>
-                <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">configurations</property>
+                    <property name="label" translatable="yes">List of configurations</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -54,6 +57,7 @@
                 </child>
                 <child>
                   <object class="GtkTreeView" id="config_view">
+                    <property name="width_request">200</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="model">configlist</property>
