@@ -12,6 +12,14 @@ here = os.path.dirname(__file__)
 class EduVpnApp:
     def add_config(self, button):
         logger.info("add configuration clicked")
+        instances_dialog = self.builder.get_object('instances-dialog')
+        instances_overlay = self.builder.get_object('instances-overlay')
+        instances_overlay.show()
+        instances_dialog.set_modal(True)
+        instances_dialog.set_transient_for(self.window)
+        response = instances_dialog.run()
+        print(response)
+        instances_dialog.hide()
 
     def del_config(self, button):
         logger.info("del configuration clicked")
@@ -45,6 +53,8 @@ class EduVpnApp:
 
         for vpn in list_vpn():
             self.config_list.append((vpn,))
+
+        self.window.set_position(Gtk.WindowPosition.CENTER)
 
         self.window.show_all()
 
