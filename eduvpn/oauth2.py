@@ -62,12 +62,11 @@ def create_oauth_session(port):
     return oauth
 
 
-def get_oauth_token_code(auth_url, port):
+def get_oauth_token_code(port):
     """
     Start webserver, open browser, wait for callback response.
     """
-    logger.info("Opening default webbrowser with {} and waiting for callback on port {}".format(auth_url, port))
-    webbrowser.open(auth_url)
+    logger.info("waiting for callback on port {}".format(port))
     response = one_request(port)
     code = response['code'][0]
     return code

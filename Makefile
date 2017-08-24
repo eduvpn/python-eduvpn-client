@@ -43,7 +43,7 @@ fedora:
 
 .virtualenv/:
 	virtualenv --system-site-packages -p python2 .virtualenv
-	.virtualenv/bin/pip install -e .
+	.virtualenv/bin/pip install .
 
 .virtualenv3/:
 	virtualenv --system-site-packages -p python3 .virtualenv3

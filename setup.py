@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.2.1"
+__version__ = "0.3"
 
 
 install_requires = [
@@ -21,9 +21,10 @@ scripts = [
 ]
 
 data_files = [
-    ('share/applications', ['data/eduvpn-client.desktop']),
-    ('share/icons/hicolor/48x48/apps', ['data/icons/hicolor/48x48/apps/eduvpn-client.png']),
-    ('share/icons/hicolor/128x128/apps', ['data/icons/hicolor/128x128/apps/eduvpn-client.png']),
+    ('share/applications', ['share/applications/eduvpn-client.desktop']),
+    ('share/eduvpn', ['share/eduvpn/eduvpn.png', 'share/eduvpn/eduvpn.ui']),
+    ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/eduvpn-client.png']),
+    ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/eduvpn-client.png']),
 ]
 
 

@@ -1,121 +1,175 @@
 #!/usr/bin/env python
+
+import os
 import logging
+import webbrowser
 import threading
-from future.moves.urllib.parse import urlparse
-from os import path, makedirs
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GLib, GObject
 
-from eduvpn.ui.list_vpn import ListVpnWindow
-from eduvpn.ui.add_vpn import AddVpnWindow
-from eduvpn.ui.token_wait import TokenWaitWindow
-from eduvpn.ui.list_profiles import ProfileListWindow
-
+from eduvpn.nm import list_vpn
 from eduvpn.config import read as read_config
 from eduvpn.crypto import make_verifier, gen_code_verifier
-from eduvpn.local_oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
+from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
 from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, list_profiles
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
-from eduvpn.local_io import write_cert
+from eduvpn.io import write_cert
 from eduvpn.nm import add_nm_config, gen_nm_settings
 
-
 logger = logging.getLogger(__name__)
+here = os.path.dirname(__file__)
 
 
-class MainFlow:
+class EduVpnApp:
     def __init__(self):
-        self.list_win = ListVpnWindow()
-        self.list_win.connect("delete-event", Gtk.main_quit)
-        self.list_win.add_button.connect('button-press-event', self.add_clicked)
+        # intermediate placeholder
+        self.api_base_uri = None
+        self.oauth = None
+        self.auth_url = None
+        self.instance_name = None
 
-        self.add_win = AddVpnWindow()
-        self.add_win.connect("delete-event", Gtk.main_quit)
-        self.add_win.listbox.connect('row-activated', self.instance_select)
+        handlers = {
+            "delete_window": Gtk.main_quit,
+            "add_config": self.add_config,
+            "del_config": self.del_config,
+            "select_config": self.select_config,
+        }
 
-        self.token_win = TokenWaitWindow()
-        self.token_win.connect("delete-event", Gtk.main_quit)
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(os.path.join(here, "../share/eduvpn/eduvpn.ui"))
+        self.builder.connect_signals(handlers)
 
-        self.list_profiles_win = ProfileListWindow()
-        self.list_profiles_win.connect("delete-event", Gtk.main_quit)
-        self.list_profiles_win.listbox.connect('row-activated', self.profile_selected)
+        self.window = self.builder.get_object('eduvpn-window')
+        self.config_list = self.builder.get_object('configs-model')
 
-        self.start()
+        self.config = read_config()
+        self.verifier = make_verifier(self.config['verify_key'])
 
-    def start(self):
-        self.list_win.update_list()
-        self.list_win.show_all()
+        self.window.set_position(Gtk.WindowPosition.CENTER)
+        self.window.show_all()
+        self.update_configs()
 
-    def add_clicked(self, widget, event):
-        self.list_win.hide()
+    def update_configs(self):
+        for vpn in list_vpn():
+            self.config_list.append((vpn,))
 
-        config = read_config()
-        self.discovery_uri = config['eduvpn']['discovery_uri']
-        key = config['eduvpn']['key']
-        self.verifier = make_verifier(key)
-        instances = get_instances(self.discovery_uri, self.verifier)
-        self.add_win.update_instances(instances)
+    def add_config(self, button):
+        logger.info("add configuration clicked")
+        instances_dialog = self.builder.get_object('instances-dialog')
+        instances_overlay = self.builder.get_object('instances-overlay')
+        instances_model = self.builder.get_object('instances-model')
+        instances_selection = self.builder.get_object('instances-selection')
+        instances_model.clear()
+        instances_dialog.show_all()
 
-        self.add_win.show_all()
+        def update(instance):
+            instances_model.append(instance)
+            return False  # needs to return False to be removed from update queue
 
-    def instance_select(self, widget, row):
-        self.add_win.hide()
-        self.token_win.show_all()
+        def background():
+            for instance in list(get_instances(discovery_uri=self.config['discovery_uri'],
+                                               verify_key=self.config['verify_key'])):
+                GLib.idle_add(update, instance)
 
-        self.new_instance = urlparse(row.base_uri).hostname
+        thread = threading.Thread(target=background)
+        thread.daemon = True
+        thread.start()
 
-        instance_info = get_instance_info(row.base_uri, self.verifier)
-        self.auth_endpoint = instance_info['authorization_endpoint']
-        self.token_endpoint = instance_info['token_endpoint']
-        self.api_base_uri = instance_info['api_base_uri']
-        self.code_verifier = gen_code_verifier()
-        port = get_open_port()
-        self.oauth = create_oauth_session(port)
-        auth_url = get_auth_url(self.oauth, self.code_verifier, self.auth_endpoint)
-        self.get_oauth_token_code_in_thread(auth_url=auth_url, port=port)
+        instances_overlay.show_all()
 
-    def get_oauth_token_code_in_thread(self, auth_url, port):
-        def inner(auth_url, port):
-            code = get_oauth_token_code(auth_url, port)
-            logger.info("calling callback")
-            self.we_have_oauth_token(code)
-        #thread = threading.Thread(target=inner, args=(auth_url, port))
-        #thread.start()
-        inner(auth_url, port)
-        logger.info("thread running in background")
+        response = instances_dialog.run()
+        instances_dialog.hide()
 
-    def we_have_oauth_token(self, code):
-        self.token_win.hide()
-        token = self.oauth.fetch_token(self.token_endpoint, code=code, code_verifier=self.code_verifier)
+        if response == 0:  # cancel
+            logging.info("cancel button pressed")
+        else:
+            model, treeiter = instances_selection.get_selected()
+            if treeiter is not None:
+                name, base_uri, _ = model[treeiter]
+                self.token_step(name, base_uri)
+
+    def token_step(self, name, instance_base_uri):
+        logger.info("opening token dialog")
+        token_dialog = self.builder.get_object('token-dialog')
+        token_dialog.show_all()
+
+        def update():
+            token_dialog.hide()
+            self.profile_step()
+
+        def background():
+            self.instance_name = name
+            instance_info = get_instance_info(instance_base_uri, self.verifier)
+            auth_endpoint = instance_info['authorization_endpoint']
+            token_endpoint = instance_info['token_endpoint']
+            self.api_base_uri = instance_info['api_base_uri']
+            code_verifier = gen_code_verifier()
+            port = get_open_port()
+            self.oauth = create_oauth_session(port)
+            self.auth_url = get_auth_url(self.oauth, code_verifier, auth_endpoint)
+            webbrowser.open(self.auth_url)
+            code = get_oauth_token_code(port)
+            token = self.oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
+            GLib.idle_add(update)
+
+        thread = threading.Thread(target=background)
+        thread.daemon = True
+        thread.start()
+
+        while True:
+            response = token_dialog.run()
+            if response == 0:  # cancel
+                logger.info("token dialog: cancel button pressed")
+                token_dialog.hide()
+                break
+            elif response == 1:
+                logger.info("token dialog: reopen browser button pressed")
+                webbrowser.open(self.auth_url)
+            else:
+                logger.info("token dialog: received callback response")
+                break
+
+    def profile_step(self):
+        logger.info("opening profile dialog")
         profiles = list_profiles(self.oauth, self.api_base_uri)
-        self.list_profiles_win.update_list(profiles=profiles)
-        self.list_profiles_win.show_all()
-
-    def profile_selected(self, widget, row):
-        self.list_profiles_win.hide()
+        profile = profiles[0]
         cert, key = create_keypair(self.oauth, self.api_base_uri)
-        profile_config = get_profile_config(self.oauth, self.api_base_uri, row.profile_id)
+        profile_config = get_profile_config(self.oauth, self.api_base_uri, profile['profile_id'])
         ovpn_text = format_like_ovpn(profile_config, cert, key)
         config_dict = parse_ovpn(ovpn_text)
-
-        cert_path = write_cert(cert, 'cert', self.new_instance)
-        key_path = write_cert(key, 'key', self.new_instance)
-        ca_path = write_cert(config_dict.pop('ca'), 'ca', self.new_instance)
-        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', self.new_instance)
-
-        nm_config = gen_nm_settings(config_dict, name=self.new_instance)
+        cert_path = write_cert(cert, 'cert', self.instance_name)
+        key_path = write_cert(key, 'key', self.instance_name)
+        ca_path = write_cert(config_dict.pop('ca'), 'ca', self.instance_name)
+        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', self.instance_name)
+        nm_config = gen_nm_settings(config_dict, name=self.instance_name)
         nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
         add_nm_config(nm_config)
+        self.update_configs()
 
-        self.start()
+    def del_config(self, button):
+        logger.info("del configuration clicked")
+        dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
+                                   Gtk.ButtonsType.YES_NO, "Are you sure you want to remove this configuration?")
+        dialog.format_secondary_text("This action can't be undone.")
+        response = dialog.run()
+        if response == Gtk.ResponseType.YES:
+            logger.info("QUESTION dialog closed by clicking YES button")
+        elif response == Gtk.ResponseType.NO:
+            logger.info("QUESTION dialog closed by clicking NO button")
+        dialog.destroy()
+
+    def select_config(self, something):
+        logger.info("a configuration was selected")
+
+
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-    MainFlow()
     GObject.threads_init()
+    logging.basicConfig(level=logging.INFO)
+    eduVpnApp = EduVpnApp()
     Gtk.main()
 
 if __name__ == '__main__':
