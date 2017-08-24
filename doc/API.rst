@@ -11,10 +11,10 @@ Crypto
     :show-inheritance:
 
 
-EduVPN local IO
+EduVPN IO
 ===============
 
-.. automodule:: eduvpn.local_io
+.. automodule:: eduvpn.io
     :members:
     :undoc-members:
     :show-inheritance:
@@ -23,15 +23,15 @@ EduVPN local IO
 EduVPN local oauth2
 ===================
 
-.. automodule:: eduvpn.local_oauth2
+.. automodule:: eduvpn.oauth2
     :members:
     :undoc-members:
     :show-inheritance:
 
-Network manager
+VPN Providers
 ===============
 
-.. automodule:: eduvpn.nm
+.. automodule:: eduvpn.providerss
     :members:
     :undoc-members:
     :show-inheritance:

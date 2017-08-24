@@ -60,25 +60,30 @@ def store_provider(name, config, cert, key):
     logger.info("storing profile with name {} using NetworkManager".format(name))
     ovpn_text = format_like_ovpn(config, cert, key)
     config_dict = parse_ovpn(ovpn_text)
-    cert_path = write_cert(cert, 'cert', config)
-    key_path = write_cert(key, 'key', config)
-    ca_path = write_cert(config_dict.pop('ca'), 'ca', config)
-    ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', config)
-    nm_config = _gen_nm_settings(config_dict, name=config)
+    cert_path = write_cert(cert, 'cert', name)
+    key_path = write_cert(key, 'key', name)
+    ca_path = write_cert(config_dict.pop('ca'), 'ca', name)
+    ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', name)
+    nm_config = _gen_nm_settings(config_dict, name=name)
     nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
     _add_nm_config(nm_config)
 
 
 def delete_provider(name):
     logger.info("deleting profile with name {} using NetworkManager".format(name))
-    raise NotImplementedError
+    all_connections = NetworkManager.Settings.ListConnections()
+    [c.Delete() for c in all_connections if c.GetSettings()['connection']['id'] == name]
 
 
 def connect_provider(name):
     logger.info("connecting profile with name {} using NetworkManager".format(name))
-    raise NotImplementedError
+    cs = [c for c in NetworkManager.Settings.ListConnections() if c.GetSettings()['connection']['id'] == name]
+    if cs:
+        NetworkManager.NetworkManager.ActivateConnection(cs[0], "/", "/")
 
 
 def status_provider(name):
     logger.info("deleting profile with name {} using NetworkManager".format(name))
-    raise NotImplementedError
+    cs = [c for c in NetworkManager.Settings.ListConnections() if c.GetSettings()['connection']['id'] == name]
+    if cs:
+        NetworkManager.NetworkManager.DeactivateConnection(cs[0])
