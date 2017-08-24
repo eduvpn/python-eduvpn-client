@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 
-import os
 import logging
-import webbrowser
+import os
 import threading
+import webbrowser
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib, GObject
 
-from eduvpn.nm import list_vpn
+from eduvpn.providers import list_providers, store_provider, delete_provider, connect_provider
 from eduvpn.config import read as read_config
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
 from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, list_profiles
-from eduvpn.openvpn import format_like_ovpn, parse_ovpn
-from eduvpn.io import write_cert
-from eduvpn.nm import add_nm_config, gen_nm_settings
+
 
 logger = logging.getLogger(__name__)
 here = os.path.dirname(__file__)
@@ -33,7 +32,9 @@ class EduVpnApp:
         handlers = {
             "delete_window": Gtk.main_quit,
             "add_config": self.add_config,
-            "del_config": self.del_config,
+            "del_config": self.delete,
+            "connect": self.connect,
+            "disconnect": self.disconnect,
             "select_config": self.select_config,
         }
 
@@ -49,11 +50,25 @@ class EduVpnApp:
 
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.show_all()
-        self.update_configs()
+        self.update_providers()
 
-    def update_configs(self):
-        for vpn in list_vpn():
-            self.config_list.append((vpn,))
+    def connect(self, selection):
+        logger.info("connect pressed")
+        model, treeiter = selection.get_selected()
+        if treeiter is not None:
+            name = model[treeiter][0]
+            connect_provider(name)
+
+    def disconnect(self, selection):
+        logger.info("disconnect pressed")
+        model, treeiter = selection.get_selected()
+        if treeiter is not None:
+            name = model[treeiter][0]
+
+    def update_providers(self):
+        self.config_list.clear()
+        for provider in list_providers():
+            self.config_list.append((provider,))
 
     def add_config(self, button):
         logger.info("add configuration clicked")
@@ -86,9 +101,11 @@ class EduVpnApp:
             logging.info("cancel button pressed")
         else:
             model, treeiter = instances_selection.get_selected()
-            if treeiter is not None:
+            if treeiter:
                 name, base_uri, _ = model[treeiter]
                 self.token_step(name, base_uri)
+            else:
+                logger.info("nothing selected")
 
     def token_step(self, name, instance_base_uri):
         logger.info("opening token dialog")
@@ -137,27 +154,28 @@ class EduVpnApp:
         profile = profiles[0]
         cert, key = create_keypair(self.oauth, self.api_base_uri)
         profile_config = get_profile_config(self.oauth, self.api_base_uri, profile['profile_id'])
-        ovpn_text = format_like_ovpn(profile_config, cert, key)
-        config_dict = parse_ovpn(ovpn_text)
-        cert_path = write_cert(cert, 'cert', self.instance_name)
-        key_path = write_cert(key, 'key', self.instance_name)
-        ca_path = write_cert(config_dict.pop('ca'), 'ca', self.instance_name)
-        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', self.instance_name)
-        nm_config = gen_nm_settings(config_dict, name=self.instance_name)
-        nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
-        add_nm_config(nm_config)
-        self.update_configs()
+        store_provider(self.instance_name, profile_config, cert, key)
+        self.update_providers()
 
-    def del_config(self, button):
-        logger.info("del configuration clicked")
+    def delete(self, selection):
+        logger.info("delete provider clicked")
+        model, treeiter = selection.get_selected()
+        if not treeiter:
+            logger.info("nothing selected")
+            return
+
+        name = model[treeiter][0]
+
         dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
-                                   Gtk.ButtonsType.YES_NO, "Are you sure you want to remove this configuration?")
+                                   Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(name))
         dialog.format_secondary_text("This action can't be undone.")
         response = dialog.run()
         if response == Gtk.ResponseType.YES:
-            logger.info("QUESTION dialog closed by clicking YES button")
+            logger.info("deleting provider config")
+            delete_provider(name)
+            self.update_providers()
         elif response == Gtk.ResponseType.NO:
-            logger.info("QUESTION dialog closed by clicking NO button")
+            logger.info("not deleting provider config")
         dialog.destroy()
 
     def select_config(self, something):

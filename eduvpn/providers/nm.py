@@ -1,19 +1,16 @@
 import uuid
 import logging
-import os
-import sys
 
-if os.name == 'posix' and not sys.platform.startswith('darwin'):
-    import NetworkManager
+import NetworkManager
+
+from eduvpn.openvpn import format_like_ovpn, parse_ovpn
+from eduvpn.io import write_cert
+
 
 logger = logging.getLogger(__name__)
 
-# only used if network manager is not available
-config_store = os.path.expanduser('~/.config/eduvpn')
 
-
-
-def gen_nm_settings(config, name):
+def _gen_nm_settings(config, name):
     """
     Generate a NetworkManager style config dict from a parsed ovpn config dict
     """
@@ -40,37 +37,48 @@ def gen_nm_settings(config, name):
     return settings
 
 
-def add_nm_config(settings):
+def _add_nm_config(settings):
     """
     Add a configuration to the networkmanager
     """
     name = settings['connection']['id']
     logger.info("generating or updating OpenVPN configuration with name {}".format(name))
-    if os.name != 'posix' or sys.platform.startswith('darwin'):
-        logger.error('Adding an OpenVPN config on a non Linux platform is not supported for now.')
-        return
     connection = NetworkManager.Settings.AddConnection(settings)
     return connection
 
 
-def list_vpn_no_networkmanager():
-    """
-    List network configurations in our local eduvpn config. useful if OS doesnt have network manager.
-    """
-    if os.path.isdir(config_store):
-        return [x[:-5] for x in os.listdir(config_store) if x.endswith('.ovpn')]
-    else:
-        return []
-
-
-def list_vpn():
+def list_providers():
     """
     List all OpenVPN connections.
     """
-    if os.name != 'posix' or sys.platform.startswith('darwin'):
-        logger.warning('Listing VPN connections on non Linux platform is not supported for now.')
-        return list_vpn_no_networkmanager()
-
     all_connections = NetworkManager.Settings.ListConnections()
     vpn_connections = [c.GetSettings()['connection']['id'] for c in all_connections if c.GetSettings()['connection']['type'] == 'vpn']
     return vpn_connections
+
+
+def store_provider(name, config, cert, key):
+    logger.info("storing profile with name {} using NetworkManager".format(name))
+    ovpn_text = format_like_ovpn(config, cert, key)
+    config_dict = parse_ovpn(ovpn_text)
+    cert_path = write_cert(cert, 'cert', config)
+    key_path = write_cert(key, 'key', config)
+    ca_path = write_cert(config_dict.pop('ca'), 'ca', config)
+    ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', config)
+    nm_config = _gen_nm_settings(config_dict, name=config)
+    nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
+    _add_nm_config(nm_config)
+
+
+def delete_provider(name):
+    logger.info("deleting profile with name {} using NetworkManager".format(name))
+    raise NotImplementedError
+
+
+def connect_provider(name):
+    logger.info("connecting profile with name {} using NetworkManager".format(name))
+    raise NotImplementedError
+
+
+def status_provider(name):
+    logger.info("deleting profile with name {} using NetworkManager".format(name))
+    raise NotImplementedError

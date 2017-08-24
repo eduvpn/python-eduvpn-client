@@ -1,5 +1,6 @@
 import unittest
-from eduvpn.nm import add_nm_config, gen_nm_settings
+
+from eduvpn.providers.nm import add_nm_config, gen_nm_settings
 
 
 class TestNm(unittest.TestCase):

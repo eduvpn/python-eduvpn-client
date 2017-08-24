@@ -1,16 +1,17 @@
 #!/usr/bin/env python2
 
 import logging
+
+from eduvpn.local_io import write_cert
+from eduvpn.local_oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
 from future.moves.urllib.parse import urlparse
 
-from eduvpn.crypto import gen_code_verifier, make_verifier
-from eduvpn.local_oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
-from eduvpn.local_io import write_cert
-from eduvpn.nm import gen_nm_settings, add_nm_config
 from eduvpn.config import read as read_config
+from eduvpn.crypto import gen_code_verifier, make_verifier
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
-from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, list_profiles
-
+from eduvpn.providers.nm import gen_nm_settings, add_nm_config
+from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, \
+    list_profiles
 
 # we manually pick this one now
 default_instance = 'https://demo.eduvpn.nl/'
