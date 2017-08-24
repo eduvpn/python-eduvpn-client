@@ -8,30 +8,35 @@ from eduvpn.crypto import gen_code_challenge
 logger = logging.getLogger(__name__)
 
 
-def get_instances(base_uri, verify_key):
+def get_instances(discovery_uri, verify_key=None):
     """
     retrieve a list of instances
 
     generates (display_name, base_uri, logo)
     """
-    logger.info("retrieving a list of instances from {}".format(base_uri))
-    inst_doc_url = base_uri + '/instances.json'
-    inst_doc_sig_url = base_uri + '/instances.json.sig'
+    logger.info("Discovering instances at {}".format(discovery_uri))
+    inst_doc_url = discovery_uri + '/instances.json'
+    inst_doc_sig_url = discovery_uri + '/instances.json.sig'
+    logger.info("Retreiving {}".format(inst_doc_url))
     inst_doc = requests.get(inst_doc_url)
     if inst_doc.status_code != 200:
         msg = "Got error code {} requesting {}".format(inst_doc.status_code, inst_doc_url)
         logger.error(msg)
         raise IOError(msg)
 
-    inst_doc_sig = requests.get(inst_doc_sig_url)
-    if inst_doc_sig.status_code != 200:
-        msg = "Can't verify signature, requesting {} gave error code {}".format(inst_doc_url,
-                                                                                inst_doc_sig_url.status_code)
-        logger.warning(msg)
+    if not verify_key:
+        logger.warning("verification key not set, not verifying")
     else:
-        logger.info("verifying signature of {}".format(inst_doc_url))
-        logger.warning(inst_doc_sig.content)
-        _ = verify_key.verify(smessage=inst_doc.content, signature=inst_doc_sig.content.decode('base64'))
+        logger.info("Retrieving {}".format(inst_doc_sig_url))
+        inst_doc_sig = requests.get(inst_doc_sig_url)
+        if inst_doc_sig.status_code != 200:
+            msg = "Can't retrieve signature, requesting {} gave error code {}".format(inst_doc_sig_url,
+                                                                                    inst_doc_sig.status_code)
+            logger.warning(msg)
+        else:
+            logger.info("verifying signature of {}".format(inst_doc_url))
+            logger.warning(inst_doc_sig.content)
+            _ = verify_key.verify(smessage=inst_doc.content, signature=inst_doc_sig.content.decode('base64'))
 
     parsed = inst_doc.json()
 

@@ -55,7 +55,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="name">
+                          <object class="GtkTreeViewColumn" id="configuration-name">
                             <property name="title" translatable="yes">column</property>
                             <child>
                               <object class="GtkCellRendererText"/>
@@ -235,10 +235,22 @@
       </object>
     </child>
   </object>
-  <object class="GtkListStore" id="instances-model"/>
+  <object class="GtkListStore" id="instances-model">
+    <columns>
+      <!-- column-name display_name -->
+      <column type="gchararray"/>
+      <!-- column-name base_uri -->
+      <column type="gchararray"/>
+      <!-- column-name logo -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkDialog" id="instances-dialog">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Instance selection</property>
+    <property name="modal">True</property>
+    <property name="default_width">400</property>
+    <property name="default_height">400</property>
     <property name="type_hint">dialog</property>
     <property name="decorated">False</property>
     <property name="transient_for">eduvpn-window</property>
@@ -250,7 +262,7 @@
         <property name="margin_top">10</property>
         <property name="margin_bottom">10</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
+        <property name="spacing">18</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
@@ -285,6 +297,18 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Choose your provider</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -300,12 +324,26 @@
                 <property name="min_content_width">300</property>
                 <property name="min_content_height">200</property>
                 <child>
-                  <object class="GtkTreeView">
+                  <object class="GtkTreeView" id="instances-view">
+                    <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="model">instances-model</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection" id="instances-selection">
+                        <property name="mode">browse</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="provider-name">
+                        <property name="title" translatable="yes">column</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
                     </child>
                   </object>
                 </child>
@@ -324,7 +362,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
