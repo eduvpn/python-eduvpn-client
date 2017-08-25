@@ -12,8 +12,8 @@ Development of this project takes place on `github <https://github.com/gijzelaer
 install the latest release on Debian or Ubuntu using the EduVPN packaging repository::
 
     sudo apt install apt-transport-https
-    curl -L https://repo.eduvpn.org/debian/eduvpn.key  | sudo apt-key add -
-    echo "deb https://repo.eduvpn.org/debian/ stretch main" sudo tee /etc/apt/sources.list.d/eduvpn.list
+    curl -L https://repo.eduvpn.org/debian/eduvpn.key | sudo apt-key add -
+    echo "deb https://repo.eduvpn.org/debian/ stretch main" | sudo tee /etc/apt/sources.list.d/eduvpn.list
     sudo apt update
     sudo apt install eduvpn-client
 
