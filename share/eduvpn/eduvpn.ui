@@ -192,7 +192,7 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="pixbuf">eduvpn.png</property>
+                        <property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
