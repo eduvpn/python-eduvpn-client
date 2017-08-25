@@ -9,7 +9,7 @@ from future.moves.urllib.parse import urlparse
 from eduvpn.config import read as read_config
 from eduvpn.crypto import gen_code_verifier, make_verifier
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
-from eduvpn.providers.nm import gen_nm_settings, add_nm_config
+from eduvpn.managers.nm import gen_nm_settings, add_nm_config
 from eduvpn.remote import get_instances, get_instance_info, create_keypair, get_profile_config, get_auth_url, \
     list_profiles
 

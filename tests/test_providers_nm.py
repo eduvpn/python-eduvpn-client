@@ -5,7 +5,7 @@ import unittest
 run = os.name == 'posix' and not sys.platform.startswith('darwin')
 
 if run:
-    from eduvpn.providers.nm import list_providers, store_provider, delete_provider, connect_provider, status_provider
+    from eduvpn.managers.nm import list_providers, store_provider, delete_provider, connect_provider, status_provider
 
 
 @unittest.skipUnless(run, "requires NetworkManager (Linux)")

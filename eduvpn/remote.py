@@ -1,5 +1,6 @@
 import json
 import logging
+from eduvpn.config import locale
 
 import requests
 
@@ -15,26 +16,24 @@ def get_instances(discovery_uri, verify_key=None):
     generates (display_name, base_uri, logo)
     """
     logger.info("Discovering instances at {}".format(discovery_uri))
-    inst_doc_url = discovery_uri + '/instances.json'
-    inst_doc_sig_url = discovery_uri + '/instances.json.sig'
-    logger.info("Retreiving {}".format(inst_doc_url))
-    inst_doc = requests.get(inst_doc_url)
+    discovery_sig_uri = discovery_uri + '.sig'
+    inst_doc = requests.get(discovery_uri)
     if inst_doc.status_code != 200:
-        msg = "Got error code {} requesting {}".format(inst_doc.status_code, inst_doc_url)
+        msg = "Got error code {} requesting {}".format(inst_doc.status_code, discovery_sig_uri)
         logger.error(msg)
         raise IOError(msg)
 
     if not verify_key:
         logger.warning("verification key not set, not verifying")
     else:
-        logger.info("Retrieving {}".format(inst_doc_sig_url))
-        inst_doc_sig = requests.get(inst_doc_sig_url)
+        logger.info("Retrieving signature {}".format(discovery_sig_uri))
+        inst_doc_sig = requests.get(discovery_sig_uri)
         if inst_doc_sig.status_code != 200:
-            msg = "Can't retrieve signature, requesting {} gave error code {}".format(inst_doc_sig_url,
+            msg = "Can't retrieve signature, requesting {} gave error code {}".format(discovery_sig_uri,
                                                                                     inst_doc_sig.status_code)
             logger.warning(msg)
         else:
-            logger.info("verifying signature of {}".format(inst_doc_url))
+            logger.info("verifying signature of {}".format(discovery_uri))
             logger.warning(inst_doc_sig.content)
             _ = verify_key.verify(smessage=inst_doc.content, signature=inst_doc_sig.content.decode('base64'))
 
@@ -43,9 +42,25 @@ def get_instances(discovery_uri, verify_key=None):
     for instance in parsed['instances']:
         display_name = instance['display_name']
         base_uri = instance['base_uri']
-        logo_uri = instance['logo_uri']
+        logo_uri = instance['logo']
+
+        if type(display_name) == dict:
+            if locale in display_name:
+                display_name = display_name[locale]
+            elif "us-US" in display_name:
+                display_name = display_name[locale]
+            else:
+                # otherwise just take the first
+                display_name = display_name.values()[0]
+
         logo = requests.get(logo_uri)
-        yield display_name, base_uri, logo.content
+
+        if logo.status_code != 200:
+            logo_data = None
+        else:
+            logo_data = logo.content
+
+        yield display_name, base_uri, logo_data
 
 
 def get_instance_info(instance_uri, verify_key):
