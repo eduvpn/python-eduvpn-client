@@ -28,5 +28,18 @@ def parse_ovpn(configtext):
             full_match = x.group(0)
             config[tag] = x.group(1).replace('\r\n', '\n')
             configtext = configtext.replace(full_match, '')
-    config.update(dict(configurator(configtext)))
+
+    # handle duplicate keys, make them a list
+    results = {}
+    multiple = []
+    for keyword, value in configurator(configtext):
+        if keyword in results:
+            if keyword in multiple:
+                results[keyword].append(value)
+            else:
+                results[keyword] = [results[keyword], value]
+        else:
+            results[keyword] = value
+
+    config.update(results)
     return config
