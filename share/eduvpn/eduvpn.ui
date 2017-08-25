@@ -66,15 +66,11 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="provider-column-icon">
+                          <object class="GtkTreeViewColumn">
                             <property name="title" translatable="yes">column</property>
-			    <child>
-                              <object class="GtkCellRendererPixbuf" id="provider-column-text-icon"/>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
+                            <child>
+                              <object class="GtkCellRendererPixbuf"/>
                             </child>
-                   
                           </object>
                         </child>
                       </object>
@@ -550,7 +546,7 @@ Please follow instructions in your browser.</property>
       <!-- column-name base_uri -->
       <column type="gchararray"/>
       <!-- column-name logo -->
-      <column type="gchararray"/>
+      <column type="GdkPixbuf"/>
     </columns>
   </object>
   <object class="GtkDialog" id="instances-dialog">
@@ -648,11 +644,22 @@ Please follow instructions in your browser.</property>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="provider-name">
-                        <property name="title" translatable="yes">column</property>
+                        <property name="title" translatable="yes">name</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
                             <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="provider-column-icon">
+                        <property name="title" translatable="yes">icon</property>
+                        <child>
+                          <object class="GtkCellRendererPixbuf"/>
+                          <attributes>
+                            <attribute name="pixbuf">2</attribute>
                           </attributes>
                         </child>
                       </object>

@@ -5,7 +5,7 @@ import webbrowser
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import GObject, Gtk, GLib
+from gi.repository import GObject, Gtk, GLib, GdkPixbuf
 
 from eduvpn.config import read as read_config, secure_internet_uri, institute_access_uri, verify_key
 from eduvpn.crypto import make_verifier, gen_code_verifier
@@ -113,7 +113,9 @@ class EduVpnApp:
         instances_dialog.show_all()
 
         def update(instance):
-            instances_model.append(instance)
+            name, url, icon = instance
+            pixbuf = GdkPixbuf.Pixbuf.new_for_string(icon)
+            instances_model.append((name, url, pixbuf))
             return False  # needs to return False to be removed from update queue
 
         def error(exception):
