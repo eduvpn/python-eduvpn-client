@@ -15,16 +15,18 @@ from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_p
     get_profile_config
 
 logger = logging.getLogger(__name__)
-here = os.path.dirname(__file__)
+
 
 
 class EduVpnApp:
-    def __init__(self):
+    def __init__(self, here):
         # intermediate placeholder
         self.api_base_uri = None
         self.oauth = None
         self.auth_url = None
         self.instance_name = None
+
+        self.here = here
 
         handlers = {
             "delete_window": Gtk.main_quit,
@@ -36,7 +38,7 @@ class EduVpnApp:
         }
 
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(here, "../share/eduvpn/eduvpn.ui"))
+        self.builder.add_from_file(os.path.join(self.here, "../share/eduvpn/eduvpn.ui"))
         self.builder.connect_signals(handlers)
 
         self.window = self.builder.get_object('eduvpn-window')
@@ -229,8 +231,8 @@ class EduVpnApp:
         logger.info("a configuration was selected")
 
 
-def main():
+def main(here):
     GObject.threads_init()
     logging.basicConfig(level=logging.INFO)
-    eduVpnApp = EduVpnApp()
+    eduVpnApp = EduVpnApp(here)
     Gtk.main()
