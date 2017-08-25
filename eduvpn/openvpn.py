@@ -38,6 +38,7 @@ def parse_ovpn(configtext):
                 results[keyword].append(value)
             else:
                 results[keyword] = [results[keyword], value]
+                multiple.append(keyword)
         else:
             results[keyword] = value
 

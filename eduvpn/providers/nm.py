@@ -28,7 +28,7 @@ def _gen_nm_settings(config, name):
                                  'comp-lzo': config.get('auth', 'adaptive'),
                                  'connection-type': config.get('connection-type', 'tls'),
                                  'dev': 'tun',
-                                 'remote': ":".join(config['remote']),
+                                 'remote': ",".join(":".join(r) for r in config['remote']),
                                  'remote-cert-tls': 'server',
                                  'ta-dir': config.get('key-direction', '1'),
                                  'tls-cipher': config.get('tls-cipher', 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384')},
