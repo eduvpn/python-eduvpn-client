@@ -2,14 +2,14 @@
 Introduction
 ============
 
-This is the Python API and GNU/Linux desktop client for EduVPN. The Desktop client only works on Linux, but most parts
+This is the Python API and GNU/Linux desktop client for eduVPN. The Desktop client only works on Linux, but most parts
 of the API are usable on other platforms also. For the API Python 2.7, 3.4+ and pypy are supported.
 
 Installation
 ============
 
 Development of this project takes place on `github <https://github.com/gijzelaerr/python-eduvpn-client>`_. You can
-install the latest release on Debian or Ubuntu using the EduVPN packaging repository::
+install the latest release on Debian or Ubuntu using the eduVPN packaging repository::
 
     sudo apt install apt-transport-https
     curl -L https://repo.eduvpn.org/debian/eduvpn.key | sudo apt-key add -

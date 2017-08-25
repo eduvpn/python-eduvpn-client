@@ -38,7 +38,7 @@ setup(
     extras_require=extras_require,
     author="Gijs Molenaar",
     author_email="gijs@pythonic.nl",
-    description="EduVPN client",
+    description="eduVPN client",
     license="GPL3",
     keywords="vpn openvpn networking security",
     url="https://github.com/gijzelaerr/eduvpn-linux-client",

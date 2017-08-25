@@ -1,10 +1,10 @@
 
-Linux EduVPN client and Python API
+Linux eduVPN client and Python API
 ==================================
 
-This is the Linux Desktop client and Python API for EduVPN.
+This is the Linux Desktop client and Python API for eduVPN.
 
-Read more about EduVPN on the EduVPN website http://eduvpn.org/.
+Read more about eduVPN on the eduVPN website http://eduvpn.org/.
 
 Installation
 ============

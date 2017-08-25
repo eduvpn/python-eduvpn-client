@@ -11,8 +11,8 @@ Crypto
     :show-inheritance:
 
 
-EduVPN IO
-===============
+eduVPN IO
+=========
 
 .. automodule:: eduvpn.io
     :members:
@@ -20,7 +20,7 @@ EduVPN IO
     :show-inheritance:
 
 
-EduVPN local oauth2
+eduVPN local oauth2
 ===================
 
 .. automodule:: eduvpn.oauth2
