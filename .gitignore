@@ -102,6 +102,5 @@ ENV/
 # mypy
 .mypy_cache/
 
-eduvpn.ovpn
 .idea
 

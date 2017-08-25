@@ -1,26 +1,44 @@
 import unittest
-import mock
 from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_instances, get_profile_config
 
 
+class MochResponse:
+    content = '{"create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}}}'
+
+
+
+class MockOAuth:
+    authorization_url = 'mock'
+    def get(self, url):
+        return MochResponse()
+
+    def authorization_url(self, auth_endpoint, code_challenge_method, code_challenge):
+        authorization_url = "mock url"
+        state = "mock state"
+        return authorization_url, state
+
+    def post(self, url, data):
+        return MochResponse()
+
 
 class TestRemote(unittest.TestCase):
+
+    def setUp(self):
+        self.oauth = MockOAuth()
+
     def test_create_keypair(self):
-        m = mock.Mock()
-        m.post = mock.Mock()
-        m.post.content = mock.MagicMock(return_value={'create_keypair': {'data': 'bla'}})
-        create_keypair(oauth=mock.Mock(), api_base_uri='test')
+
+        create_keypair(oauth=self.oauth, api_base_uri='test')
 
     def test_get_auth_url(self):
-        m = ()
-        m.authorization_url = mock.MagicMock(return_value=('test', 'test'))
-        get_auth_url(oauth=mock.Mock(), code_verifier='test', auth_endpoint='test')
+        get_auth_url(oauth=self.oauth, code_verifier='test', auth_endpoint='test')
 
+    @unittest.skip("todo: need to mock request")
     def test_get_instance_info(self):
         get_instance_info(instance_uri='test', verify_key='test')
 
     def test_get_instances(self):
-        get_instances(base_uri='test', verify_key='test')
+        get_instances(discovery_uri='test', verify_key='test')
 
     def test_get_profile_config(self):
-        get_profile_config(oauth=mock.Mock(), api_base_uri='test')
+        get_profile_config(oauth=self.oauth, api_base_uri='test', profile_id='test')
