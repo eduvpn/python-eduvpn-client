@@ -2,7 +2,9 @@
 Linux eduVPN client and Python API
 ==================================
 
-This is the Linux Desktop client and Python API for eduVPN.
+This is the GNU/Linux desktop client and Python API for eduVPN.
+
+Current status is ALPHA. There are various known and unknown bugs. Feel free to try the code out, but expect problems.
 
 Read more about eduVPN on the eduVPN website http://eduvpn.org/.
 
