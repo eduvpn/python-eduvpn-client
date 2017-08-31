@@ -56,7 +56,7 @@ def list_providers():
     return vpn_connections
 
 
-def store_provider(name, config, cert, key):
+def store_provider(name, config, cert, key, token, profile_type, authorization_type, profile_display_name, profile_id, two_factor):
     logger.info("storing profile with name {} using NetworkManager".format(name))
     ovpn_text = format_like_ovpn(config, cert, key)
     config_dict = parse_ovpn(ovpn_text)

@@ -18,7 +18,7 @@ def list_providers():
         return []
 
 
-def store_provider(name, config, cert, key):
+def store_provider(name, config, cert, key, token, profile_type, authorization_type, profile_display_name, profile_id, two_factor):
     logger.info("storing profile with name {} for non-Linux OS".format(name))
     ovpn_text = format_like_ovpn(config, cert, key)
     with open(os.path.join(config_store, name + '.ovpn'), 'w') as f:

@@ -104,3 +104,5 @@ ENV/
 
 .idea
 
+#glade temp files
+*~

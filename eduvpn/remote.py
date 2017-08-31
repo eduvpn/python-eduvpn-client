@@ -9,6 +9,19 @@ from eduvpn.crypto import gen_code_challenge
 logger = logging.getLogger(__name__)
 
 
+def translate_display_name(display_name):
+    if type(display_name) == dict:
+        if locale in display_name:
+            return display_name[locale]
+        elif "us-US" in display_name:
+            return display_name["us-US"]
+        else:
+            # otherwise just take the first
+            return display_name.values()[0]
+    else:
+        return display_name
+
+
 def get_instances(discovery_uri, verify_key=None):
     """
     retrieve a list of instances
@@ -39,20 +52,14 @@ def get_instances(discovery_uri, verify_key=None):
 
     parsed = inst_doc.json()
 
+    authorization_type = [parsed['authorization_type']]
+
+    instances = []
+
     for instance in parsed['instances']:
-        display_name = instance['display_name']
+        display_name = translate_display_name(instance['display_name'])
         base_uri = instance['base_uri']
         logo_uri = instance['logo']
-
-        if type(display_name) == dict:
-            if locale in display_name:
-                display_name = display_name[locale]
-            elif "us-US" in display_name:
-                display_name = display_name[locale]
-            else:
-                # otherwise just take the first
-                display_name = display_name.values()[0]
-
         logo = requests.get(logo_uri)
 
         if logo.status_code != 200:
@@ -60,7 +67,9 @@ def get_instances(discovery_uri, verify_key=None):
         else:
             logo_data = logo.content
 
-        yield display_name, base_uri, logo_data
+            instances.append((display_name, base_uri, logo_data))
+
+    return authorization_type, instances
 
 
 def get_instance_info(instance_uri, verify_key):
@@ -75,8 +84,8 @@ def get_instance_info(instance_uri, verify_key):
         logger.warning("can't verify signature for {} since there is no signature.".format(info_uri))
     else:
         _ = verify_key.verify(smessage=info.content, signature=info_sig.content.decode('base64'))
-    instance_urls = info.json()['api']['http://eduvpn.org/api#2']
-    return instance_urls
+    urls = info.json()['api']['http://eduvpn.org/api#2']
+    return urls["api_base_uri"], urls["authorization_endpoint"],urls["token_endpoint"]
 
 
 def create_keypair(oauth, api_base_uri):
@@ -93,10 +102,17 @@ def create_keypair(oauth, api_base_uri):
 
 def list_profiles(oauth, api_base_uri):
     """
-    Return a list of available profiles on the instance
+    Return a list of available profiles on the instance (display_name, profile_id, two_factor)
     """
     logger.info("Retrieving profile list from {}".format(api_base_uri))
-    return oauth.get(api_base_uri + '/profile_list').json()['profile_list']['data']
+    data = oauth.get(api_base_uri + '/profile_list').json()['profile_list']['data']
+    profiles = []
+    for profile in data:
+        display_name = translate_display_name(profile["display_name"])
+        profile_id = profile["profile_id"]
+        two_factor = profile["two_factor"]
+        profiles.append((display_name, profile_id, two_factor))
+    return profiles
 
 
 def user_info(oauth, api_base_uri):
