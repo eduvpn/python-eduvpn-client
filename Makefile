@@ -72,4 +72,4 @@ dockers:
 
 
 homebrew:
-    brew install pygobject pygobject3 libnotify
+	brew install pygobject pygobject3 libnotify
