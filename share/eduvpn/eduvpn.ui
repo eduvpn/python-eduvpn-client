@@ -13,7 +13,7 @@
   <object class="GtkApplicationWindow" id="eduvpn-window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">eduVPN configuration manager</property>
-    <property name="icon">../icons/hicolor/128x128/apps/eduvpn-client.png</property>
+    <property name="icon">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
     <signal name="delete-event" handler="delete_window" swapped="no"/>
     <child>
       <object class="GtkBox" id="eduvpn-top-widget">
@@ -51,6 +51,7 @@
                         <property name="show_expanders">False</property>
                         <property name="level_indentation">12</property>
                         <signal name="row-activated" handler="select_config" swapped="no"/>
+                        <signal name="unselect-all" handler="select_config" swapped="no"/>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection" id="treeview-selection">
                             <property name="mode">browse</property>
@@ -135,20 +136,6 @@
                     <property name="homogeneous">True</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkToolButton" id="configs-tree-toolbutton-connect">
-                    <property name="use_action_appearance">False</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Connect</property>
-                    <property name="icon_name">media-playback-start</property>
-                    <signal name="clicked" handler="connect" object="treeview-selection" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">True</property>
-                  </packing>
-                </child>
                 <style>
                   <class name="inline-toolbar"/>
                 </style>
@@ -189,7 +176,7 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-			<property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
+                        <property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -219,14 +206,43 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
+                <property name="spacing">33</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">connection info placeholder</property>
+                    <property name="wrap">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkSwitch" id="connect-switch">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <signal name="state-set" handler="connect_set" object="treeview-selection" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
               </object>
               <packing>

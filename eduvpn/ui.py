@@ -48,9 +48,8 @@ class EduVpnApp:
             "delete_window": Gtk.main_quit,
             "add_config": self.selection_connection_step,
             "del_config": self.delete,
-            "connect": self.connect,
-            "disconnect": self.disconnect,
             "select_config": self.select_config,
+            "connect_set": self.connect_set,
         }
 
         self.builder = Gtk.Builder()
@@ -228,6 +227,7 @@ class EduVpnApp:
                     config = get_profile_config(oauth, api_base_uri, profile_id)
                     store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
                                    profile_display_name, two_factor, cert, key, config)
+                    notify("Stored new eduVPN configuration {}".format(display_name))
                     GLib.idle_add(dialog.hide)
                     GLib.idle_add(self.update_providers)
                 else:
@@ -319,8 +319,27 @@ class EduVpnApp:
             logger.info("not deleting provider config")
         dialog.destroy()
 
-    def select_config(self, something):
+    def select_config(self, list):
         logger.info("a configuration was selected")
+        notebook = self.builder.get_object('configs-notebook')
+        model, treeiter = list.get_selected()
+        if not treeiter:
+            notebook.set_current_page(0)
+            return
+        notebook.show_all()
+        notebook.set_current_page(1)
+
+    def connect_set(self, selection, state):
+        logger.info("switch activated, state {}".format(state))
+        model, treeiter = selection.get_selected()
+        if treeiter is not None:
+            uuid, display_name = model[treeiter]
+            if state:
+                notify("Connecting to {}".format(display_name))
+                connect_provider(uuid)
+            else:
+                notify("Disconnecting to {}".format(display_name))
+                disconnect_provider(uuid)
 
 
 def main(here):
