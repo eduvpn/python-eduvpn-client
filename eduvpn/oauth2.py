@@ -7,15 +7,35 @@ from requests_oauthlib import OAuth2Session
 
 logger = logging.getLogger(__name__)
 
-landing_page = """<html>
+landing_page = """
+<!doctype html>
+<html lang=en>
+<title>eduVPN - you can close this screen</title>
+<style>
+.center {
+    font-family: arial;
+    font-size: 50px;
+    position: absolute;
+    text-align: center;
+    width: 800px;
+    height: 50px;
+    top: 50%;
+    left: 50%;
+    margin-left: -400px; /* margin is -0.5 * dimension */
+    margin-top: -25px;
+}
+</style>
 <head>
-<title>eduvpn</title>
+<meta charset=utf-8>
+<title>blah</title>
 </head>
 <body>
-<h1>You can now close this window</h1>
+<div class="center">You can now close this window</div>
 </body>
 </html>
 """
+
+
 
 
 def get_open_port():

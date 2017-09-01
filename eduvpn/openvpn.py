@@ -1,8 +1,13 @@
 import re
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def format_like_ovpn(profile_config, cert, key):
     """create a OVPN format config text"""
+    logger.info("formatting config into ovpn format")
     return profile_config + '\n<cert>\n{}\n</cert>\n<key>\n{}\n</key>\n'.format(cert, key)
 
 

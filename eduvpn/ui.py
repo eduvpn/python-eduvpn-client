@@ -4,6 +4,7 @@ import threading
 import webbrowser
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import GObject, Gtk, GLib, GdkPixbuf
 
@@ -17,13 +18,29 @@ from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_p
 logger = logging.getLogger(__name__)
 
 
+def error_helper(parent, msg_big, msg_small):
+    logger.error("{}: {}".format(msg_big, msg_small))
+    error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, str(msg_big))
+    error_dialog.format_secondary_text(str(msg_small))
+    error_dialog.run()
+    error_dialog.hide()
+    parent.hide()
+
+
+def thread_helper(func):
+    thread = threading.Thread(target=func)
+    thread.daemon = True
+    thread.start()
+    return thread
+
+
 class EduVpnApp:
     def __init__(self, here):
         self.here = here
 
         handlers = {
             "delete_window": Gtk.main_quit,
-            "add_config": self.selection_connection,
+            "add_config": self.selection_connection_step,
             "del_config": self.delete,
             "connect": self.connect,
             "disconnect": self.disconnect,
@@ -58,14 +75,13 @@ class EduVpnApp:
     def update_providers(self):
         config_list = self.builder.get_object('configs-model')
         config_list.clear()
-        for provider in list_providers():
-            config_list.append((provider,))
+        for meta in list_providers():
+            config_list.append((meta['uuid'], meta['display_name']))
 
-    def selection_connection(self, _):
+    def selection_connection_step(self, _):
         logger.info("add configuration clicked")
         dialog = self.builder.get_object('connection-type-dialog')
         dialog.show_all()
-
         response = dialog.run()
         dialog.hide()
 
@@ -74,10 +90,10 @@ class EduVpnApp:
             return
         elif response == 1:
             logger.info("secure button pressed")
-            self.select_instance(discovery_uri=secure_internet_uri, connection_type='secure_internet')
+            self.fetch_instance_step(discovery_uri=secure_internet_uri, connection_type='secure_internet')
         elif response == 2:
             logger.info("institute button pressed")
-            self.select_instance(discovery_uri=institute_access_uri, connection_type='institute_access')
+            self.fetch_instance_step(discovery_uri=institute_access_uri, connection_type='institute_access')
 
         elif response == 3:
             logger.info("custom button pressed")
@@ -95,49 +111,41 @@ class EduVpnApp:
         else:
             custom_url = entry.get_text()
             logger.info("ok pressed, entry text: {}".format(custom_url))
-            self.select_instance(discovery_uri=custom_url, connection_type='custom_url')
+            self.browser_step(name='Custom Instance', instance_base_uri='custom_url', connection_type='custom',
+                              authorization_type='local')
 
-    def select_instance(self, discovery_uri, connection_type):
-        logger.info("add configuration clicked")
-        instances_dialog = self.builder.get_object('instances-dialog')
-        instances_overlay = self.builder.get_object('instances-overlay')
-        instances_model = self.builder.get_object('instances-model')
-        instances_selection = self.builder.get_object('instances-selection')
-        instances_model.clear()
-        instances_dialog.show_all()
-
-        # allow this to be overriden by background()
-        authorization_type = None
-
-        def update(instance):
-            name, url, icon = instance
-            pixbuf = GdkPixbuf.Pixbuf.new_for_string(icon)
-            instances_model.append((name, url, pixbuf))
-            return False  # needs to return False to be removed from update queue
-
-        def error(exception):
-            dialog = Gtk.MessageDialog(instances_dialog, 0, Gtk.MessageType.INFO,
-                                       Gtk.ButtonsType.OK, "Can't retrieve list of instances")
-            dialog.format_secondary_text(str(exception))
-            dialog.run()
-            dialog.hide()
-            instances_dialog.hide()
+    def fetch_instance_step(self, discovery_uri, connection_type):
+        logger.info("fetching instances step")
+        dialog = self.builder.get_object('fetch-dialog')
+        dialog.show_all()
 
         def background():
             try:
                 authorization_type, instances = get_instances(discovery_uri=discovery_uri, verify_key=self.verifier)
             except Exception as e:
-                GLib.idle_add(error, e)
+                GLib.idle_add(error_helper, dialog, "can't fetch instances", "{} {}".format(type(e), str(e)))
+                GLib.idle_add(dialog.hide)
             else:
-                for instance in instances:
-                    GLib.idle_add(update, instance)
+                GLib.idle_add(dialog.hide)
+                GLib.idle_add(self.select_instance_step, connection_type, authorization_type, instances)
 
-        thread = threading.Thread(target=background)
-        thread.daemon = True
-        thread.start()
+        thread_helper(background())
 
-        instances_overlay.show_all()
+    def select_instance_step(self, connection_type, authorization_type, instances):
+        logger.info("presenting instances to user")
+        instances_dialog = self.builder.get_object('instances-dialog')
+        # instances_overlay = self.builder.get_object('instances-overlay')
+        instances_model = self.builder.get_object('instances-model')
+        instances_selection = self.builder.get_object('instances-selection')
+        instances_model.clear()
+        instances_dialog.show_all()
 
+        for instance in instances:
+            display_name, url, icon = instance
+            pixbuf = GdkPixbuf.Pixbuf.new_for_string(icon)
+            instances_model.append((display_name, url, pixbuf))
+
+        # instances_overlay.show_all()
         response = instances_dialog.run()
         instances_dialog.hide()
 
@@ -146,19 +154,14 @@ class EduVpnApp:
         else:
             model, treeiter = instances_selection.get_selected()
             if treeiter:
-                name, base_uri, _ = model[treeiter]
-                self.browser_step(name, base_uri, connection_type, authorization_type)
+                display_name, instance_base_uri, _ = model[treeiter]
+                self.browser_step(display_name=display_name, instance_base_uri=instance_base_uri,
+                                  connection_type=connection_type,
+                                  authorization_type=authorization_type)
             else:
                 logger.info("nothing selected")
 
-    def error(self, exception, parent, msg):
-        error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, msg)
-        error_dialog.format_secondary_text(str(exception))
-        error_dialog.run()
-        error_dialog.hide()
-        parent.hide()
-
-    def browser_step(self, name, instance_base_uri, connection_type, authorization_type):
+    def browser_step(self, display_name, instance_base_uri, connection_type, authorization_type):
         logger.info("opening token dialog")
         dialog = self.builder.get_object('token-dialog')
         dialog.show_all()
@@ -168,7 +171,7 @@ class EduVpnApp:
 
         def update(token, api_base_uri, oauth):
             dialog.hide()
-            self.fetch_profile(token, api_base_uri, oauth, name, connection_type, authorization_type)
+            self.fetch_profile_step(token, api_base_uri, oauth, display_name, connection_type, authorization_type)
 
         def background():
             try:
@@ -181,15 +184,12 @@ class EduVpnApp:
                 webbrowser.open(auth_url)
                 code = get_oauth_token_code(port)
                 token = oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
-
             except Exception as e:
-                GLib.idle_add(self.error, e, dialog, e)
+                GLib.idle_add(error_helper, dialog, "can't obtain token", "{} {}".format(type(e), str(e)))
             else:
                 GLib.idle_add(update, token, api_base_uri, oauth)
 
-        thread = threading.Thread(target=background)
-        thread.daemon = True
-        thread.start()
+        thread_helper(background)
 
         while True:
             response = dialog.run()
@@ -204,33 +204,37 @@ class EduVpnApp:
                 logger.info("token dialog: received callback response")
                 break
 
-    def fetch_profile(self, token, api_base_uri, oauth, name, connection_type, authorization_type):
-        dialog = self.builder.get_object('fetch-profile-dialog')
+    def fetch_profile_step(self, token, api_base_uri, oauth, display_name, connection_type, authorization_type):
+        logger.info("fetching profile step")
+        dialog = self.builder.get_object('fetch-dialog')
         dialog.show_all()
-
-        def update(profiles):
-            dialog.hide()
-            if len(profiles) > 1:
-                self.select_profile_step(token, profiles, api_base_uri, oauth, name, connection_type,
-                                         authorization_type)
-            else:
-                profile_display_name, profile_id, two_factor = profiles[0]
-                cert, key = create_keypair(oauth, api_base_uri)
-                config = get_profile_config(oauth, api_base_uri, profile_id)
-                store_provider(name, config, cert, key, token, connection_type, authorization_type,
-                               profile_display_name,
-                               profile_id, two_factor)
-                self.update_providers()
 
         def background():
             try:
                 profiles = list_profiles(oauth, api_base_uri)
+                if len(profiles) > 1:
+                    GLib.idle_add(dialog.hide)
+                    GLib.idle_add(self.select_profile_step, token, profiles, api_base_uri, oauth, display_name,
+                                  connection_type, authorization_type)
+                elif len(profiles) == 1:
+                    profile_display_name, profile_id, two_factor = profiles[0]
+                    cert, key = create_keypair(oauth, api_base_uri)
+                    config = get_profile_config(oauth, api_base_uri, profile_id)
+                    store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
+                                   profile_display_name, two_factor, cert, key, config)
+                    GLib.idle_add(dialog.hide)
+                    GLib.idle_add(self.update_providers)
+                else:
+                    raise Exception("Instance doesn't contain any profiles")
             except Exception as e:
-                GLib.idle_add(self.error, e, dialog, e)
-            else:
-                GLib.idle_add(update, profiles)
+                GLib.idle_add(error_helper, dialog, "can't fetch profile", "{} {}".format(type(e), str(e)))
+                GLib.idle_add(dialog.hide)
+                raise
 
-    def select_profile_step(self, profiles, token, api_base_uri, oauth, name, connection_type, authorization_type):
+        thread_helper(background)
+
+    def select_profile_step(self, profiles, token, api_base_uri, oauth, display_name, connection_type,
+                            authorization_type):
         logger.info("opening profile dialog")
 
         dialog = self.builder.get_object('profiles-dialog')
@@ -250,14 +254,33 @@ class EduVpnApp:
             model, treeiter = selection.get_selected()
             if treeiter:
                 profile_display_name, profile_id, two_factor = model[treeiter]
-                cert, key = create_keypair(oauth, api_base_uri)
-                config = get_profile_config(oauth, api_base_uri, profile_id)
-                store_provider(name, config, cert, key, token, connection_type, authorization_type, profile_display_name,
-                               profile_id, two_factor)
-                self.update_providers()
+                self.finalizing_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
+                                     authorization_type,
+                                     profile_display_name, two_factor)
             else:
                 logger.error("nothing selected")
                 return
+
+    def finalizing_step(self, oauth, api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
+                        profile_display_name, two_factor):
+        logger.info("finalizing step")
+        dialog = self.builder.get_object('fetch-dialog')
+        dialog.show_all()
+
+        def background():
+            try:
+                cert, key = create_keypair(oauth, api_base_uri)
+                config = get_profile_config(oauth, api_base_uri, profile_id)
+                store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
+                               profile_display_name, two_factor, cert, key, config)
+            except Exception as e:
+                GLib.idle_add(error_helper, dialog, "can't finalize configuration", "{} {}".format(type(e), str(e)))
+                GLib.idle_add(dialog.hide)
+            else:
+                GLib.idle_add(dialog.hide)
+                GLib.idle_add(self.update_providers)
+
+        thread_helper(background)
 
     def delete(self, selection):
         logger.info("delete provider clicked")
@@ -266,15 +289,16 @@ class EduVpnApp:
             logger.info("nothing selected")
             return
 
-        name = model[treeiter][0]
+        uuid, display_name = model[treeiter]
 
         dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
-                                   Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(name))
+                                   Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(display_name))
         dialog.format_secondary_text("This action can't be undone.")
         response = dialog.run()
         if response == Gtk.ResponseType.YES:
             logger.info("deleting provider config")
-            delete_provider(name)
+            delete_provider(uuid)
+            self.update_providers()
             self.update_providers()
         elif response == Gtk.ResponseType.NO:
             logger.info("not deleting provider config")

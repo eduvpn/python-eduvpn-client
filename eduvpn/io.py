@@ -1,8 +1,12 @@
+import errno
+import json
 import os
 import subprocess
 import sys
 from os.path import expanduser
 import logging
+
+from eduvpn.config import config_path
 
 logger = logging.getLogger(__name__)
 
@@ -40,3 +44,22 @@ def open_file(filepath):
         os.startfile(filepath)
     elif os.name == 'posix':
         subprocess.call(('xdg-open', filepath))
+
+
+def store_metadata(path, **metadata):
+    logger.info("storing metadata in {}".format(path))
+    serialized = json.dumps(metadata)
+    mkdir_p(config_path)
+    with open(path, 'w') as f:
+        f.write(serialized)
+
+
+def mkdir_p(path):
+    logger.info("making sure config path {} exists".format(path))
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise

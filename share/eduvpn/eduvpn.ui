@@ -4,7 +4,9 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkListStore" id="configs-model">
     <columns>
-      <!-- column-name name -->
+      <!-- column-name uuid -->
+      <column type="gchararray"/>
+      <!-- column-name display_name -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -60,7 +62,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="provider-column-text-text"/>
                               <attributes>
-                                <attribute name="text">0</attribute>
+                                <attribute name="text">1</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -271,7 +273,7 @@
         <property name="margin_top">20</property>
         <property name="margin_bottom">20</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
+        <property name="spacing">36</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
@@ -332,7 +334,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -340,6 +342,10 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">choose your profile</property>
+            <attributes>
+              <attribute name="weight" value="ultraheavy"/>
+              <attribute name="scale" value="2"/>
+            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -351,13 +357,26 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Select the profile type you want to use below.
-You will be redirected to the browser for your credentials.</property>
+            <property name="label" translatable="yes">Select the profile type you want to use below.</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">You will be redirected to the browser for your credentials.</property>
+            <property name="wrap">True</property>
+            <property name="wrap_mode">word-char</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>
@@ -425,7 +444,13 @@ You will be redirected to the browser for your credentials.</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">please enter a custom discovery URI</property>
+            <property name="label" translatable="yes">please enter a
+custom instance URI</property>
+            <property name="justify">center</property>
+            <attributes>
+              <attribute name="weight" value="ultraheavy"/>
+              <attribute name="scale" value="2"/>
+            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -452,7 +477,7 @@ You will be redirected to the browser for your credentials.</property>
       <action-widget response="1">button8</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkDialog" id="fetch-profile-dialog">
+  <object class="GtkDialog" id="fetch-dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <property name="decorated">False</property>
@@ -480,7 +505,11 @@ You will be redirected to the browser for your credentials.</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">fetching profiles</property>
+            <property name="label" translatable="yes">fetching data..</property>
+            <attributes>
+              <attribute name="weight" value="ultraheavy"/>
+              <attribute name="scale" value="2"/>
+            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -649,6 +678,10 @@ Please follow instructions in your browser.</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">Choose your provider</property>
+            <attributes>
+              <attribute name="weight" value="ultraheavy"/>
+              <attribute name="scale" value="2"/>
+            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -795,6 +828,10 @@ Please follow instructions in your browser.</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">Choose your profile</property>
+            <attributes>
+              <attribute name="weight" value="ultraheavy"/>
+              <attribute name="scale" value="2"/>
+            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
