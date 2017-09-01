@@ -463,7 +463,7 @@ custom instance URI</property>
           <object class="GtkEntry" id="custom-url-entry">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="text" translatable="yes">http://</property>
+            <property name="text" translatable="yes">https://</property>
           </object>
           <packing>
             <property name="expand">False</property>

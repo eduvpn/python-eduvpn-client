@@ -114,7 +114,7 @@ class EduVpnApp:
         else:
             custom_url = entry.get_text()
             logger.info("ok pressed, entry text: {}".format(custom_url))
-            self.browser_step(display_name='Custom Instance', instance_base_uri='custom_url', connection_type='custom',
+            self.browser_step(display_name='Custom Instance', instance_base_uri=custom_url, connection_type='custom',
                               authorization_type='local')
 
     def fetch_instance_step(self, discovery_uri, connection_type):
