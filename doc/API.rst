@@ -31,7 +31,7 @@ eduVPN local oauth2
 VPN Providers
 ===============
 
-.. automodule:: eduvpn.providerss
+.. automodule:: eduvpn.providers
     :members:
     :undoc-members:
     :show-inheritance:

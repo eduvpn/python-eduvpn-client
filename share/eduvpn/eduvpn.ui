@@ -13,6 +13,7 @@
   <object class="GtkApplicationWindow" id="eduvpn-window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">eduVPN configuration manager</property>
+    <property name="icon">../icons/hicolor/128x128/apps/eduvpn-client.png</property>
     <signal name="delete-event" handler="delete_window" swapped="no"/>
     <child>
       <object class="GtkBox" id="eduvpn-top-widget">
@@ -188,7 +189,7 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
+			<property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
