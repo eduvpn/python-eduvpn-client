@@ -271,14 +271,19 @@ class EduVpnApp:
             try:
                 cert, key = create_keypair(oauth, api_base_uri)
                 config = get_profile_config(oauth, api_base_uri, profile_id)
-                store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                               profile_display_name, two_factor, cert, key, config)
             except Exception as e:
                 GLib.idle_add(error_helper, dialog, "can't finalize configuration", "{} {}".format(type(e), str(e)))
                 GLib.idle_add(dialog.hide)
             else:
-                GLib.idle_add(dialog.hide)
-                GLib.idle_add(self.update_providers)
+                try:
+                    store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
+                                   profile_display_name, two_factor, cert, key, config)
+                except Exception as e:
+                    GLib.idle_add(error_helper, dialog, "can't store configuration", "{} {}".format(type(e), str(e)))
+                    GLib.idle_add(dialog.hide)
+                else:
+                    GLib.idle_add(dialog.hide)
+                    GLib.idle_add(self.update_providers)
 
         thread_helper(background)
 
