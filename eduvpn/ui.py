@@ -38,6 +38,9 @@ class EduVpnApp:
     def __init__(self, here):
         self.here = here
 
+        # hack to make the reopen url button work
+        self.auth_url = None
+
         handlers = {
             "delete_window": Gtk.main_quit,
             "add_config": self.selection_connection_step,
@@ -111,7 +114,7 @@ class EduVpnApp:
         else:
             custom_url = entry.get_text()
             logger.info("ok pressed, entry text: {}".format(custom_url))
-            self.browser_step(name='Custom Instance', instance_base_uri='custom_url', connection_type='custom',
+            self.browser_step(display_name='Custom Instance', instance_base_uri='custom_url', connection_type='custom',
                               authorization_type='local')
 
     def fetch_instance_step(self, discovery_uri, connection_type):
@@ -166,9 +169,6 @@ class EduVpnApp:
         dialog = self.builder.get_object('token-dialog')
         dialog.show_all()
 
-        # put this here so it can be overridden by background()
-        auth_url = None
-
         def update(token, api_base_uri, oauth):
             dialog.hide()
             self.fetch_profile_step(token, api_base_uri, oauth, display_name, connection_type, authorization_type)
@@ -180,8 +180,8 @@ class EduVpnApp:
                 code_verifier = gen_code_verifier()
                 port = get_open_port()
                 oauth = create_oauth_session(port)
-                auth_url = get_auth_url(oauth, code_verifier, authorization_endpoint)
-                webbrowser.open(auth_url)
+                self.auth_url = get_auth_url(oauth, code_verifier, authorization_endpoint)
+                webbrowser.open(self.auth_url)
                 code = get_oauth_token_code(port)
                 token = oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
             except Exception as e:
@@ -198,8 +198,8 @@ class EduVpnApp:
                 dialog.hide()
                 break
             elif response == 1:
-                logger.info("token dialog: reopen browser button pressed")
-                webbrowser.open(auth_url)
+                logger.info("token dialog: reopen browser button pressed, opening {} again".format(self.auth_url))
+                webbrowser.open(self.auth_url)
             else:
                 logger.info("token dialog: received callback response")
                 break
@@ -297,8 +297,10 @@ class EduVpnApp:
         response = dialog.run()
         if response == Gtk.ResponseType.YES:
             logger.info("deleting provider config")
-            delete_provider(uuid)
-            self.update_providers()
+            try:
+                delete_provider(uuid)
+            except Exception as e:
+                error_helper(self.window, "can't delete profile", "{}: {}".format(type(e), str(e)))
             self.update_providers()
         elif response == Gtk.ResponseType.NO:
             logger.info("not deleting provider config")

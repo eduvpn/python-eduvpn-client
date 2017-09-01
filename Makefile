@@ -43,6 +43,8 @@ fedora:
 
 .virtualenv/:
 	virtualenv --system-site-packages -p python2 .virtualenv
+
+.virtualenv/bin/eduvpn-client: .virtualenv/
 	.virtualenv/bin/pip install -e .
 
 .virtualenv3/:
@@ -60,6 +62,9 @@ test: .virtualenv/
 test3: .virtualenv3/
 	.virtualenv3/bin/pip install -r tests/requirements.txt
 	.virtualenv3/bin/nosenosetests
+
+run: .virtualenv/bin/eduvpn-client
+	.virtualenv/bin/eduvpn-client
 
 dockers:
 	for i in `ls docker/Dockerfile*`; do docker build . -f $$i; done
