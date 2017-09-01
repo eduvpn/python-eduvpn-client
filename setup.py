@@ -14,6 +14,7 @@ install_requires = [
 extras_require = {
     'nm': ['python-networkmanager'],
     'ui': ['pygobject'],
+    'osx': ['pync'],
 }
 
 scripts = [

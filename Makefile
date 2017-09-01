@@ -6,6 +6,7 @@ deb:
 	sudo apt install -y \
 		network-manager-openvpn-gnome \
 		python-networkmanager \
+		libnotify4 \
 		python-dbus \
 		python-nacl \
 		python-requests-oauthlib \
@@ -68,3 +69,7 @@ run: .virtualenv/bin/eduvpn-client
 
 dockers:
 	for i in `ls docker/Dockerfile*`; do docker build . -f $$i; done
+
+
+homebrew:
+    brew install pygobject pygobject3 libnotify

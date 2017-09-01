@@ -6,14 +6,17 @@ import webbrowser
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import GObject, Gtk, GLib, GdkPixbuf
+gi.require_version('Notify', '0.7')
+
+from gi.repository import GObject, Gtk, GLib, GdkPixbuf, Notify
 
 from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
-from eduvpn.managers import connect_provider, list_providers, store_provider, delete_provider
+from eduvpn.managers import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
     get_profile_config
+from eduvpn.notify import notify
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +69,17 @@ class EduVpnApp:
         logger.info("connect pressed")
         model, treeiter = selection.get_selected()
         if treeiter is not None:
-            name = model[treeiter][0]
-            connect_provider(name)
+            uuid, display_name = model[treeiter]
+            notify("Connecting to {}".format(display_name))
+            connect_provider(uuid)
 
     def disconnect(self, selection):
         logger.info("disconnect pressed")
         model, treeiter = selection.get_selected()
         if treeiter is not None:
-            name = model[treeiter][0]
+            uuid, display_name = model[treeiter]
+            notify("Disconnecting to {}".format(display_name))
+            disconnect_provider(uuid)
 
     def update_providers(self):
         config_list = self.builder.get_object('configs-model')
@@ -278,6 +284,7 @@ class EduVpnApp:
                 try:
                     store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
                                    profile_display_name, two_factor, cert, key, config)
+                    notify("Added eduVPN configuration {}".format(display_name))
                 except Exception as e:
                     GLib.idle_add(error_helper, dialog, "can't store configuration", "{} {}".format(type(e), str(e)))
                     GLib.idle_add(dialog.hide)
@@ -304,6 +311,7 @@ class EduVpnApp:
             logger.info("deleting provider config")
             try:
                 delete_provider(uuid)
+                notify("Deleted eduVPN configuration {}".format(display_name))
             except Exception as e:
                 error_helper(self.window, "can't delete profile", "{}: {}".format(type(e), str(e)))
             self.update_providers()

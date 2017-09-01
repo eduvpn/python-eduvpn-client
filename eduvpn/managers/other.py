@@ -42,23 +42,28 @@ def store_provider(api_base_uri, profile_id, display_name, token, connection_typ
         f.write(ovpn_text)
 
 
-def delete_provider(name):
-    logger.info("deleting profile with name {} for non-Linux OS".format(name))
+def delete_provider(uuid):
+    logger.info("deleting profile with name {} for non-Linux OS".format(uuid))
     try:
-        os.remove(os.path.join(config_path, name + '.ovpn'))
+        os.remove(os.path.join(config_path, uuid + '.ovpn'))
     except Exception as e:
         logger.error("can't remove ovpn file: {}".format(str(e)))
     try:
-        os.remove(os.path.join(config_path, name + '.json'))
+        os.remove(os.path.join(config_path, uuid + '.json'))
     except Exception as e:
         logger.error("can't remove ovpn file: {}".format(str(e)))
 
 
-def connect_provider(name):
-    logger.info("connecting profile with name {} for non-Linux OS".format(name))
-    open_file(os.path.join(config_path, name + '.ovpn'))
+def connect_provider(uuid):
+    logger.info("connecting profile with name {} for non-Linux OS".format(uuid))
+    open_file(os.path.join(config_path, uuid + '.ovpn'))
 
 
-def status_provider(name):
-    logger.info("requesting status profile with name {} for non-Linux OS".format(name))
-    raise NotImplementedError
+def disconnect_provider(uuid):
+    logger.info("connecting profile with name {} for non-Linux OS".format(uuid))
+    logger.error("not supported on non dbus platform")
+
+
+def status_provider(uuid):
+    logger.info("requesting status profile with name {} for non-Linux OS".format(uuid))
+    logger.error("not supported on non dbus platform")
