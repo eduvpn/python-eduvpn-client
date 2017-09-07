@@ -11,6 +11,27 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="instances-model">
+    <columns>
+      <!-- column-name display_name -->
+      <column type="gchararray"/>
+      <!-- column-name base_uri -->
+      <column type="gchararray"/>
+      <!-- column-name logo -->
+      <column type="GdkPixbuf"/>
+    </columns>
+  </object>
+  <object class="GtkImage" id="institute-image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">institute_small.png</property>
+  </object>
+  <object class="GtkImage" id="internet-image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">internet_small.png</property>
+  </object>
+  <object class="GtkTextBuffer" id="messages-buffer"/>
   <object class="GtkApplicationWindow" id="eduvpn-window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">eduVPN configuration manager</property>
@@ -287,6 +308,9 @@
                   <object class="GtkTextView" id="messages">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="editable">False</property>
+                    <property name="cursor_visible">False</property>
+                    <property name="buffer">messages-buffer</property>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -359,6 +383,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="image">internet-image</property>
+                <property name="image_position">top</property>
+                <property name="always_show_image">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -372,6 +399,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="image">institute-image</property>
+                <property name="image_position">top</property>
+                <property name="always_show_image">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -586,104 +616,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkDialog" id="token-dialog">
-    <property name="can_focus">False</property>
-    <property name="border_width">8</property>
-    <property name="modal">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="decorated">False</property>
-    <property name="transient_for">eduvpn-window</property>
-    <child internal-child="vbox">
-      <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="button1">
-                <property name="label" translatable="yes">cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="button2">
-                <property name="label" translatable="yes">reopen</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">22</property>
-            <property name="margin_bottom">21</property>
-            <property name="label" translatable="yes">Opening your default browser now.
-
-                            Please follow instructions in your browser.
-                        </property>
-            <property name="justify">center</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSpinner">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">20</property>
-            <property name="margin_bottom">20</property>
-            <property name="active">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">button1</action-widget>
-      <action-widget response="1">button2</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkListStore" id="instances-model">
-    <columns>
-      <!-- column-name display_name -->
-      <column type="gchararray"/>
-      <!-- column-name base_uri -->
-      <column type="gchararray"/>
-      <!-- column-name logo -->
-      <column type="GdkPixbuf"/>
-    </columns>
-  </object>
   <object class="GtkDialog" id="instances-dialog">
     <property name="can_focus">False</property>
     <property name="border_width">8</property>
@@ -825,6 +757,93 @@
     <action-widgets>
       <action-widget response="0">instance-cancel</action-widget>
       <action-widget response="1">instance-continue</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkDialog" id="token-dialog">
+    <property name="can_focus">False</property>
+    <property name="border_width">8</property>
+    <property name="modal">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="decorated">False</property>
+    <property name="transient_for">eduvpn-window</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="button1">
+                <property name="label" translatable="yes">cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button2">
+                <property name="label" translatable="yes">reopen</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">22</property>
+            <property name="margin_bottom">21</property>
+            <property name="label" translatable="yes">Opening your default browser now.
+
+Please follow instructions in your browser.
+                        </property>
+            <property name="justify">center</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinner">
+            <property name="height_request">100</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="active">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">button1</action-widget>
+      <action-widget response="1">button2</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="profiles-model">
