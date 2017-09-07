@@ -1,3 +1,6 @@
+"""
+Helper functions related to local IO
+"""
 import errno
 import json
 import os
@@ -13,19 +16,31 @@ logger = logging.getLogger(__name__)
 
 def write_and_open_ovpn(ovpn_text, filename='eduvpn.ovpn'):
     """
-    Write a OpenVPN config file and open it with the default OS assosiated file handler
+    Write a OpenVPN config file and open it with the default OS associated file handler
+
+    args:
+        ovpn_text (str): content of OpenVPN config file
+        filename (str): filename for OpenVPN config file
     """
     with open(filename, 'w') as f:
         f.write(ovpn_text)
     open_file('eduvpn.ovpn')
 
 
-def write_cert(content, type_, short_instance_name):
+def write_cert(content, type_, description):
     """
     Write a certificate to the filesystem
+
+    args:
+        content (str): content of certificate file
+        type (str): type of certificate file
+        description (str): description of file
+
+    returns:
+        str: full path to certificate file
     """
     home = expanduser("~")
-    path = home + "/.cert/nm-openvpn/" + short_instance_name + "_" + type_ + ".pem"
+    path = home + "/.cert/nm-openvpn/" + description + "_" + type_ + ".pem"
     logger.info("writing {} file to {}".format(type_, path))
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
@@ -37,6 +52,9 @@ def write_cert(content, type_, short_instance_name):
 def open_file(filepath):
     """
     Open file document with system associated program
+
+    args:
+        filepath (str): path to file to open
     """
     if sys.platform.startswith('darwin'):
         subprocess.call(('open', filepath))
@@ -47,6 +65,13 @@ def open_file(filepath):
 
 
 def store_metadata(path, **metadata):
+    """
+    Store dictionary as JSON encoded string in a file
+
+    args:
+        path (str): path of file
+        metadata (dict): metadata to store
+    """
     logger.info("storing metadata in {}".format(path))
     serialized = json.dumps(metadata)
     mkdir_p(config_path)
@@ -55,6 +80,12 @@ def store_metadata(path, **metadata):
 
 
 def mkdir_p(path):
+    """
+    Create a folder with all its parents, like mkdir -p
+
+    args:
+        path (str): path of directory to create
+    """
     logger.info("making sure config path {} exists".format(path))
     try:
         os.makedirs(path)

@@ -339,7 +339,7 @@ class EduVpnApp:
         dialog.destroy()
 
     def select_config(self, list):
-        notebook = self.builder.get_object('configs-notebook')
+        notebook = self.builder.get_object('outer-notebook')
         switch = self.builder.get_object('connect-switch')
         model, treeiter = list.get_selected()
         if not treeiter:

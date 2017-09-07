@@ -1,7 +1,6 @@
 import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
-import webbrowser
 from future.moves.urllib.parse import urlparse, parse_qs
 from requests_oauthlib import OAuth2Session
 
@@ -36,10 +35,13 @@ landing_page = """
 """
 
 
-
-
 def get_open_port():
-    """find an unused port"""
+    """
+    find an unused local port
+
+    returns:
+        int: an unused port number
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("", 0))
     s.listen(1)
@@ -51,6 +53,11 @@ def get_open_port():
 def one_request(port):
     """
     Listen for one http request on port, then close and return request query
+
+    args:
+        port (int): the port to listen for the request
+    returns:
+        str: the request
     """
     logger.info("listening for a request on port {}...".format(port))
 
@@ -72,9 +79,14 @@ def one_request(port):
 
 def create_oauth_session(port):
     """
-    Create a callback oauth2 session object
+    Create a oauth2 callback webserver
+
+    args:
+        port (int): the port where to listen to
+    returns:
+        OAuth2Session: a oauth2 session object
     """
-    logger.info("Creating an oauth session, temporarly starting webserver on port {} for auth callback".format(port))
+    logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
     client_id = "org.eduvpn.app"
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
     scope = "config"
@@ -85,6 +97,11 @@ def create_oauth_session(port):
 def get_oauth_token_code(port):
     """
     Start webserver, open browser, wait for callback response.
+
+    args:
+        port (int): port where to listen for
+    returns:
+        str: the response code given by redirect
     """
     logger.info("waiting for callback on port {}".format(port))
     response = one_request(port)

@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <!-- interface-local-resource-path .. -->
+  <!-- interface-local-resource-path . -->
   <object class="GtkListStore" id="configs-model">
     <columns>
       <!-- column-name uuid -->
@@ -14,7 +14,7 @@
   <object class="GtkApplicationWindow" id="eduvpn-window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">eduVPN configuration manager</property>
-    <property name="icon">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
+    <property name="icon">../icons/hicolor/128x128/apps/eduvpn-client.png</property>
     <signal name="delete-event" handler="delete_window" swapped="no"/>
     <child>
       <object class="GtkBox" id="eduvpn-top-widget">
@@ -158,7 +158,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkNotebook" id="configs-notebook">
+          <object class="GtkNotebook" id="outer-notebook">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="show_tabs">False</property>
@@ -179,7 +179,7 @@
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
+                        <property name="pixbuf">../icons/hicolor/128x128/apps/eduvpn-client.png</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -195,76 +195,118 @@
               </packing>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="label1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label">page 1</property>
-              </object>
-              <packing>
-                <property name="tab_fill">False</property>
-              </packing>
+              <placeholder/>
             </child>
             <child>
-              <object class="GtkBox" id="configs-vbox">
+              <object class="GtkNotebook" id="inner-notebook">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">33</property>
+                <property name="can_focus">True</property>
                 <child>
-                  <object class="GtkImage">
+                  <object class="GtkBox" id="configs-vbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="pixbuf">../icons/hicolor/256x256/apps/eduvpn-client.png</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">33</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="pixbuf">../icons/hicolor/128x128/apps/eduvpn-client.png</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="provider-label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">provider:</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="profile-label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">profile:</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">connection status:</property>
+                        <property name="wrap">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSwitch" id="connect-switch">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <signal name="button-press-event" handler="connect_set" object="treeview-selection" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">connection info placeholder</property>
-                    <property name="wrap">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkSwitch" id="connect-switch">
+                <child type="tab">
+                  <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <signal name="button-press-event" handler="connect_set" object="treeview-selection" swapped="no"/>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">connection</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="tab_fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkTextView" id="messages">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child type="tab">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">messages</property>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                    <property name="tab_fill">False</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel" id="label2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label">page 2</property>
-              </object>
-              <packing>
-                <property name="position">1</property>
-                <property name="tab_fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
             </child>
             <child type="tab">
               <placeholder/>
@@ -377,7 +419,8 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Select the profile type you want to use below.</property>
+            <property name="label" translatable="yes">Select the profile type you want to use below.
+                        </property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -389,7 +432,9 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">You will be redirected to the browser for your credentials.</property>
+            <property name="label" translatable="yes">You will be redirected to the browser for your
+                            credentials.
+                        </property>
             <property name="wrap">True</property>
             <property name="wrap_mode">word-char</property>
           </object>
@@ -465,7 +510,8 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">please enter a
-custom instance URI</property>
+                            custom instance URI
+                        </property>
             <property name="justify">center</property>
             <attributes>
               <attribute name="weight" value="ultraheavy"/>
@@ -597,7 +643,8 @@ custom instance URI</property>
             <property name="margin_bottom">21</property>
             <property name="label" translatable="yes">Opening your default browser now.
 
-Please follow instructions in your browser.</property>
+                            Please follow instructions in your browser.
+                        </property>
             <property name="justify">center</property>
           </object>
           <packing>

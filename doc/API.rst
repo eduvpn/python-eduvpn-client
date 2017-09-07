@@ -20,22 +20,34 @@ eduVPN IO
     :show-inheritance:
 
 
-eduVPN local oauth2
-===================
+eduVPN oauth2
+=============
 
 .. automodule:: eduvpn.oauth2
     :members:
     :undoc-members:
     :show-inheritance:
 
-VPN Providers
-===============
+Connection managers
+===================
 
-.. automodule:: eduvpn.providers
+
+Network Manager
+---------------
+
+
+.. automodule:: eduvpn.managers.nm
     :members:
     :undoc-members:
     :show-inheritance:
 
+Other
+-----
+
+.. automodule:: eduvpn.managers.other
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 OpenVPN
 =======

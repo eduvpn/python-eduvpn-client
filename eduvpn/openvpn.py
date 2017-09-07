@@ -12,7 +12,11 @@ def format_like_ovpn(profile_config, cert, key):
 
 
 def parse_ovpn(configtext):
-    """Parse a ovpn like config file, return it in dict"""
+    """
+    Parse a ovpn like config file, return it in dict
+
+    configtext (str): content of a OpenVPN like config file
+    """
     config = {}
 
     def configurator(text):
