@@ -12,12 +12,13 @@ from gi.repository import GObject, Gtk, GLib, GdkPixbuf, Notify, Gio
 
 from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key
 from eduvpn.crypto import make_verifier, gen_code_verifier
-from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code
+from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.managers import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
     is_provider_connected
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
-    get_profile_config
+    get_profile_config, system_messages, user_messages
 from eduvpn.notify import notify
+from eduvpn.io import get_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +137,6 @@ class EduVpnApp:
                     logger.info("using {} for display name".format(display_name))
                     GLib.idle_add(self.browser_step, display_name, custom_url, 'custom', 'local', None)
                     break
-
 
     def fetch_instance_step(self, discovery_uri, connection_type):
         logger.info("fetching instances step")
@@ -337,6 +337,25 @@ class EduVpnApp:
         elif response == Gtk.ResponseType.NO:
             logger.info("not deleting provider config")
         dialog.destroy()
+        
+    def fetch_messages(self, uuid):
+        buffer = self.builder.get_object('messages-buffer')
+        text = ""
+        metadata = get_metadata(uuid)
+        api_base_uri = metadata['api_base_uri']
+        oauth = oauth_from_token(metadata['token'])
+        logger.error(user_messages(oauth, api_base_uri))
+        for message in user_messages(oauth, api_base_uri):
+            date_time = message['date_time']
+            content = message['message']
+            type = message['notification']
+            text += content
+        for message in system_messages(oauth, api_base_uri):
+            date_time = message['date_time']
+            content = message['message']
+            type = message['type']
+            text += content
+        buffer.set_text(text)
 
     def select_config(self, list):
         notebook = self.builder.get_object('outer-notebook')
@@ -352,6 +371,8 @@ class EduVpnApp:
             switch.set_state(is_provider_connected(uuid=uuid))
             notebook.show_all()
             notebook.set_current_page(1)
+            GLib.idle_add(self.fetch_messages, uuid)
+
 
     def connect_set(self, selection, buttonevent):
         switch = self.builder.get_object('connect-switch')

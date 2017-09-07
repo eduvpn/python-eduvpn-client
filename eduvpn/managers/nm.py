@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 
 import NetworkManager
 
@@ -86,11 +87,22 @@ def store_provider(api_base_uri, profile_id, display_name, token, connection_typ
 def delete_provider(uuid):
     logger.info("deleting profile with uuid {} using NetworkManager".format(uuid))
     all_connections = NetworkManager.Settings.ListConnections()
-    conn = [c for c in all_connections if c.GetSettings()['connection']['uuid'] == uuid]
-    if len(conn) != 1:
-        raise Exception("{} connections matching uid {}".format(len(conn), uuid))
+    conns = [c for c in all_connections if c.GetSettings()['connection']['uuid'] == uuid]
+    if len(conns) != 1:
+        raise Exception("{} connections matching uid {}".format(len(conns), uuid))
+
+    conn = conns[0]
+    logger.info("removing certificates for {}".format(uuid))
+    for f in ['ca', 'cert', 'key', 'ta']:
+        path = conn.GetSettings()['vpn']['data'][f]
+        logger.info("removing certificate {}".format(path))
+        try:
+            os.remove(path)
+        except Exception as e:
+            logger.error("can't remove certificate {}".format(path))
+
     try:
-        conn[0].Delete()
+        conn.Delete()
     except Exception as e:
         logger.error("can't remove networkmanager connection: {}".format(str(e)))
         raise
@@ -129,3 +141,7 @@ def is_provider_connected(uuid):
 def status_provider(uuid):
     connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
     raise NotImplementedError
+
+
+
+

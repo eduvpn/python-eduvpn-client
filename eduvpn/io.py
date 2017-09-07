@@ -27,20 +27,20 @@ def write_and_open_ovpn(ovpn_text, filename='eduvpn.ovpn'):
     open_file('eduvpn.ovpn')
 
 
-def write_cert(content, type_, description):
+def write_cert(content, type_, unique_name):
     """
     Write a certificate to the filesystem
 
     args:
         content (str): content of certificate file
         type (str): type of certificate file
-        description (str): description of file
+        unique_name (str): description of file
 
     returns:
         str: full path to certificate file
     """
     home = expanduser("~")
-    path = home + "/.cert/nm-openvpn/" + description + "_" + type_ + ".pem"
+    path = home + "/.cert/nm-openvpn/" + unique_name + "_" + type_ + ".pem"
     logger.info("writing {} file to {}".format(type_, path))
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
@@ -77,6 +77,11 @@ def store_metadata(path, **metadata):
     mkdir_p(config_path)
     with open(path, 'w') as f:
         f.write(serialized)
+
+
+def get_metadata(uuid):
+    metadata_path = os.path.join(config_path, uuid + '.json')
+    return json.load(open(metadata_path, 'r'))
 
 
 def mkdir_p(path):

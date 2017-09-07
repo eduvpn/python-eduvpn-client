@@ -167,7 +167,10 @@ def user_messages(oauth, api_base_uri):
         api_base_uri (str): the instance base URI
     """
     logger.info("Retrieving user messages from {}".format(api_base_uri))
-    return json.loads(oauth.get(api_base_uri + '/user_messages').content)
+    content = json.loads(oauth.get(api_base_uri + '/user_messages').content)['user_messages']
+    data = content['data']
+    ok = content['ok']
+    return data
 
 
 def system_messages(oauth, api_base_uri):
@@ -179,7 +182,10 @@ def system_messages(oauth, api_base_uri):
         api_base_uri (str): the instance base URI
     """
     logger.info("Retrieving system messages from {}".format(api_base_uri))
-    return json.loads(oauth.get(api_base_uri + '/system_messages').content)
+    content = json.loads(oauth.get(api_base_uri + '/system_messages').content)['system_messages']
+    data = content['data']
+    ok = content['ok']
+    return data
 
 
 def create_config(oauth, api_base_uri, display_name, profile_id):

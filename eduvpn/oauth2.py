@@ -107,3 +107,16 @@ def get_oauth_token_code(port):
     response = one_request(port)
     code = response['code'][0]
     return code
+
+
+def oauth_from_token(token):
+    """
+    Recreate a oauth2 object from a token
+
+    args (dict): a oauth2 token object
+
+    returns:
+        OAuth2Session: an auth2 session
+
+    """
+    return OAuth2Session(token=token)
