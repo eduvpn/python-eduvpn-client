@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <!-- interface-local-resource-path .. -->
   <object class="GtkListStore" id="configs-model">
     <columns>
       <!-- column-name uuid -->
@@ -85,15 +86,18 @@
                   </packing>
                 </child>
                 <child type="overlay">
-                  <object class="GtkLabel" id="configs-tree-label">
+                  <object class="GtkLabel" id="introduction">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="no_show_all">True</property>
-                    <property name="label" translatable="yes">No online configs configured
-                                        </property>
+                    <property name="label" translatable="yes">It appears this is the first time you use eduVPN and no VPN providers have been added yet. Click on the + button below to get started.</property>
                     <property name="justify">center</property>
                     <property name="wrap">True</property>
-                    <property name="max_width_chars">18</property>
+                    <property name="width_chars">20</property>
+                    <property name="max_width_chars">20</property>
                   </object>
+                  <packing>
+                    <property name="pass_through">True</property>
+                  </packing>
                 </child>
               </object>
               <packing>
@@ -163,7 +167,6 @@
               <object class="GtkAlignment" id="alignment2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="bottom_padding">18</property>
                 <child>
                   <object class="GtkBox" id="box1">
                     <property name="visible">True</property>
@@ -236,7 +239,7 @@
                   <object class="GtkSwitch" id="connect-switch">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <signal name="state-set" handler="connect_set" object="treeview-selection" swapped="no"/>
+                    <signal name="button-press-event" handler="connect_set" object="treeview-selection" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -719,7 +722,8 @@ Please follow instructions in your browser.</property>
                 <property name="min_content_height">200</property>
                 <child>
                   <object class="GtkTreeView" id="instances-view">
-                    <property name="width_request">300</property>
+                    <property name="width_request">350</property>
+                    <property name="height_request">400</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="model">instances-model</property>
@@ -732,23 +736,25 @@ Please follow instructions in your browser.</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkTreeViewColumn" id="instances-name">
-                        <property name="title" translatable="yes">name</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkTreeViewColumn" id="instances-column-icon">
+                        <property name="spacing">4</property>
                         <property name="title" translatable="yes">icon</property>
                         <child>
                           <object class="GtkCellRendererPixbuf"/>
                           <attributes>
                             <attribute name="pixbuf">2</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="instances-name">
+                        <property name="spacing">4</property>
+                        <property name="title" translatable="yes">name</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
                           </attributes>
                         </child>
                       </object>

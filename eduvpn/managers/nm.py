@@ -55,12 +55,13 @@ def list_providers():
     """
     all_connections = NetworkManager.Settings.ListConnections()
     vpn_connections = [c.GetSettings()['connection'] for c in all_connections if c.GetSettings()['connection']['type'] == 'vpn']
+    logger.info("There are {} VPN connections in networkmanager".format(len(vpn_connections)))
     for conn in vpn_connections:
         yield {'uuid': conn['uuid'], 'display_name': conn['id']}
 
 
 def store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                   profile_display_name, two_factor, cert, key, config):
+                   profile_display_name, two_factor, cert, key, config, icon_pixbuf):
     logger.info("storing profile with name {} using NetworkManager".format(display_name))
     uuid = make_unique_id()
     ovpn_text = format_like_ovpn(config, cert, key)
@@ -70,6 +71,7 @@ def store_provider(api_base_uri, profile_id, display_name, token, connection_typ
     ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
     nm_config = _gen_nm_settings(config_dict, uuid=uuid, display_name=display_name)
+    icon_pixbuf_serial = str(icon_pixbuf.serialize())
     mkdir_p(config_path)
     l = locals()
     store = {i: l[i] for i in metadata}
@@ -84,22 +86,43 @@ def delete_provider(uuid):
     conn = [c for c in all_connections if c.GetSettings()['connection']['uuid'] == uuid]
     if len(conn) != 1:
         raise Exception("{} connections matching uid {}".format(len(conn), uuid))
-    conn[0].Delete()
+    try:
+        conn[0].Delete()
+    except Exception as e:
+        logger.error("can't remove networkmanager connection: {}".format(str(e)))
+        raise
+
+    metadata = os.path.join(config_path, uuid + '.json')
+    logger.info("deleting metadata file {}".format(metadata))
+    try:
+        os.remove(metadata)
+    except Exception as e:
+        logger.error("can't remove ovpn file: {}".format(str(e)))
 
 
 def connect_provider(uuid):
-    logger.info("connecting profile with name {} using NetworkManager".format(uuid))
-    cs = [c for c in NetworkManager.Settings.ListConnections() if c.GetSettings()['connection']['uuid'] == uuid]
-    if cs:
-        NetworkManager.NetworkManager.ActivateConnection(cs[0], "/", "/")
+    logger.info("connecting profile with uuid {} using NetworkManager".format(uuid))
+    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
+    return NetworkManager.NetworkManager.ActivateConnection(connection, "/", "/")
+
+
+def list_active():
+    return NetworkManager.NetworkManager.ActiveConnections
 
 
 def disconnect_provider(uuid):
-    logger.info("deleting profile with name {} using NetworkManager".format(uuid))
-    cs = [c for c in NetworkManager.Settings.ListConnections() if c.GetSettings()['connection']['id'] == uuid]
-    if cs:
-        NetworkManager.NetworkManager.DeactivateConnection(cs[0])
+    logger.info("Disconnecting profile with uuid {} using NetworkManager".format(uuid))
+    conns = [i for i in NetworkManager.NetworkManager.ActiveConnections if i.Uuid == uuid]
+    if len(conns) == 0:
+        raise Exception("no active connection found with uuid {}".format(uuid))
+    for conn in conns:
+        NetworkManager.NetworkManager.DeactivateConnection(conn)
+
+
+def is_provider_connected(uuid):
+    return uuid in (i.Uuid for i in list_active())
 
 
 def status_provider(uuid):
+    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
     raise NotImplementedError
