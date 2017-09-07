@@ -120,16 +120,23 @@ class EduVpnApp:
         dialog = self.builder.get_object('custom-url-dialog')
         entry = self.builder.get_object('custom-url-entry')
         dialog.show_all()
-        response = dialog.run()
-        dialog.hide()
-        if response == 0:  # cancel
-            logger.info("cancel button pressed")
-            return
-        else:
-            custom_url = entry.get_text()
-            logger.info("ok pressed, entry text: {}".format(custom_url))
-            self.browser_step(display_name='Custom Instance', instance_base_uri=custom_url, connection_type='custom',
-                              authorization_type='local', icon_pixbuf=None)
+        while True:
+            response = dialog.run()
+            if response == 0:  # cancel
+                logger.info("cancel button pressed")
+                return
+            else:
+                custom_url = entry.get_text()
+                logger.info("ok pressed, entry text: {}".format(custom_url))
+                if not custom_url.startswith('https://'):
+                    GLib.idle_add(error_helper, dialog, "Invalid URL", "URL should start with https://")
+                else:
+                    GLib.idle_add(dialog.hide)
+                    display_name = custom_url[8:].split('/')[0]
+                    logger.info("using {} for display name".format(display_name))
+                    GLib.idle_add(self.browser_step, display_name, custom_url, 'custom', 'local', None)
+                    break
+
 
     def fetch_instance_step(self, discovery_uri, connection_type):
         logger.info("fetching instances step")
@@ -204,6 +211,7 @@ class EduVpnApp:
             except Exception as e:
                 GLib.idle_add(error_helper, dialog, "can't obtain token", "{} {}".format(type(e).__name__, str(e)))
                 GLib.idle_add(dialog.hide)
+                raise
             else:
                 GLib.idle_add(update, token, api_base_uri, oauth)
 

@@ -71,7 +71,10 @@ def store_provider(api_base_uri, profile_id, display_name, token, connection_typ
     ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
     nm_config = _gen_nm_settings(config_dict, uuid=uuid, display_name=display_name)
-    icon_pixbuf_serial = str(icon_pixbuf.serialize())
+    if icon_pixbuf:
+        icon_pixbuf_serial = str(icon_pixbuf.serialize())
+    else:
+        icon_pixbuf_serial = None
     mkdir_p(config_path)
     l = locals()
     store = {i: l[i] for i in metadata}
