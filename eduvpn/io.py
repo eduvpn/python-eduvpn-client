@@ -46,6 +46,7 @@ def write_cert(content, type_, unique_name):
         os.makedirs(os.path.dirname(path))
     with open(path, "w") as f:
         f.write(content)
+    os.chmod(path, 0600)
     return path
 
 
