@@ -1,15 +1,20 @@
+import gi
 import logging
 import os
-import threading
 import webbrowser
 
-import gi
+from eduvpn.util import error_helper, thread_helper
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Notify', '0.7')
 
-from gi.repository import GObject, Gtk, GLib, GdkPixbuf, Notify, Gio
+from gi.repository import GObject, Gtk, GLib, GdkPixbuf
+
+# this need to be one of the first to import
+import dbus.mainloop.glib
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+from dbus.exceptions import DBusException
 
 from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key
 from eduvpn.crypto import make_verifier, gen_code_verifier
@@ -20,23 +25,11 @@ from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_p
     get_profile_config, system_messages, user_messages
 from eduvpn.notify import notify
 from eduvpn.io import get_metadata
+from eduvpn.util import bytes2pixbuf
+
+import NetworkManager
 
 logger = logging.getLogger(__name__)
-
-
-def error_helper(parent, msg_big, msg_small):
-    logger.error("{}: {}".format(msg_big, msg_small))
-    error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, str(msg_big))
-    error_dialog.format_secondary_text(str(msg_small))
-    error_dialog.run()
-    error_dialog.hide()
-
-
-def thread_helper(func):
-    thread = threading.Thread(target=func)
-    thread.daemon = True
-    thread.start()
-    return thread
 
 
 class EduVpnApp:
@@ -46,6 +39,8 @@ class EduVpnApp:
         # hack to make the reopen url button work
         self.auth_url = None
 
+        self.selected_uuid = None
+
         handlers = {
             "delete_window": Gtk.main_quit,
             "add_config": self.selection_connection_step,
@@ -53,6 +48,8 @@ class EduVpnApp:
             "select_config": self.select_config,
             "connect_set": self.connect_set,
         }
+
+        NetworkManager.NetworkManager.connect_to_signal('PropertiesChanged', self.connection_state_change)
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(self.here, "../share/eduvpn/eduvpn.ui"))
@@ -100,12 +97,7 @@ class EduVpnApp:
                 icon_data = meta['icon_data']
                 connection_type = display_name + "\n" + meta['connection_type']
                 if icon_data:
-                    # 350 - 150
-                    l = GdkPixbuf.PixbufLoader()
-                    l.set_size(width=70, height=30)
-                    l.write(icon_data.decode('base64'))
-                    l.close()
-                    icon = l.get_pixbuf()
+                    icon = bytes2pixbuf(icon_data.decode('base64'))
                 else:
                     icon = self.icon_placeholder
                 config_list.append((uuid, display_name, icon, connection_type))
@@ -182,12 +174,8 @@ class EduVpnApp:
 
         for instance in instances:
             display_name, url, icon_data = instance
-            l = GdkPixbuf.PixbufLoader()
-            l.set_size(width=100, height=50)
-            l.write(icon_data)
-            l.close()
-            pixbuf = l.get_pixbuf()
-            model.append((display_name, url, pixbuf, icon_data.encode('base64')))
+            icon = bytes2pixbuf(icon_data.decode('base64'))
+            model.append((display_name, url, icon, icon_data.encode('base64')))
 
         response = dialog.run()
         dialog.hide()
@@ -355,28 +343,39 @@ class EduVpnApp:
             logger.info("not deleting provider config")
         dialog.destroy()
         
-    def fetch_messages(self, uuid):
+    def fetch_messages(self, api_base_uri, token):
+        logger.info("fetching user and system messages from {}".format(api_base_uri))
+
+        def background(buffer, token):
+            oauth = oauth_from_token(token)
+            text = ""
+            for message in user_messages(oauth, api_base_uri):
+                logger.info(message)
+                date_time = message['date_time']
+                content = message['message']
+                type = message['notification']
+                text += date_time + "\n"
+                text += content + "\n\n"
+            for message in system_messages(oauth, api_base_uri):
+                logger.info(message)
+                date_time = message['date_time']
+                content = message['message']
+                type = message['type']
+                text += date_time + "\n"
+                text += content + "\n\n"
+            GLib.idle_add(buffer.set_text, text)
+
         buffer = self.builder.get_object('messages-buffer')
-        text = ""
-        metadata = get_metadata(uuid)
-        api_base_uri = metadata['api_base_uri']
-        oauth = oauth_from_token(metadata['token'])
-        logger.error(user_messages(oauth, api_base_uri))
-        for message in user_messages(oauth, api_base_uri):
-            date_time = message['date_time']
-            content = message['message']
-            type = message['notification']
-            text += content
-        for message in system_messages(oauth, api_base_uri):
-            date_time = message['date_time']
-            content = message['message']
-            type = message['type']
-            text += content
-        buffer.set_text(text)
+        thread_helper(lambda: background(buffer, token))
 
     def select_config(self, list):
         notebook = self.builder.get_object('outer-notebook')
         switch = self.builder.get_object('connect-switch')
+        ipv4_label = self.builder.get_object('ipv4-label')
+        ipv6_label = self.builder.get_object('ipv6-label')
+        name_label = self.builder.get_object('name-label')
+        profile_label = self.builder.get_object('profile-label')
+        profile_image = self.builder.get_object('profile-image')
         model, treeiter = list.get_selected()
         if not treeiter:
             logger.info("no configuration selected, showing main logo")
@@ -384,19 +383,55 @@ class EduVpnApp:
             return
         else:
             uuid, display_name, icon, _ = model[treeiter]
+            self.selected_uuid = uuid
             logger.info("{} ({}) configuration was selected".format(display_name, uuid))
-            switch.set_state(is_provider_connected(uuid=uuid))
+            metadata = get_metadata(uuid)
+            name_label.set_text(display_name)
+            icon = bytes2pixbuf(metadata['icon_data'].decode('base64'), width=140, height=60)
+            profile_image.set_from_pixbuf(icon)
+            profile_label.set_text(metadata['connection_type'])
+            connected = is_provider_connected(uuid=uuid)
+            switch.set_state(bool(connected))
+            if connected:
+                ipv4, ipv6 = connected
+                ipv4_label.set_text(ipv4)
+                ipv6_label.set_text(ipv6)
+            else:
+                ipv4_label.set_text("")
+                ipv6_label.set_text("")
             notebook.show_all()
             notebook.set_current_page(1)
-            GLib.idle_add(self.fetch_messages, uuid)
+            self.fetch_messages(metadata['api_base_uri'], metadata['token'])
 
-    def connect_set(self, selection, buttonevent):
+    def connection_state_change(self, *args):
+        """Called when a networkmanager status change is emitted"""
+        if 'ActiveConnections' in args[0]:
+            switch = self.builder.get_object('connect-switch')
+            ipv4_label = self.builder.get_object('ipv4-label')
+            ipv6_label = self.builder.get_object('ipv6-label')
+            conns = args[0]['ActiveConnections']
+            active = False
+            for conn in conns:
+                try:
+                    if conn.Vpn and conn.Uuid == self.selected_uuid:
+                        active = True
+                        ipv4_label.set_text(conn.Ip4Config.AddressData[0]['address'])
+                        ipv6_label.set_text(conn.Ip6Config.AddressData[0]['address'])
+                except (DBusException, AttributeError) as e:
+                    pass
+
+            if not active:
+                logger.info("selected VPN {} is NOT active!".format(self.selected_uuid))
+                ipv4_label.set_text("")
+                ipv6_label.set_text("")
+
+    def connect_set(self, selection, _):
         switch = self.builder.get_object('connect-switch')
         state = switch.get_active()
         logger.info("switch activated, state {}".format(state))
         model, treeiter = selection.get_selected()
         if treeiter is not None:
-            uuid, display_name = model[treeiter]
+            uuid, display_name, _, _ = model[treeiter]
             if not state:
                 notify("Connecting to {}".format(display_name))
                 try:
@@ -416,3 +451,4 @@ def main(here):
     logging.basicConfig(level=logging.INFO)
     eduVpnApp = EduVpnApp(here)
     Gtk.main()
+

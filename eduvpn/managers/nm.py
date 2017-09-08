@@ -137,7 +137,13 @@ def disconnect_provider(uuid):
 
 
 def is_provider_connected(uuid):
-    return uuid in (i.Uuid for i in list_active())
+    """
+    returns:
+        tuple or None: returns ipv4 and ipv6 address if connected
+    """
+    for active in list_active():
+        if uuid == active.Uuid:
+            return active.Ip4Config.AddressData[0]['address'], active.Ip6Config.AddressData[0]['address']
 
 
 def status_provider(uuid):
