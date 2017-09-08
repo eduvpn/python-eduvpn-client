@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.7"
+__version__ = "0.7.1"
 
 
 install_requires = [
@@ -53,7 +53,7 @@ setup(
     keywords="vpn openvpn networking security",
     url="https://github.com/gijzelaerr/eduvpn-linux-client",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 2.7",
