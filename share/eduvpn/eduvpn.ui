@@ -468,45 +468,10 @@
         <property name="margin_top">20</property>
         <property name="margin_bottom">20</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">36</property>
+        <property name="spacing">19</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="button4">
-                <property name="label" translatable="yes">Connect to the internet
-securely, for example
-when using public WiFi.</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="image">internet-image</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="button5">
-                <property name="label" translatable="yes">Access your institute's
-network from outside
-the institution.</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="image">institute-image</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -527,7 +492,7 @@ the institution.</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -544,15 +509,83 @@ You will be redirected to the browser for your credentials.
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkButton" id="internet-button">
+                <property name="label" translatable="yes">Connect to the internet
+securely, for example
+when using public WiFi.</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">internet-image</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="institute-button">
+                <property name="label" translatable="yes">Access your institute's
+network from outside
+the institution.</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">institute-image</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
             <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkAspectFrame">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label_xalign">0</property>
+            <property name="shadow_type">none</property>
+            <child>
+              <object class="GtkButton" id="custom-button">
+                <property name="label" translatable="yes">Add other address</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="relief">none</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>
     </child>
     <action-widgets>
-      <action-widget response="1">button4</action-widget>
-      <action-widget response="2">button5</action-widget>
+      <action-widget response="1">internet-button</action-widget>
+      <action-widget response="2">institute-button</action-widget>
+      <action-widget response="3">custom-button</action-widget>
     </action-widgets>
+
   </object>
   <object class="GtkDialog" id="custom-url-dialog">
     <property name="can_focus">False</property>

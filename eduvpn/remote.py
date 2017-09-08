@@ -18,14 +18,15 @@ def translate_display_name(display_name):
     """
     if type(display_name) == dict:
         if locale in display_name:
-            return display_name[locale]
-        elif "us-US" in display_name:
-            return display_name["us-US"]
+            translated = display_name[locale]
+        elif "en-US" in display_name:
+            translated = display_name["en-US"]
         else:
             # otherwise just take the first
-            return display_name.values()[0]
+            translated = display_name.values()[0]
     else:
-        return display_name
+        translated = display_name
+    return translated
 
 
 def get_instances(discovery_uri, verify_key=None):

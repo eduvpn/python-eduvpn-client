@@ -134,6 +134,7 @@ class EduVpnApp:
             response = dialog.run()
             if response == 0:  # cancel
                 logger.info("cancel button pressed")
+                dialog.hide()
                 return
             else:
                 custom_url = entry.get_text()
@@ -158,6 +159,7 @@ class EduVpnApp:
             except Exception as e:
                 GLib.idle_add(error_helper, dialog, "can't fetch instances", "{} {}".format(type(e), str(e)))
                 GLib.idle_add(dialog.hide)
+                raise
             else:
                 GLib.idle_add(dialog.hide)
                 GLib.idle_add(self.select_instance_step, connection_type, authorization_type, instances)
@@ -174,7 +176,13 @@ class EduVpnApp:
 
         for instance in instances:
             display_name, url, icon_data = instance
-            icon = bytes2pixbuf(icon_data.decode('base64'))
+            try:
+                icon = bytes2pixbuf(icon_data)
+            except GLib.Error as e:
+                print(icon_data)
+                logger.error("can't process icon for {}: {}".format(display_name, str(e)))
+                icon = None
+
             model.append((display_name, url, icon, icon_data.encode('base64')))
 
         response = dialog.run()

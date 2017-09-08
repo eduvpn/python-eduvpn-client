@@ -10,7 +10,7 @@ institute_access_uri_dev = 'https://static.eduvpn.nl/disco/institute_access_dev.
 verify_key = 'E5On0JTtyUVZmcWd+I/FXRm32nSq8R2ioyW7dcu/U88='
 
 # TODO: support multiple languages
-locale = "us-US"
+locale = "en-US"
 
 metadata = ("api_base_uri", "profile_id", "display_name", "token", "connection_type", "authorization_type",
             "profile_display_name", "two_factor", "cert", "key", "config", "uuid", "icon_data")
