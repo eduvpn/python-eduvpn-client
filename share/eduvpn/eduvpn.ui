@@ -460,6 +460,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
     <property name="transient_for">eduvpn-window</property>
+    <property name="attached_to">eduvpn-window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -585,13 +586,11 @@ the institution.</property>
       <action-widget response="2">institute-button</action-widget>
       <action-widget response="3">custom-button</action-widget>
     </action-widgets>
-
   </object>
   <object class="GtkDialog" id="custom-url-dialog">
     <property name="can_focus">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
-    <property name="decorated">False</property>
     <property name="transient_for">eduvpn-window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -679,7 +678,6 @@ the institution.</property>
   <object class="GtkDialog" id="fetch-dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
-    <property name="decorated">False</property>
     <property name="transient_for">eduvpn-window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -727,7 +725,6 @@ the institution.</property>
     <property name="default_width">400</property>
     <property name="default_height">400</property>
     <property name="type_hint">dialog</property>
-    <property name="decorated">False</property>
     <property name="transient_for">eduvpn-window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -867,7 +864,6 @@ the institution.</property>
     <property name="border_width">8</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
-    <property name="decorated">False</property>
     <property name="transient_for">eduvpn-window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -967,7 +963,6 @@ Please follow instructions in your browser.
     <property name="default_width">400</property>
     <property name="default_height">400</property>
     <property name="type_hint">dialog</property>
-    <property name="decorated">False</property>
     <property name="transient_for">eduvpn-window</property>
     <child internal-child="vbox">
       <object class="GtkBox">

@@ -104,7 +104,7 @@ def get_instance_info(instance_uri, verify_key):
     else:
         _ = verify_key.verify(smessage=info.content, signature=info_sig.content.decode('base64'))
     urls = info.json()['api']['http://eduvpn.org/api#2']
-    return urls["api_base_uri"], urls["authorization_endpoint"],urls["token_endpoint"]
+    return urls["api_base_uri"], urls["authorization_endpoint"], urls["token_endpoint"]
 
 
 def create_keypair(oauth, api_base_uri):
@@ -120,7 +120,8 @@ def create_keypair(oauth, api_base_uri):
     """
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     create_keypair = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'notebook'})
-    keypair = json.loads(create_keypair.content)['create_keypair']['data']
+    response = json.loads(create_keypair.content)
+    keypair = response['create_keypair']['data']
     cert = keypair['certificate']
     key = keypair['private_key']
     return cert, key

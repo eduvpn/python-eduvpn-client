@@ -395,7 +395,10 @@ class EduVpnApp:
             logger.info("{} ({}) configuration was selected".format(display_name, uuid))
             metadata = get_metadata(uuid)
             name_label.set_text(display_name)
-            icon = bytes2pixbuf(metadata['icon_data'].decode('base64'), width=140, height=60)
+            if metadata['icon_data']:
+                icon = bytes2pixbuf(metadata['icon_data'].decode('base64'), width=140, height=60)
+            else:
+                icon = self.icon_placeholder
             profile_image.set_from_pixbuf(icon)
             profile_label.set_text(metadata['connection_type'])
             connected = is_provider_connected(uuid=uuid)
