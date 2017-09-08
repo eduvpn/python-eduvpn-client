@@ -58,11 +58,17 @@ def list_providers():
     vpn_connections = [c.GetSettings()['connection'] for c in all_connections if c.GetSettings()['connection']['type'] == 'vpn']
     logger.info("There are {} VPN connections in networkmanager".format(len(vpn_connections)))
     for conn in vpn_connections:
-        yield {'uuid': conn['uuid'], 'display_name': conn['id']}
+        try:
+            metadata = json.load(open(os.path.join(config_path, conn['uuid'] + '.json'), 'r'))
+        except Exception as e:
+            logger.error("can't load metadata file: " + str(e))
+            yield {'uuid': conn['uuid'], 'display_name': conn['id']}
+        else:
+            yield metadata
 
 
 def store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                   profile_display_name, two_factor, cert, key, config, icon_pixbuf):
+                   profile_display_name, two_factor, cert, key, config, icon_data):
     logger.info("storing profile with name {} using NetworkManager".format(display_name))
     uuid = make_unique_id()
     ovpn_text = format_like_ovpn(config, cert, key)
@@ -72,10 +78,6 @@ def store_provider(api_base_uri, profile_id, display_name, token, connection_typ
     ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
     nm_config = _gen_nm_settings(config_dict, uuid=uuid, display_name=display_name)
-    if icon_pixbuf:
-        icon_pixbuf_serial = str(icon_pixbuf.serialize())
-    else:
-        icon_pixbuf_serial = None
     mkdir_p(config_path)
     l = locals()
     store = {i: l[i] for i in metadata}

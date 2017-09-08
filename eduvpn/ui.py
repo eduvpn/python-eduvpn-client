@@ -6,6 +6,7 @@ import webbrowser
 import gi
 
 gi.require_version('Gtk', '3.0')
+gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Notify', '0.7')
 
 from gi.repository import GObject, Gtk, GLib, GdkPixbuf, Notify, Gio
@@ -65,6 +66,8 @@ class EduVpnApp:
 
         self.update_providers()
 
+        self.icon_placeholder = GdkPixbuf.Pixbuf.new_from_file_at_scale('../share/eduvpn/eduvpn.png', 70, 30, True)
+
     def connect(self, selection):
         logger.info("connect pressed")
         model, treeiter = selection.get_selected()
@@ -82,6 +85,7 @@ class EduVpnApp:
             disconnect_provider(uuid)
 
     def update_providers(self):
+        logger.info("composing list of current eduVPN configurations")
         config_list = self.builder.get_object('configs-model')
         introduction = self.builder.get_object('introduction')
         config_list.clear()
@@ -91,7 +95,20 @@ class EduVpnApp:
             logger.info("hiding introduction")
             introduction.hide()
             for meta in providers:
-                config_list.append((meta['uuid'], meta['display_name']))
+                uuid = meta['uuid']
+                display_name = meta['display_name']
+                icon_data = meta['icon_data']
+                connection_type = display_name + "\n" + meta['connection_type']
+                if icon_data:
+                    # 350 - 150
+                    l = GdkPixbuf.PixbufLoader()
+                    l.set_size(width=70, height=30)
+                    l.write(icon_data.decode('base64'))
+                    l.close()
+                    icon = l.get_pixbuf()
+                else:
+                    icon = self.icon_placeholder
+                config_list.append((uuid, display_name, icon, connection_type))
         else:
             logger.info("showing introduction")
             introduction.show()
@@ -108,10 +125,10 @@ class EduVpnApp:
             return
         elif response == 1:
             logger.info("secure button pressed")
-            self.fetch_instance_step(discovery_uri=secure_internet_uri, connection_type='secure_internet')
+            self.fetch_instance_step(discovery_uri=secure_internet_uri, connection_type='Secure Internet')
         elif response == 2:
             logger.info("institute button pressed")
-            self.fetch_instance_step(discovery_uri=institute_access_uri, connection_type='institute_access')
+            self.fetch_instance_step(discovery_uri=institute_access_uri, connection_type='Institute Access')
 
         elif response == 3:
             logger.info("custom button pressed")
@@ -135,7 +152,7 @@ class EduVpnApp:
                     GLib.idle_add(dialog.hide)
                     display_name = custom_url[8:].split('/')[0]
                     logger.info("using {} for display name".format(display_name))
-                    GLib.idle_add(self.browser_step, display_name, custom_url, 'custom', 'local', None)
+                    GLib.idle_add(self.browser_step, display_name, custom_url, 'Custom Instance', 'local', None)
                     break
 
     def fetch_instance_step(self, discovery_uri, connection_type):
@@ -170,7 +187,7 @@ class EduVpnApp:
             l.write(icon_data)
             l.close()
             pixbuf = l.get_pixbuf()
-            model.append((display_name, url, pixbuf))
+            model.append((display_name, url, pixbuf, icon_data.encode('base64')))
 
         response = dialog.run()
         dialog.hide()
@@ -180,14 +197,14 @@ class EduVpnApp:
         else:
             model, treeiter = selection.get_selected()
             if treeiter:
-                display_name, instance_base_uri, icon_pixbuf = model[treeiter]
+                display_name, instance_base_uri, icon_pixbuf, icon_data = model[treeiter]
                 self.browser_step(display_name=display_name, instance_base_uri=instance_base_uri,
                                   connection_type=connection_type,
-                                  authorization_type=authorization_type, icon_pixbuf=icon_pixbuf)
+                                  authorization_type=authorization_type, icon_data=icon_data)
             else:
                 logger.info("nothing selected")
 
-    def browser_step(self, display_name, instance_base_uri, connection_type, authorization_type, icon_pixbuf):
+    def browser_step(self, display_name, instance_base_uri, connection_type, authorization_type, icon_data):
         logger.info("opening token dialog")
         dialog = self.builder.get_object('token-dialog')
         dialog.show_all()
@@ -195,7 +212,7 @@ class EduVpnApp:
         def update(token, api_base_uri, oauth):
             dialog.hide()
             self.fetch_profile_step(token, api_base_uri, oauth, display_name, connection_type, authorization_type,
-                                    icon_pixbuf)
+                                    icon_data)
 
         def background():
             try:
@@ -231,7 +248,7 @@ class EduVpnApp:
                 break
 
     def fetch_profile_step(self, token, api_base_uri, oauth, display_name, connection_type, authorization_type,
-                           icon_pixbuf):
+                           icon_data):
         logger.info("fetching profile step")
         dialog = self.builder.get_object('fetch-dialog')
         dialog.show_all()
@@ -242,11 +259,11 @@ class EduVpnApp:
                 if len(profiles) > 1:
                     GLib.idle_add(dialog.hide)
                     GLib.idle_add(self.select_profile_step, token, profiles, api_base_uri, oauth, display_name,
-                                  connection_type, authorization_type, icon_pixbuf)
+                                  connection_type, authorization_type, icon_data)
                 elif len(profiles) == 1:
                     profile_display_name, profile_id, two_factor = profiles[0]
                     self.finalizing_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
-                                         authorization_type, profile_display_name, two_factor, icon_pixbuf)
+                                         authorization_type, profile_display_name, two_factor, icon_data)
                 else:
                     raise Exception("Instance doesn't contain any profiles")
             except Exception as e:
@@ -257,7 +274,7 @@ class EduVpnApp:
         thread_helper(background)
 
     def select_profile_step(self, profiles, token, api_base_uri, oauth, display_name, connection_type,
-                            authorization_type, icon_pixbuf):
+                            authorization_type, icon_data):
         logger.info("opening profile dialog")
 
         dialog = self.builder.get_object('profiles-dialog')
@@ -278,13 +295,13 @@ class EduVpnApp:
             if treeiter:
                 profile_display_name, profile_id, two_factor = model[treeiter]
                 self.finalizing_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
-                                     authorization_type, profile_display_name, two_factor, icon_pixbuf)
+                                     authorization_type, profile_display_name, two_factor, icon_data)
             else:
                 logger.error("nothing selected")
                 return
 
     def finalizing_step(self, oauth, api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                        profile_display_name, two_factor, icon_pixbuf):
+                        profile_display_name, two_factor, icon_data):
         logger.info("finalizing step")
         dialog = self.builder.get_object('fetch-dialog')
         dialog.show_all()
@@ -300,7 +317,7 @@ class EduVpnApp:
             else:
                 try:
                     store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                                   profile_display_name, two_factor, cert, key, config, icon_pixbuf)
+                                   profile_display_name, two_factor, cert, key, config, icon_data)
                     notify("Added eduVPN configuration {}".format(display_name))
                 except Exception as e:
                     GLib.idle_add(error_helper, dialog, "can't store configuration", "{} {}".format(type(e).__name__,
@@ -320,7 +337,7 @@ class EduVpnApp:
             logger.info("nothing selected")
             return
 
-        uuid, display_name = model[treeiter]
+        uuid, display_name, _, _ = model[treeiter]
 
         dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
                                    Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(display_name))
@@ -366,13 +383,12 @@ class EduVpnApp:
             notebook.set_current_page(0)
             return
         else:
-            uuid, display_name = model[treeiter]
+            uuid, display_name, icon, _ = model[treeiter]
             logger.info("{} ({}) configuration was selected".format(display_name, uuid))
             switch.set_state(is_provider_connected(uuid=uuid))
             notebook.show_all()
             notebook.set_current_page(1)
             GLib.idle_add(self.fetch_messages, uuid)
-
 
     def connect_set(self, selection, buttonevent):
         switch = self.builder.get_object('connect-switch')

@@ -18,7 +18,7 @@ def list_providers():
             try:
                 metadata = json.load(open(os.path.join(config_path, p), 'r'))
                 # these are absolutely vital
-                for keyword in "uuid", "display_name":
+                for keyword in "uuid", "display_name", "icon_data":
                     if keyword not in metadata:
                         raise Exception("{} keyword missing in config file {}".format(keyword, p))
             except Exception as e:
@@ -30,11 +30,10 @@ def list_providers():
 
 
 def store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                   profile_display_name, two_factor, cert, key, config, icon_pixbuf):
+                   profile_display_name, two_factor, cert, key, config, icon_data):
     logger.info("storing profile with name {} for non-Linux OS".format(display_name))
     ovpn_text = format_like_ovpn(config, cert, key)
     uuid = make_unique_id()
-    icon_pixbuf_serial = str(icon_pixbuf.serialize())
     mkdir_p(config_path)
     l = locals()
     store = {i: l[i] for i in metadata}
