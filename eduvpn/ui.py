@@ -64,9 +64,9 @@ class EduVpnApp:
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.show_all()
 
-        self.update_providers()
-
         self.icon_placeholder = GdkPixbuf.Pixbuf.new_from_file_at_scale('../share/eduvpn/eduvpn.png', 70, 30, True)
+
+        self.update_providers()
 
     def connect(self, selection):
         logger.info("connect pressed")
