@@ -67,3 +67,6 @@ def disconnect_provider(uuid):
 def status_provider(uuid):
     logger.info("requesting status profile with uuid {} for non-Linux OS".format(uuid))
     logger.error("not supported on non dbus platform")
+
+def is_provider_connected(uuid):
+    return False
