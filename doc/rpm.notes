@@ -1,0 +1,13 @@
+external notes
+
+https://fedoraproject.org/wiki/Packaging:Python
+
+
+* install clean fedora 26
+* sudo dnf install fedora-packager fedora-review
+* sudo dnf install python2-devel python3-devel
+* rpmdev-setuptree
+* spectool -g -R eduvpn-client.spec
+* rpmbuild -bs eduvpn-client.spec
+* rpmbuild -bb eduvpn-client.spec
+
