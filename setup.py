@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 
 
 install_requires = [
@@ -50,13 +50,25 @@ setup(
     author_email="gijs@pythonic.nl",
     description="eduVPN client",
     license="GPL3",
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest', 'mock'],
+    test_suite="tests",
     keywords="vpn openvpn networking security",
     url="https://github.com/gijzelaerr/eduvpn-linux-client",
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: System :: Operating System Kernels :: Linux",
+        "Topic :: System :: Networking",
+        "Environment :: X11 Applications",
         ]
 )
