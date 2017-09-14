@@ -7,7 +7,7 @@ https://fedoraproject.org/wiki/Packaging:Python
 * sudo dnf install fedora-packager fedora-review
 * sudo dnf install python2-devel python3-devel
 * rpmdev-setuptree
-* spectool -g -R eduvpn-client.spec
+* spectool -g -R eduvpn-client.spec  # download source
 * rpmbuild -bs eduvpn-client.spec
 * rpmbuild -bb eduvpn-client.spec
 
