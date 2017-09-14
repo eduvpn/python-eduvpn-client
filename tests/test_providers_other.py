@@ -14,9 +14,9 @@ class TestProviderOther(unittest.TestCase):
         list_providers()
 
     def test_store_provider(self):
-        store_provider(api_base_uri='test', profile_id='test', name='test', token='test', connection_type='test',
+        store_provider(api_base_uri='test', profile_id='test', display_name='test', token='test', connection_type='test',
                        authorization_type='test', profile_display_name='test',
-                       two_factor='test', cert='test', key='test', config='test')
+                       two_factor='test', cert='test', key='test', config='test', icon_data=None)
 
     @unittest.skip("todo")
     def test_delete_provider(self):

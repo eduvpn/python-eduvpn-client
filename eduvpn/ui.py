@@ -2,6 +2,7 @@ import gi
 import logging
 import os
 import webbrowser
+import base64
 
 from eduvpn.util import error_helper, thread_helper
 
@@ -98,7 +99,7 @@ class EduVpnApp:
                 icon_data = meta['icon_data']
                 connection_type = display_name + "\n" + meta['connection_type']
                 if icon_data:
-                    icon = bytes2pixbuf(icon_data.decode('base64'))
+                    icon = bytes2pixbuf(base64.decodebytes(icon_data.encode()))
                 else:
                     icon = self.icon_placeholder
                 config_list.append((uuid, display_name, icon, connection_type))
@@ -184,7 +185,7 @@ class EduVpnApp:
                 logger.error("can't process icon for {}: {}".format(display_name, str(e)))
                 icon = None
 
-            model.append((display_name, url, icon, icon_data.encode('base64')))
+            model.append((display_name, url, icon, base64.b64encode(icon_data).decode('ascii')))
 
         response = dialog.run()
         dialog.hide()
@@ -311,6 +312,7 @@ class EduVpnApp:
                 GLib.idle_add(error_helper, dialog, "can't finalize configuration", "{} {}".format(type(e).__name__,
                                                                                                    str(e)))
                 GLib.idle_add(dialog.hide)
+                raise
             else:
                 try:
                     store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
@@ -397,7 +399,7 @@ class EduVpnApp:
             metadata = get_metadata(uuid)
             name_label.set_text(display_name)
             if metadata['icon_data']:
-                icon = bytes2pixbuf(metadata['icon_data'].decode('base64'), width=140, height=60)
+                icon = bytes2pixbuf(base64.decodebytes(metadata['icon_data'].encode()), width=140, height=60)
             else:
                 icon = self.icon_placeholder
             profile_image.set_from_pixbuf(icon)

@@ -1,9 +1,9 @@
-import json
 import logging
-from eduvpn.config import locale
+import base64
 
 import requests
 
+from eduvpn.config import locale
 from eduvpn.crypto import gen_code_challenge
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ def translate_display_name(display_name):
             translated = display_name["en-US"]
         else:
             # otherwise just take the first
-            translated = display_name.values()[0]
+            translated = list(display_name.values())[0]
     else:
         translated = display_name
     return translated
@@ -58,8 +58,9 @@ def get_instances(discovery_uri, verify_key=None):
             logger.warning(msg)
         else:
             logger.info("verifying signature of {}".format(discovery_uri))
-            logger.warning(inst_doc_sig.content)
-            _ = verify_key.verify(smessage=inst_doc.content, signature=inst_doc_sig.content.decode('base64'))
+            #decoded = base64.decodebytes(inst_doc_sig.content)
+            decoded = base64.b64decode(inst_doc_sig.content)
+            _ = verify_key.verify(smessage=inst_doc.content, signature=decoded)
 
     parsed = inst_doc.json()
 
@@ -120,7 +121,7 @@ def create_keypair(oauth, api_base_uri):
     """
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     create_keypair = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'notebook'})
-    response = json.loads(create_keypair.content)
+    response = create_keypair.json()
     keypair = response['create_keypair']['data']
     cert = keypair['certificate']
     key = keypair['private_key']
@@ -158,7 +159,8 @@ def user_info(oauth, api_base_uri):
         api_base_uri (str): the instance base URI
     """
     logger.info("Retrieving user info from {}".format(api_base_uri))
-    return json.loads(oauth.get(api_base_uri + '/user_info').content)
+    response = oauth.get(api_base_uri + '/user_info')
+    return response.json()
 
 
 def user_messages(oauth, api_base_uri):
@@ -170,9 +172,10 @@ def user_messages(oauth, api_base_uri):
         api_base_uri (str): the instance base URI
     """
     logger.info("Retrieving user messages from {}".format(api_base_uri))
-    content = json.loads(oauth.get(api_base_uri + '/user_messages').content)['user_messages']
-    data = content['data']
-    ok = content['ok']
+    response = oauth.get(api_base_uri + '/user_messages')
+    user_messages = response.json()['user_messages']
+    data = user_messages['data']
+    ok = user_messages['ok']
     return data
 
 
@@ -185,9 +188,10 @@ def system_messages(oauth, api_base_uri):
         api_base_uri (str): the instance base URI
     """
     logger.info("Retrieving system messages from {}".format(api_base_uri))
-    content = json.loads(oauth.get(api_base_uri + '/system_messages').content)['system_messages']
-    data = content['data']
-    ok = content['ok']
+    response = oauth.get(api_base_uri + '/system_messages')
+    system_messages = response.json()['system_messages']
+    data = system_messages['data']
+    ok = system_messages['ok']
     return data
 
 
@@ -202,8 +206,9 @@ def create_config(oauth, api_base_uri, display_name, profile_id):
         profile_id (str):
     """
     logger.info("Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
-    return json.loads(oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
-                                                                        'profile_id': profile_id}))
+    response = oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
+                                                                 'profile_id': profile_id})
+    return response.json()
 
 
 def get_profile_config(oauth, api_base_uri, profile_id):
@@ -216,7 +221,8 @@ def get_profile_config(oauth, api_base_uri, profile_id):
         profile_id (str):
     """
     logger.info("Retrieving profile config from {}".format(api_base_uri))
-    return oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id)).content
+    result = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
+    return result.text
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):

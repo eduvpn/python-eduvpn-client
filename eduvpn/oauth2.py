@@ -66,8 +66,9 @@ def one_request(port):
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            self.wfile.write(landing_page)
+            self.wfile.write(landing_page.encode('utf-8'))
             self.server.path = self.path
+            path = self.path
 
     httpd = HTTPServer(('', port), RequestHandler)
     httpd.handle_request()
@@ -105,7 +106,13 @@ def get_oauth_token_code(port):
     """
     logger.info("waiting for callback on port {}".format(port))
     response = one_request(port)
-    code = response['code'][0]
+    if 'code' in response:
+        code = response['code'][0]
+    elif 'error' in response:
+        raise Exception("Can't authenticate: {}".format(response['error']))
+    else:
+        raise Exception("Unknown error during authentication: {}".format(response))
+
     return code
 
 
