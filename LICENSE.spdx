@@ -1,0 +1,20 @@
+SPDXVersion: SPDX-2.1
+DataLicense: CC0-1.0
+PackageName: eduVPN
+DataFormat: SPDXRef-1
+PackageSupplier: Organization: The Commons Conservancy eduVPN Programme
+PackageHomePage: https://eduvpn.org
+PackageLicenseDeclared: GPL-3.0+
+PackageCopyrightText: 2017, The Commons Conservancy eduVPN Programme
+PackageSummary: <text>This is the GNU/Linux client and Python API for eduVPN.
+EduVPN is designed to allow users to connect
+securely and encrypted to the Internet from any standard device.
+                </text>
+PackageComment: <text>The package includes the following libraries; see
+Relationship information.
+                </text>
+Created: 2017-06-06T09:00:00Z
+PackageDownloadLocation: git://github.com/eduvpn/python-eduvpn-client
+PackageDownloadLocation: git+https://github.com/eduvpn/python-eduvpn-client.git
+PackageDownloadLocation: git+ssh://github.com/eduvpn/python-eduvpn-client.git
+Creator: Person: Gijs Molenaar <gijs@pythonic.nl>
