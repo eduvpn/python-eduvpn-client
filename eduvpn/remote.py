@@ -140,7 +140,8 @@ def list_profiles(oauth, api_base_uri):
         list: of available profiles on the instance (display_name, profile_id, two_factor)
     """
     logger.info("Retrieving profile list from {}".format(api_base_uri))
-    data = oauth.get(api_base_uri + '/profile_list').json()['profile_list']['data']
+    response = oauth.get(api_base_uri + '/profile_list').json()
+    data = response['profile_list']['data']
     profiles = []
     for profile in data:
         display_name = translate_display_name(profile["display_name"])
@@ -222,7 +223,17 @@ def get_profile_config(oauth, api_base_uri, profile_id):
     """
     logger.info("Retrieving profile config from {}".format(api_base_uri))
     result = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
-    return result.text
+    # note: this is a bit ambiguous, in case there is an error, the result is json, otherwise clear text.
+    try:
+        json = result.json()['profile_config']
+    except Exception:
+        # probably valid response
+        return result.text
+    else:
+        if not json['ok']:
+            raise Exception(json['error'])
+        else:
+            raise Exception("Server error! No profile config returned but no error also.")
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):

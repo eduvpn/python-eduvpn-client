@@ -99,7 +99,7 @@ class EduVpnApp:
                 icon_data = meta['icon_data']
                 connection_type = display_name + "\n" + meta['connection_type']
                 if icon_data:
-                    icon = bytes2pixbuf(base64.decodebytes(icon_data.encode()))
+                    icon = bytes2pixbuf(base64.b64decode(icon_data.encode()))
                 else:
                     icon = self.icon_placeholder
                 config_list.append((uuid, display_name, icon, connection_type))
@@ -263,9 +263,12 @@ class EduVpnApp:
                     self.finalizing_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
                                          authorization_type, profile_display_name, two_factor, icon_data)
                 else:
-                    raise Exception("Instance doesn't contain any profiles")
+                    raise Exception("Either there are no VPN profiles defined, or this account does not have the "
+                                    "required permissions to create a new VPN configurations for any of the "
+                                    "available profiles.")
+
             except Exception as e:
-                GLib.idle_add(error_helper, dialog, "can't fetch profile", "{} {}".format(type(e).__name__, str(e)))
+                GLib.idle_add(error_helper, dialog, "can't fetch profile", "{}: {}".format(type(e).__name__, str(e)))
                 GLib.idle_add(dialog.hide)
                 raise
 
@@ -309,7 +312,7 @@ class EduVpnApp:
                 cert, key = create_keypair(oauth, api_base_uri)
                 config = get_profile_config(oauth, api_base_uri, profile_id)
             except Exception as e:
-                GLib.idle_add(error_helper, dialog, "can't finalize configuration", "{} {}".format(type(e).__name__,
+                GLib.idle_add(error_helper, dialog, "can't finalize configuration", "{}: {}".format(type(e).__name__,
                                                                                                    str(e)))
                 GLib.idle_add(dialog.hide)
                 raise
@@ -396,14 +399,15 @@ class EduVpnApp:
             uuid, display_name, icon, _ = model[treeiter]
             self.selected_uuid = uuid
             logger.info("{} ({}) configuration was selected".format(display_name, uuid))
-            metadata = get_metadata(uuid)
+            self.selected_metadata = get_metadata(uuid)
             name_label.set_text(display_name)
-            if metadata['icon_data']:
-                icon = bytes2pixbuf(base64.decodebytes(metadata['icon_data'].encode()), width=140, height=60)
+            if self.selected_metadata['icon_data']:
+                icon = bytes2pixbuf(base64.b64decode(self.selected_metadata['icon_data'].encode()),
+                                    width=140, height=60)
             else:
                 icon = self.icon_placeholder
             profile_image.set_from_pixbuf(icon)
-            profile_label.set_text(metadata['connection_type'])
+            profile_label.set_text(self.selected_metadata['connection_type'])
             connected = is_provider_connected(uuid=uuid)
             switch.set_state(bool(connected))
             if connected:
@@ -415,17 +419,21 @@ class EduVpnApp:
                 ipv6_label.set_text("")
             notebook.show_all()
             notebook.set_current_page(1)
-            self.fetch_messages(metadata['api_base_uri'], metadata['token'])
+            self.fetch_messages(self.selected_metadata['api_base_uri'],
+                                self.selected_metadata['token'])
 
-    def connection_state_change(self, *args):
+    def connection_state_change(self, *args, **kwargs):
         """Called when a networkmanager status change is emitted"""
-        if 'ActiveConnections' in args[0]:
+
+        # this is VERY messy, but it is close to impossible to support the various networkmanager signals floating
+        #around.
+
+        def we_have_active_connections(active_conns):
             switch = self.builder.get_object('connect-switch')
             ipv4_label = self.builder.get_object('ipv4-label')
             ipv6_label = self.builder.get_object('ipv6-label')
-            conns = args[0]['ActiveConnections']
             active = False
-            for conn in conns:
+            for conn in active_conns:
                 try:
                     if conn.Vpn and conn.Uuid == self.selected_uuid:
                         active = True
@@ -433,11 +441,22 @@ class EduVpnApp:
                         ipv6_label.set_text(conn.Ip6Config.AddressData[0]['address'])
                 except (DBusException, AttributeError) as e:
                     pass
-
             if not active:
                 logger.info("selected VPN {} is NOT active!".format(self.selected_uuid))
                 ipv4_label.set_text("")
                 ipv6_label.set_text("")
+
+        if type(args[0]) == dict:
+            # Old API
+            if 'ActiveConnections' in args[0]:
+                logger.info("old type signal from network manager")
+                we_have_active_connections(args[0]['ActiveConnections'])
+            else:
+                logger.info("ignoring useless signal event")
+        elif args[0] != u'org.freedesktop.NetworkManager':
+            # new api
+            logger.info("new type signal from network manager")
+            we_have_active_connections(args[0].ActiveConnections)
 
     def connect_set(self, selection, _):
         switch = self.builder.get_object('connect-switch')
@@ -449,6 +468,10 @@ class EduVpnApp:
             if not state:
                 notify("Connecting to {}".format(display_name))
                 try:
+                    x = self.selected_metadata['profile_id']
+                    y = self.selected_metadata['api_base_uri']
+                    z = oauth_from_token(self.selected_metadata['token'])
+                    #config = get_profile_config(oauth, api_base_uri, profile_id)
                     connect_provider(uuid)
                 except Exception as e:
                     error_helper(self.window, "can't enable connection", "{}: {}".format(type(e).__name__, str(e)))
