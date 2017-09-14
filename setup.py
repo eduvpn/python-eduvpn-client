@@ -9,7 +9,7 @@ install_requires = [
     'requests_oauthlib',
     'future',
     'configparser',
-    'dbus-python',
+    #'dbus-python',  # we depend on the dbus package but the debian packages are not in pip freeze
 ]
 
 extras_require = {
