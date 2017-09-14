@@ -215,12 +215,14 @@ class EduVpnApp:
 
         def background():
             try:
+                logger.info("starting token obtaining in background")
                 api_base_uri, authorization_endpoint, token_endpoint = get_instance_info(instance_base_uri,
                                                                                          self.verifier)
                 code_verifier = gen_code_verifier()
                 port = get_open_port()
                 oauth = create_oauth_session(port)
                 self.auth_url = get_auth_url(oauth, code_verifier, authorization_endpoint)
+                logger.info("opening browser with url {}".format(self.auth_url))
                 webbrowser.open(self.auth_url)
                 code = get_oauth_token_code(port)
                 token = oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
@@ -243,7 +245,8 @@ class EduVpnApp:
                 logger.info("token dialog: reopen browser button pressed, opening {} again".format(self.auth_url))
                 webbrowser.open(self.auth_url)
             else:
-                logger.info("token dialog: received callback response")
+                logger.info("token dialog: window closed")
+                dialog.hide()
                 break
 
     def fetch_profile_step(self, token, api_base_uri, oauth, display_name, connection_type, authorization_type,
