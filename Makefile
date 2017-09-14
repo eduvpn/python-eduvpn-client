@@ -23,6 +23,8 @@ deb:
 
 fedora:
 	sudo dnf install -y \
+		gtk3 \
+		libnotify \
 		python-gobject \
 		python2-networkmanager \
 		python2-pydbus \
@@ -55,7 +57,7 @@ fedora:
 	virtualenv --system-site-packages -p python3 .virtualenv3
 
 .virtualenv3/bin/eduvpn-client: .virtualenv3/
-	.virtualenv3/bin/pip install -e ".[ui,nm]"
+	.virtualenv3/bin/pip install -e ".[ui]"
 
 doc:  .virtualenv/
 	.virtualenv/bin/pip install -r doc/requirements.txt
