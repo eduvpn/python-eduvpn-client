@@ -9,6 +9,7 @@ install_requires = [
     'requests_oauthlib',
     'future',
     'configparser',
+    'dbus-python',
 ]
 
 extras_require = {
