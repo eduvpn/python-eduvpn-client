@@ -151,5 +151,15 @@ def status_provider(uuid):
     raise NotImplementedError
 
 
-
-
+def update_provider(uuid, display_name, config):
+    config_dict = parse_ovpn(config)
+    ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
+    ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
+    nm_config = _gen_nm_settings(config_dict, uuid=uuid, display_name=display_name)
+    old_conn = NetworkManager.Settings.GetConnectionByUuid(uuid)
+    old_settings = old_conn.GetSettings()
+    nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
+                                     'key': old_settings['vpn']['data']['key'],
+                                     'ca': ca_path, 'ta': ta_path})
+    old_conn.Delete()
+    _add_nm_config(nm_config)

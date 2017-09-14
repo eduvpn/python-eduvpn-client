@@ -21,7 +21,7 @@ from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.managers import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
-    is_provider_connected
+    is_provider_connected, update_provider
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
     get_profile_config, system_messages, user_messages
 from eduvpn.notify import notify
@@ -468,10 +468,11 @@ class EduVpnApp:
             if not state:
                 notify("Connecting to {}".format(display_name))
                 try:
-                    x = self.selected_metadata['profile_id']
-                    y = self.selected_metadata['api_base_uri']
-                    z = oauth_from_token(self.selected_metadata['token'])
-                    #config = get_profile_config(oauth, api_base_uri, profile_id)
+                    profile_id = self.selected_metadata['profile_id']
+                    api_base_uri = self.selected_metadata['api_base_uri']
+                    oauth = oauth_from_token(self.selected_metadata['token'])
+                    config = get_profile_config(oauth, api_base_uri, profile_id)
+                    update_provider(uuid=uuid, display_name=display_name, config=config)
                     connect_provider(uuid)
                 except Exception as e:
                     error_helper(self.window, "can't enable connection", "{}: {}".format(type(e).__name__, str(e)))
