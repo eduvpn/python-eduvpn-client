@@ -16,24 +16,41 @@ BuildRequires:  python2-devel python3-devel
 %description
 An python module which provides a convenient example.
 
-%package -n python2-%{srcname}
+%package -n python2-%{Name}
 Summary:        %{sum}
-%{?python_provide:%python_provide python2-%{srcname}}
+%{?python_provide:%python_provide python2-%{Name}}
+Requires: python-gobject
+Requires: python2-networkmanager
+Requires: python2-pydbus
+Requires: python2-pynacl
+Requires: python2-requests-oauthlib
+Requires: python2-configparser
+Requires: python2-future
 
-%description -n python2-%{srcname}
+
+%description -n python2-%{Name}
 eduVPN client API for Python2
 
 
-%package -n python3-%{srcname}
+%package -n python3-%{Name}
 Summary:        %{sum}
-%{?python_provide:%python_provide python3-%{srcname}}
+%{?python_provide:%python_provide python3-%{Name}}
+Requires: python3-networkmanager
+Requires: python3-pydbus
+Requires: python3-pynacl
+Requires: python3-requests-oauthlib
+Requires: python3-gobject
+Requires: python3-configparser
+Requires: python3-future
 
-%description -n python3-%{srcname}
+%description -n python3-%{Name}
 eduVPN client API for Python3
-
 
 %package -n %{Name}
 Summary: %[sum}
+Requires: gtk3
+Requires: libnotify
+Requires:  python3-%{Name}
 
 %description -n %{Name}
 eduVPN desktop client
@@ -47,30 +64,25 @@ eduVPN desktop client
 %py3_build
 
 %install
-# Must do the python2 install first because the scripts in /usr/bin are
-# overwritten with every setup.py install, and in general we want the
-# python3 version to be the default.
-# If, however, we're installing separate executables for python2 and python3,
-# the order needs to be reversed so the unversioned executable is the python2 one.
 %py2_install
 %py3_install
 
+# todo: disable for now, creates side effects
 #%check
 #%{__python2} setup.py test
 #%{__python3} setup.py test
 
-# Note that there is no %%files section for the unversioned python module if we are building for several python runtimes
-%files -n python2-%{srcname}
+%files -n python2-%{Name}
 %license LICENSE
 %doc README.md
 %{python2_sitelib}/*
 
-%files -n python3-%{srcname}
+%files -n python3-%{Name}
 %license LICENSE
 %doc README.md
 %{python3_sitelib}/*
 
-%files -n eduvpn-client
+%files -n %{Name}
 %license LICENSE
 %doc README.md
 %{_bindir}/eduvpn-client
