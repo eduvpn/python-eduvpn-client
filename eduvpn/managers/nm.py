@@ -62,7 +62,7 @@ def list_providers():
             metadata = json.load(open(os.path.join(config_path, conn['uuid'] + '.json'), 'r'))
         except Exception as e:
             logger.error("can't load metadata file: " + str(e))
-            yield {'uuid': conn['uuid'], 'display_name': conn['id']}
+            yield {'uuid': conn['uuid'], 'display_name': conn['id'], 'icon_data': None, 'connection_type': 'unknown'}
         else:
             yield metadata
 
@@ -151,7 +151,7 @@ def status_provider(uuid):
     raise NotImplementedError
 
 
-def update_provider(uuid, display_name, config):
+def update_config_provider(uuid, display_name, config):
     config_dict = parse_ovpn(config)
     ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
@@ -163,3 +163,9 @@ def update_provider(uuid, display_name, config):
                                      'ca': ca_path, 'ta': ta_path})
     old_conn.Delete()
     _add_nm_config(nm_config)
+
+
+def update_keys_provider(uuid, cert, key):
+    logger.info("updating key pare for uuid {}".format(uuid))
+    cert_path = write_cert(cert, 'cert', uuid)
+    key_path = write_cert(key, 'key', uuid)

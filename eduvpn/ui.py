@@ -3,6 +3,7 @@ import logging
 import os
 import webbrowser
 import base64
+from datetime import datetime
 
 from eduvpn.util import error_helper, thread_helper
 
@@ -21,7 +22,7 @@ from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.managers import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
-    is_provider_connected, update_provider
+    is_provider_connected, update_config_provider, update_keys_provider
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
     get_profile_config, system_messages, user_messages
 from eduvpn.notify import notify
@@ -419,8 +420,11 @@ class EduVpnApp:
                 ipv6_label.set_text("")
             notebook.show_all()
             notebook.set_current_page(1)
-            self.fetch_messages(self.selected_metadata['api_base_uri'],
-                                self.selected_metadata['token'])
+            if 'api_base_uri' in self.selected_metadata and 'token' in self.selected_metadata:
+                self.fetch_messages(self.selected_metadata['api_base_uri'],
+                                    self.selected_metadata['token'])
+            else:
+                logger.info("metadata doesnt contain api_base_uri and/or token data")
 
     def connection_state_change(self, *args, **kwargs):
         """Called when a networkmanager status change is emitted"""
@@ -458,6 +462,31 @@ class EduVpnApp:
             logger.info("new type signal from network manager")
             we_have_active_connections(args[0].ActiveConnections)
 
+    def activate_connection(self, uuid, display_name):
+        """do the actual connecting action"""
+        notify("Connecting to {}".format(display_name))
+        try:
+            if ('profile_id' in self.selected_metadata and
+                        'api_base_uri' in self.selected_metadata and
+                        'token' in self.selected_metadata):
+                profile_id = self.selected_metadata['profile_id']
+                api_base_uri = self.selected_metadata['api_base_uri']
+                oauth = oauth_from_token(self.selected_metadata['token'])
+                config = get_profile_config(oauth, api_base_uri, profile_id)
+                update_config_provider(uuid=uuid, display_name=display_name, config=config)
+
+                if datetime.now() > datetime.fromtimestamp(self.selected_metadata['token']['expires_at']):
+                    logger.info("key pair is expired")
+                    cert, key = create_keypair(oauth, api_base_uri)
+                    update_keys_provider(uuid, cert, key)
+
+            else:
+                logger.error("metadata missing for uuid {}, can't update config".format(uuid))
+            connect_provider(uuid)
+        except Exception as e:
+            error_helper(self.window, "can't enable connection", "{}: {}".format(type(e).__name__, str(e)))
+            raise
+
     def connect_set(self, selection, _):
         switch = self.builder.get_object('connect-switch')
         state = switch.get_active()
@@ -466,16 +495,7 @@ class EduVpnApp:
         if treeiter is not None:
             uuid, display_name, _, _ = model[treeiter]
             if not state:
-                notify("Connecting to {}".format(display_name))
-                try:
-                    profile_id = self.selected_metadata['profile_id']
-                    api_base_uri = self.selected_metadata['api_base_uri']
-                    oauth = oauth_from_token(self.selected_metadata['token'])
-                    config = get_profile_config(oauth, api_base_uri, profile_id)
-                    update_provider(uuid=uuid, display_name=display_name, config=config)
-                    connect_provider(uuid)
-                except Exception as e:
-                    error_helper(self.window, "can't enable connection", "{}: {}".format(type(e).__name__, str(e)))
+                self.activate_connection(uuid, display_name)
             else:
                 notify("Disconnecting from {}".format(display_name))
                 try:
