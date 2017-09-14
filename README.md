@@ -21,4 +21,4 @@ You can find the documentation on [http://python-eduvpn-client.readthedocs.io](h
 Development
 ===========
 
-[![Build Status](https://travis-ci.org/gijzelaerr/python-eduvpn-client.svg?branch=master)](https://travis-ci.org/gijzelaerr/python-eduvpn-client)
+[![Build Status](https://travis-ci.org/eduvpn/python-eduvpn-client.svg?branch=master)](https://travis-ci.org/eduvpn/python-eduvpn-client)
