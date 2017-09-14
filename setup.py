@@ -55,7 +55,7 @@ setup(
     tests_require=['pytest', 'mock'],
     test_suite="tests",
     keywords="vpn openvpn networking security",
-    url="https://github.com/gijzelaerr/eduvpn-linux-client",
+    url="https://github.com/eduvpn/eduvpn-linux-client",
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
