@@ -1,7 +1,7 @@
 %global srcname eduvpn_client
 %global sum client for eduVPN
 
-Name:           eduvpn-client
+Name:           eduvpn_client
 Version:        0.7.2
 Release:        1%{?dist}
 Summary:        %{sum}
@@ -16,9 +16,9 @@ BuildRequires:  python2-devel python3-devel
 %description
 An python module which provides a convenient example.
 
-%package -n python2-%{Name}
+%package -n python2-eduvpn-client
 Summary:        %{sum}
-%{?python_provide:%python_provide python2-%{Name}}
+%{?python_provide:%python_provide python2-eduvpn-client}
 Requires: python-gobject
 Requires: python2-networkmanager
 Requires: python2-pydbus
@@ -28,13 +28,13 @@ Requires: python2-configparser
 Requires: python2-future
 
 
-%description -n python2-%{Name}
+%description -n python2-eduvpn-client
 eduVPN client API for Python2
 
 
-%package -n python3-%{Name}
+%package -n python3-eduvpn-client
 Summary:        %{sum}
-%{?python_provide:%python_provide python3-%{Name}}
+%{?python_provide:%python_provide python3-eduvpn-client}
 Requires: python3-networkmanager
 Requires: python3-pydbus
 Requires: python3-pynacl
@@ -43,16 +43,16 @@ Requires: python3-gobject
 Requires: python3-configparser
 Requires: python3-future
 
-%description -n python3-%{Name}
+%description -n python3-eduvpn-client
 eduVPN client API for Python3
 
-%package -n %{Name}
+%package -n eduvpn-client
 Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
-Requires:  python3-%{Name}
+Requires:  python3-eduvpn-client
 
-%description -n %{Name}
+%description -n eduvpn-client
 eduVPN desktop client
 
 
@@ -72,17 +72,17 @@ eduVPN desktop client
 #%{__python2} setup.py test
 #%{__python3} setup.py test
 
-%files -n python2-%{Name}
+%files -n python2-eduvpn-client
 %license LICENSE
 %doc README.md
 %{python2_sitelib}/*
 
-%files -n python3-%{Name}
+%files -n python3-eduvpn-client
 %license LICENSE
 %doc README.md
 %{python3_sitelib}/*
 
-%files -n %{Name}
+%files -n eduvpn-client
 %license LICENSE
 %doc README.md
 %{_bindir}/eduvpn-client
