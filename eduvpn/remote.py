@@ -120,7 +120,7 @@ def create_keypair(oauth, api_base_uri):
         tuple(str, str): certificate and key
     """
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
-    create_keypair = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'notebook'})
+    create_keypair = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})
     response = create_keypair.json()
     keypair = response['create_keypair']['data']
     cert = keypair['certificate']
