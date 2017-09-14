@@ -458,9 +458,8 @@
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
-    <property name="type_hint">normal</property>
+    <property name="type_hint">dialog</property>
     <property name="transient_for">eduvpn-window</property>
-    <property name="attached_to">eduvpn-window</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -876,7 +875,7 @@ the institution.</property>
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="button1">
-                <property name="label" translatable="yes">cancel</property>
+                <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -888,8 +887,8 @@ the institution.</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button2">
-                <property name="label" translatable="yes">reopen</property>
+              <object class="GtkButton" id="button3">
+                <property name="label" translatable="yes">show URL</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -898,6 +897,19 @@ the institution.</property>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button2">
+                <property name="label" translatable="yes">Reopen</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -942,7 +954,72 @@ Please follow instructions in your browser.
     </child>
     <action-widgets>
       <action-widget response="0">button1</action-widget>
+      <action-widget response="2">button3</action-widget>
       <action-widget response="1">button2</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkDialog" id="redirecturl-dialog">
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">eduvpn-window</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="redirect-url-ok-button">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">copy the URL below and paste it in your
+the browser of your choice manually.</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="redirect-url-entry">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="text" translatable="yes">url</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+        <action-widgets>
+      <action-widget response="0">redirect-url-ok-button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="profiles-model">

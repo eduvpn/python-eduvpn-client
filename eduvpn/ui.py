@@ -206,10 +206,14 @@ class EduVpnApp:
     def browser_step(self, display_name, instance_base_uri, connection_type, authorization_type, icon_data):
         logger.info("opening token dialog")
         dialog = self.builder.get_object('token-dialog')
+        url_dialog = self.builder.get_object('redirecturl-dialog')
         dialog.show_all()
 
         def update(token, api_base_uri, oauth):
-            dialog.hide()
+            logger.info("hiding url dialog")
+            GLib.idle_add(url_dialog.hide)
+            logger.info("hiding token dialog")
+            GLib.idle_add(dialog.hide)
             self.fetch_profile_step(token, api_base_uri, oauth, display_name, connection_type, authorization_type,
                                     icon_data)
 
@@ -233,6 +237,7 @@ class EduVpnApp:
             else:
                 GLib.idle_add(update, token, api_base_uri, oauth)
 
+
         thread_helper(background)
 
         while True:
@@ -244,6 +249,13 @@ class EduVpnApp:
             elif response == 1:
                 logger.info("token dialog: reopen browser button pressed, opening {} again".format(self.auth_url))
                 webbrowser.open(self.auth_url)
+            elif response == 2:
+                logger.info("token dialog: show redirect URL button pressed")
+                url_field = self.builder.get_object('redirect-url-entry')
+                url_field.set_text(self.auth_url)
+                url_dialog.run()
+                logger.info("token dialog: url popup closed")
+                url_dialog.hide()
             else:
                 logger.info("token dialog: window closed")
                 dialog.hide()
