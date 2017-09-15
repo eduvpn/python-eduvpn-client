@@ -126,8 +126,10 @@ def create_keypair(oauth, api_base_uri):
     """
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     create_keypair = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})
-    response = create_keypair.json()
-    keypair = response['create_keypair']['data']
+    response = create_keypair
+    if response.status_code != 200:
+        raise Exception("can't create keypair, error code {}".format(response.status_code))
+    keypair = response.json()['create_keypair']['data']
     cert = keypair['certificate']
     key = keypair['private_key']
     return cert, key
@@ -145,8 +147,10 @@ def list_profiles(oauth, api_base_uri):
         list: of available profiles on the instance (display_name, profile_id, two_factor)
     """
     logger.info("Retrieving profile list from {}".format(api_base_uri))
-    response = oauth.get(api_base_uri + '/profile_list').json()
-    data = response['profile_list']['data']
+    response = oauth.get(api_base_uri + '/profile_list')
+    if response.status_code != 200:
+        raise Exception("can't list profiles, error code {}".format(response.status_code))
+    data = response.json()['profile_list']['data']
     profiles = []
     for profile in data:
         display_name = translate_display_name(profile["display_name"])
@@ -166,6 +170,8 @@ def user_info(oauth, api_base_uri):
     """
     logger.info("Retrieving user info from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/user_info')
+    if response.status_code != 200:
+        raise Exception("can't retrieve user info, error code {}".format(response.status_code))
     return response.json()
 
 
@@ -179,6 +185,8 @@ def user_messages(oauth, api_base_uri):
     """
     logger.info("Retrieving user messages from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/user_messages')
+    if response.status_code != 200:
+        raise Exception("can't fetch user messages, error code {}".format(response.status_code))
     user_messages = response.json()['user_messages']
     data = user_messages['data']
     ok = user_messages['ok']
@@ -195,6 +203,8 @@ def system_messages(oauth, api_base_uri):
     """
     logger.info("Retrieving system messages from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/system_messages')
+    if response.status_code != 200:
+        raise Exception("can't fetch system messages, error code {}".format(response.status_code))
     system_messages = response.json()['system_messages']
     data = system_messages['data']
     ok = system_messages['ok']
@@ -214,6 +224,8 @@ def create_config(oauth, api_base_uri, display_name, profile_id):
     logger.info("Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
     response = oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
                                                                  'profile_id': profile_id})
+    if response.status_code != 200:
+        raise Exception("can't create config, error code {}".format(response.status_code))
     return response.json()
 
 
@@ -228,6 +240,8 @@ def get_profile_config(oauth, api_base_uri, profile_id):
     """
     logger.info("Retrieving profile config from {}".format(api_base_uri))
     result = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
+    if result.status_code != 200:
+        raise Exception("can't create profile, error code {}".format(result.status_code))
     # note: this is a bit ambiguous, in case there is an error, the result is json, otherwise clear text.
     try:
         json = result.json()['profile_config']
@@ -249,7 +263,6 @@ def get_auth_url(oauth, code_verifier, auth_endpoint):
         oauth (requests_oauthlib.OAuth2Session): oauth2 object
         code_verifier (str):
         auth_endpoint (str):
-        profile_id (str):
     """
     logger.info("Generating authorisation URL using auth endpoint {}".format(auth_endpoint))
     code_challenge_method = "S256"

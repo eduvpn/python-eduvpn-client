@@ -148,7 +148,10 @@ def is_provider_connected(uuid):
     """
     for active in list_active():
         if uuid == active.Uuid:
-            return active.Ip4Config.AddressData[0]['address'], active.Ip6Config.AddressData[0]['address']
+            if active.State == 2:
+                return active.Ip4Config.AddressData[0]['address'], active.Ip6Config.AddressData[0]['address']
+            else:
+                return "", ""
 
 
 def status_provider(uuid):

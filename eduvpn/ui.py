@@ -389,21 +389,28 @@ class EduVpnApp:
         def background(buffer, token):
             oauth = oauth_from_token(token, self.token_updated, uuid)
             text = ""
-            for message in user_messages(oauth, api_base_uri):
-                logger.info(message)
-                date_time = message['date_time']
-                content = message['message']
-                type = message['notification']
-                text += date_time + "\n"
-                text += content + "\n\n"
-            for message in system_messages(oauth, api_base_uri):
-                logger.info(message)
-                date_time = message['date_time']
-                content = message['message']
-                type = message['type']
-                text += date_time + "\n"
-                text += content + "\n\n"
-            GLib.idle_add(buffer.set_text, text)
+            try:
+                messages_user = user_messages(oauth, api_base_uri)
+                messages_system = system_messages(oauth, api_base_uri)
+            except Exception as e:
+                GLib.idle_add(error_helper, self.window, "Can't fetch user messages", str(e))
+                return
+            else:
+                for message in messages_user:
+                    logger.info(message)
+                    date_time = message['date_time']
+                    content = message['message']
+                    type = message['notification']
+                    text += date_time + "\n"
+                    text += content + "\n\n"
+                for message in messages_system:
+                    logger.info(message)
+                    date_time = message['date_time']
+                    content = message['message']
+                    type = message['type']
+                    text += date_time + "\n"
+                    text += content + "\n\n"
+                GLib.idle_add(buffer.set_text, text)
 
         buffer = self.builder.get_object('messages-buffer')
         thread_helper(lambda: background(buffer, token))
@@ -488,7 +495,7 @@ class EduVpnApp:
             we_have_active_connections(args[0].ActiveConnections)
 
     def token_updated(self, token, uuid):
-        logger.warning("Token for {}updated!! {}".format(uuid, token))
+        logger.warning("Token for {} updated!! {}".format(uuid, token))
         update_token(uuid, token)
 
     def activate_connection(self, uuid, display_name):
