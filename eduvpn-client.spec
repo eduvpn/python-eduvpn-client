@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        0.8
+Version:        1.0rc1
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -60,17 +60,17 @@ eduVPN desktop client
 %autosetup -n %{srcname}-%{version}
 
 %build
-%py2_build
 %py3_build
+%py2_build
 
 %install
-%py2_install
 %py3_install
+%py2_install
 
 # todo: disable for now, creates side effects
 #%check
-#%{__python2} setup.py test
 #%{__python3} setup.py test
+#%{__python2} setup.py test
 
 %files -n python2-eduvpn-client
 %license LICENSE
