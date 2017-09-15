@@ -1182,7 +1182,11 @@ Please follow instructions in your browser.
                       <object class="GtkTreeViewColumn" id="provider-name1">
                         <property name="title" translatable="yes">name</property>
                         <child>
-                          <object class="GtkCellRendererText"/>
+                          <object class="GtkCellRendererText">
+                            <property name="xpad">5</property>
+                            <property name="ypad">5</property>
+                            <property name="scale">1.1000000000000001</property>
+                          </object>
                           <attributes>
                             <attribute name="text">0</attribute>
                           </attributes>

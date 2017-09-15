@@ -300,7 +300,7 @@ class EduVpnApp:
 
         thread_helper(background)
 
-    def select_profile_step(self, profiles, token, api_base_uri, oauth, display_name, connection_type,
+    def select_profile_step(self, token, profiles, api_base_uri, oauth, display_name, connection_type,
                             authorization_type, icon_data):
         logger.info("opening profile dialog")
 
@@ -308,9 +308,7 @@ class EduVpnApp:
         model = self.builder.get_object('profiles-model')
         selection = self.builder.get_object('profiles-selection')
         dialog.show_all()
-
-        model.append(profiles)
-
+        [model.append(p) for p in profiles]
         response = dialog.run()
         dialog.hide()
 
