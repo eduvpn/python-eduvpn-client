@@ -42,6 +42,15 @@ def _gen_nm_settings(config, uuid, display_name):
                                  'tls-cipher': config.get('tls-cipher', 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384')},
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
                 }
+
+    # 2 factor auth enabled
+    if 'auth-user-pass' in config:
+        logger.info("looks like 2 factor authentication is enabled, enabling this in NM config")
+        settings['vpn']['data']['cert-pass-flags'] = '0'
+        settings['vpn']['data']['connection-type'] = 'password-tls'
+        settings['vpn']['data']['password-flags'] = '2'
+        settings['vpn']['data']['username'] = 'TOTP'
+
     return settings
 
 

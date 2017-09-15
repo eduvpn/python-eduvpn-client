@@ -29,7 +29,7 @@ from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_c
 from eduvpn.manager import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
     is_provider_connected, update_config_provider, update_keys_provider, update_token
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
-    get_profile_config, system_messages, user_messages
+    get_profile_config, system_messages, user_messages, user_info
 from eduvpn.notify import notify
 from eduvpn.io import get_metadata
 from eduvpn.util import bytes2pixbuf
@@ -335,6 +335,7 @@ class EduVpnApp:
             try:
                 cert, key = create_keypair(oauth, api_base_uri)
                 config = get_profile_config(oauth, api_base_uri, profile_id)
+                # info = user_info(oauth, api_base_uri)
             except Exception as e:
                 GLib.idle_add(error_helper, dialog, "can't finalize configuration", "{}: {}".format(type(e).__name__,
                                                                                                    str(e)))
