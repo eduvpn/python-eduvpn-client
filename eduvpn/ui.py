@@ -236,14 +236,15 @@ class EduVpnApp:
                 logger.info("opening browser with url {}".format(self.auth_url))
                 webbrowser.open(self.auth_url)
                 code = get_oauth_token_code(port)
+                logger.info("control returned by browser")
                 token = oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
+                logger.info("obtained oauth token")
             except Exception as e:
                 GLib.idle_add(error_helper, dialog, "Can't obtain token", "{}".format(str(e)))
                 GLib.idle_add(dialog.hide)
                 raise
             else:
                 GLib.idle_add(update, token, api_base_uri, oauth)
-
 
         thread_helper(background)
 
@@ -263,6 +264,7 @@ class EduVpnApp:
                 url_dialog.run()
                 logger.info("token dialog: url popup closed")
                 url_dialog.hide()
+                break
             else:
                 logger.info("token dialog: window closed")
                 dialog.hide()
