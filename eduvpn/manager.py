@@ -49,7 +49,7 @@ def _gen_nm_settings(config, uuid, display_name):
         settings['vpn']['data']['cert-pass-flags'] = '0'
         settings['vpn']['data']['connection-type'] = 'password-tls'
         settings['vpn']['data']['password-flags'] = '2'
-        settings['vpn']['data']['username'] = 'TOTP'
+        settings['vpn']['data']['username'] = 'totp'
 
     return settings
 
