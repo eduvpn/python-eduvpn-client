@@ -71,8 +71,8 @@ test3: .virtualenv3/
 	.virtualenv3/bin/pip install -r tests/requirements.txt
 	.virtualenv3/bin/nosenosetests
 
-run: .virtualenv3/bin/eduvpn-client
-	.virtualenv3/bin/eduvpn-client
+run: .virtualenv/bin/eduvpn-client
+	.virtualenv/bin/eduvpn-client
 
 dockers:
 	for i in `ls docker/Dockerfile*`; do docker build . -f $$i; done
