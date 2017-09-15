@@ -26,8 +26,8 @@ from dbus.exceptions import DBusException
 from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key, icon_size
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
-from eduvpn.managers import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
-    is_provider_connected, update_config_provider, update_keys_provider
+from eduvpn.manager import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
+    is_provider_connected, update_config_provider, update_keys_provider, update_token
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
     get_profile_config, system_messages, user_messages
 from eduvpn.notify import notify
@@ -238,6 +238,7 @@ class EduVpnApp:
                 code = get_oauth_token_code(port)
                 logger.info("control returned by browser")
                 token = oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
+                token['token_endpoint'] = token_endpoint
                 logger.info("obtained oauth token")
             except Exception as e:
                 GLib.idle_add(error_helper, dialog, "Can't obtain token", "{}".format(str(e)))
@@ -382,11 +383,11 @@ class EduVpnApp:
             logger.info("not deleting provider config")
         dialog.destroy()
         
-    def fetch_messages(self, api_base_uri, token):
+    def fetch_messages(self, api_base_uri, token, uuid):
         logger.info("fetching user and system messages from {}".format(api_base_uri))
 
         def background(buffer, token):
-            oauth = oauth_from_token(token)
+            oauth = oauth_from_token(token, self.token_updated, uuid)
             text = ""
             for message in user_messages(oauth, api_base_uri):
                 logger.info(message)
@@ -446,7 +447,7 @@ class EduVpnApp:
             notebook.set_current_page(1)
             if 'api_base_uri' in self.selected_metadata and 'token' in self.selected_metadata:
                 self.fetch_messages(self.selected_metadata['api_base_uri'],
-                                    self.selected_metadata['token'])
+                                    self.selected_metadata['token'], uuid)
             else:
                 logger.info("metadata doesnt contain api_base_uri and/or token data")
 
@@ -486,6 +487,10 @@ class EduVpnApp:
             logger.info("new type signal from network manager")
             we_have_active_connections(args[0].ActiveConnections)
 
+    def token_updated(self, token, uuid):
+        logger.warning("Token for {}updated!! {}".format(uuid, token))
+        update_token(uuid, token)
+
     def activate_connection(self, uuid, display_name):
         """do the actual connecting action"""
         notify("Connecting to {}".format(display_name))
@@ -495,7 +500,8 @@ class EduVpnApp:
                         'token' in self.selected_metadata):
                 profile_id = self.selected_metadata['profile_id']
                 api_base_uri = self.selected_metadata['api_base_uri']
-                oauth = oauth_from_token(self.selected_metadata['token'])
+
+                oauth = oauth_from_token(self.selected_metadata['token'], self.token_updated, uuid)
                 config = get_profile_config(oauth, api_base_uri, profile_id)
                 update_config_provider(uuid=uuid, display_name=display_name, config=config)
 

@@ -9,6 +9,7 @@ import socket
 from future.moves.urllib.parse import urlparse, parse_qs
 from requests_oauthlib import OAuth2Session
 
+
 logger = logging.getLogger(__name__)
 
 landing_page = """
@@ -121,14 +122,21 @@ def get_oauth_token_code(port):
     return code
 
 
-def oauth_from_token(token):
+def oauth_from_token(token, token_updater, uuid):
     """
     Recreate a oauth2 object from a token
 
-    args (dict): a oauth2 token object
+    args:
+        token (dict): a oauth2 token object
+        token_updater (func): a function that is triggered upon a token update
 
     returns:
         OAuth2Session: an auth2 session
 
     """
-    return OAuth2Session(token=token)
+    def inner(new_token):
+        new_token['token_endpoint'] = token['token_endpoint']
+        token_updater(new_token, uuid)
+
+    return OAuth2Session(token=token, auto_refresh_url=token['token_endpoint'], scope=['config'],
+                         token_updater=inner)

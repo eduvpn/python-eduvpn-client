@@ -174,3 +174,14 @@ def update_keys_provider(uuid, cert, key):
     logger.info("updating key pare for uuid {}".format(uuid))
     cert_path = write_cert(cert, 'cert', uuid)
     key_path = write_cert(key, 'key', uuid)
+
+
+def update_token(uuid, token):
+    logger.info("writing new token information for {}".format(uuid))
+    path = os.path.join(config_path, uuid + '.json')
+    metadata = json.load(open(path, 'r'))
+    metadata['token'] = token
+    logger.error(metadata['token']['expires_at'])
+    logger.error(token['expires_at'])
+    with open(path, 'w') as f:
+        json.dump(metadata, f)
