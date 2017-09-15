@@ -21,4 +21,4 @@ metadata = ("api_base_uri", "profile_id", "display_name", "token", "connection_t
             "profile_display_name", "two_factor", "cert", "key", "config", "uuid", "icon_data")
 
 
-icon_size = {'width': 70, 'height': 30}
+icon_size = {'width': 105, 'height': 45}

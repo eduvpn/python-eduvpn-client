@@ -23,7 +23,7 @@ import dbus.mainloop.glib
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 from dbus.exceptions import DBusException
 
-from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key
+from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key, icon_size
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.managers import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
@@ -69,7 +69,9 @@ class EduVpnApp:
         self.window.show_all()
 
         logo = os.path.join(self.here, '../share/eduvpn/eduvpn.png')
-        self.icon_placeholder = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, 70, 30, True)
+        self.icon_placeholder = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
+        self.icon_placeholder_big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width']*2,
+                                                                            icon_size['height']*2, True)
 
         self.update_providers()
 
@@ -140,11 +142,7 @@ class EduVpnApp:
         dialog.show_all()
         while True:
             response = dialog.run()
-            if response == 0:  # cancel
-                logger.info("cancel button pressed")
-                dialog.hide()
-                return
-            else:
+            if response == 1:
                 custom_url = entry.get_text()
                 logger.info("ok pressed, entry text: {}".format(custom_url))
                 if not custom_url.startswith('https://'):
@@ -155,6 +153,10 @@ class EduVpnApp:
                     logger.info("using {} for display name".format(display_name))
                     GLib.idle_add(self.browser_step, display_name, custom_url, 'Custom Instance', 'local', None)
                     break
+            else:  # cancel or close
+                logger.info("cancel or close button pressed (response {})".format(response))
+                dialog.hide()
+                return
 
     def fetch_instance_step(self, discovery_uri, connection_type):
         logger.info("fetching instances step")
@@ -236,7 +238,7 @@ class EduVpnApp:
                 code = get_oauth_token_code(port)
                 token = oauth.fetch_token(token_endpoint, code=code, code_verifier=code_verifier)
             except Exception as e:
-                GLib.idle_add(error_helper, dialog, "can't obtain token", "{} {}".format(type(e).__name__, str(e)))
+                GLib.idle_add(error_helper, dialog, "Can't obtain token", "{}".format(str(e)))
                 GLib.idle_add(dialog.hide)
                 raise
             else:
@@ -424,9 +426,9 @@ class EduVpnApp:
             name_label.set_text(display_name)
             if self.selected_metadata['icon_data']:
                 icon = bytes2pixbuf(base64.b64decode(self.selected_metadata['icon_data'].encode()),
-                                    width=140, height=60)
+                                    width=icon_size['width']*2, height=icon_size['height']*2)
             else:
-                icon = self.icon_placeholder
+                icon = self.icon_placeholder_big
             profile_image.set_from_pixbuf(icon)
             profile_label.set_text(self.selected_metadata['connection_type'])
             connected = is_provider_connected(uuid=uuid)
