@@ -2,6 +2,24 @@
 API
 ===
 
+Remote calls
+============
+
+.. automodule:: eduvpn.remote
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+eduVPN oauth2
+=============
+
+.. automodule:: eduvpn.oauth2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Crypto
 ======
 
@@ -20,31 +38,11 @@ eduVPN IO
     :show-inheritance:
 
 
-eduVPN oauth2
-=============
-
-.. automodule:: eduvpn.oauth2
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Connection managers
-===================
+Network Manager wrapping
+========================
 
 
-Network Manager
----------------
-
-
-.. automodule:: eduvpn.managers.nm
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Other
------
-
-.. automodule:: eduvpn.managers.other
+.. automodule:: eduvpn.manager
     :members:
     :undoc-members:
     :show-inheritance:
@@ -58,11 +56,4 @@ OpenVPN
     :show-inheritance:
 
 
-Remote calls
-============
-
-.. automodule:: eduvpn.remote
-    :members:
-    :undoc-members:
-    :show-inheritance:
 

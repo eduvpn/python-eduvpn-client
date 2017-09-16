@@ -10,10 +10,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def format_like_ovpn(profile_config, cert, key):
-    """create a OVPN format config text"""
+def format_like_ovpn(config, cert, key):
+    """
+    create a OVPN format config text
+
+    args:
+        config (str): an existing ovpn config
+        cert (str):
+        key (str):
+    """
     logger.info("formatting config into ovpn format")
-    return profile_config + '\n<cert>\n{}\n</cert>\n<key>\n{}\n</key>\n'.format(cert, key)
+    return config + '\n<cert>\n{}\n</cert>\n<key>\n{}\n</key>\n'.format(cert, key)
 
 
 def parse_ovpn(configtext):
