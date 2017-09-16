@@ -22,6 +22,7 @@ def _gen_nm_settings(config, uuid, display_name):
     """
     Generate a NetworkManager style config dict from a parsed ovpn config dict
     """
+    logger.info("generating config for {} ({})".format(display_name, uuid))
     settings = {'connection': {'id': display_name,
                                'type': 'vpn',
                                'uuid': uuid},
@@ -68,8 +69,8 @@ def list_providers():
     """
     List all OpenVPN connections.
     """
-    all_connections = NetworkManager.Settings.ListConnections()
-    vpn_connections = [c.GetSettings()['connection'] for c in all_connections if c.GetSettings()['connection']['type'] == 'vpn']
+    all = NetworkManager.Settings.ListConnections()
+    vpn_connections = [c.GetSettings()['connection'] for c in all if c.GetSettings()['connection']['type'] == 'vpn']
     logger.info("There are {} VPN connections in networkmanager".format(len(vpn_connections)))
     for conn in vpn_connections:
         try:
@@ -82,7 +83,7 @@ def list_providers():
 
 
 def store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                   profile_display_name, two_factor, cert, key, config, icon_data):
+                   profile_display_name, two_factor, cert, key, config, icon_data, instance_base_uri):
     logger.info("storing profile with name {} using NetworkManager".format(display_name))
     uuid = make_unique_id()
     ovpn_text = format_like_ovpn(config, cert, key)
@@ -138,6 +139,7 @@ def connect_provider(uuid):
 
 
 def list_active():
+    logger.info("getting list of active connections")
     return NetworkManager.NetworkManager.ActiveConnections
 
 
@@ -157,18 +159,14 @@ def is_provider_connected(uuid):
     """
     for active in list_active():
         if uuid == active.Uuid:
-            if active.State == 2:
+            if active.State == 2:  # connected
                 return active.Ip4Config.AddressData[0]['address'], active.Ip6Config.AddressData[0]['address']
             else:
                 return "", ""
 
 
-def status_provider(uuid):
-    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
-    raise NotImplementedError
-
-
 def update_config_provider(uuid, display_name, config):
+    logger.info("updating config for {} ({})".format(display_name, uuid))
     config_dict = parse_ovpn(config)
     ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
@@ -184,8 +182,8 @@ def update_config_provider(uuid, display_name, config):
 
 def update_keys_provider(uuid, cert, key):
     logger.info("updating key pare for uuid {}".format(uuid))
-    cert_path = write_cert(cert, 'cert', uuid)
-    key_path = write_cert(key, 'key', uuid)
+    write_cert(cert, 'cert', uuid)
+    write_cert(key, 'key', uuid)
 
 
 def update_token(uuid, token):
@@ -193,7 +191,5 @@ def update_token(uuid, token):
     path = os.path.join(config_path, uuid + '.json')
     metadata = json.load(open(path, 'r'))
     metadata['token'] = token
-    logger.error(metadata['token']['expires_at'])
-    logger.error(token['expires_at'])
     with open(path, 'w') as f:
         json.dump(metadata, f)

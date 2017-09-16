@@ -33,7 +33,3 @@ class TestNm(unittest.TestCase):
     def test_connect_provider(self):
         with self.assertRaises(DBusException):
             connect_provider(self.name)
-
-    def test_status_provider(self):
-        with self.assertRaises(DBusException):
-            status_provider(self.name)

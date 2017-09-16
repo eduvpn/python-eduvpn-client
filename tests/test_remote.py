@@ -10,6 +10,8 @@ from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_i
 class MochResponse:
     content = '{"create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}}}'
 
+    status_code = 200
+
     def json(self):
         return {"create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}}}
 

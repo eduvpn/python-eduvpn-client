@@ -136,7 +136,7 @@ def oauth_from_token(token, token_updater, uuid):
     """
     def inner(new_token):
         new_token['token_endpoint'] = token['token_endpoint']
-        token_updater(new_token, uuid)
+        token_updater(uuid, new_token)
 
     return OAuth2Session(token=token, auto_refresh_url=token['token_endpoint'], scope=['config'],
                          token_updater=inner)

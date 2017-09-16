@@ -10,6 +10,7 @@ import requests
 
 from eduvpn.config import locale
 from eduvpn.crypto import gen_code_challenge
+from eduvpn.exceptions import EduvpnAuthException
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,6 @@ def get_instances(discovery_uri, verify_key=None):
             logger.warning(msg)
         else:
             logger.info("verifying signature of {}".format(discovery_uri))
-            #decoded = base64.decodebytes(inst_doc_sig.content)
             decoded = base64.b64decode(inst_doc_sig.content)
             _ = verify_key.verify(smessage=inst_doc.content, signature=decoded)
 
@@ -127,7 +127,9 @@ def create_keypair(oauth, api_base_uri):
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     create_keypair = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})
     response = create_keypair
-    if response.status_code != 200:
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
         raise Exception("can't create keypair, error code {}".format(response.status_code))
     keypair = response.json()['create_keypair']['data']
     cert = keypair['certificate']
@@ -148,7 +150,9 @@ def list_profiles(oauth, api_base_uri):
     """
     logger.info("Retrieving profile list from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/profile_list')
-    if response.status_code != 200:
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
         raise Exception("can't list profiles, error code {}".format(response.status_code))
     data = response.json()['profile_list']['data']
     profiles = []
@@ -170,7 +174,9 @@ def user_info(oauth, api_base_uri):
     """
     logger.info("Retrieving user info from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/user_info')
-    if response.status_code != 200:
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
         raise Exception("can't retrieve user info, error code {}".format(response.status_code))
     return response.json()
 
@@ -185,7 +191,9 @@ def user_messages(oauth, api_base_uri):
     """
     logger.info("Retrieving user messages from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/user_messages')
-    if response.status_code != 200:
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
         raise Exception("can't fetch user messages, error code {}".format(response.status_code))
     user_messages = response.json()['user_messages']
     data = user_messages['data']
@@ -203,11 +211,13 @@ def system_messages(oauth, api_base_uri):
     """
     logger.info("Retrieving system messages from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/system_messages')
-    if response.status_code != 200:
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
         raise Exception("can't fetch system messages, error code {}".format(response.status_code))
-    system_messages = response.json()['system_messages']
-    data = system_messages['data']
-    ok = system_messages['ok']
+    messages = response.json()['system_messages']
+    data = messages['data']
+    ok = messages['ok']
     return data
 
 
@@ -224,7 +234,9 @@ def create_config(oauth, api_base_uri, display_name, profile_id):
     logger.info("Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
     response = oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
                                                                  'profile_id': profile_id})
-    if response.status_code != 200:
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
         raise Exception("can't create config, error code {}".format(response.status_code))
     return response.json()
 
@@ -239,15 +251,17 @@ def get_profile_config(oauth, api_base_uri, profile_id):
         profile_id (str):
     """
     logger.info("Retrieving profile config from {}".format(api_base_uri))
-    result = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
-    if result.status_code != 200:
-        raise Exception("can't create profile, error code {}".format(result.status_code))
+    response = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
+        raise Exception("can't create profile, error code {}".format(response.status_code))
     # note: this is a bit ambiguous, in case there is an error, the result is json, otherwise clear text.
     try:
-        json = result.json()['profile_config']
+        json = response.json()['profile_config']
     except Exception:
         # probably valid response
-        return result.text
+        return response.text
     else:
         if not json['ok']:
             raise Exception(json['error'])
