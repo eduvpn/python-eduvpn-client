@@ -31,7 +31,9 @@ class Mock(MagicMock):
             return MagicMock()
 
 MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'nacl', 'NetworkManager',
-        'dbus', 'nacl.signing', 'dbus.service']
+        'dbus', 'nacl.signing', 'dbus.service', 'future', 'future.moves',
+        'future.moves.urllib', 'future.moves.urllib.parse', 'requests_oauthlib',
+        'http.server']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 
