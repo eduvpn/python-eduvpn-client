@@ -20,12 +20,11 @@ from gi.repository import GObject, Gtk, GLib, GdkPixbuf
 import dbus.mainloop.glib
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 import eduvpn.other_nm as NetworkManager
-#import NetworkManager
 
 from dbus.exceptions import DBusException
 
 from eduvpn.util import error_helper, thread_helper
-from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key, icon_size
+from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key, icon_size, prefix
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.manager import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
@@ -42,8 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class EduVpnApp:
-    def __init__(self, here):
-        self.here = here
+    def __init__(self):
 
         # hack to make the reopen url button work
         self.auth_url = None
@@ -61,7 +59,7 @@ class EduVpnApp:
         }
 
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(self.here, "../share/eduvpn/eduvpn.ui"))
+        self.builder.add_from_file(os.path.join(prefix, 'share/eduvpn/eduvpn.ui'))
         self.builder.connect_signals(handlers)
 
         self.window = self.builder.get_object('eduvpn-window')
@@ -70,7 +68,7 @@ class EduVpnApp:
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.show_all()
 
-        logo = os.path.join(self.here, '../share/eduvpn/eduvpn.png')
+        logo = os.path.join(prefix, 'share/eduvpn/eduvpn.png')
         self.icon_placeholder = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
         self.icon_placeholder_big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width']*2,
                                                                             icon_size['height']*2, True)
@@ -84,7 +82,7 @@ class EduVpnApp:
         model, treeiter = selection.get_selected()
         if treeiter is not None:
             uuid, display_name = model[treeiter]
-            notify("Connecting to {}".format(display_name))
+            notify("eduVPN connecting...", "Connecting to {}".format(display_name))
             connect_provider(uuid)
 
     def disconnect(self, selection):
@@ -92,7 +90,7 @@ class EduVpnApp:
         model, treeiter = selection.get_selected()
         if treeiter is not None:
             uuid, display_name = model[treeiter]
-            notify("Disconnecting to {}".format(display_name))
+            notify("eduVPN disconnecting...", "Disconnecting from '{}'".format(display_name))
             disconnect_provider(uuid)
 
     def update_providers(self):
@@ -351,7 +349,7 @@ class EduVpnApp:
                 try:
                     store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
                                    profile_display_name, two_factor, cert, key, config, icon_data, instance_base_uri)
-                    notify("Added eduVPN configuration {}".format(display_name))
+                    notify("eduVPN provider added", "added provider '{}'".format(display_name))
                 except Exception as e:
                     GLib.idle_add(error_helper, dialog, "can't store configuration", "{} {}".format(type(e).__name__,
                                                                                                     str(e)))
@@ -380,7 +378,7 @@ class EduVpnApp:
             logger.info("deleting provider config")
             try:
                 delete_provider(uuid)
-                notify("Deleted eduVPN configuration {}".format(display_name))
+                notify("eduVPN provider deleted", "Deleted '{}'".format(display_name))
             except Exception as e:
                 GLib.idle_add(error_helper, self.window, "can't delete profile", "{}: {}".format(type(e).__name__, str(e)))
             GLib.idle_add(self.update_providers)
@@ -505,19 +503,22 @@ class EduVpnApp:
                         switch.set_active(True)
                         GLib.idle_add(ipv4_label.set_text, active.Ip4Config.AddressData[0]['address'])
                         GLib.idle_add(ipv6_label.set_text, active.Ip6Config.AddressData[0]['address'])
-                    elif  active.State == 1:  # activating
+                        notify("eduVPN connected", "Connected to '{}'".format(self.selected_metadata['display_name']))
+                    elif active.State == 1:  # activating
                         switch.set_active(True)
+                        notify("eduVPN connecting...", "Activating '{}'".format(self.selected_metadata['display_name']))
                     else:
-                        logger.info("clearing ip for {}".format(self.selected_uuid))
+                        logger.info("clearing ip for '{}'".format(self.selected_uuid))
                         switch.set_active(False)
                         GLib.idle_add(ipv4_label.set_text, "")
                         GLib.idle_add(ipv6_label.set_text, "")
                     break
-            except DBusException:
+            except (DBusException, NetworkManager.ObjectVanished):
                 pass
 
         if not selected_uuid_active:
             logger.info("Our selected profile not active {}".format(self.selected_uuid))
+            notify("eduVPN Disconnected", "Disconnected from '{}'".format(self.selected_metadata['display_name']))
             switch.set_active(False)
             GLib.idle_add(ipv4_label.set_text, "")
             GLib.idle_add(ipv6_label.set_text, "")
@@ -525,7 +526,7 @@ class EduVpnApp:
     def activate_connection(self, uuid, display_name):
         """do the actual connecting action"""
         logger.info("Connecting to {}".format(display_name))
-        notify("Connecting to {}".format(display_name))
+        notify("eduVPN connecting...", "Connecting to '{}'".format(display_name))
         try:
             if ('profile_id' in self.selected_metadata and
                         'api_base_uri' in self.selected_metadata and
@@ -560,16 +561,16 @@ class EduVpnApp:
                 self.activate_connection(uuid, display_name)
                 switch.set_active(True)
             else:
-                notify("Disconnecting from {}".format(display_name))
+                notify("eduVPN disconnecting...", "Disconnecting from {}".format(display_name))
                 try:
                     disconnect_provider(uuid)
                 except Exception as e:
                     error_helper(self.window, "can't disconnect", "{}: {}".format(type(e).__name__, str(e)))
 
 
-def main(here):
+def main():
     GObject.threads_init()
     logging.basicConfig(level=logging.INFO)
-    eduVpnApp = EduVpnApp(here)
+    eduVpnApp = EduVpnApp()
     Gtk.main()
 
