@@ -590,7 +590,10 @@ class fixups(object):
                    'Settings': 'Connection',
                    'Devices': 'Device',
                 }.get(classname, classname)
-                return globals()[classname](val)
+                try:
+                    return globals()[classname](val)
+                except ObjectVanished:
+                    return None
             if val == '/':
                 return None
         if isinstance(val, (dbus.Signature, dbus.String)):
