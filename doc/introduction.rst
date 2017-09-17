@@ -21,7 +21,7 @@ or using sudo::
     # apt update
     # apt install eduvpn-client
 
-This has been tested on Ubuntu 17.04 (Zesty) and Debian 9 (stretch).
+This has been tested on Ubuntu 17.04 (Zesty), Ubuntu 16.04 (Xenial) and Debian 9 (stretch).
 
 Fedora and CentOS
 -----------------

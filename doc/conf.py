@@ -18,8 +18,21 @@
 #
 import os
 import sys
+from mock import MagicMock
+
 sys.path.insert(0, os.path.abspath('..'))
 from eduvpn import __version__
+
+
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return MagicMock()
+
+MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'nacl', 'NetworkManager',
+        'dbus', 'nacl.signing', 'dbus.service']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 
 # -- General configuration ------------------------------------------------
