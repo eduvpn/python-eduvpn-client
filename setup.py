@@ -5,7 +5,7 @@
 
 from setuptools import setup, find_packages
 
-__version__ = "1.0rc2"
+__version__ = "1.0rc3"
 
 
 install_requires = [
