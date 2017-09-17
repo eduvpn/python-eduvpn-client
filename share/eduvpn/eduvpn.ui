@@ -309,7 +309,7 @@
                             <property name="width_request">150</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <signal name="button-press-event" handler="connect_set" object="treeview-selection" swapped="no"/>
+                            <signal name="button-release-event" handler="connect_set" object="treeview-selection" swapped="no"/>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
