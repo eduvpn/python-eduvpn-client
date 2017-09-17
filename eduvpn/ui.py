@@ -505,6 +505,8 @@ class EduVpnApp:
                         switch.set_active(True)
                         GLib.idle_add(ipv4_label.set_text, active.Ip4Config.AddressData[0]['address'])
                         GLib.idle_add(ipv6_label.set_text, active.Ip6Config.AddressData[0]['address'])
+                    elif  active.State == 1:  # activating
+                        switch.set_active(True)
                     else:
                         logger.info("clearing ip for {}".format(self.selected_uuid))
                         switch.set_active(False)
@@ -556,6 +558,7 @@ class EduVpnApp:
             uuid, display_name, _, _ = model[treeiter]
             if not state:
                 self.activate_connection(uuid, display_name)
+                switch.set_active(True)
             else:
                 notify("Disconnecting from {}".format(display_name))
                 try:
