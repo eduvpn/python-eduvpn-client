@@ -7,7 +7,8 @@ import os
 import logging
 import json
 
-import NetworkManager
+import eduvpn.other_nm as NetworkManager
+#import NetworkManager
 
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
 from eduvpn.io import write_cert, store_metadata, mkdir_p
@@ -251,3 +252,15 @@ def update_token(uuid, token):
     metadata['token'] = token
     with open(path, 'w') as f:
         json.dump(metadata, f)
+
+
+def vpn_monitor(callback):
+    """
+    This installs a dbus callback which will be called every time the state of a VPN connection changes.
+
+    args:
+        callback (func): a callback function
+    """
+    for connection in NetworkManager.Settings.ListConnections():
+        if connection.GetSettings()['connection']['type'] == 'vpn':
+            connection.connect_to_signal('Updated', callback)

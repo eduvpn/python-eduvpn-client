@@ -16,9 +16,12 @@ gi.require_version('Notify', '0.7')
 
 from gi.repository import GObject, Gtk, GLib, GdkPixbuf
 
-# this need to be one of the first to import
+# this need to imported and initialised before the NetworkManager module
 import dbus.mainloop.glib
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+import eduvpn.other_nm as NetworkManager
+#import NetworkManager
+
 from dbus.exceptions import DBusException
 
 from eduvpn.util import error_helper, thread_helper
@@ -26,7 +29,7 @@ from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key,
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.manager import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
-    is_provider_connected, update_config_provider, update_keys_provider, update_token
+    is_provider_connected, update_config_provider, update_keys_provider, update_token, vpn_monitor
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
     get_profile_config, system_messages, user_messages, user_info
 from eduvpn.notify import notify
@@ -34,8 +37,6 @@ from eduvpn.io import get_metadata
 from eduvpn.util import bytes2pixbuf
 from eduvpn.exceptions import EduvpnAuthException
 
-
-import NetworkManager
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,6 @@ class EduVpnApp:
             "connect_set": self.connect_set,
         }
 
-        NetworkManager.NetworkManager.connect_to_signal('PropertiesChanged', self.connection_state_change)
-
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(self.here, "../share/eduvpn/eduvpn.ui"))
         self.builder.connect_signals(handlers)
@@ -75,6 +74,8 @@ class EduVpnApp:
         self.icon_placeholder = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
         self.icon_placeholder_big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width']*2,
                                                                             icon_size['height']*2, True)
+
+        vpn_monitor(self.vpn_status_change)
 
         self.update_providers()
 
@@ -453,7 +454,7 @@ class EduVpnApp:
         else:
             uuid, display_name, icon, _ = model[treeiter]
             self.selected_uuid = uuid
-            logger.info("{} ({}) configuration was selected".format(display_name, uuid))
+            logger.info("configuration was selected {} ({})".format(display_name, uuid))
             self.selected_metadata = get_metadata(uuid)
             name_label.set_text(display_name)
             if self.selected_metadata['icon_data']:
@@ -482,41 +483,42 @@ class EduVpnApp:
             else:
                 logger.info("metadata doesnt contain api_base_uri and/or token data")
 
-    def connection_state_change(self, *args, **kwargs):
-        """Called when a networkmanager status change is emitted"""
+    def vpn_status_change(self, *args, **kwargs):
+        """called when the status of a VPN connection changes"""
+        logger.info("VPN status change")
+        switch = self.builder.get_object('connect-switch')
+        ipv4_label = self.builder.get_object('ipv4-label')
+        ipv6_label = self.builder.get_object('ipv6-label')
 
-        # this is VERY messy, but it is close to impossible to support the various networkmanager signals floating
-        #around.
+        try:
+            actives = NetworkManager.NetworkManager.ActiveConnections
+        except DBusException:
+            return
 
-        def we_have_active_connections(active_conns):
-            switch = self.builder.get_object('connect-switch')
-            ipv4_label = self.builder.get_object('ipv4-label')
-            ipv6_label = self.builder.get_object('ipv6-label')
-            active = False
-            for conn in active_conns:
-                try:
-                    if conn.Vpn and conn.Uuid == self.selected_uuid:
-                        active = True
-                        ipv4_label.set_text(conn.Ip4Config.AddressData[0]['address'])
-                        ipv6_label.set_text(conn.Ip6Config.AddressData[0]['address'])
-                except (DBusException, AttributeError) as e:
-                    pass
-            if not active:
-                logger.info("selected VPN {} is NOT active!".format(self.selected_uuid))
-                ipv4_label.set_text("")
-                ipv6_label.set_text("")
+        selected_uuid_active = False
+        for active in actives:
+            try:
+                if active.Uuid == self.selected_uuid:
+                    selected_uuid_active = True
+                    if active.State == 2:  # activated
+                        logger.info("setting ip for {}".format(self.selected_uuid))
+                        switch.set_active(True)
+                        GLib.idle_add(ipv4_label.set_text, active.Ip4Config.AddressData[0]['address'])
+                        GLib.idle_add(ipv6_label.set_text, active.Ip6Config.AddressData[0]['address'])
+                    else:
+                        logger.info("clearing ip for {}".format(self.selected_uuid))
+                        switch.set_active(False)
+                        GLib.idle_add(ipv4_label.set_text, "")
+                        GLib.idle_add(ipv6_label.set_text, "")
+                    break
+            except DBusException:
+                pass
 
-        if type(args[0]) == dict:
-            # Old API
-            if 'ActiveConnections' in args[0]:
-                logger.info("old type signal from network manager")
-                we_have_active_connections(args[0]['ActiveConnections'])
-            else:
-                logger.info("ignoring useless signal event")
-        elif args[0] != u'org.freedesktop.NetworkManager':
-            # new api
-            logger.info("new type signal from network manager")
-            we_have_active_connections(args[0].ActiveConnections)
+        if not selected_uuid_active:
+            logger.info("Our selected profile not active {}".format(self.selected_uuid))
+            switch.set_active(False)
+            GLib.idle_add(ipv4_label.set_text, "")
+            GLib.idle_add(ipv6_label.set_text, "")
 
     def activate_connection(self, uuid, display_name):
         """do the actual connecting action"""
