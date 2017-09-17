@@ -40,6 +40,8 @@ landing_page = """
 </html>
 """
 
+client_id = "org.eduvpn.app"
+scope = "config"
 
 def get_open_port():
     """
@@ -94,9 +96,7 @@ def create_oauth_session(port):
         OAuth2Session: a oauth2 session object
     """
     logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
-    client_id = "org.eduvpn.app"
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
-    scope = "config"
     oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=[scope])
     return oauth
 
@@ -138,5 +138,5 @@ def oauth_from_token(token, token_updater, uuid):
         new_token['token_endpoint'] = token['token_endpoint']
         token_updater(uuid, new_token)
 
-    return OAuth2Session(token=token, auto_refresh_url=token['token_endpoint'], scope=['config'],
-                         token_updater=inner)
+    return OAuth2Session(token=token, auto_refresh_url=token['token_endpoint'], scope=scope, token_updater=inner,
+                         client_id=client_id)
