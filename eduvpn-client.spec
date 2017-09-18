@@ -11,7 +11,27 @@ URL:            https://pypi.python.org/pypi/%{srcname}
 Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{srcname}-%{version}.tar.gz
 
 BuildArch:      noarch
-BuildRequires:  python2-devel python3-devel
+BuildRequires: python2-devel
+BuildRequires: pytest
+BuildRequires: python3-devel
+BuildRequires: python-gobject
+BuildRequires: python2-pynacl
+BuildRequires: python2-requests-oauthlib
+BuildRequires: python2-configparser
+BuildRequires: python2-future
+BuildRequires: python2-mock
+BuildRequires: dbus-python
+BuildRequires: python2-dateutil
+BuildRequires: python3-dbus
+BuildRequires: python3-pynacl
+BuildRequires: python3-requests-oauthlib
+BuildRequires: python3-gobject
+BuildRequires: python3-future
+BuildRequires: python3-dateutil
+
+BuildRequires: gtk3
+BuildRequires: libnotify
+
 
 %description
 An python module which provides a convenient example.
@@ -20,7 +40,7 @@ An python module which provides a convenient example.
 Summary:        %{sum}
 %{?python_provide:%python_provide python2-eduvpn-client}
 Requires: python-gobject
-Requires: python2-pydbus
+Requires: dbus-python
 Requires: python2-pynacl
 Requires: python2-requests-oauthlib
 Requires: python2-configparser
@@ -35,12 +55,10 @@ eduVPN client API for Python2
 %package -n python3-eduvpn-client
 Summary:        %{sum}
 %{?python_provide:%python_provide python3-eduvpn-client}
-Requires: python3-networkmanager
-Requires: python3-pydbus
+Requires: python3-dbus
 Requires: python3-pynacl
 Requires: python3-requests-oauthlib
 Requires: python3-gobject
-Requires: python3-configparser
 Requires: python3-future
 Requires: python3-dateutil
 
@@ -71,7 +89,8 @@ eduVPN desktop client
 
 %check
 %{__python3} setup.py test
-%{__python2} setup.py test
+#somehow setup.py test fails for py2
+pytest
 
 %files -n python2-eduvpn-client
 %license LICENSE

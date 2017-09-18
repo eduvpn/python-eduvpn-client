@@ -1,0 +1,11 @@
+FROM ubuntu:xenial
+
+ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
+RUN docker-apt-install \
+        python-pip
+
+ADD . /code
+WORKDIR /code
+RUN pip install -r doc/requirements.txt
+
+RUN sphinx-build -T -E -b html doc doc/_build

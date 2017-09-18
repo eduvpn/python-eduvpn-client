@@ -12,6 +12,8 @@ matrix:
   - env: DIST=ubuntu_xenial_py3
   - env: DIST=ubuntu_zesty_py2
   - env: DIST=ubuntu_zesty_py3
+  - env: DIST=ubuntu_xenial_doc
+  - env: DIST=ubuntu_fedora_26_rpm
 sudo: required
 services:
 - docker

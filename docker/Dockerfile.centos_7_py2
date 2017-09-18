@@ -15,7 +15,9 @@ RUN yum install -y \
         python2-mock \
         pytest
 
+yum install -y python2-pip
+
 ADD . /code
 WORKDIR /code
-RUN python setup.py install
+RUN pip install .
 RUN py.test

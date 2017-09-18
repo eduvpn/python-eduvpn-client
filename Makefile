@@ -79,7 +79,7 @@ run: .virtualenv3/bin/eduvpn-client
 	.virtualenv3/bin/eduvpn-client
 
 dockers:
-	for i in `ls docker/Dockerfile*`; do docker build . -f $$i; done
+	for i in `ls docker/Dockerfile*`; do echo "*** $$i"; docker build . -f $$i; done
 
 
 homebrew:

@@ -11,7 +11,7 @@ Remote calls
     :show-inheritance:
 
 
-eduVPN oauth2
+eduVPN OAuth2
 =============
 
 .. automodule:: eduvpn.oauth2
@@ -38,14 +38,14 @@ eduVPN IO
     :show-inheritance:
 
 
-Network Manager wrapping
-========================
-
-
-.. automodule:: eduvpn.manager
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. Network Manager wrapping
+.. ========================
+..
+..
+.. .. automodule:: eduvpn.manager
+..     :members:
+..     :undoc-members:
+..     :show-inheritance:
 
 OpenVPN
 =======
@@ -55,5 +55,26 @@ OpenVPN
     :undoc-members:
     :show-inheritance:
 
+.. Notifications
+.. =============
+..
+.. .. automodule:: eduvpn.notify
+..     :members:
+..     :undoc-members:
+..     :show-inheritance:
+..
+.. Utilities
+.. =========
+..
+.. .. automodule:: eduvpn.util
+..     :members:
+..     :undoc-members:
+..     :show-inheritance:
 
+Exceptions
+==========
 
+.. automodule:: eduvpn.exceptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
