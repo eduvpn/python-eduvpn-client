@@ -4,55 +4,88 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
-from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_instances, get_profile_config
+from mock import patch
+from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_instances, get_profile_config,\
+    system_messages, user_messages, create_config, list_profiles, translate_display_name, user_info
 
 
 class MochResponse:
-    content = '{"create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}}}'
+    content_json = {
+        "create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}},
+        "profile_list": {"data": {}},
+        "user_info": {'data': {}},
+        "authorization_type": "test",
+        "instances": [],
+    }
+
+    content = str(content_json)
 
     status_code = 200
 
     def json(self):
-        return {"create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}}}
+        return self.content_json
 
     def text(self):
         return "bla"
 
 
-
 class MockOAuth:
-    authorization_url = 'mock'
+
     def get(self, url):
         return MochResponse()
 
     def authorization_url(self, auth_endpoint, code_challenge_method, code_challenge):
-        authorization_url = "mock url"
+        url = "mock url"
         state = "mock state"
-        return authorization_url, state
+        return url, state
 
     def post(self, url, data):
         return MochResponse()
+
+
+class VerifyMock:
+    def verify(self, *args, **kwargs):
+        return True
 
 
 class TestRemote(unittest.TestCase):
 
     def setUp(self):
         self.oauth = MockOAuth()
+        self.verify = VerifyMock()
 
     def test_create_keypair(self):
-
         create_keypair(oauth=self.oauth, api_base_uri='test')
 
     def test_get_auth_url(self):
         get_auth_url(oauth=self.oauth, code_verifier='test', auth_endpoint='test')
 
-    @unittest.skip("todo: need to mock request")
-    def test_get_instance_info(self):
-        get_instance_info(instance_uri='test', verify_key='test')
+    @patch('requests.get')
+    def test_get_instance_info(self, get_mock):
+        get_instance_info(instance_uri='test', verify_key=self.verify)
 
-    @unittest.skip("todo: need to mock request")
-    def test_get_instances(self):
-        get_instances(discovery_uri='test', verify_key='test')
+    @patch('requests.get', side_effect=lambda x: MochResponse())
+    @patch('base64.b64decode', side_effect= lambda x: "decoded")
+    def test_get_instances(self, base_mock, get_mock):
+        get_instances(discovery_uri='test', verify_key=self.verify)
 
     def test_get_profile_config(self):
         get_profile_config(oauth=self.oauth, api_base_uri='test', profile_id='test')
+
+    def test_system_messages(self):
+        system_messages(oauth=self.oauth, api_base_uri='http://test')
+
+    def test_user_messages(self):
+        user_messages(oauth=self.oauth, api_base_uri='http://test')
+
+    def test_create_config(self):
+        create_config(oauth=self.oauth, api_base_uri='http://test', display_name='test', profile_id='test')
+
+    def test_list_profiles(self):
+        list_profiles(oauth=self.oauth, api_base_uri='http://test')
+
+    def test_translate_display_name(self):
+        translate_display_name("translate test")
+
+    def test_user_info(self):
+        user_info(oauth=self.oauth, api_base_uri='http://test')

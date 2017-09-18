@@ -427,6 +427,7 @@
                         <object class="GtkLabel" id="messages-label">
                           <property name="visible">True</property>
                           <property name="can_focus">True</property>
+                          <property name="selectable">False</property>
                           <property name="halign">start</property>
                           <property name="valign">start</property>
                           <property name="margin_left">4</property>
@@ -702,7 +703,7 @@ the institution.</property>
   <object class="GtkDialog" id="fetch-dialog">
     <property name="can_focus">False</property>
     <property name="border_width">8</property>
-    <property name="title" translatable="yes">Fetching data..</property>
+    <property name="title" translatable="yes">Fetching data...</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">eduvpn-window</property>

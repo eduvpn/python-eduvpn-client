@@ -5,15 +5,19 @@
 
 import unittest
 
-from eduvpn.io import open_file, write_and_open_ovpn, write_cert
+from eduvpn.io import write_cert, store_metadata, get_metadata, mkdir_p
 
 
 class TestIo(unittest.TestCase):
-    def test_write_and_open_ovpn(self):
-        write_and_open_ovpn('/tmp/test')
-
-    def test_open_file(self):
-        open_file('/tmp/test')
-
     def test_write_cert(self):
         write_cert(content='test', type_='test', unique_name='test')
+
+    def test_metadata(self):
+        metadata = {'test': 'test'}
+        uuid = 'test'
+        store_metadata(uuid, metadata)
+        metadata2 = get_metadata(uuid)
+        self.assertEqual(metadata, metadata2)
+
+    def test_mkdir_p(self):
+        mkdir_p('/tmp/test/test/test')

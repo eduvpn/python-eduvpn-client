@@ -19,19 +19,6 @@ from eduvpn.config import config_path
 logger = logging.getLogger(__name__)
 
 
-def write_and_open_ovpn(ovpn_text, filename='eduvpn.ovpn'):
-    """
-    Write a OpenVPN config file and open it with the default OS associated file handler
-
-    args:
-        ovpn_text (str): content of OpenVPN config file
-        filename (str): filename for OpenVPN config file
-    """
-    with open(filename, 'w') as f:
-        f.write(ovpn_text)
-    open_file('eduvpn.ovpn')
-
-
 def write_cert(content, type_, unique_name):
     """
     Write a certificate to the filesystem
@@ -55,29 +42,15 @@ def write_cert(content, type_, unique_name):
     return path
 
 
-def open_file(filepath):
-    """
-    Open file document with system associated program
-
-    args:
-        filepath (str): path to file to open
-    """
-    if sys.platform.startswith('darwin'):
-        subprocess.call(('open', filepath))
-    elif os.name == 'nt':
-        os.startfile(filepath)
-    elif os.name == 'posix':
-        subprocess.call(('xdg-open', filepath))
-
-
-def store_metadata(path, **metadata):
+def store_metadata(uuid, metadata):
     """
     Store dictionary as JSON encoded string in a file
 
     args:
-        path (str): path of file
+        uuid (str): unique ID of config
         metadata (dict): metadata to store
     """
+    path = os.path.join(config_path, uuid + '.json')
     logger.info("storing metadata in {}".format(path))
     serialized = json.dumps(metadata)
     mkdir_p(config_path)
@@ -86,9 +59,18 @@ def store_metadata(path, **metadata):
 
 
 def get_metadata(uuid):
+    """
+    Store dictionary as JSON encoded string in a file
+
+    args:
+        uuid (str): unique ID of config
+    returns:
+        dict: metadata for
+    """
     try:
         metadata_path = os.path.join(config_path, uuid + '.json')
-        return json.load(open(metadata_path, 'r'))
+        with open(metadata_path, 'r') as f:
+            return json.load(f)
     except IOError as e:
         logger.error("can't open metdata file for {}: {}".format(uuid, str(e)))
         return {'uuid': uuid, 'display_name': uuid, 'icon_data': None, 'connection_type': 'unknown'}

@@ -16,6 +16,7 @@ install_requires = [
     'configparser',
     'python-dateutil',
     'pygobject',
+    'six',
 ]
 
 # sometimes the python2 package is not properly registered, triggering a reinstall and compile

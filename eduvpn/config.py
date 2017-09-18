@@ -19,11 +19,11 @@ secure_internet_uri_dev = 'https://static.eduvpn.nl/disco/secure_internet_dev.js
 institute_access_uri_dev = 'https://static.eduvpn.nl/disco/institute_access_dev.json'
 verify_key = 'E5On0JTtyUVZmcWd+I/FXRm32nSq8R2ioyW7dcu/U88='
 
-# TODO: support multiple languages
 locale = "en-US"
 
-metadata = ("api_base_uri", "profile_id", "display_name", "token", "connection_type", "authorization_type",
-            "profile_display_name", "two_factor", "cert", "key", "config", "uuid", "icon_data", "instance_base_uri")
+stored_metadata = ("api_base_uri", "profile_id", "display_name", "token", "connection_type", "authorization_type",
+                   "profile_display_name", "two_factor", "cert", "key", "config", "uuid", "icon_data",
+                   "instance_base_uri")
 
 
 icon_size = {'width': 105, 'height': 45}

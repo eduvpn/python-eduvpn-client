@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
+# noinspection PyCompatibility
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
 from future.moves.urllib.parse import urlparse, parse_qs
@@ -43,6 +44,7 @@ landing_page = """
 client_id = "org.eduvpn.app"
 scope = "config"
 
+
 def get_open_port():
     """
     find an unused local port
@@ -76,7 +78,6 @@ def one_request(port):
             self.end_headers()
             self.wfile.write(landing_page.encode('utf-8'))
             self.server.path = self.path
-            path = self.path
 
     httpd = HTTPServer(('', port), RequestHandler)
     httpd.handle_request()

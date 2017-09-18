@@ -24,16 +24,14 @@ sys.path.insert(0, os.path.abspath('..'))
 from eduvpn import __version__
 
 
-
 class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
             return MagicMock()
 
-MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'nacl', 'NetworkManager',
-        'dbus', 'nacl.signing', 'dbus.service', 'future', 'future.moves',
-        'future.moves.urllib', 'future.moves.urllib.parse', 'requests_oauthlib',
-        'http.server']
+MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'nacl', 'NetworkManager', 'dbus', 'nacl.signing', 'dbus.service', 'future',
+                'future.moves', 'future.moves.urllib', 'future.moves.urllib.parse', 'requests_oauthlib',
+                'http.server']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 
@@ -185,8 +183,6 @@ texinfo_documents = [
      author, 'python-eduvpn-client', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
