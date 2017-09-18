@@ -14,10 +14,13 @@ install_requires = [
     'requests_oauthlib',
     'future',
     'configparser',
+    'python-dateutil',
+    'pygobject',
 ]
 
+# sometimes the python2 package is not properly registered, triggering a reinstall and compile
 extras_require = {
-    'client': ['python-networkmanager', 'pygobject'],
+    'dbus': ['dbus-python'],
 }
 
 scripts = [

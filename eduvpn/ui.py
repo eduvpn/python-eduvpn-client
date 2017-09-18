@@ -404,12 +404,12 @@ class EduVpnApp:
                        authorization_type, icon_data):
         logger.info("fetching user and system messages from {} ({})".format(display_name, api_base_uri))
 
-        def background(buffer, token):
+        def background(label, token):
             oauth = oauth_from_token(token, update_token, uuid)
             text = ""
             try:
-                messages_user = user_messages(oauth, api_base_uri)
-                messages_system = system_messages(oauth, api_base_uri)
+                messages_user = list(user_messages(oauth, api_base_uri))
+                messages_system = list(system_messages(oauth, api_base_uri))
             except EduvpnAuthException:
                 GLib.idle_add(self.reauth, display_name, uuid, instance_base_uri, connection_type, authorization_type,
                               icon_data)
@@ -417,24 +417,20 @@ class EduVpnApp:
                 GLib.idle_add(error_helper, self.window, "Can't fetch user messages", str(e))
                 raise
             else:
-                for message in messages_user:
-                    logger.info(message)
-                    date_time = message['date_time']
-                    content = message['message']
-                    type = message['notification']
-                    text += date_time + "\n"
-                    text += content + "\n\n"
-                for message in messages_system:
-                    logger.info(message)
-                    date_time = message['date_time']
-                    content = message['message']
-                    type = message['type']
-                    text += date_time + "\n"
-                    text += content + "\n\n"
-                GLib.idle_add(buffer.set_text, text)
+                for date_time, type_, message in messages_user:
+                    logger.info("user message at {}: {}".format(date_time, message))
+                    text += "<b><big>{}</big></b>\n".format(date_time)
+                    text += "<small><i>user, {}</i></small>\n".format(type_)
+                    text += "{}\n\n".format(message)
+                for date_time, type_, message in messages_system:
+                    logger.info("system message at {}: {}".format(date_time, message))
+                    text += "<b><big>{}</big></b>\n".format(date_time)
+                    text += "<small><i>system, {}</i></small>\n".format(type_)
+                    text += "{}\n\n".format(message)
+                GLib.idle_add(label.set_markup, text)
 
-        buffer = self.builder.get_object('messages-buffer')
-        thread_helper(lambda: background(buffer, token))
+        label = self.builder.get_object('messages-label')
+        thread_helper(lambda: background(label, token))
 
     def select_config(self, list):
         notebook = self.builder.get_object('outer-notebook')

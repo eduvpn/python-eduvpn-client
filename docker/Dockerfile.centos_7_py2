@@ -3,16 +3,15 @@ FROM centos:7
 RUN yum install -y epel-release
 
 RUN yum install -y \
-        python2-networkmanager \
         python2-pydbus \
         python2-pynacl \
         python2-requests-oauthlib \
         python-gobject \
-	    python2-pip \
+        python2-pip \
         python2-configparser \
         python2-future \
-        python2-nose \
-        python2-mock
+        python2-mock \
+        python3-dateutil \
 
 ADD . /code
 WORKDIR /code

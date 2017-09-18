@@ -6,6 +6,7 @@
 import logging
 import base64
 
+import dateutil.parser
 import requests
 
 from eduvpn.config import locale
@@ -183,11 +184,14 @@ def user_info(oauth, api_base_uri):
 
 def user_messages(oauth, api_base_uri):
     """
-    Returns user messages
+    These are messages specific to the user. It can contain a message about the user being blocked, or other personal
+    messages from the VPN administrator.
 
     args:
         oauth (requests_oauthlib.OAuth2Session): oauth2 object
         api_base_uri (str): the instance base URI
+    returns:
+        list: a list of dicts with date_time, message, type keys
     """
     logger.info("Retrieving user messages from {}".format(api_base_uri))
     response = oauth.get(api_base_uri + '/user_messages')
@@ -195,10 +199,11 @@ def user_messages(oauth, api_base_uri):
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
         raise Exception("can't fetch user messages, error code {}".format(response.status_code))
-    user_messages = response.json()['user_messages']
-    data = user_messages['data']
-    ok = user_messages['ok']
-    return data
+    messages = response.json()['user_messages']
+    ok = messages['ok']
+    data = messages['data']
+    for d in data:
+        yield dateutil.parser.parse(d['date_time']), d['type'], d['message']
 
 
 def system_messages(oauth, api_base_uri):
@@ -216,9 +221,10 @@ def system_messages(oauth, api_base_uri):
     elif response.status_code != 200:
         raise Exception("can't fetch system messages, error code {}".format(response.status_code))
     messages = response.json()['system_messages']
-    data = messages['data']
     ok = messages['ok']
-    return data
+    data = messages['data']
+    for d in data:
+        yield dateutil.parser.parse(d['date_time']), d['type'], d['message']
 
 
 def create_config(oauth, api_base_uri, display_name, profile_id):

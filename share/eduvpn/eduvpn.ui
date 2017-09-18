@@ -37,7 +37,6 @@
     <property name="can_focus">False</property>
     <property name="pixbuf">internet_small.png</property>
   </object>
-  <object class="GtkTextBuffer" id="messages-buffer"/>
   <object class="GtkApplicationWindow" id="eduvpn-window">
     <property name="can_focus">False</property>
     <property name="border_width">8</property>
@@ -418,18 +417,28 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkTextView" id="messages">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin_left">5</property>
-                    <property name="margin_right">6</property>
-                    <property name="margin_top">5</property>
-                    <property name="margin_bottom">5</property>
-                    <property name="editable">False</property>
-                    <property name="wrap_mode">char</property>
-                    <property name="cursor_visible">False</property>
-                    <property name="buffer">messages-buffer</property>
-                    <property name="accepts_tab">False</property>
+                  <object class="GtkScrolledWindow" id="messages-scrolledwindow">
+                      <property name="visible">True</property>
+                      <property name="can_focus">True</property>
+                      <property name="shadow_type">in</property>
+                      <property name="min_content_width">300</property>
+                      <property name="min_content_height">200</property>
+                      <child>
+                        <object class="GtkLabel" id="messages-label">
+                          <property name="visible">True</property>
+                          <property name="can_focus">True</property>
+                          <property name="halign">start</property>
+                          <property name="valign">start</property>
+                          <property name="margin_left">4</property>
+                          <property name="margin_right">4</property>
+                          <property name="margin_top">4</property>
+                          <property name="margin_bottom">4</property>
+                          <property name="wrap">True</property>
+                        </object>
+                        <packing>
+                          <property name="position">1</property>
+                        </packing>
+                      </child>
                   </object>
                   <packing>
                     <property name="position">1</property>

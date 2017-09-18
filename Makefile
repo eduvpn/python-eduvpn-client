@@ -12,6 +12,8 @@ deb:
 		python-nacl \
 		python-requests-oauthlib \
 		python-gi \
+		python-dateutil \
+		python3-dateutil \
 		python3-dbus \
 		python3-nacl \
 		python3-requests-oauthlib \
@@ -36,6 +38,8 @@ fedora:
 		python2-nose \
 		python2-mock \
 		python2-virtualenv \
+		python2-dateutil \
+		python3-dateutil \
 		python3-networkmanager \
 		python3-pydbus \
 		python3-pynacl \
@@ -51,13 +55,13 @@ fedora:
 	virtualenv --system-site-packages -p python2 .virtualenv
 
 .virtualenv/bin/eduvpn-client: .virtualenv/
-	.virtualenv/bin/pip install -e ".[client]"
+	.virtualenv/bin/pip install -e ".[dbus]"
 
 .virtualenv3/:
 	virtualenv --system-site-packages -p python3 .virtualenv3
 
 .virtualenv3/bin/eduvpn-client: .virtualenv3/
-	.virtualenv3/bin/pip install -e ".[client]"
+	.virtualenv3/bin/pip install -e ".[dbus]"
 
 doc:  .virtualenv/
 	.virtualenv/bin/pip install -r doc/requirements.txt

@@ -2,16 +2,16 @@ FROM ubuntu:xenial
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
 RUN docker-apt-install \
-        python-networkmanager \
         python-dbus \
         python-nacl \
         python-requests-oauthlib \
         python-gi \
-	    python-pip \
+        python-pip \
         python-configparser \
         python-future \
         python-nose \
-        python-mock
+        python-mock \
+        python-dateutil
 
 ADD . /code
 WORKDIR /code
