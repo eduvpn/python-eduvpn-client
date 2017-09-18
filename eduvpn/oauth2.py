@@ -139,5 +139,5 @@ def oauth_from_token(token, token_updater, uuid):
         new_token['token_endpoint'] = token['token_endpoint']
         token_updater(uuid, new_token)
 
-    return OAuth2Session(token=token, auto_refresh_url=token['token_endpoint'], scope=scope, token_updater=inner,
+    return OAuth2Session(token=token, auto_refresh_url=token['token_endpoint'], scope=[scope], token_updater=inner,
                          client_id=client_id)
