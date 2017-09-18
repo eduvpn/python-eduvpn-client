@@ -1,5 +1,5 @@
 import unittest
-from eduvpn.util import get_prefix, have_dbus
+from eduvpn.util import get_prefix, _have_dbus
 
 
 class TestUtil(unittest.TestCase):
@@ -7,4 +7,4 @@ class TestUtil(unittest.TestCase):
         get_prefix()
 
     def test_have_dbus(self):
-        have_dbus()
+        _have_dbus()

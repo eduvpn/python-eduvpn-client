@@ -9,8 +9,6 @@ Helper functions related to local IO
 import errno
 import json
 import os
-import subprocess
-import sys
 from os.path import expanduser
 import logging
 
@@ -41,21 +39,6 @@ def write_cert(content, type_, unique_name):
     os.chmod(path, 0o600)
     return path
 
-
-def store_metadata(uuid, metadata):
-    """
-    Store dictionary as JSON encoded string in a file
-
-    args:
-        uuid (str): unique ID of config
-        metadata (dict): metadata to store
-    """
-    path = os.path.join(config_path, uuid + '.json')
-    logger.info("storing metadata in {}".format(path))
-    serialized = json.dumps(metadata)
-    mkdir_p(config_path)
-    with open(path, 'w') as f:
-        f.write(serialized)
 
 
 def get_metadata(uuid):
