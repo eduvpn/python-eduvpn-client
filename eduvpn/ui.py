@@ -320,6 +320,7 @@ class EduVpnApp:
         model = self.builder.get_object('profiles-model')
         selection = self.builder.get_object('profiles-selection')
         dialog.show_all()
+        model.clear()
         [model.append(p) for p in profiles]
         response = dialog.run()
         dialog.hide()
