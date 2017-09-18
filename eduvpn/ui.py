@@ -296,7 +296,7 @@ class EduVpnApp:
                                   connection_type, authorization_type, icon_data, instance_base_uri)
                 elif len(profiles) == 1:
                     profile_display_name, profile_id, two_factor = profiles[0]
-                    self.finalizing_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
+                    self.two_auth_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
                                          authorization_type, profile_display_name, two_factor, icon_data,
                                          instance_base_uri)
                 else:
@@ -331,14 +331,53 @@ class EduVpnApp:
             model, treeiter = selection.get_selected()
             if treeiter:
                 profile_display_name, profile_id, two_factor = model[treeiter]
-                self.finalizing_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
+                self.two_auth_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
                                      authorization_type, profile_display_name, two_factor, icon_data, instance_base_uri)
             else:
                 logger.error("nothing selected")
                 return
 
+    def two_auth_step(self, oauth, api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
+                      profile_display_name, two_factor, icon_data, instance_base_uri):
+        """checks if 2auth is enabled. If more than 1 option presents user with choice"""
+        dialog = self.builder.get_object('2fa-dialog')
+
+        def update(options):
+            two_dialog = self.builder.get_object('2fa-dialog')
+            for i, option in enumerate(options):
+                dialog.add_button(option, i)
+            two_dialog.show()
+            index = int(dialog.run())
+            if index >= 0:
+                username = options[index]
+                logger.info("user selected '{}'".format(username))
+                self.finalizing_step(oauth, api_base_uri, profile_id, display_name, token, connection_type,
+                                     authorization_type, profile_display_name, two_factor, icon_data,
+                                     instance_base_uri, username)
+            dialog.destroy()
+
+        def background():
+            info = user_info(oauth, api_base_uri)
+            username = None
+            if info['is_disabled']:
+                GLib.idle_add(error_helper, self.window, "This account has been disabled", "")
+
+            if 'two_factor_enrolled_with' in info:
+                options = info['two_factor_enrolled_with']
+                if len(options) > 1:
+                    GLib.idle_add(update, options)
+                    return
+                elif len(options) == 1:
+                    username = options[0]
+                    logger.info("auto selected username {} for 2 factor authentication".format(username))
+                GLib.idle_add(self.finalizing_step, oauth, api_base_uri, profile_id, display_name, token,
+                              connection_type, authorization_type, profile_display_name, two_factor, icon_data,
+                              instance_base_uri, username)
+
+        thread_helper(background)
+
     def finalizing_step(self, oauth, api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                        profile_display_name, two_factor, icon_data, instance_base_uri):
+                        profile_display_name, two_factor, icon_data, instance_base_uri, username):
         """finalise the add profile flow, add a configuration"""
         logger.info("finalizing step")
         dialog = self.builder.get_object('fetch-dialog')
@@ -356,7 +395,8 @@ class EduVpnApp:
             else:
                 try:
                     store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                                   profile_display_name, two_factor, cert, key, config, icon_data, instance_base_uri)
+                                   profile_display_name, two_factor, cert, key, config, icon_data, instance_base_uri,
+                                   username)
                     notify("eduVPN provider added", "added provider '{}'".format(display_name))
                 except Exception as e:
                     GLib.idle_add(error_helper, dialog, "can't store configuration", "{} {}".format(type(e).__name__,
@@ -389,7 +429,9 @@ class EduVpnApp:
                 delete_provider(uuid)
                 notify("eduVPN provider deleted", "Deleted '{}'".format(display_name))
             except Exception as e:
-                GLib.idle_add(error_helper, self.window, "can't delete profile", str(e))
+                error_helper(self.window, "can't delete profile", str(e))
+                dialog.destroy()
+                raise
             GLib.idle_add(self.update_providers)
         elif response == Gtk.ResponseType.NO:
             logger.info("not deleting provider config")
@@ -423,6 +465,7 @@ class EduVpnApp:
                 info = user_info(oauth, api_base_uri)
                 if info['is_disabled']:
                     GLib.idle_add(error_helper, self.window, "This account has been disabled", "")
+
             except EduvpnAuthException:
                 GLib.idle_add(self.reauth, display_name, uuid, instance_base_uri, connection_type, authorization_type,
                               icon_data)
@@ -451,6 +494,7 @@ class EduVpnApp:
         switch = self.builder.get_object('connect-switch')
         ipv4_label = self.builder.get_object('ipv4-label')
         ipv6_label = self.builder.get_object('ipv6-label')
+        twofa_label = self.builder.get_object('2fa-label')
         name_label = self.builder.get_object('name-label')
         profile_label = self.builder.get_object('profile-label')
         profile_image = self.builder.get_object('profile-image')
@@ -481,6 +525,16 @@ class EduVpnApp:
             else:
                 ipv4_label.set_text("")
                 ipv6_label.set_text("")
+
+            if 'username' in self.selected_metadata:
+                username = self.selected_metadata['username']
+                if username:
+                    twofa_label.set_text(username)
+                else:
+                    twofa_label.set_text("")
+            else:
+                twofa_label.set_text("")
+
             notebook.show_all()
             notebook.set_current_page(1)
 
@@ -534,17 +588,19 @@ class EduVpnApp:
         logger.info("Connecting to {}".format(display_name))
         notify("eduVPN connecting...", "Connecting to '{}'".format(display_name))
         try:
-            for m in 'profile_id', 'api_base_uri', 'token':
+            for m in 'profile_id', 'api_base_uri', 'token', 'username':
                 if m not in self.selected_metadata:
                     logger.error("metadata missing for uuid {}, can't update config".format(uuid))
                     connect_provider(uuid)
+                    return
 
             profile_id = self.selected_metadata['profile_id']
             api_base_uri = self.selected_metadata['api_base_uri']
+            username = self.selected_metadata['username']
 
             oauth = oauth_from_token(self.selected_metadata['token'], update_token, uuid)
             config = get_profile_config(oauth, api_base_uri, profile_id)
-            update_config_provider(uuid=uuid, display_name=display_name, config=config)
+            update_config_provider(uuid=uuid, display_name=display_name, config=config, username=username)
 
             if datetime.now() > datetime.fromtimestamp(self.selected_metadata['token']['expires_at']):
                 logger.info("key pair is expired")

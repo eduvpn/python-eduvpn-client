@@ -34,7 +34,7 @@ class TestNm(unittest.TestCase):
             uuid = store_provider(api_base_uri="test", profile_id="test", display_name="test", token="test",
                                   connection_type="test", authorization_type="test", profile_display_name="test",
                                   two_factor="test", cert="test", key="test", config=config, icon_data=None,
-                                  instance_base_uri="test")
+                                  instance_base_uri="test", username='test')
             update_config_provider(uuid=uuid, display_name='test', config=config)
             delete_provider(uuid)
 

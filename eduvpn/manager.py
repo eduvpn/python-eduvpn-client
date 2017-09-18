@@ -52,7 +52,7 @@ def list_providers():
 
 
 def store_provider(api_base_uri, profile_id, display_name, token, connection_type, authorization_type,
-                   profile_display_name, two_factor, cert, key, config, icon_data, instance_base_uri):
+                   profile_display_name, two_factor, cert, key, config, icon_data, instance_base_uri, username):
     """Store the eduVPN configuration"""
     logger.info("storing profile with name {} using NetworkManager".format(display_name))
     uuid = make_unique_id()
@@ -62,7 +62,7 @@ def store_provider(api_base_uri, profile_id, display_name, token, connection_typ
     key_path = write_cert(key, 'key', uuid)
     ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
-    nm_config = ovpn_to_nm(config_dict, uuid=uuid, display_name=display_name)
+    nm_config = ovpn_to_nm(config_dict, uuid=uuid, display_name=display_name, username=username)
     mkdir_p(config_path)
     l = locals()
     store = {i: l[i] for i in stored_metadata}
@@ -88,6 +88,9 @@ def delete_provider(uuid):
     conn = conns[0]
     logger.info("removing certificates for {}".format(uuid))
     for f in ['ca', 'cert', 'key', 'ta']:
+        if f not in conn.GetSettings()['vpn']['data']:
+            logger.error("key {} not in config for {}".format(f, uuid))
+            continue
         path = conn.GetSettings()['vpn']['data'][f]
         logger.info("removing certificate {}".format(path))
         try:
@@ -162,7 +165,7 @@ def is_provider_connected(uuid):
                 return "", ""
 
 
-def update_config_provider(uuid, display_name, config):
+def update_config_provider(uuid, display_name, config, username=None):
     """
     Update an existing network manager configuration
 
@@ -175,7 +178,7 @@ def update_config_provider(uuid, display_name, config):
     config_dict = parse_ovpn(config)
     ca_path = write_cert(config_dict.pop('ca'), 'ca', uuid)
     ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', uuid)
-    nm_config = ovpn_to_nm(config_dict, uuid=uuid, display_name=display_name)
+    nm_config = ovpn_to_nm(config_dict, uuid=uuid, display_name=display_name, username=username)
     old_conn = NetworkManager.Settings.GetConnectionByUuid(uuid)
     old_settings = old_conn.GetSettings()
     nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
