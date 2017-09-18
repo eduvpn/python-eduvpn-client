@@ -495,6 +495,7 @@ class EduVpnApp:
         ipv4_label = self.builder.get_object('ipv4-label')
         ipv6_label = self.builder.get_object('ipv6-label')
         twofa_label = self.builder.get_object('2fa-label')
+        twofa_label_label = self.builder.get_object('2fa-label-label')
         name_label = self.builder.get_object('name-label')
         profile_label = self.builder.get_object('profile-label')
         profile_image = self.builder.get_object('profile-image')
@@ -530,10 +531,13 @@ class EduVpnApp:
                 username = self.selected_metadata['username']
                 if username:
                     twofa_label.set_text(username)
+                    twofa_label_label.set_text("2FA:")
                 else:
                     twofa_label.set_text("")
+                    twofa_label_label.set_text("")
             else:
                 twofa_label.set_text("")
+                twofa_label_label.set_text("")
 
             notebook.show_all()
             notebook.set_current_page(1)
@@ -559,15 +563,18 @@ class EduVpnApp:
                     selected_uuid_active = True
                     if active.State == 2:  # activated
                         logger.info("setting ip for {}".format(self.selected_uuid))
+                        logger.info("setting switch ON")
                         switch.set_active(True)
                         GLib.idle_add(ipv4_label.set_text, active.Ip4Config.AddressData[0]['address'])
                         GLib.idle_add(ipv6_label.set_text, active.Ip6Config.AddressData[0]['address'])
                         notify("eduVPN connected", "Connected to '{}'".format(self.selected_metadata['display_name']))
                     elif active.State == 1:  # activating
+                        logger.info("setting switch ON")
                         switch.set_active(True)
                         notify("eduVPN connecting...", "Activating '{}'".format(self.selected_metadata['display_name']))
                     else:
                         logger.info("clearing ip for '{}'".format(self.selected_uuid))
+                        logger.info("setting switch OFF")
                         switch.set_active(False)
                         GLib.idle_add(ipv4_label.set_text, "")
                         GLib.idle_add(ipv6_label.set_text, "")
@@ -579,6 +586,7 @@ class EduVpnApp:
         if not selected_uuid_active:
             logger.info("Our selected profile not active {}".format(self.selected_uuid))
             notify("eduVPN Disconnected", "Disconnected from '{}'".format(self.selected_metadata['display_name']))
+            logger.info("setting switch OFF")
             switch.set_active(False)
             GLib.idle_add(ipv4_label.set_text, "")
             GLib.idle_add(ipv6_label.set_text, "")
@@ -622,11 +630,13 @@ class EduVpnApp:
         if treeiter is not None:
             uuid, display_name, _, _ = model[treeiter]
             if not state:
-                switch.set_active(True)
+                logger.info("setting switch ON")
+                GLib.idle_add(switch.set_active, True)
                 self.activate_connection(uuid, display_name)
             else:
                 notify("eduVPN disconnecting...", "Disconnecting from {}".format(display_name))
-                switch.set_active(False)
+                logger.info("setting switch OFF")
+                GLib.idle_add(switch.set_active, False)
                 try:
                     disconnect_provider(uuid)
                 except Exception as e:
