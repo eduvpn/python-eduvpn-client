@@ -34,14 +34,12 @@ class TestNm(unittest.TestCase):
 
     def test_store_provider(self):
         uuid = store_provider(meta=self.meta)
+        update_token(uuid=self.meta.uuid, token={})
         delete_provider(uuid)
 
     def test_connect_provider(self):
         with self.assertRaises(EduvpnException):
             connect_provider(self.meta.uuid)
-
-    def test_update_token(self):
-        update_token(uuid='test', token={})
 
     def test_list_active(self):
         list_active()
