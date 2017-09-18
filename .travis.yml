@@ -8,12 +8,12 @@ matrix:
   - env: DIST=fedora_25_py3
   - env: DIST=fedora_26_py2
   - env: DIST=fedora_26_py3
+  - env: DIST=fedora_26_rpm
   - env: DIST=ubuntu_xenial_py2
   - env: DIST=ubuntu_xenial_py3
+  - env: DIST=ubuntu_xenial_doc
   - env: DIST=ubuntu_zesty_py2
   - env: DIST=ubuntu_zesty_py3
-  - env: DIST=ubuntu_xenial_doc
-  - env: DIST=ubuntu_fedora_26_rpm
 sudo: required
 services:
 - docker

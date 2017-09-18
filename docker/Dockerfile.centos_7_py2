@@ -13,9 +13,9 @@ RUN yum install -y \
         python2-future \
         python2-dateutil \
         python2-mock \
+        python2-pip
         pytest
 
-yum install -y python2-pip
 
 ADD . /code
 WORKDIR /code
