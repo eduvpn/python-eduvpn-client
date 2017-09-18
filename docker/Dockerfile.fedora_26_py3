@@ -1,17 +1,18 @@
 FROM fedora:26
 
 RUN dnf install -y \
-        python3-pydbus \
+        libnotify \
+        gtk3 \
+        python3-dbus \
         python3-pynacl \
         python3-requests-oauthlib \
         python3-gobject \
-        python3-pip \
-        python3-configparser \
         python3-future \
-        python3-nose \
+        python3-dateutil \
         python3-mock \
-        python3-dateutil
+        python3-pytest
 
 ADD . /code
 WORKDIR /code
-RUN pip3 install .
+RUN python3 setup.py install
+RUN python3 setup.py test

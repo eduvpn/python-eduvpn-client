@@ -2,19 +2,21 @@ FROM debian:stretch
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
 RUN docker-apt-install \
+        gir1.2-gtk-3.0 \
+        gir1.2-notify-0.7 \
+        python-gi \
         python-dbus \
         python-nacl \
         python-requests-oauthlib \
-        python-gi \
-        python-pip \
         python-configparser \
         python-future \
+        python-dateutil \
+        python-pip \
         python-mock \
-        python-dateutil
-
+        python-pytest
 
 ADD . /code
 WORKDIR /code
-RUN pip install .
-#RUN nosetests
+RUN python setup.py install
+RUN python setup.py test
 

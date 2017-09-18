@@ -9,8 +9,7 @@ from os.path import dirname, expanduser
 
 config_path = expanduser('~/.config/eduvpn')
 
-# where we are installed
-prefix = dirname(dirname(dirname(executable)))
+
 
 
 secure_internet_uri = 'https://static.eduvpn.nl/disco/secure_internet.json'

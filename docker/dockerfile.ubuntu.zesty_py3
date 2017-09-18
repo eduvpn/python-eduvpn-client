@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM ubuntu:zesty
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
 RUN docker-apt-install \
@@ -10,12 +10,11 @@ RUN docker-apt-install \
         python3-requests-oauthlib \
         python3-future \
         python3-dateutil \
+        python3-pip \
         python3-mock \
         python3-pytest
 
-
 ADD . /code
 WORKDIR /code
-RUN python3 setup.py install
+RUN python setup.py install
 RUN python3 setup.py test
-

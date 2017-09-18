@@ -56,22 +56,22 @@ Requires:  python3-eduvpn-client
 %description -n eduvpn-client
 eduVPN desktop client
 
-
 %prep
 %autosetup -n %{srcname}-%{version}
 
 %build
-%py3_build
 %py2_build
+%py3_build
+
 
 %install
-%py3_install
 %py2_install
+%py3_install
 
-# todo: disable for now, creates side effects
-#%check
-#%{__python3} setup.py test
-#%{__python2} setup.py test
+
+%check
+%{__python3} setup.py test
+%{__python2} setup.py test
 
 %files -n python2-eduvpn-client
 %license LICENSE

@@ -9,12 +9,11 @@ gi.require_version('Notify', '0.7')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Notify, GdkPixbuf
 
-from eduvpn.config import prefix
+from eduvpn.util import get_prefix
 
 Notify.init("eduVPN client")
 
-# http://www.devdungeon.com/content/desktop-notifications-python-libnotify
-image_path = path.join(prefix, 'share/eduvpn/eduvpn.png')
+image_path = path.join(get_prefix(), 'share/eduvpn/eduvpn.png')
 image = GdkPixbuf.Pixbuf.new_from_file(image_path)
 
 notification = Notify.Notification.new('test')

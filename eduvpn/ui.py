@@ -16,19 +16,17 @@ gi.require_version('Notify', '0.7')
 
 from gi.repository import GObject, Gtk, GLib, GdkPixbuf
 
-# this need to imported and initialised before the NetworkManager module
+
+from eduvpn.util import have_dbus
+
 import dbus.mainloop.glib
-dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-import eduvpn.other_nm as NetworkManager
 
-from dbus.exceptions import DBusException
-
-from eduvpn.util import error_helper, thread_helper
-from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key, icon_size, prefix
+from eduvpn.util import error_helper, thread_helper, get_prefix
+from eduvpn.config import secure_internet_uri, institute_access_uri, verify_key, icon_size
 from eduvpn.crypto import make_verifier, gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.manager import connect_provider, list_providers, store_provider, delete_provider, disconnect_provider, \
-    is_provider_connected, update_config_provider, update_keys_provider, update_token, vpn_monitor
+    is_provider_connected, update_config_provider, update_keys_provider, update_token, vpn_monitor, active_connections
 from eduvpn.remote import get_instances, get_instance_info, get_auth_url, list_profiles, create_keypair, \
     get_profile_config, system_messages, user_messages, user_info
 from eduvpn.notify import notify
@@ -42,6 +40,9 @@ logger = logging.getLogger(__name__)
 
 class EduVpnApp:
     def __init__(self):
+        """setup UI thingies, don't do any fetching or DBus communication yet"""
+
+        self.prefix = get_prefix()
 
         # minimal global state to pass around data between steps where otherwise difficult
         self.auth_url = None
@@ -58,24 +59,24 @@ class EduVpnApp:
         }
 
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(prefix, 'share/eduvpn/eduvpn.ui'))
+        self.builder.add_from_file(os.path.join(self.prefix, 'share/eduvpn/eduvpn.ui'))
         self.builder.connect_signals(handlers)
 
         self.window = self.builder.get_object('eduvpn-window')
         self.verifier = make_verifier(verify_key)
 
         self.window.set_position(Gtk.WindowPosition.CENTER)
-        self.window.show_all()
 
-        logo = os.path.join(prefix, 'share/eduvpn/eduvpn.png')
+        logo = os.path.join(self.prefix, 'share/eduvpn/eduvpn.png')
         self.icon_placeholder = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'],
                                                                         icon_size['height'], True)
         self.icon_placeholder_big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width']*2,
                                                                             icon_size['height']*2, True)
 
+    def run(self):
         # attach a callback to VPN connection monitor
         vpn_monitor(self.vpn_status_change)
-
+        self.window.show_all()
         self.update_providers()
 
     def connect(self, selection):
@@ -497,13 +498,8 @@ class EduVpnApp:
         ipv4_label = self.builder.get_object('ipv4-label')
         ipv6_label = self.builder.get_object('ipv6-label')
 
-        try:
-            actives = NetworkManager.NetworkManager.ActiveConnections
-        except DBusException:
-            return
-
         selected_uuid_active = False
-        for active in actives:
+        for active in active_connections():
             try:
                 if active.Uuid == self.selected_uuid:
                     selected_uuid_active = True
@@ -522,7 +518,8 @@ class EduVpnApp:
                         GLib.idle_add(ipv4_label.set_text, "")
                         GLib.idle_add(ipv6_label.set_text, "")
                     break
-            except (DBusException, NetworkManager.ObjectVanished):
+            except Exception as e:
+                logger.warning("probably race condition in network manager: {}".format(e))
                 pass
 
         if not selected_uuid_active:
@@ -582,7 +579,9 @@ class EduVpnApp:
 
 def main():
     GObject.threads_init()
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     logging.basicConfig(level=logging.INFO)
-    EduVpnApp()
+    edu_vpn_app = EduVpnApp()
+    edu_vpn_app.run()
     Gtk.main()
 

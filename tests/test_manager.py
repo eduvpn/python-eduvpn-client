@@ -7,6 +7,7 @@ from os import path
 import unittest
 from dbus.exceptions import DBusException
 
+from eduvpn.util import have_dbus
 from eduvpn.manager import update_token, list_providers, list_active, connect_provider, delete_provider,\
     disconnect_provider, insert_config, is_provider_connected, update_config_provider, store_provider,\
     update_keys_provider
@@ -16,6 +17,7 @@ from eduvpn.exceptions import EduvpnException
 here = path.dirname(__file__)
 
 
+@unittest.skipUnless(have_dbus(), "DBus daemon not running")
 class TestNm(unittest.TestCase):
     def setUp(self):
         self.name = 'test'

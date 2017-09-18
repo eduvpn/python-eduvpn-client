@@ -3,16 +3,19 @@ FROM centos:7
 RUN yum install -y epel-release
 
 RUN yum install -y \
+        libnotify \
+        gtk3 \
+        python-gobject \
         python2-pydbus \
         python2-pynacl \
         python2-requests-oauthlib \
-        python-gobject \
-        python2-pip \
         python2-configparser \
         python2-future \
+        python2-dateutil \
         python2-mock \
-        python3-dateutil \
+        pytest
 
 ADD . /code
 WORKDIR /code
-RUN pip install .
+RUN python setup.py install
+RUN py.test

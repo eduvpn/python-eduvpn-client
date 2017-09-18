@@ -7,7 +7,11 @@ import json
 import logging
 import os
 
-import eduvpn.other_nm as NetworkManager
+from eduvpn.util import have_dbus
+if have_dbus():
+    import eduvpn.other_nm as NetworkManager
+    from dbus.exceptions import DBusException
+
 from eduvpn.config import config_path, stored_metadata
 from eduvpn.io import write_cert, store_metadata, mkdir_p
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn, ovpn_to_nm
@@ -222,3 +226,10 @@ def vpn_monitor(callback):
     for connection in NetworkManager.Settings.ListConnections():
         if connection.GetSettings()['connection']['type'] == 'vpn':
             connection.connect_to_signal('Updated', callback)
+
+
+def active_connections():
+    try:
+        return NetworkManager.NetworkManager.ActiveConnections
+    except DBusException:
+        return []
