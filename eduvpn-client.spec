@@ -9,18 +9,20 @@ Summary:        %{sum}
 License:        MIT
 URL:            https://pypi.python.org/pypi/%{srcname}
 Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{srcname}-%{version}.tar.gz
-
 BuildArch:      noarch
-BuildRequires: python2-devel
 BuildRequires: pytest
-BuildRequires: python3-devel
+BuildRequires: gtk3
+BuildRequires: libnotify
+BuildRequires: dbus-python
 BuildRequires: python-gobject
+BuildRequires: python2-devel
 BuildRequires: python2-pynacl
 BuildRequires: python2-requests-oauthlib
 BuildRequires: python2-configparser
 BuildRequires: python2-future
 BuildRequires: python2-mock
-BuildRequires: dbus-python
+BuildRequires: python-repoze-lru
+BuildRequires: python3-devel
 BuildRequires: python2-dateutil
 BuildRequires: python3-dbus
 BuildRequires: python3-pynacl
@@ -28,9 +30,8 @@ BuildRequires: python3-requests-oauthlib
 BuildRequires: python3-gobject
 BuildRequires: python3-future
 BuildRequires: python3-dateutil
+BuildRequires: python3-repoze-lru
 
-BuildRequires: gtk3
-BuildRequires: libnotify
 
 
 %description
@@ -46,6 +47,7 @@ Requires: python2-requests-oauthlib
 Requires: python2-configparser
 Requires: python2-future
 Requires: python2-dateutil
+Requires: python-repoze-lru
 
 
 %description -n python2-eduvpn-client
@@ -61,6 +63,7 @@ Requires: python3-requests-oauthlib
 Requires: python3-gobject
 Requires: python3-future
 Requires: python3-dateutil
+Requires: python3-repoze-lru
 
 %description -n python3-eduvpn-client
 eduVPN client API for Python3
@@ -89,8 +92,7 @@ eduVPN desktop client
 
 %check
 %{__python3} setup.py test
-#somehow setup.py test fails for py2
-pytest
+%{__python2} setup.py test
 
 %files -n python2-eduvpn-client
 %license LICENSE

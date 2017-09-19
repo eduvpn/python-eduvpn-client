@@ -8,6 +8,7 @@ matrix:
   - env: DIST=fedora_25_py3
   - env: DIST=fedora_26_py2
   - env: DIST=fedora_26_py3
+  - env: DIST=fedora_25_rpm
   - env: DIST=fedora_26_rpm
   - env: DIST=ubuntu_xenial_py2
   - env: DIST=ubuntu_xenial_py3

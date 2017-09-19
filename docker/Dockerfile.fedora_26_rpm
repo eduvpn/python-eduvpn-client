@@ -13,6 +13,7 @@ RUN dnf install -y	\
 	python2-future \
 	python2-pynacl \
 	python2-requests-oauthlib \
+	python-repoze-lru \
 	dbus-python \
 
     python3-devel \
@@ -21,6 +22,7 @@ RUN dnf install -y	\
 	python3-pynacl \
 	python3-requests-oauthlib \
 	python3-dbus \
+	python3-repoze-lru \
 
 	pytest \
 	python2-mock
