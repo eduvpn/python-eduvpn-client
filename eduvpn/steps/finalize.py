@@ -32,7 +32,7 @@ def _background(meta, oauth, dialog, builder):
     else:
         try:
             store_provider(meta)
-            GLib.idle_add(notify, "eduVPN provider added", "added provider '{}'".format(meta.display_name))
+            GLib.idle_add(lambda: notify("eduVPN provider added", "added provider '{}'".format(meta.display_name)))
         except Exception as e:
             GLib.idle_add(lambda: error_helper(dialog, "can't store configuration", "{} {}".format(type(e).__name__,
                                                                                             str(e))))

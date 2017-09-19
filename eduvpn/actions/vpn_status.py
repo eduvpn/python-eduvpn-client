@@ -23,8 +23,8 @@ def vpn_change(builder, selected):
                     logger.info("setting ip for {}".format(selected['uuid']))
                     logger.info("setting switch ON")
                     switch.set_active(True)
-                    GLib.idle_add(ipv4_label.set_text, active.Ip4Config.AddressData[0]['address'])
-                    GLib.idle_add(ipv6_label.set_text, active.Ip6Config.AddressData[0]['address'])
+                    GLib.idle_add(lambda: ipv4_label.set_text(active.Ip4Config.AddressData[0]['address']))
+                    GLib.idle_add(lambda: ipv6_label.set_text(active.Ip6Config.AddressData[0]['address']))
                     notify("eduVPN connected", "Connected to '{}'".format(selected['display_name']))
                 elif active.State == 1:  # activating
                     logger.info("setting switch ON")
@@ -34,8 +34,8 @@ def vpn_change(builder, selected):
                     logger.info("clearing ip for '{}'".format(selected['uuid']))
                     logger.info("setting switch OFF")
                     switch.set_active(False)
-                    GLib.idle_add(ipv4_label.set_text, "")
-                    GLib.idle_add(ipv6_label.set_text, "")
+                    GLib.idle_add(lambda: ipv4_label.set_text(""))
+                    GLib.idle_add(lambda: ipv6_label.set_text(""))
                 break
         except Exception as e:
             logger.warning("probably race condition in network manager: {}".format(e))
@@ -46,6 +46,6 @@ def vpn_change(builder, selected):
         notify("eduVPN Disconnected", "Disconnected from '{}'".format(selected['display_name']))
         logger.info("setting switch OFF")
         switch.set_active(False)
-        GLib.idle_add(ipv4_label.set_text, "")
-        GLib.idle_add(ipv6_label.set_text, "")
+        GLib.idle_add(lambda: ipv4_label.set_text(""))
+        GLib.idle_add(lambda: ipv6_label.set_text(""))
     

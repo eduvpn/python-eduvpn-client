@@ -36,7 +36,7 @@ def delete_profile(selection, builder, window):
             error_helper(window, "can't delete profile", str(e))
             dialog.destroy()
             raise
-        GLib.idle_add(update_providers, builder)
+        GLib.idle_add(lambda: update_providers(builder))
     elif response == Gtk.ResponseType.NO:
         logger.info("not deleting provider config")
     dialog.destroy()

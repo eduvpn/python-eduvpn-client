@@ -15,11 +15,11 @@ def _fetch_background(dialog, meta, verifier, builder, window):
         authorization_type, instances = get_instances(discovery_uri=meta.discovery_uri,
                                                       verify_key=verifier)
     except Exception as e:
-        GLib.idle_add(error_helper, dialog, "can't fetch instances", "{} {}".format(type(e), str(e)))
-        GLib.idle_add(dialog.hide)
+        GLib.idle_add(lambda: error_helper(dialog, "can't fetch instances", "{} {}".format(type(e), str(e))))
+        GLib.idle_add(lambda: dialog.hide())
         raise
     else:
-        GLib.idle_add(dialog.hide)
+        GLib.idle_add(lambda: dialog.hide())
         meta.authorization_type = authorization_type
         GLib.idle_add(lambda: select_instance_step(meta, instances, builder=builder, verifier=verifier, window=window))
 

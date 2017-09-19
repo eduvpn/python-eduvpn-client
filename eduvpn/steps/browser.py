@@ -76,8 +76,8 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
         logger.info("control returned by browser")
         token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
     except Exception as e:
-        GLib.idle_add(error_helper, dialog, "Can't obtain token", "{}".format(str(e)))
-        GLib.idle_add(dialog.hide)
+        GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(str(e))))
+        GLib.idle_add(lambda: dialog.hide())
         raise
     else:
         token['token_endpoint'] = meta.token_endpoint
@@ -89,7 +89,7 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
 def _phase2_callback(meta, oauth, dialog, builder, window):
     url_dialog = builder.get_object('redirecturl-dialog')
     logger.info("hiding url dialog")
-    GLib.idle_add(url_dialog.hide)
+    GLib.idle_add(lambda: url_dialog.hide())
     logger.info("hiding token dialog")
-    GLib.idle_add(dialog.hide)
+    GLib.idle_add(lambda: dialog.hide())
     fetch_profile_step(meta=meta, oauth=oauth, builder=builder, window=window)
