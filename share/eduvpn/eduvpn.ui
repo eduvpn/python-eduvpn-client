@@ -72,7 +72,7 @@
                     <property name="shadow_type">in</property>
                     <property name="min_content_height">300</property>
                     <child>
-                      <object class="GtkTreeView" id="configs-tree-treeview">
+                      <object class="GtkTreeView" id="provider-treeview">
                         <property name="width_request">278</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -83,7 +83,7 @@
                         <signal name="row-activated" handler="select_config" swapped="no"/>
                         <signal name="unselect-all" handler="select_config" swapped="no"/>
                         <child internal-child="selection">
-                          <object class="GtkTreeSelection" id="treeview-selection">
+                          <object class="GtkTreeSelection" id="provider-selection">
                             <property name="mode">browse</property>
                             <signal name="changed" handler="select_config" swapped="no"/>
                           </object>

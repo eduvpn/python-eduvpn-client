@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 from eduvpn.util import get_prefix
 from eduvpn.config import verify_key
 from eduvpn.crypto import make_verifier
-from eduvpn.manager import vpn_monitor
+from eduvpn.manager import monitor_all_vpn
 from eduvpn.steps.provider import update_providers
 from eduvpn.actions.select import select_profile
 from eduvpn.actions.add import new_provider
@@ -55,23 +55,22 @@ class EduVpnApp:
 
     def run(self):
         # attach a callback to VPN connection monitor
-        vpn_monitor(self.vpn_change)
+        monitor_all_vpn(self.vpn_change)
         self.window.show_all()
         update_providers(self.builder)
 
     def add(self, _):
         new_provider(builder=self.builder, verifier=self.verifier, window=self.window)
 
-    def delete(self, selection):
-        delete_profile(selection=selection, builder=self.builder, window=self.window)
+    def delete(self, _):
+        delete_profile(builder=self.builder, window=self.window)
 
-    def select(self, list_):
-        self.selected_meta = select_profile(list_=list_, builder=self.builder, verifier=self.verifier,
-                                            window=self.window)
+    def select(self, _):
+        self.selected_meta = select_profile(builder=self.builder, verifier=self.verifier, window=self.window)
 
     def vpn_change(self, *args, **kwargs):
         """called when the status of a VPN connection changes"""
-        vpn_change(self.builder, self.selected_meta)
+        vpn_change(self.builder)
 
     def switched(self, selection, _):
         """called when the user releases the connection switch"""

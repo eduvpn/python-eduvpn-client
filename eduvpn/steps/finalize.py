@@ -3,9 +3,10 @@ import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.remote import create_keypair, get_profile_config
-from eduvpn.manager import store_provider
+from eduvpn.manager import store_provider, monitor_vpn
 from eduvpn.notify import notify
 from eduvpn.steps.provider import update_providers
+from eduvpn.actions.vpn_status import vpn_change
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,8 @@ def _background(meta, oauth, dialog, builder):
         raise
     else:
         try:
-            store_provider(meta)
+            uuid = store_provider(meta)
+            monitor_vpn(uuid=uuid, callback=lambda *args, **kwargs: vpn_change(builder=builder))
             GLib.idle_add(lambda: notify("eduVPN provider added", "added provider '{}'".format(meta.display_name)))
         except Exception as e:
             GLib.idle_add(lambda: error_helper(dialog, "can't store configuration", "{} {}".format(type(e).__name__,

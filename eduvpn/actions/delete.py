@@ -6,32 +6,30 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 from eduvpn.manager import delete_provider
 from eduvpn.notify import notify
-from eduvpn.util import error_helper
+from eduvpn.util import error_helper, metadata_of_selected
 from eduvpn.steps.provider import update_providers
 
 
 logger = logging.getLogger(__name__)
 
 
-def delete_profile(selection, builder, window):
+def delete_profile(builder, window):
     """called when the user presses the - button"""
     logger.info("delete provider clicked")
-    model, treeiter = selection.get_selected()
-    if not treeiter:
-        logger.info("nothing selected")
-        return
+    meta = metadata_of_selected(builder)
 
-    uuid, display_name, _, _ = model[treeiter]
+    if not meta:
+        logger.info("nothing selected")
 
     dialog = Gtk.MessageDialog(window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
-                               Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(display_name))
+                               Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(meta.display_name))
     dialog.format_secondary_text("This action can't be undone.")
     response = dialog.run()
     if response == Gtk.ResponseType.YES:
         logger.info("deleting provider config")
         try:
-            delete_provider(uuid)
-            notify("eduVPN provider deleted", "Deleted '{}'".format(display_name))
+            delete_provider(meta.uuid)
+            notify("eduVPN provider deleted", "Deleted '{}'".format(meta.display_name))
         except Exception as e:
             error_helper(window, "can't delete profile", str(e))
             dialog.destroy()

@@ -238,9 +238,9 @@ def update_token(uuid, token):
         json.dump(metadata, f)
 
 
-def vpn_monitor(callback):
+def monitor_all_vpn(callback):
     """
-    This installs a dbus callback which will be called every time the state of a VPN connection changes.
+    This installs a dbus callback which will be called every time the state of any VPN connection changes.
 
     args:
         callback (func): a callback function
@@ -251,6 +251,20 @@ def vpn_monitor(callback):
     for connection in NetworkManager.Settings.ListConnections():
         if connection.GetSettings()['connection']['type'] == 'vpn':
             connection.connect_to_signal('Updated', callback)
+
+
+def monitor_vpn(uuid, callback):
+    """
+    This installs a dbus callback which will be called every time the state of a specific VPN changes
+
+    args:
+        callback (func): a callback function
+    """
+    if not have_dbus():
+        return
+
+    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
+    connection.connect_to_signal('Updated', callback)
 
 
 def active_connections():

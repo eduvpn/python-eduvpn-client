@@ -14,6 +14,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 from eduvpn.config import icon_size
+from eduvpn.metadata import Metadata
 
 
 logger = logging.getLogger(__name__)
@@ -111,3 +112,13 @@ def get_pixbuf():
         small = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
         big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width']*2, icon_size['height']*2, True)
         return small, big
+
+
+def metadata_of_selected(builder):
+    selection = builder.get_object('provider-selection')
+    model, treeiter = selection.get_selected()
+    if not treeiter:
+        return
+    else:
+        uuid, _, _, _ = model[treeiter]
+        return Metadata.from_uuid(uuid)

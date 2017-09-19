@@ -3,8 +3,7 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from sys import executable
-from os.path import dirname, expanduser
+from os.path import expanduser
 
 config_path = expanduser('~/.config/eduvpn')
 
