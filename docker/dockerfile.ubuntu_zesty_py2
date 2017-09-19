@@ -11,6 +11,7 @@ RUN docker-apt-install \
         python-requests-oauthlib \
         python-configparser \
         python-future \
+        python-repoze.lru \
         python-dateutil \
         python-mock \
         python-pytest

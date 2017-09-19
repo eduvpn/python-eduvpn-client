@@ -1,5 +1,5 @@
 import unittest
-from eduvpn.util import get_prefix, _have_dbus
+from eduvpn.util import get_prefix, have_dbus, make_unique_id, thread_helper, error_helper, bytes2pixbuf
 
 
 class TestUtil(unittest.TestCase):
@@ -7,4 +7,16 @@ class TestUtil(unittest.TestCase):
         get_prefix()
 
     def test_have_dbus(self):
-        _have_dbus()
+        have_dbus()
+
+    def test_make_unique_id(self):
+        make_unique_id()
+
+    def test_thread_helper(self):
+        thread_helper(lambda: [])
+
+    def test_bytes2pixbuf(self):
+        bytes2pixbuf(bytes())
+
+    #def test_error_helper(self):
+    #    error_helper(None, None, None)

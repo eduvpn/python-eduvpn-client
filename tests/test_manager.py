@@ -35,6 +35,7 @@ class TestNm(unittest.TestCase):
     def test_store_provider(self):
         uuid = store_provider(meta=self.meta)
         update_token(uuid=self.meta.uuid, token={})
+        update_config_provider(self.meta)
         delete_provider(uuid)
 
     def test_connect_provider(self):
@@ -61,6 +62,3 @@ class TestNm(unittest.TestCase):
 
     def test_update_keys_provider(self):
         update_keys_provider(uuid=self.meta.uuid, cert=self.meta.cert, key=self.meta.key)
-
-    def test_update_config_provider(self):
-        update_config_provider(self.meta)

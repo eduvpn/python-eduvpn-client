@@ -11,6 +11,7 @@ RUN docker-apt-install \
         python3-future \
         python3-dateutil \
         python3-mock \
+        python3-repoze.lru \
         python3-pytest
 
 

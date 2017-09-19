@@ -23,5 +23,5 @@ notification.set_app_name("eduVPN")
 
 def notify(msg, small_msg=None):
     notification.update(msg, small_msg)
-    if have_dbus:
+    if have_dbus():
         notification.show()

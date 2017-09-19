@@ -6,7 +6,8 @@ RUN yum install -y \
         libnotify \
         gtk3 \
         python-gobject \
-        python2-pydbus \
+        python-repoze-lru \
+        dbus-python \
         python2-pynacl \
         python2-requests-oauthlib \
         python2-configparser \

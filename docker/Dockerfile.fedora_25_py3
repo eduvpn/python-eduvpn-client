@@ -6,12 +6,12 @@ RUN dnf install -y \
         python3-dbus \
         python3-pynacl \
         python3-requests-oauthlib \
+        python3-repoze-lru \
         python3-gobject \
         python3-future \
-        python3-mock \
         python3-dateutil \
+        python3-mock \
         python3-pytest
-
 
 ADD . /code
 WORKDIR /code

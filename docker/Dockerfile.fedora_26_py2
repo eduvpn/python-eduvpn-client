@@ -4,9 +4,10 @@ RUN dnf install -y \
         libnotify \
         gtk3 \
         dbus-python \
+        python-repoze-lru \
+        python-gobject \
         python2-pynacl \
         python2-requests-oauthlib \
-        python-gobject \
         python2-configparser \
         python2-future \
         python2-dateutil \
