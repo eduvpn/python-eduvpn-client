@@ -1,0 +1,32 @@
+FROM centos:7
+
+RUN yum install -y epel-release
+
+RUN yum install -y	\
+    rpm-build \
+    rpmdevtools\
+    gtk3 \
+    libnotify \
+	pytest \
+	dbus-python \
+    python-gobject \
+	python-pynacl \
+	python-repoze-lru \
+    python2-devel \
+	python2-configparser \
+	python2-future \
+	python2-requests-oauthlib \
+	python2-mock
+
+RUN rpmdev-setuptree
+
+ADD . /code
+WORKDIR /code
+
+RUN python setup.py sdist
+RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
+#RUN rpmbuild -bs rpm/centos7.spec
+#RUN rpmbuild -bb rpm/centos7.spec
+
+
+
