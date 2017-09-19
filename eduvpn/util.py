@@ -76,6 +76,7 @@ def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], dis
         return l.get_pixbuf()
 
 
+@lru_cache(maxsize=1)
 def get_prefix():
     """
     Returns the Python prefix where eduVPN is installed
@@ -91,7 +92,7 @@ def get_prefix():
     raise Exception("Can't find eduVPN installation")
 
 
-@lru_cache(maxsize=50)
+@lru_cache(maxsize=1)
 def have_dbus():
     try:
         import dbus
@@ -102,3 +103,11 @@ def have_dbus():
     else:
         dbus.close()
         return True
+
+
+@lru_cache(maxsize=1)
+def get_pixbuf():
+        logo = path.join(get_prefix(), 'share/eduvpn/eduvpn.png')
+        small = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
+        big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width']*2, icon_size['height']*2, True)
+        return small, big

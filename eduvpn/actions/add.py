@@ -1,0 +1,38 @@
+import logging
+from eduvpn.metadata import Metadata
+from eduvpn.config import secure_internet_uri, institute_access_uri
+from eduvpn.steps.instance import fetch_instance_step
+from eduvpn.steps.custom_url import custom_url
+
+logger = logging.getLogger(__name__)
+
+
+def new_provider(builder, verifier, window):
+    """The connection type selection step"""
+    logger.info("add configuration clicked")
+    dialog = builder.get_object('connection-type-dialog')
+    dialog.show_all()
+    response = dialog.run()
+    dialog.hide()
+
+    meta = Metadata()
+
+    if response == 0:  # cancel
+        logger.info("cancel button pressed")
+        return
+
+    elif response == 1:
+        logger.info("secure button pressed")
+        meta.discovery_uri = secure_internet_uri
+        meta.connection_type = 'Secure Internet'
+        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, window=window)
+
+    elif response == 2:
+        logger.info("institute button pressed")
+        meta.discovery_uri = institute_access_uri
+        meta.connection_type = 'Institute Access'
+        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, window=window)
+
+    elif response == 3:
+        logger.info("custom button pressed")
+        custom_url(builder=builder, meta=meta, verifier=verifier, window=window)
