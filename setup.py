@@ -64,7 +64,7 @@ setup(
     keywords="vpn openvpn networking security",
     url="https://github.com/eduvpn/python-eduvpn-client",
     classifiers=[
-        "Development Status :: 5 - Stable",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX",
         "Programming Language :: Python",

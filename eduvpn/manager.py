@@ -57,6 +57,7 @@ def list_providers():
         for conn in vpn_connections:
             yield Metadata.from_uuid(conn['uuid'], display_name=conn['id'])
 
+
 def store_provider(meta):
     """Store the eduVPN configuration"""
     logger.info("storing profile with name {} using NetworkManager".format(meta.display_name))
