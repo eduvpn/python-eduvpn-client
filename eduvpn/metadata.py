@@ -31,7 +31,7 @@ class Metadata:
         setattr(self, key, value)
 
     @staticmethod
-    def from_uuid(uuid):
+    def from_uuid(uuid, display_name=None):
         metadata_path = path.join(config_path, uuid + '.json')
         metadata = Metadata()
         try:
@@ -43,7 +43,10 @@ class Metadata:
         except IOError as e:
             logger.error("can't open metdata file for {}: {}".format(uuid, str(e)))
             metadata.uuid = uuid
-            metadata.display_name = uuid
+            if display_name:
+                metadata.display_name = display_name
+            else:
+                metadata.display_name = uuid
             metadata.connection_type = 'Unknown'
         finally:
             return metadata

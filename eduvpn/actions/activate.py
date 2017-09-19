@@ -18,15 +18,18 @@ def activate_connection(meta, builder, window):
     logger.info("Connecting to {}".format(meta.display_name))
     notify("eduVPN connecting...", "Connecting to '{}'".format(meta.display_name))
     try:
-        oauth = oauth_from_token(meta.token, update_token, meta.uuid)
-        config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
-        meta.config = config
-        update_config_provider(meta)
+        if not meta.token:
+            logger.error("metadata for {} doesn't contain oauth2 token".format(meta.uuid))
+        else:
+            oauth = oauth_from_token(meta.token, update_token, meta.uuid)
+            config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
+            meta.config = config
+            update_config_provider(meta)
 
-        if datetime.now() > datetime.fromtimestamp(meta.token['expires_at']):
-            logger.info("key pair is expired")
-            cert, key = create_keypair(oauth, meta.api_base_uri)
-            update_keys_provider(meta.uuid, cert, key)
+            if datetime.now() > datetime.fromtimestamp(meta.token['expires_at']):
+                logger.info("key pair is expired")
+                cert, key = create_keypair(oauth, meta.api_base_uri)
+                update_keys_provider(meta.uuid, cert, key)
 
         connect_provider(meta.uuid)
 

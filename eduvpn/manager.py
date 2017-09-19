@@ -55,12 +55,7 @@ def list_providers():
         vpn_connections = [c.GetSettings()['connection'] for c in all_ if c.GetSettings()['connection']['type'] == 'vpn']
         logger.info("There are {} VPN connections in networkmanager".format(len(vpn_connections)))
         for conn in vpn_connections:
-            try:
-                yield Metadata.from_uuid(conn['uuid'])
-            except Exception as e:
-                logger.error("can't load metadata file: " + str(e))
-                yield {'uuid': conn['uuid'], 'display_name': conn['id'], 'icon_data': None, 'connection_type': 'unknown'}
-
+            yield Metadata.from_uuid(conn['uuid'], display_name=conn['id'])
 
 def store_provider(meta):
     """Store the eduVPN configuration"""
