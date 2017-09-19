@@ -268,6 +268,9 @@ def monitor_vpn(uuid, callback):
 
 
 def active_connections():
+    if not have_dbus():
+        return []
+
     try:
         return NetworkManager.NetworkManager.ActiveConnections
     except DBusException:

@@ -117,7 +117,7 @@ def get_pixbuf():
 def metadata_of_selected(builder):
     selection = builder.get_object('provider-selection')
     model, treeiter = selection.get_selected()
-    if not treeiter:
+    if treeiter is None:
         return
     else:
         uuid, _, _, _ = model[treeiter]

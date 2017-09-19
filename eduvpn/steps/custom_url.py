@@ -8,7 +8,7 @@ from eduvpn.steps.browser import browser_step
 logger = logging.getLogger(__name__)
 
 
-def custom_url(builder, meta, verifier, window):
+def custom_url(builder, meta, verifier):
     """the custom URL dialog where a user can enter a custom instance URL"""
     dialog = builder.get_object('custom-url-dialog')
     entry = builder.get_object('custom-url-entry')
@@ -28,7 +28,7 @@ def custom_url(builder, meta, verifier, window):
                 meta.connection_type = 'Custom Instance'
                 meta.authorization_type = 'local'
                 meta.icon_data = None
-                GLib.idle_add(lambda: browser_step(builder=builder, meta=meta, verifier=verifier, window=window))
+                GLib.idle_add(lambda: browser_step(builder=builder, meta=meta, verifier=verifier))
                 break
         else:  # cancel or close
             logger.info("cancel or close button pressed (response {})".format(response))

@@ -13,7 +13,7 @@ from eduvpn.notify import notify
 logger = logging.getLogger(__name__)
 
 
-def activate_connection(meta, builder, window):
+def activate_connection(meta, builder):
     """do the actual connecting action"""
     logger.info("Connecting to {}".format(meta.display_name))
     notify("eduVPN connecting...", "Connecting to '{}'".format(meta.display_name))
@@ -36,5 +36,6 @@ def activate_connection(meta, builder, window):
     except Exception as e:
         switch = builder.get_object('connect-switch')
         GLib.idle_add(switch.set_active, False)
+        window = builder.get_object('eduvpn-window')
         error_helper(window, "can't enable connection", "{}: {}".format(type(e).__name__, str(e)))
         raise

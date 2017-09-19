@@ -13,7 +13,7 @@ from eduvpn.steps.provider import update_providers
 logger = logging.getLogger(__name__)
 
 
-def delete_profile(builder, window):
+def delete_profile(builder):
     """called when the user presses the - button"""
     logger.info("delete provider clicked")
     meta = metadata_of_selected(builder)
@@ -21,6 +21,8 @@ def delete_profile(builder, window):
     if not meta:
         logger.info("nothing selected")
         return
+
+    window = builder.get_object('eduvpn-window')
 
     dialog = Gtk.MessageDialog(window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
                                Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(meta.display_name))

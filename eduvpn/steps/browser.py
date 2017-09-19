@@ -13,16 +13,15 @@ from eduvpn.steps.profile import fetch_profile_step
 logger = logging.getLogger(__name__)
 
 
-def browser_step(builder, meta, verifier, window):
+def browser_step(builder, meta, verifier):
     """The notorious browser step. starts webserver, wait for callback, show token dialog"""
     logger.info("opening token dialog")
     dialog = builder.get_object('token-dialog')
-    thread_helper(lambda: _phase1_background(meta=meta, dialog=dialog, verifier=verifier, builder=builder,
-                                             window=window))
+    thread_helper(lambda: _phase1_background(meta=meta, dialog=dialog, verifier=verifier, builder=builder))
     dialog.show_all()
 
 
-def _phase1_background(meta, dialog, verifier, builder, window):
+def _phase1_background(meta, dialog, verifier, builder):
     try:
         logger.info("starting token obtaining in background")
         r = get_instance_info(meta.instance_base_uri, verifier)
@@ -35,12 +34,12 @@ def _phase1_background(meta, dialog, verifier, builder, window):
         GLib.idle_add(lambda: error_helper(dialog, "Can't create oauth session", "{}".format(str(e))))
         GLib.idle_add(lambda: dialog.hide())
     else:
-        GLib.idle_add(lambda: _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder, window))
+        GLib.idle_add(lambda: _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder))
 
 
-def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder, window):
+def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder):
     thread_helper(lambda: _phase2_background(meta=meta, port=port, oauth=oauth, code_verifier=code_verifier,
-                                             auth_url=auth_url, dialog=dialog, builder=builder, window=window))
+                                             auth_url=auth_url, dialog=dialog, builder=builder))
     _show_dialog(dialog, auth_url, builder)
 
 
@@ -68,7 +67,7 @@ def _show_dialog(dialog, auth_url, builder):
             break
 
 
-def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, builder, window):
+def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, builder):
     try:
         logger.info("opening browser with url {}".format(auth_url))
         webbrowser.open(auth_url)
@@ -83,13 +82,13 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
         token['token_endpoint'] = meta.token_endpoint
         logger.info("obtained oauth token")
         meta.token = token
-        GLib.idle_add(lambda: _phase2_callback(meta, oauth,  dialog, builder, window))
+        GLib.idle_add(lambda: _phase2_callback(meta=meta, oauth=oauth,  dialog=dialog, builder=builder))
 
 
-def _phase2_callback(meta, oauth, dialog, builder, window):
+def _phase2_callback(meta, oauth, dialog, builder):
     url_dialog = builder.get_object('redirecturl-dialog')
     logger.info("hiding url dialog")
     GLib.idle_add(lambda: url_dialog.hide())
     logger.info("hiding token dialog")
     GLib.idle_add(lambda: dialog.hide())
-    fetch_profile_step(meta=meta, oauth=oauth, builder=builder, window=window)
+    fetch_profile_step(meta=meta, oauth=oauth, builder=builder)

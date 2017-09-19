@@ -20,10 +20,11 @@ def update(options, meta, dialog, oauth, two_dialog, builder):
     dialog.destroy()
 
 
-def background(meta, dialog, oauth, window, two_dialog, builder):
+def background(meta, dialog, oauth, two_dialog, builder):
     info = user_info(oauth, meta.api_base_uri)
     username = None
     if info['is_disabled']:
+        window = builder.get_object('eduvpn-window')
         GLib.idle_add(lambda: error_helper(window, "This account has been disabled", ""))
 
     if 'two_factor_enrolled_with' in info:
@@ -38,9 +39,9 @@ def background(meta, dialog, oauth, window, two_dialog, builder):
         GLib.idle_add(lambda: finalizing_step(oauth=oauth, meta=meta, builder=builder))
 
 
-def two_auth_step(builder, oauth, meta, window):
+def two_auth_step(builder, oauth, meta):
     """checks if 2auth is enabled. If more than 1 option presents user with choice"""
     dialog = builder.get_object('2fa-dialog')
     two_dialog = builder.get_object('2fa-dialog')
 
-    thread_helper(lambda: background(meta, dialog, oauth, window, two_dialog, builder))
+    thread_helper(lambda: background(meta, dialog, oauth, two_dialog, builder))

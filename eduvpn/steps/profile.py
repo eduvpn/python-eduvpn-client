@@ -8,17 +8,16 @@ from eduvpn.steps.two_way_auth import two_auth_step
 logger = logging.getLogger(__name__)
 
 
-def _background(oauth, meta, builder, window, dialog):
+def _background(oauth, meta, builder, dialog):
     try:
         profiles = list_profiles(oauth, meta.api_base_uri)
         logger.info("There are {} profiles on {}".format(len(profiles), meta.api_base_uri))
         if len(profiles) > 1:
             GLib.idle_add(lambda: dialog.hide())
-            GLib.idle_add(lambda: select_profile_step(builder=builder, profiles=profiles, meta=meta,
-                                                      oauth=oauth, window=window))
+            GLib.idle_add(lambda: select_profile_step(builder=builder, profiles=profiles, meta=meta, oauth=oauth))
         elif len(profiles) == 1:
             meta.profile_display_name, meta.profile_id, meta.two_factor = profiles[0]
-            two_auth_step(builder=builder, oauth=oauth, meta=meta, window=window)
+            two_auth_step(builder=builder, oauth=oauth, meta=meta)
         else:
             raise Exception("Either there are no VPN profiles defined, or this account does not have the "
                             "required permissions to create a new VPN configurations for any of the "
@@ -30,16 +29,16 @@ def _background(oauth, meta, builder, window, dialog):
         raise
 
 
-def fetch_profile_step(builder, meta, oauth, window):
+def fetch_profile_step(builder, meta, oauth):
     """background action step, fetches profiles and shows 'fetching' screen"""
     logger.info("fetching profile step")
     dialog = builder.get_object('fetch-dialog')
     dialog.show_all()
 
-    thread_helper(lambda: _background(oauth, meta, builder, window, dialog))
+    thread_helper(lambda: _background(oauth, meta, builder, dialog))
 
 
-def select_profile_step(builder, profiles, meta, oauth, window):
+def select_profile_step(builder, profiles, meta, oauth):
     """the profile selection step, doesn't do anything if only one profile"""
     logger.info("opening profile dialog")
 
@@ -48,11 +47,8 @@ def select_profile_step(builder, profiles, meta, oauth, window):
     selection = builder.get_object('profiles-selection')
     dialog.show_all()
     model.clear()
-    print("A")
     [model.append(p) for p in profiles]
-    print("B")
     response = dialog.run()
-    print("C")
     dialog.hide()
 
     if response == 0:  # cancel
@@ -62,7 +58,7 @@ def select_profile_step(builder, profiles, meta, oauth, window):
         model, treeiter = selection.get_selected()
         if treeiter:
             meta.profile_display_name, meta.profile_id, meta.two_factor = model[treeiter]
-            two_auth_step(builder=builder, oauth=oauth, meta=meta, window=window)
+            two_auth_step(builder=builder, oauth=oauth, meta=meta)
         else:
             logger.error("nothing selected")
             return

@@ -40,25 +40,6 @@ def write_cert(content, type_, unique_name):
     return path
 
 
-
-def get_metadata(uuid):
-    """
-    Store dictionary as JSON encoded string in a file
-
-    args:
-        uuid (str): unique ID of config
-    returns:
-        dict: metadata for
-    """
-    try:
-        metadata_path = os.path.join(config_path, uuid + '.json')
-        with open(metadata_path, 'r') as f:
-            return json.load(f)
-    except IOError as e:
-        logger.error("can't open metdata file for {}: {}".format(uuid, str(e)))
-        return {'uuid': uuid, 'display_name': uuid, 'icon_data': None, 'connection_type': 'unknown'}
-
-
 def mkdir_p(path):
     """
     Create a folder with all its parents, like mkdir -p

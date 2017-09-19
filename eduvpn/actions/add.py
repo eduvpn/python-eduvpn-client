@@ -7,7 +7,7 @@ from eduvpn.steps.custom_url import custom_url
 logger = logging.getLogger(__name__)
 
 
-def new_provider(builder, verifier, window):
+def new_provider(builder, verifier):
     """The connection type selection step"""
     logger.info("add configuration clicked")
     dialog = builder.get_object('connection-type-dialog')
@@ -23,16 +23,14 @@ def new_provider(builder, verifier, window):
 
     elif response == 1:
         logger.info("secure button pressed")
-        meta.discovery_uri = secure_internet_uri
         meta.connection_type = 'Secure Internet'
-        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, window=window)
+        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, discovery_uri=secure_internet_uri)
 
     elif response == 2:
         logger.info("institute button pressed")
-        meta.discovery_uri = institute_access_uri
         meta.connection_type = 'Institute Access'
-        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, window=window)
+        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, discovery_uri=institute_access_uri)
 
     elif response == 3:
         logger.info("custom button pressed")
-        custom_url(builder=builder, meta=meta, verifier=verifier, window=window)
+        custom_url(builder=builder, meta=meta, verifier=verifier)

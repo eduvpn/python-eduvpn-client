@@ -10,10 +10,7 @@ from eduvpn.steps.messages import fetch_messages
 logger = logging.getLogger(__name__)
 
 
-
-
-
-def select_profile(builder, verifier, window):
+def select_profile(builder, verifier):
     """called when a users selects a configuration"""
     notebook = builder.get_object('outer-notebook')
     switch = builder.get_object('connect-switch')
@@ -25,6 +22,7 @@ def select_profile(builder, verifier, window):
     profile_label = builder.get_object('profile-label')
     profile_image = builder.get_object('profile-image')
     meta = metadata_of_selected(builder)
+
     if not meta:
         logger.info("no configuration selected, showing main logo")
         notebook.set_current_page(0)
@@ -60,5 +58,5 @@ def select_profile(builder, verifier, window):
         notebook.set_current_page(1)
 
         if meta.token:
-            fetch_messages(meta=meta, builder=builder, verifier=verifier, window=window)
+            fetch_messages(meta=meta, builder=builder, verifier=verifier)
         return meta

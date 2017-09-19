@@ -10,7 +10,6 @@ import dbus.mainloop.glib
 import gi
 
 gi.require_version('Gtk', '3.0')
-gi.require_version('Notify', '0.7')
 from gi.repository import GObject, Gtk
 
 logging.basicConfig(level=logging.INFO)
@@ -60,13 +59,13 @@ class EduVpnApp:
         update_providers(self.builder)
 
     def add(self, _):
-        new_provider(builder=self.builder, verifier=self.verifier, window=self.window)
+        new_provider(builder=self.builder, verifier=self.verifier)
 
     def delete(self, _):
-        delete_profile(builder=self.builder, window=self.window)
+        delete_profile(builder=self.builder)
 
     def select(self, _):
-        self.selected_meta = select_profile(builder=self.builder, verifier=self.verifier, window=self.window)
+        self.selected_meta = select_profile(builder=self.builder, verifier=self.verifier)
 
     def vpn_change(self, *args, **kwargs):
         """called when the status of a VPN connection changes"""
@@ -74,7 +73,7 @@ class EduVpnApp:
 
     def switched(self, selection, _):
         """called when the user releases the connection switch"""
-        switched(meta=self.selected_meta, builder=self.builder, window=self.window)
+        switched(meta=self.selected_meta, builder=self.builder)
 
 
 def main():

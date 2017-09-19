@@ -10,9 +10,9 @@ from eduvpn.steps.browser import browser_step
 logger = logging.getLogger(__name__)
 
 
-def _fetch_background(dialog, meta, verifier, builder, window):
+def _fetch_background(dialog, meta, verifier, builder, discovery_uri):
     try:
-        authorization_type, instances = get_instances(discovery_uri=meta.discovery_uri,
+        authorization_type, instances = get_instances(discovery_uri=discovery_uri,
                                                       verify_key=verifier)
     except Exception as e:
         GLib.idle_add(lambda: error_helper(dialog, "can't fetch instances", "{} {}".format(type(e), str(e))))
@@ -21,19 +21,20 @@ def _fetch_background(dialog, meta, verifier, builder, window):
     else:
         GLib.idle_add(lambda: dialog.hide())
         meta.authorization_type = authorization_type
-        GLib.idle_add(lambda: select_instance_step(meta, instances, builder=builder, verifier=verifier, window=window))
+        GLib.idle_add(lambda: select_instance_step(meta, instances, builder=builder, verifier=verifier))
 
 
-def fetch_instance_step(meta, builder, verifier, window):
+def fetch_instance_step(meta, builder, verifier, discovery_uri):
     """fetch list of instances"""
     logger.info("fetching instances step")
     dialog = builder.get_object('fetch-dialog')
     dialog.show_all()
 
-    thread_helper(lambda: _fetch_background(dialog=dialog, meta=meta, verifier=verifier, builder=builder,window=window))
+    thread_helper(lambda: _fetch_background(dialog=dialog, meta=meta, verifier=verifier, builder=builder,
+                                            discovery_uri=discovery_uri))
 
 
-def select_instance_step(meta, instances, builder, verifier, window):
+def select_instance_step(meta, instances, builder, verifier):
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
     dialog = builder.get_object('instances-dialog')
@@ -59,6 +60,6 @@ def select_instance_step(meta, instances, builder, verifier, window):
             meta.instance_base_uri = instance_base_uri
             meta.icon_pixbuf = icon_pixbuf
             meta.icon_data = icon_data
-            browser_step(builder, meta, verifier, window=window)
+            browser_step(builder, meta, verifier)
         else:
             logger.info("nothing selected")
