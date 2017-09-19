@@ -4,48 +4,12 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import unittest
+
 from mock import patch
-from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_instances, get_profile_config,\
+
+from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_instances, get_profile_config, \
     system_messages, user_messages, create_config, list_profiles, translate_display_name, user_info
-
-
-class MochResponse:
-    content_json = {
-        "create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}},
-        "profile_list": {"data": {}},
-        "user_info": {'data': {}},
-        "authorization_type": "test",
-        "instances": [],
-    }
-
-    content = str(content_json)
-
-    status_code = 200
-
-    def json(self):
-        return self.content_json
-
-    def text(self):
-        return "bla"
-
-
-class MockOAuth:
-
-    def get(self, url):
-        return MochResponse()
-
-    def authorization_url(self, auth_endpoint, code_challenge_method, code_challenge):
-        url = "mock url"
-        state = "mock state"
-        return url, state
-
-    def post(self, url, data):
-        return MochResponse()
-
-
-class VerifyMock:
-    def verify(self, *args, **kwargs):
-        return True
+from eduvpn.test_util import MochResponse, MockOAuth, VerifyMock
 
 
 class TestRemote(unittest.TestCase):
