@@ -20,6 +20,7 @@ def delete_profile(builder, window):
 
     if not meta:
         logger.info("nothing selected")
+        return
 
     dialog = Gtk.MessageDialog(window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
                                Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(meta.display_name))
