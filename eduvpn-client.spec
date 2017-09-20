@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        1.0rc5
+Version:        1.0rc6
 Release:        1%{?dist}
 Summary:        %{sum}
 
