@@ -1,6 +1,13 @@
+#
+# note: this file is intended for development only and not to actually
+#       install the client.
+
 
 .PHONY: deb fedora doc test test3 run dockers
 
+
+
+# install all required binary packages on a debian based system
 deb:
 	apt update
 	apt install -y \
@@ -22,6 +29,8 @@ deb:
 		python3-requests-oauthlib \
 		python3-gi 
 
+
+# install all required binary packages on a rpm based system
 fedora:
 	sudo dnf install -y \
 		gtk3 \
@@ -50,30 +59,39 @@ fedora:
 		python3-nose \
 		python3-mock
 
+
 .virtualenv/:
 	virtualenv --system-site-packages -p python2 .virtualenv
 
+
 .virtualenv/bin/eduvpn-client: .virtualenv/
-	.virtualenv/bin/pip install -e ".[dbus]"
+	.virtualenv/bin/pip install -e ".[client]"
+
 
 .virtualenv3/:
 	virtualenv --system-site-packages -p python3 .virtualenv3
 
+
 .virtualenv3/bin/eduvpn-client: .virtualenv3/
-	.virtualenv3/bin/pip install -e ".[dbus]"
+	.virtualenv3/bin/pip install -e ".[client]"
+
 
 doc:  .virtualenv/
 	.virtualenv/bin/pip install -r doc/requirements.txt
 	.virtualenv/bin/python -msphinx doc doc/_build
 
+
 test: .virtualenv/bin/eduvpn-client
 	.virtualenv/bin/python setup.py test
+
 
 test3: .virtualenv3/bin/eduvpn-client
 	.virtualenv3/bin/python setup.py test
 
+
 run: .virtualenv3/bin/eduvpn-client
 	.virtualenv3/bin/eduvpn-client
+
 
 dockers:
 	for i in `ls docker/Dockerfile*`; do echo "*** $$i"; docker build . -f $$i; done

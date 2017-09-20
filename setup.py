@@ -15,14 +15,13 @@ install_requires = [
     'future',
     'configparser',
     'python-dateutil',
-    'pygobject',
     'six',
     'repoze.lru',
 ]
 
 # sometimes the python2 package is not properly registered, triggering a reinstall and compile
 extras_require = {
-    'dbus': ['dbus-python'],
+    'client': ['dbus-python', 'pygobject'],
 }
 
 scripts = [

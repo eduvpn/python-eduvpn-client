@@ -2,6 +2,8 @@
 API
 ===
 
+This is the documentation for the Python client API for eduVPN.
+
 Remote calls
 ============
 
