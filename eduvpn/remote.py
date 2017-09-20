@@ -78,7 +78,7 @@ def get_instances(discovery_uri, verify_key=None):
         display_name = translate_display_name(instance['display_name'])
         base_uri = instance['base_uri']
         logo_uri = instance['logo']
-        logger.info("getting logo for {} from {}".format(display_name, logo_uri))
+        logger.info("getting logo for {} from {}".format(display_name.encode('utf-8'), logo_uri))
         logo = requests.get(logo_uri)
 
         if logo.status_code != 200:
