@@ -30,7 +30,7 @@ def _background(meta, builder, verifier):
         messages_system = list(system_messages(oauth, meta.api_base_uri))
         info = user_info(oauth, meta.api_base_uri)
     except EduvpnAuthException:
-        GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder, window=window))
+        GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder))
     except Exception as e:
         GLib.idle_add(lambda: error_helper(window, "Can't fetch user messages", str(e)))
         raise
