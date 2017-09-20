@@ -28,7 +28,13 @@ This has been tested on Ubuntu 17.04 (Zesty), Ubuntu 16.04 (Xenial) and Debian 9
 Fedora
 ------
 
-RPM packages are available from `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
+You can install the latest release of the eduVPN client on Fedora by running these commands as root or using sudo::
+
+    - dnf install dnf-plugins-core
+    - dnf copr enable gijzelaerr/eduvpn-client
+    - dnf install eduvpn-client
+
+More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
 
 
 Pip
@@ -53,6 +59,13 @@ Note that the project depends on the ``python-gi`` package, which for now doesn'
 If you do install ``python-eduvpn-client`` in a virtualenv it is recommended you create the virtualenv using the
 ``--system-site-packages`` flag and install the python-gi package using your operating system package manager. Read
 more about this on the `pygobject website <https://pygobject.readthedocs.io/>`_.
+
+Issues
+======
+
+If you experience any issues you could and should report them at our
+`issue tracker <https://github.com/eduvpn/python-eduvpn-client/issues>`_. Please don't forget to mention your OS,
+method of installation, eduVPN client version and problem reproduction instructions.
 
 Source code
 -----------
