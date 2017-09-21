@@ -11,6 +11,8 @@ URL:            https://pypi.python.org/pypi/%{srcname}
 Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires: pytest
+BuildRequires: python2-pytest-runner
+BuildRequires: python3-pytest-runner
 BuildRequires: gtk3
 BuildRequires: libnotify
 BuildRequires: dbus-python

@@ -16,7 +16,8 @@ RUN yum install -y	\
 	python2-configparser \
 	python2-future \
 	python2-requests-oauthlib \
-	python2-mock
+	python2-mock \
+    python2-pytest-runner
 
 RUN rpmdev-setuptree
 

@@ -25,7 +25,9 @@ RUN dnf install -y	\
 	python3-repoze-lru \
 
 	pytest \
-	python2-mock
+	python2-mock \
+    python3-pytest-runner \
+    python2-pytest-runner
 
 RUN rpmdev-setuptree
 
