@@ -8,7 +8,8 @@ from eduvpn.steps.finalize import finalizing_step
 logger = logging.getLogger(__name__)
 
 
-def update(options, meta, oauth, builder):
+def choice_window(options, meta, oauth, builder):
+    logger.info("presenting user with two-factor auth method dialog")
     two_dialog = builder.get_object('2fa-dialog')
 
     for i, option in enumerate(options):
@@ -23,27 +24,31 @@ def update(options, meta, oauth, builder):
 
 
 def background(meta, oauth, builder):
+    window = builder.get_object('eduvpn-window')
+
     try:
         info = user_info(oauth, meta.api_base_uri)
     except Exception as e:
         GLib.idle_add(lambda: error_helper(window, "Can't fetch user info", str(e)))
         raise
 
-    username = None
     if info['is_disabled']:
-        window = builder.get_object('eduvpn-window')
         GLib.idle_add(lambda: error_helper(window, "This account has been disabled", ""))
 
-    if 'two_factor_enrolled_with' in info:
+    if not info['two_factor_enrolled']:
+        logger.info("no two factor auth enabled")
+        finalizing_step(oauth=oauth, meta=meta, builder=builder)
+
+    elif 'two_factor_enrolled_with' in info:
         options = info['two_factor_enrolled_with']
         if len(options) > 1:
-            GLib.idle_add(lambda: update(options=options, meta=meta, oauth=oauth, builder=builder))
+            GLib.idle_add(lambda: choice_window(options=options, meta=meta, oauth=oauth, builder=builder))
             return
         elif len(options) == 1:
+            logger.info("selection only one two-factor auth methods available ({})".format(options[0]))
             meta.username = options[0]
-            GLib.idle_add(lambda: error_helper(window, "two_factor_enrolled_with' doesn't contain any fields", ""))
         else:
-            GLib.idle_add(lambda: error_helper(window, "This account has been disabled", ""))
+            GLib.idle_add(lambda: error_helper(window, "two_factor_enrolled_with' doesn't contain any fields", ""))
         GLib.idle_add(lambda: finalizing_step(oauth=oauth, meta=meta, builder=builder))
 
 

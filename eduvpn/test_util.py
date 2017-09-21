@@ -14,14 +14,16 @@ class MochResponse:
     content_json = {
         "create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}},
         "profile_list": {"data": {}},
-        "user_info": {'data': {}},
+        "user_info": {'data': {'is_disabled': False, 'two_factor_enrolled': False}},
         "authorization_type": "test",
         "instances": [],
     }
 
-    content = str(content_json)
-
     status_code = 200
+
+    @property
+    def content(self):
+        return str(self.content_json)
 
     def json(self):
         return self.content_json
@@ -31,8 +33,11 @@ class MochResponse:
 
 
 class MockOAuth:
+    def __init__(self, response=MochResponse()):
+        self.response = response
+
     def get(self, url):
-        return MochResponse()
+        return self.response
 
     def authorization_url(self, auth_endpoint, code_challenge_method, code_challenge):
         url = "https://mock url"
