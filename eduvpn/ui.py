@@ -5,15 +5,9 @@
 
 import logging
 import os
-
-import dbus.mainloop.glib
 import gi
-
 gi.require_version('Gtk', '3.0')
-from gi.repository import GObject, Gtk
-
-logging.basicConfig(level=logging.INFO)
-
+from gi.repository import Gtk
 from eduvpn.util import get_prefix
 from eduvpn.config import verify_key
 from eduvpn.crypto import make_verifier
@@ -74,12 +68,3 @@ class EduVpnApp:
     def switched(self, selection, _):
         """called when the user releases the connection switch"""
         switched(meta=self.selected_meta, builder=self.builder)
-
-
-def main():
-    GObject.threads_init()
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    edu_vpn_app = EduVpnApp()
-    edu_vpn_app.run()
-    Gtk.main()
-

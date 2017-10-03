@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from eduvpn.ui import main
-
+from eduvpn.main import main
 
 if __name__ == '__main__':
     main()

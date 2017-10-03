@@ -1,9 +1,12 @@
+# python-eduvpn-client - The GNU/Linux eduVPN client and Python API
+#
+# Copyright: 2017, The Commons Conservancy eduVPN Programme
+# SPDX-License-Identifier: GPL-3.0+
+
 import logging
 import webbrowser
-
 import gi
 from gi.repository import GLib
-
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.crypto import gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code

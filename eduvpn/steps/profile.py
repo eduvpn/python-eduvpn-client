@@ -1,3 +1,8 @@
+# python-eduvpn-client - The GNU/Linux eduVPN client and Python API
+#
+# Copyright: 2017, The Commons Conservancy eduVPN Programme
+# SPDX-License-Identifier: GPL-3.0+
+
 import logging
 import gi
 from gi.repository import GLib
@@ -52,7 +57,7 @@ def select_profile_step(builder, profiles, meta, oauth):
     dialog.hide()
 
     if response == 0:  # cancel
-        logging.info("cancel button pressed")
+        logger.info("cancel button pressed")
         return
     else:
         model, treeiter = selection.get_selected()

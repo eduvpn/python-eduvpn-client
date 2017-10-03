@@ -2,17 +2,14 @@
 #
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
-
 """
 Helper functions related to local IO
 """
+
 import errno
-import json
 import os
 from os.path import expanduser
 import logging
-
-from eduvpn.config import config_path
 
 logger = logging.getLogger(__name__)
 

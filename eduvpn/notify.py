@@ -2,13 +2,12 @@
 #
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
-from os import path
 
+from os import path
 import gi
 gi.require_version('Notify', '0.7')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Notify, GdkPixbuf
-
 from eduvpn.util import get_prefix, have_dbus
 
 Notify.init("eduVPN client")

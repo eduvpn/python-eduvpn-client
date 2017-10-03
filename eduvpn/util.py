@@ -7,7 +7,6 @@ import logging
 import threading
 import uuid
 from os import path
-
 from repoze.lru import lru_cache
 import gi
 gi.require_version('Gtk', '3.0')
