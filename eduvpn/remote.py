@@ -70,7 +70,7 @@ def get_instances(discovery_uri, verify_key=None):
 
     parsed = inst_doc.json()
 
-    authorization_type = [parsed['authorization_type']]
+    authorization_type = parsed['authorization_type']
 
     instances = []
 

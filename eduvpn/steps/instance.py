@@ -15,10 +15,9 @@ from eduvpn.steps.browser import browser_step
 logger = logging.getLogger(__name__)
 
 
-def _fetch_background(dialog, meta, verifier, builder, discovery_uri):
+def _fetch_background(dialog, meta, verifier, builder):
     try:
-        authorization_type, instances = get_instances(discovery_uri=discovery_uri,
-                                                      verify_key=verifier)
+        authorization_type, instances = get_instances(discovery_uri=meta.discovery_uri, verify_key=verifier)
     except Exception as e:
         GLib.idle_add(lambda: error_helper(dialog, "can't fetch instances", "{} {}".format(type(e), str(e))))
         GLib.idle_add(lambda: dialog.hide())
@@ -29,14 +28,13 @@ def _fetch_background(dialog, meta, verifier, builder, discovery_uri):
         GLib.idle_add(lambda: select_instance_step(meta, instances, builder=builder, verifier=verifier))
 
 
-def fetch_instance_step(meta, builder, verifier, discovery_uri):
+def fetch_instance_step(meta, builder, verifier):
     """fetch list of instances"""
     logger.info("fetching instances step")
     dialog = builder.get_object('fetch-dialog')
     dialog.show_all()
 
-    thread_helper(lambda: _fetch_background(dialog=dialog, meta=meta, verifier=verifier, builder=builder,
-                                            discovery_uri=discovery_uri))
+    thread_helper(lambda: _fetch_background(dialog=dialog, meta=meta, verifier=verifier, builder=builder))
 
 
 def select_instance_step(meta, instances, builder, verifier):
@@ -63,7 +61,6 @@ def select_instance_step(meta, instances, builder, verifier):
             display_name, instance_base_uri, icon_pixbuf, icon_data = model[treeiter]
             meta.display_name = display_name
             meta.instance_base_uri = instance_base_uri
-            meta.icon_pixbuf = icon_pixbuf
             meta.icon_data = icon_data
             browser_step(builder, meta, verifier)
         else:

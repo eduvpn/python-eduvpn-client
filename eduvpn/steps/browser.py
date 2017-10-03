@@ -31,7 +31,7 @@ def _phase1_background(meta, dialog, verifier, builder):
         meta.api_base_uri, meta.authorization_endpoint, meta.token_endpoint = r
         code_verifier = gen_code_verifier()
         port = get_open_port()
-        oauth = create_oauth_session(port)
+        oauth = create_oauth_session(port, auto_refresh_url=meta.token_endpoint)
         auth_url = get_auth_url(oauth, code_verifier, meta.authorization_endpoint)
     except Exception as e:
         GLib.idle_add(lambda: error_helper(dialog, "Can't create oauth session", "{}".format(str(e))))
@@ -76,15 +76,13 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
         webbrowser.open(auth_url)
         code = get_oauth_token_code(port)
         logger.info("control returned by browser")
-        token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
+        meta.set_token(oauth=oauth, code=code, code_verifier=code_verifier)
     except Exception as e:
         GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(str(e))))
         GLib.idle_add(lambda: dialog.hide())
         raise
     else:
-        token['token_endpoint'] = meta.token_endpoint
         logger.info("obtained oauth token")
-        meta.token = token
         GLib.idle_add(lambda: _phase2_callback(meta=meta, oauth=oauth,  dialog=dialog, builder=builder))
 
 

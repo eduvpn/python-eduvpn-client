@@ -27,8 +27,8 @@ def delete_profile(builder):
 
     window = builder.get_object('eduvpn-window')
 
-    dialog = Gtk.MessageDialog(window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
-                               Gtk.ButtonsType.YES_NO, "Are you sure you want to remove '{}'?".format(meta.display_name))
+    dialog = Gtk.MessageDialog(window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO,
+                               "Are you sure you want to remove '{}'?".format(meta.display_name))
     dialog.format_secondary_text("This action can't be undone.")
     response = dialog.run()
     if response == Gtk.ResponseType.YES:

@@ -3,14 +3,19 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from os.path import expanduser
+from os import path
 
-config_path = expanduser('~/.config/eduvpn')
+config_path = path.expanduser('~/.config/eduvpn')
+providers_path = path.join(config_path, 'providers')
 
 secure_internet_uri = 'https://static.eduvpn.nl/disco/secure_internet.json'
 institute_access_uri = 'https://static.eduvpn.nl/disco/institute_access.json'
 secure_internet_uri_dev = 'https://static.eduvpn.nl/disco/secure_internet_dev.json'
 institute_access_uri_dev = 'https://static.eduvpn.nl/disco/institute_access_dev.json'
+
+# use for debugging
+secure_internet_uri = secure_internet_uri_dev
+institute_access_uri = institute_access_uri_dev
 
 verify_key = 'E5On0JTtyUVZmcWd+I/FXRm32nSq8R2ioyW7dcu/U88='
 

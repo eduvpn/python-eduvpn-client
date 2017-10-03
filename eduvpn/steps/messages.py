@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 def _background(meta, builder, verifier):
     label = builder.get_object('messages-label')
+    window = builder.get_object('eduvpn-window')
     try:
-        oauth = oauth_from_token(meta.token, update_token, meta.uuid)
+        oauth = oauth_from_token(meta.token, update_token, meta.uuid, meta.token_endpoint)
     except Exception as e:
-        window = builder.get_object('eduvpn-window')
         GLib.idle_add(lambda: error_helper(window, "Can't reconstruct OAuth2 session", (str(e))))
         print(meta)
         raise

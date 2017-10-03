@@ -42,7 +42,7 @@ landing_page = """
 """
 
 client_id = "org.eduvpn.app"
-scope = "config"
+scope = ["config"]
 
 
 def get_open_port():
@@ -87,7 +87,7 @@ def one_request(port):
     return parse_qs(parsed.query)
 
 
-def create_oauth_session(port):
+def create_oauth_session(port, auto_refresh_url):
     """
     Create a oauth2 callback webserver
 
@@ -98,7 +98,7 @@ def create_oauth_session(port):
     """
     logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=[scope])
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, auto_refresh_url=auto_refresh_url, scope=scope)
     return oauth
 
 
@@ -123,7 +123,7 @@ def get_oauth_token_code(port):
     return code
 
 
-def oauth_from_token(token, token_updater, uuid):
+def oauth_from_token(token, token_updater, uuid, token_endpoint):
     """
     Recreate a oauth2 object from a token
 
@@ -136,8 +136,7 @@ def oauth_from_token(token, token_updater, uuid):
 
     """
     def inner(new_token):
-        new_token['token_endpoint'] = token['token_endpoint']
         token_updater(uuid, new_token)
 
-    return OAuth2Session(token=token, auto_refresh_url=token['token_endpoint'], scope=[scope], token_updater=inner,
+    return OAuth2Session(token=token, auto_refresh_url=token_endpoint, scope=scope, token_updater=inner,
                          client_id=client_id)
