@@ -87,7 +87,7 @@ def get_prefix():
     local = path.dirname(path.dirname(path.abspath(__file__)))
     options = [local, '/usr/', '/usr/local']
     for option in options:
-        if path.isfile(path.join(option, 'share/eduvpn/eduvpn.ui')):
+        if path.isfile(path.join(option, 'share/eduvpn/builder/window.ui')):
             return option
     raise Exception("Can't find eduVPN installation")
 

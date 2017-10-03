@@ -21,6 +21,18 @@ from eduvpn.actions.switch import switched
 
 logger = logging.getLogger(__name__)
 
+builder_files = (
+    'window.ui',
+    '2fa.ui',
+    'connection_type.ui',
+    'custom_url.ui',
+    'fetch.ui',
+    'instances.ui',
+    'profiles.ui',
+    'redirecturl.ui',
+    'token.ui',
+)
+
 
 class EduVpnApp:
     def __init__(self):
@@ -28,9 +40,14 @@ class EduVpnApp:
 
         # minimal global state to pass around data between steps where otherwise difficult
         self.selected_meta = None
-
+        self.prefix = get_prefix()
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(get_prefix(), 'share/eduvpn/eduvpn.ui'))
+        for b in builder_files:
+            p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
+            if not os.access(p, os.R_OK):
+                logger.error("Can't find {}! That is quite an important file.".format(p))
+                raise Exception
+            self.builder.add_from_file(p)
 
         # the signals coming from the GTK ui
         handlers = {
