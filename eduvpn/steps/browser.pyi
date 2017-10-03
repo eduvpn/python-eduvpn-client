@@ -1,0 +1,3 @@
+from eduvpn.metadata import Metadata
+
+def browser_step(builder, meta: Metadata, verifier): ...
