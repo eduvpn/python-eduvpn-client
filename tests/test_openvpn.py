@@ -16,4 +16,4 @@ class TestOpenvpn(unittest.TestCase):
         format_like_ovpn('test', 'test', 'test')
 
     def test_parse_ovpn(self):
-        config = parse_ovpn(example)
+        parse_ovpn(example)

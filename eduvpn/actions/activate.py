@@ -10,7 +10,7 @@ import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper
 from eduvpn.oauth2 import oauth_from_token
-from eduvpn.manager import update_token, update_config_provider, update_keys_provider, connect_provider
+from eduvpn.manager import update_config_provider, update_keys_provider, connect_provider
 from eduvpn.remote import get_profile_config, create_keypair
 from eduvpn.notify import notify
 
@@ -27,7 +27,7 @@ def activate_connection(meta, builder):
         if not token:
             logger.error("metadata for {} doesn't contain oauth2 token".format(meta.uuid))
         else:
-            oauth = oauth_from_token(token, update_token, meta.uuid, meta.token_endpoint)
+            oauth = oauth_from_token(meta=meta)
             config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
             meta.config = config
             update_config_provider(meta)

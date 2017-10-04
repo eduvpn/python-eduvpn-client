@@ -36,12 +36,13 @@ def translate_display_name(display_name):
     return translated
 
 
-def get_instances(discovery_uri, verify_key=None):
+def get_instances(discovery_uri, verifier=None):
     """
     retrieve a list of instances.
 
     args:
         discovery_uri (str): the URL to parse for instances discovery
+        verifier (nacl.signing.VerifyKey): used to verify the key
 
     returns:
         generator: display_name, base_uri, logo_data
@@ -54,7 +55,7 @@ def get_instances(discovery_uri, verify_key=None):
         logger.error(msg)
         raise IOError(msg)
 
-    if not verify_key:
+    if not verifier:
         logger.warning("verification key not set, not verifying")
     else:
         logger.info("Retrieving signature {}".format(discovery_sig_uri))
@@ -66,7 +67,7 @@ def get_instances(discovery_uri, verify_key=None):
         else:
             logger.info("verifying signature of {}".format(discovery_uri))
             decoded = base64.b64decode(inst_doc_sig.content)
-            _ = verify_key.verify(smessage=inst_doc.content, signature=decoded)
+            _ = verifier.verify(smessage=inst_doc.content, signature=decoded)
 
     parsed = inst_doc.json()
 
@@ -91,13 +92,13 @@ def get_instances(discovery_uri, verify_key=None):
     return authorization_type, instances
 
 
-def get_instance_info(instance_uri, verify_key):
+def get_instance_info(instance_uri, verifier):
     """
     Retrieve information from instance
 
     args:
         instance_uri (str): the base URI for the instance
-        verify_key (nacl.signing.VerifyKey): the verifykey used to verify the key
+        verifier (nacl.signing.VerifyKey): the verifykey used to verify the key
 
     returns:
         tuple(str, str, str): api_base_uri, authorization_endpoint, token_endpoint
@@ -109,7 +110,7 @@ def get_instance_info(instance_uri, verify_key):
     if info_sig.status_code == 404:
         logger.warning("can't verify signature for {} since there is no signature.".format(info_uri))
     else:
-        _ = verify_key.verify(smessage=info.content, signature=info_sig.content.decode('base64'))
+        _ = verifier.verify(smessage=info.content, signature=info_sig.content.decode('base64'))
     urls = info.json()['api']['http://eduvpn.org/api#2']
     return urls["api_base_uri"], urls["authorization_endpoint"], urls["token_endpoint"]
 
@@ -200,7 +201,7 @@ def user_messages(oauth, api_base_uri):
     elif response.status_code != 200:
         raise Exception("can't fetch user messages, error code {}".format(response.status_code))
     messages = response.json()['user_messages']
-    ok = messages['ok']
+    _ = messages['ok']
     data = messages['data']
     for d in data:
         yield dateutil.parser.parse(d['date_time']), d['type'], d['message']
@@ -221,7 +222,7 @@ def system_messages(oauth, api_base_uri):
     elif response.status_code != 200:
         raise Exception("can't fetch system messages, error code {}".format(response.status_code))
     messages = response.json()['system_messages']
-    ok = messages['ok']
+    _ = messages['ok']
     data = messages['data']
     for d in data:
         yield dateutil.parser.parse(d['date_time']), d['type'], d['message']
@@ -291,5 +292,3 @@ def get_auth_url(oauth, code_verifier, auth_endpoint):
                                                        code_challenge_method=code_challenge_method,
                                                        code_challenge=code_challenge)
     return authorization_url
-
-

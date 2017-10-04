@@ -40,7 +40,7 @@ class TestActions(unittest.TestCase):
         activate_connection(builder=self.builder, meta=self.meta)
 
     @patch('gi.repository.Gtk.MessageDialog')
-    def test_delete_profile(self, mock_dialog):
+    def test_delete_profile(self, _):
         delete_profile(builder=self.builder)
 
     def test_select_profile(self):
@@ -49,7 +49,7 @@ class TestActions(unittest.TestCase):
     @unittest.skipUnless(have_dbus(), "DBus daemon not running")
     @patch('gi.repository.Gtk.MessageDialog')
     @patch('eduvpn.other_nm.NetworkManager', ActiveConnections=[MagicMock(Uuid=uuid)])
-    def test_switched(self, mock_activecon, mock_dialog):
+    def test_switched(self, _, __):
         switched(builder=self.builder, meta=self.meta)
 
     def test_new_provider(self):

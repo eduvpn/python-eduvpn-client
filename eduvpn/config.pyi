@@ -5,6 +5,7 @@
 
 from typing import Any
 
+others_path = ... # type: str
 config_path = ...  # type: str
 providers_path = ...  # type: str
 secure_internet_uri = ...  # type: str

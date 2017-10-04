@@ -7,14 +7,14 @@ import json
 from os import path
 import logging
 
-from eduvpn.config import config_path, providers_path
+from eduvpn.config import others_path, providers_path
 from eduvpn.io import mkdir_p
 from eduvpn.exceptions import EduvpnException
 
 
 logger = logging.getLogger(__name__)
 
-distibuted_tokens_path = path.join(config_path, 'distributed.json')
+distibuted_tokens_path = path.join(others_path, 'distributed.json')
 
 
 def get_distributed_tokens():
@@ -22,8 +22,8 @@ def get_distributed_tokens():
     try:
         with open(json_path, 'r') as f:
             return json.load(f)
-    except IOError as e:
-        logger.warning("'{}' doesn't exists".format(json_path))
+    except (IOError, ValueError) as e:
+        logger.warning("can't open '{}': {}".format(json_path, str(e)))
         return {}
 
 
@@ -47,21 +47,6 @@ class Metadata:
         self.display_name = "Unknown"
         self.connection_type = "Unknown"
 
-        self._get_distributed_token()
-
-    def _get_distributed_token(self):
-        """
-        In case of distributed authorization try to get distributed token. Returns True if successfull
-        """
-        if self.authorization_type == 'distributed':
-            tokens = get_distributed_tokens()
-            if self.discovery_uri in tokens:
-                logger.info("using distributed token from {}".format(self.discovery_uri))
-                self.token = tokens[self.discovery_uri]['token']
-                self.token_endpoint = tokens[self.discovery_uri]['token_endpoint']
-                return True
-        return False
-
     @staticmethod
     def from_uuid(uuid, display_name=None):
         metadata_path = path.join(providers_path, uuid + '.json')
@@ -72,14 +57,14 @@ class Metadata:
                 for key, value in x.items():
                     if value:
                         setattr(metadata, key, value)
-        except IOError as e:
+                return metadata
+        except (ValueError, IOError) as e:
             logger.error("can't open metdata file for {}: {}".format(uuid, str(e)))
             metadata.uuid = uuid
             if display_name:
                 metadata.display_name = display_name
             else:
                 metadata.display_name = uuid
-        finally:
             return metadata
 
     def write(self):
@@ -94,26 +79,6 @@ class Metadata:
         with open(p, 'w') as f:
             f.write(serialized)
 
-    def set_token(self, oauth, code, code_verifier):
-        """
-        Will set token and token_endpoint for self. If distributed and distributed token available use those,
-        otherwise obtain new.
-        """
-        if self.authorization_type == 'distributed':
-            if not self._get_distributed_token():
-                logger.info("authorization type is distributed but no distributed token available yet")
-                self.token = oauth.fetch_token(self.token_endpoint, code=code, code_verifier=code_verifier)
-                tokens = get_distributed_tokens()
-                tokens[self.discovery_uri] = {'token': self.token, 'token_endpoint': self.token_endpoint}
-                serialized = json.dumps(tokens)
-                mkdir_p(config_path)
-                with open(distibuted_tokens_path, 'w') as f:
-                    logger.info("writing distributed token for {} to {}".format(self.discovery_uri,
-                                                                                distibuted_tokens_path))
-                    f.write(serialized)
-        else:
-            self.token = oauth.fetch_token(self.token_endpoint, code=code, code_verifier=code_verifier)
-
     def update_token(self, token):
         self.token = token
         if self.authorization_type == 'distributed':
@@ -125,9 +90,18 @@ class Metadata:
                 logger.error(error.format(self.discovery_uri, distibuted_tokens_path))
                 tokens[self.discovery_uri] = {'token:': token, 'token_endpoint': self.token_endpoint}
             serialized = json.dumps(tokens)
-            mkdir_p(config_path)
+            mkdir_p(others_path)
             with open(distibuted_tokens_path, 'w') as f:
                 logger.info("updating distributed token for {} to {}".format(self.discovery_uri,
                                                                              distibuted_tokens_path))
                 f.write(serialized)
-        self.write()
+        else:
+            self.write()
+
+    def refresh_token(self):
+        if self.authorization_type == 'distributed':
+            tokens = get_distributed_tokens()
+            if self.discovery_uri in tokens:
+                logger.info("using distributed token from {}".format(self.discovery_uri))
+                self.token = tokens[self.discovery_uri]['token']
+                self.token_endpoint = tokens[self.discovery_uri]['token_endpoint']

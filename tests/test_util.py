@@ -18,5 +18,5 @@ class TestUtil(unittest.TestCase):
     def test_bytes2pixbuf(self):
         bytes2pixbuf(bytes())
 
-    #def test_error_helper(self):
+    # def test_error_helper(self):
     #    error_helper(None, None, None)

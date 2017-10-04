@@ -25,13 +25,13 @@ class TestRemote(unittest.TestCase):
         get_auth_url(oauth=self.oauth, code_verifier='test', auth_endpoint='test')
 
     @patch('requests.get')
-    def test_get_instance_info(self, get_mock):
-        get_instance_info(instance_uri='test', verify_key=self.verify)
+    def test_get_instance_info(self, _):
+        get_instance_info(instance_uri='test', verifier=self.verify)
 
     @patch('requests.get', side_effect=lambda x: MochResponse())
     @patch('base64.b64decode', side_effect=lambda x: "decoded")
-    def test_get_instances(self, base_mock, get_mock):
-        get_instances(discovery_uri='test', verify_key=self.verify)
+    def test_get_instances(self, _, __):
+        get_instances(discovery_uri='test', verifier=self.verify)
 
     def test_get_profile_config(self):
         get_profile_config(oauth=self.oauth, api_base_uri='test', profile_id='test')

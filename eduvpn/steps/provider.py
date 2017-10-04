@@ -32,4 +32,3 @@ def update_providers(builder):
     else:
         logger.info("showing introduction")
         introduction.show()
-

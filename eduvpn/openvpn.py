@@ -3,9 +3,9 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-import re
 import logging
 
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -81,12 +81,8 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
     settings = {'connection': {'id': display_name,
                                'type': 'vpn',
                                'uuid': uuid},
-                'ipv4': {
-                    'method': 'auto',
-                },
-                'ipv6': {
-                    'method': 'auto',
-                },
+                'ipv4': {'method': 'auto'},
+                'ipv6': {'method': 'auto'},
                 'vpn': {'data': {'auth': config.get('auth', 'SHA256'),
                                  'cipher': config.get('cipher', 'AES-256-CBC'),
                                  'comp-lzo': config.get('auth', 'adaptive'),

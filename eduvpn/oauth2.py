@@ -123,7 +123,7 @@ def get_oauth_token_code(port):
     return code
 
 
-def oauth_from_token(token, token_updater, uuid, token_endpoint):
+def oauth_from_token(meta):
     """
     Recreate a oauth2 object from a token
 
@@ -136,7 +136,7 @@ def oauth_from_token(token, token_updater, uuid, token_endpoint):
 
     """
     def inner(new_token):
-        token_updater(uuid, new_token)
+        meta.update_token(new_token)
 
-    return OAuth2Session(token=token, auto_refresh_url=token_endpoint, scope=scope, token_updater=inner,
+    return OAuth2Session(token=meta.token, auto_refresh_url=meta.token_endpoint, scope=scope, token_updater=inner,
                          client_id=client_id)

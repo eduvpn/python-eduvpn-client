@@ -18,6 +18,7 @@ matrix:
   - env: DIST=ubuntu_zesty_py3
   - env: DIST=ubuntu_artful_py2
   - env: DIST=ubuntu_artful_py3
+  - env: DIST=ubuntu_zesty_py3_pep8
 sudo: required
 services:
 - docker

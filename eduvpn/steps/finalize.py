@@ -32,7 +32,7 @@ def _background(meta, oauth, dialog, builder):
         meta.config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
     except Exception as e:
         GLib.idle_add(lambda: error_helper(dialog, "can't finalize configuration", "{}: {}".format(type(e).__name__,
-                                                                                            str(e))))
+                                                                                                   str(e))))
         GLib.idle_add(lambda: dialog.hide())
         raise
     else:

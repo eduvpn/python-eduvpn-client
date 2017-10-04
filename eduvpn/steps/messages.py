@@ -4,14 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
-
 import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
-
 from eduvpn.steps.reauth import reauth
 from eduvpn.oauth2 import oauth_from_token
-from eduvpn.manager import update_token
 from eduvpn.remote import user_messages, system_messages, user_info
 from eduvpn.exceptions import EduvpnAuthException
 
@@ -22,7 +19,7 @@ def _background(meta, builder, verifier):
     label = builder.get_object('messages-label')
     window = builder.get_object('eduvpn-window')
     try:
-        oauth = oauth_from_token(meta.token, update_token, meta.uuid, meta.token_endpoint)
+        oauth = oauth_from_token(meta=meta)
     except Exception as e:
         GLib.idle_add(lambda: error_helper(window, "Can't reconstruct OAuth2 session", (str(e))))
         print(meta)

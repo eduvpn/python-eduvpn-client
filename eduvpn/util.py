@@ -109,7 +109,7 @@ def have_dbus():
 def get_pixbuf():
         logo = path.join(get_prefix(), 'share/eduvpn/eduvpn.png')
         small = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
-        big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width']*2, icon_size['height']*2, True)
+        big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'] * 2, icon_size['height'] * 2, True)
         return small, big
 
 

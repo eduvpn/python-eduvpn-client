@@ -222,19 +222,6 @@ def update_keys_provider(uuid, cert, key):
     write_cert(key, 'key', uuid)
 
 
-def update_token(uuid, token):
-    """
-    Update the oauth token configuration. Typically called when the token is expired.
-
-    args:
-        uuid (str): Unique ID of the network manager connection
-        token (dict): a oauth configuration dict
-    """
-    logger.info("writing new token information for {}".format(uuid))
-    metadata = Metadata.from_uuid(uuid)
-    metadata.update_token(token)
-
-
 def monitor_all_vpn(callback):
     """
     This installs a dbus callback which will be called every time the state of any VPN connection changes.
