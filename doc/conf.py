@@ -35,7 +35,7 @@ MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'nacl', 'NetworkManager',
                 'future.moves', 'future.moves.urllib',
                 'future.moves.urllib.parse', 'requests_oauthlib',
                 'http.server', 'gi', 'dateutil', 'gi.repository',
-                'dateutil.parser'] # 'http', 'http.server', 'http.client']
+                'dateutil.parser']  # 'http', 'http.server', 'http.client']
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 

@@ -47,7 +47,7 @@ class TestSteps(TestCase):
         finalizing_step(builder=self.builder, meta=self.meta, oauth=self.oauth)
 
     def test_fetch_instance_step(self):
-        fetch_instance_step(builder=self.builder, meta=self.meta, verifier=self.verifier, discovery_uri='test')
+        fetch_instance_step(builder=self.builder, meta=self.meta, verifier=self.verifier)
 
     def test_fetch_messages(self):
         fetch_messages(builder=self.builder, meta=self.meta, verifier=self.verifier)

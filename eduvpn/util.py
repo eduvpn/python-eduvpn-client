@@ -119,5 +119,5 @@ def metadata_of_selected(builder):
     if treeiter is None:
         return
     else:
-        uuid, _, _, _ = model[treeiter]
-        return Metadata.from_uuid(uuid)
+        uuid_, _, _, _ = model[treeiter]
+        return Metadata.from_uuid(uuid_)

@@ -29,7 +29,7 @@ class TestRemote(unittest.TestCase):
         get_instance_info(instance_uri='test', verify_key=self.verify)
 
     @patch('requests.get', side_effect=lambda x: MochResponse())
-    @patch('base64.b64decode', side_effect= lambda x: "decoded")
+    @patch('base64.b64decode', side_effect=lambda x: "decoded")
     def test_get_instances(self, base_mock, get_mock):
         get_instances(discovery_uri='test', verify_key=self.verify)
 
