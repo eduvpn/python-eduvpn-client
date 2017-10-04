@@ -45,11 +45,17 @@ def list_providers():
     """
     if not have_dbus():
         # fall back to just listing the json files
-        for p in [i for i in os.listdir(providers_path) if i.endswith('.json')]:
-            try:
-                yield Metadata.from_uuid(p[:-5])
-            except IOError as e:
-                logger.error("cant open {}: {}".format(p, e))
+        try:
+            providers = [i for i in os.listdir(providers_path) if i.endswith('.json')]
+        except IOError as e:
+            logger.error("can't list configurations in {}".format(providers_path))
+            raise StopIteration
+        else:
+            for p in providers:
+                try:
+                    yield Metadata.from_uuid(p[:-5])
+                except IOError as e:
+                    logger.error("cant open {}: {}".format(p, e))
     else:
         all_ = NetworkManager.Settings.ListConnections()
         vpn_connections = [c.GetSettings()['connection'] for c in all_ if c.GetSettings()['connection']['type'] == 'vpn']

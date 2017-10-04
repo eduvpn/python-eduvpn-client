@@ -95,3 +95,9 @@ run: .virtualenv3/bin/eduvpn-client
 
 dockers:
 	for i in `ls docker/Dockerfile*`; do echo "*** $$i"; docker build . -f $$i; done
+
+srpm:
+	docker build -t srpm -f docker/Dockerfile.fedora_26_rpm .
+	mkdir tmp || true
+	docker run -v `pwd`/tmp:/tmp:rw srpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+

@@ -16,7 +16,7 @@ RUN docker-apt-install \
         python3-mock \
         python3-setuptools \
         python3-pytest \
-        python3-pep8
+        pep8
 
 ADD . /code
 WORKDIR /code
