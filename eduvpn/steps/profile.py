@@ -9,6 +9,7 @@ from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.remote import list_profiles
 from eduvpn.steps.two_way_auth import two_auth_step
+from eduvpn.exceptions import EduvpnException
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +25,9 @@ def _background(oauth, meta, builder, dialog):
             meta.profile_display_name, meta.profile_id, meta.two_factor = profiles[0]
             two_auth_step(builder=builder, oauth=oauth, meta=meta)
         else:
-            raise Exception("Either there are no VPN profiles defined, or this account does not have the "
-                            "required permissions to create a new VPN configurations for any of the "
-                            "available profiles.")
+            raise EduvpnException("Either there are no VPN profiles defined, or this account does not have the "
+                                  "required permissions to create a new VPN configurations for any of the "
+                                  "available profiles.")
 
     except Exception as e:
         GLib.idle_add(lambda: error_helper(dialog, "Can't fetch profile list", str(e)))

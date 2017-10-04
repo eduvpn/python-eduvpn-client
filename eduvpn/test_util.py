@@ -3,6 +3,8 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
+from mock import MagicMock
+
 
 class MockSelection:
     def __init__(self, num_fields):
@@ -17,15 +19,19 @@ class MockSelection:
 
 
 class MochResponse:
-    content_json = {
-        "create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}},
-        "profile_list": {"data": {}},
-        "user_info": {'data': {'is_disabled': False, 'two_factor_enrolled': False}},
-        "authorization_type": "test",
-        "instances": [],
-    }
+    def __init__(self, content_json=None):
+        self.status_code = 200
 
-    status_code = 200
+        if content_json:
+            self.content_json = content_json
+        else:
+            self.content_json = {
+                "create_keypair": {"data": {"certificate": "mockcert", "private_key": "mockkey"}},
+                "profile_list": {"data": {}},
+                "user_info": {'data': {'is_disabled': False, 'two_factor_enrolled': False}},
+                "authorization_type": "test",
+                "instances": [],
+            }
 
     @property
     def content(self):
@@ -52,6 +58,16 @@ class MockOAuth:
 
     def post(self, uri, data):
         return MochResponse()
+
+
+class MockBuilder:
+    def __init__(self):
+        self.objects = {
+            'profiles-selection': MockSelection(3),
+        }
+
+    def get_object(self, o):
+        return self.objects.get(o, MagicMock())
 
 
 class VerifyMock:
