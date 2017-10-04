@@ -7,7 +7,7 @@ from os import path
 
 config_path = path.expanduser('~/.config/eduvpn')
 providers_path = config_path
-others_path = path.join(config_path, 'providers')
+others_path = path.join(config_path, 'other')
 
 secure_internet_uri = 'https://static.eduvpn.nl/disco/secure_internet.json'
 institute_access_uri = 'https://static.eduvpn.nl/disco/institute_access.json'

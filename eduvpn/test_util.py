@@ -50,7 +50,7 @@ class MockOAuth:
         state = "mock state"
         return url, state
 
-    def post(self, _, __):
+    def post(self, uri, data):
         return MochResponse()
 
 

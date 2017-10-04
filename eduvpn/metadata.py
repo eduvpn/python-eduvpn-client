@@ -88,7 +88,7 @@ class Metadata:
             else:
                 error = "updating distributed token for {} but it isn't present in {}, recreating"
                 logger.error(error.format(self.discovery_uri, distibuted_tokens_path))
-                tokens[self.discovery_uri] = {'token:': token, 'token_endpoint': self.token_endpoint}
+                tokens[self.discovery_uri] = {'token': token, 'token_endpoint': self.token_endpoint}
             serialized = json.dumps(tokens)
             mkdir_p(others_path)
             with open(distibuted_tokens_path, 'w') as f:
