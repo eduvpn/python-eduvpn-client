@@ -24,5 +24,7 @@ How to make a release
   https://github.com/pypa/twine
 
 * Make a SRPM and upload to https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/
+  
+  note: $make srpm will use docker to build a srpm and put it in tmp/
 
 * make a debian package https://github.com/eduvpn-debian/packaging
