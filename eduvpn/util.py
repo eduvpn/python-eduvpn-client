@@ -65,15 +65,15 @@ def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], dis
         GtkPixbuf: a GTK Pixbuf
 
     """
-    l = GdkPixbuf.PixbufLoader()
-    l.set_size(width, height)
+    loader = GdkPixbuf.PixbufLoader()
+    loader.set_size(width, height)
     try:
-        l.write(data)
-        l.close()
+        loader.write(data)
+        loader.close()
     except GLib.Error as e:
         logger.error("can't process icon for {}: {}".format(display_name, str(e)))
     else:
-        return l.get_pixbuf()
+        return loader.get_pixbuf()
 
 
 @lru_cache(maxsize=1)

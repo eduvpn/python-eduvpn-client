@@ -4,4 +4,5 @@ include tests/example.ovpn
 include share/icons/hicolor/*/apps/eduvpn-client.png
 include share/applications/*
 include share/eduvpn/*
+include share/eduvpn/builder/*
 
