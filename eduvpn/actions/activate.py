@@ -5,7 +5,6 @@
 
 import logging
 from datetime import datetime
-
 import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper
@@ -23,8 +22,7 @@ def activate_connection(meta, builder):
     logger.info("Connecting to {}".format(meta.display_name))
     notify("eduVPN connecting...", "Connecting to '{}'".format(meta.display_name))
     try:
-        token = meta.get_token()
-        if not token:
+        if not meta.token:
             logger.error("metadata for {} doesn't contain oauth2 token".format(meta.uuid))
         else:
             oauth = oauth_from_token(meta=meta)
@@ -32,7 +30,7 @@ def activate_connection(meta, builder):
             meta.config = config
             update_config_provider(meta)
 
-            if datetime.now() > datetime.fromtimestamp(token['expires_at']):
+            if datetime.now() > datetime.fromtimestamp(meta.token['expires_at']):
                 logger.info("key pair is expired")
                 cert, key = create_keypair(oauth, meta.api_base_uri)
                 update_keys_provider(meta.uuid, cert, key)

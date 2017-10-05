@@ -18,6 +18,8 @@ import time
 import warnings
 import xml.etree.ElementTree as etree
 
+from eduvpn.util import have_dbus
+
 
 class ObjectVanished(Exception):
     def __init__(self, obj):

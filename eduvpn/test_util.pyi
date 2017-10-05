@@ -29,6 +29,7 @@ class MockOAuth:
     def post(self, url, data): ...
 
 class MockBuilder:
+    objects = ... # type: dict
     def get_object(self, o): ...
 
 class VerifyMock:
