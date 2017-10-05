@@ -12,7 +12,7 @@ class MockSelection:
     def get_selected(self): ...
     def clear(self): ...
 
-class MochResponse:
+class MockResponse:
     content_json = ...  # type: Any
     status_code = ...  # type: int
     def __init__(self, content_json: Any = ...): ...
@@ -34,3 +34,10 @@ class MockBuilder:
 
 class VerifyMock:
     def verify(self, *args, **kwargs): ...
+
+
+class MockDialog:
+    return_code = ... # type: int
+    def run(self): ...
+    def hide(self): ...
+

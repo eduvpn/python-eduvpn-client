@@ -1,11 +1,9 @@
 import unittest
 from mock import MagicMock, patch
 from eduvpn.test_util import MockSelection
-from eduvpn.util import have_dbus
 from eduvpn.actions.add import new_provider
 from eduvpn.actions.delete import delete_profile
 from eduvpn.actions.select import select_profile
-from eduvpn.actions.switch import switched
 from eduvpn.actions.vpn_status import vpn_change
 from eduvpn.metadata import Metadata
 
@@ -37,12 +35,6 @@ class TestActions(unittest.TestCase):
 
     def test_select_profile(self):
         select_profile(builder=self.builder, verifier=self.verifier)
-
-    @unittest.skipUnless(have_dbus(), "DBus daemon not running")
-    @patch('gi.repository.Gtk.MessageDialog')
-    @patch('eduvpn.other_nm.NetworkManager', ActiveConnections=[MagicMock(Uuid=uuid)])
-    def test_switched(self, _, __):
-        switched(builder=self.builder, meta=self.meta)
 
     def test_new_provider(self):
         new_provider(builder=self.builder, verifier=self.verifier)

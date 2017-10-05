@@ -42,7 +42,7 @@ def background(meta, oauth, builder):
 
     if not info['two_factor_enrolled']:
         logger.info("no two factor auth enabled")
-        finalizing_step(oauth=oauth, meta=meta, builder=builder)
+        GLib.idle_add(lambda: finalizing_step(oauth=oauth, meta=meta, builder=builder))
 
     elif 'two_factor_enrolled_with' in info:
         options = info['two_factor_enrolled_with']

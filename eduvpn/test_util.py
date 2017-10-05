@@ -18,7 +18,7 @@ class MockSelection:
         return
 
 
-class MochResponse:
+class MockResponse:
     def __init__(self, content_json=None):
         self.status_code = 200
 
@@ -31,11 +31,12 @@ class MochResponse:
                 "user_info": {'data': {'is_disabled': False, 'two_factor_enrolled': False}},
                 "authorization_type": "test",
                 "instances": [],
+
             }
 
     @property
     def content(self):
-        return str(self.content_json)
+        return str(self.content_json).encode()
 
     def json(self):
         return self.content_json
@@ -45,7 +46,7 @@ class MochResponse:
 
 
 class MockOAuth:
-    def __init__(self, response=MochResponse()):
+    def __init__(self, response=MockResponse()):
         self.response = response
 
     def get(self, _):
@@ -57,13 +58,17 @@ class MockOAuth:
         return url, state
 
     def post(self, uri, data):
-        return MochResponse()
+        return MockResponse()
+
+    def fetch_token(self, token_endpoint, code, code_verifier):
+        return {}
 
 
 class MockBuilder:
     def __init__(self):
         self.objects = {
             'profiles-selection': MockSelection(3),
+            'instances-selection': MockSelection(2),
         }
 
     def get_object(self, o):
@@ -72,4 +77,15 @@ class MockBuilder:
 
 class VerifyMock:
     def verify(self, *args, **kwargs):
+        return True
+
+
+class MockDialog:
+    def __init__(self, return_code=0):
+        self.return_code = return_code
+
+    def run(self):
+        return self.return_code
+
+    def hide(self):
         return True

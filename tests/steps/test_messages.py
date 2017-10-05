@@ -1,8 +1,8 @@
 from unittest import TestCase
-from mock import MagicMock
+from mock import MagicMock, patch
 from eduvpn.test_util import MockBuilder
 from eduvpn.metadata import Metadata
-from eduvpn.steps.messages import fetch_messages
+from eduvpn.steps.messages import fetch_messages, _background
 
 
 class TestSteps(TestCase):
@@ -19,8 +19,15 @@ class TestSteps(TestCase):
         cls.builder = MockBuilder()
         cls.verifier = MagicMock()
 
-    def test_fetch_messages(self):
+    @patch('eduvpn.steps.messages.thread_helper')
+    def test_fetch_messages(self, *_):
         fetch_messages(builder=self.builder, meta=self.meta, verifier=self.verifier)
+
+    @patch('eduvpn.steps.messages.user_messages')
+    @patch('eduvpn.steps.messages.system_messages')
+    @patch('eduvpn.steps.messages.user_info')
+    def test_background(self, *_):
+        _background(builder=self.builder, meta=self.meta, verifier=self.verifier)
 
 
 

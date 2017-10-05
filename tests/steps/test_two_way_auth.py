@@ -1,8 +1,8 @@
 from unittest import TestCase
 from mock import patch, MagicMock
-from eduvpn.test_util import MochResponse, MockOAuth, MockBuilder
+from eduvpn.test_util import MockResponse, MockOAuth, MockBuilder
 from eduvpn.metadata import Metadata
-from eduvpn.steps.two_way_auth import two_auth_step, background as two_auth_step_background
+from eduvpn.steps.two_way_auth import two_auth_step, background, choice_window
 
 
 class TestTwoWayAuth(TestCase):
@@ -20,26 +20,34 @@ class TestTwoWayAuth(TestCase):
         cls.verifier = MagicMock()
         cls.oauth = MockOAuth()
 
-    def test_two_auth_step(self):
-        two_auth_step(builder=self.builder, meta=self.meta, oauth=self.oauth)
+    @patch('eduvpn.steps.two_way_auth.thread_helper')
+    def test_two_auth_step(self, *_):
+        response_2fa = MockResponse()
+        response_2fa.content_json['user_info']['data']['two_factor_enrolled'] = True
+        oauth_2fa = MockOAuth(response_2fa)
+        two_auth_step(builder=self.builder, meta=self.meta, oauth=oauth_2fa)
 
     def test_two_auth_background_step_no_2fa(self):
         oauth_no_2fa = MockOAuth()
-        two_auth_step_background(builder=self.builder, meta=self.meta, oauth=oauth_no_2fa)
+        background(builder=self.builder, meta=self.meta, oauth=oauth_no_2fa)
 
     def test_two_auth_background_step_2fa(self):
-        response_2fa = MochResponse()
+        response_2fa = MockResponse()
         response_2fa.content_json['user_info']['data']['two_factor_enrolled'] = True
         oauth_2fa = MockOAuth(response_2fa)
-        two_auth_step_background(builder=self.builder, meta=self.meta, oauth=oauth_2fa)
+        background(builder=self.builder, meta=self.meta, oauth=oauth_2fa)
 
     def test_two_auth_background_step_2fa_multiple(self):
         # multiple 2fa metods available
-        response_2fa = MochResponse()
+        response_2fa = MockResponse()
         response_2fa.content_json['user_info']['data']['two_factor_enrolled'] = True
         response_2fa.content_json['user_info']['data']['two_factor_enrolled_with'] = ['yubikey', 'totp']
         oauth_2fa = MockOAuth(response_2fa)
-        two_auth_step_background(builder=self.builder, meta=self.meta, oauth=oauth_2fa)
+        background(builder=self.builder, meta=self.meta, oauth=oauth_2fa)
+
+    @patch('eduvpn.steps.two_way_auth.finalizing_step')
+    def test_choice_window(self, *_):
+        choice_window(builder=self.builder, meta=self.meta, oauth=self.oauth, options=['bla1', 'bla2'])
 
 
 

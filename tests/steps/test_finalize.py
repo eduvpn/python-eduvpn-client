@@ -1,7 +1,8 @@
 from unittest import TestCase
-from eduvpn.test_util import MockBuilder, MockOAuth
+from mock import patch
+from eduvpn.test_util import MockBuilder, MockOAuth, MockDialog
 from eduvpn.metadata import Metadata
-from eduvpn.steps.finalize import finalizing_step
+from eduvpn.steps.finalize import finalizing_step, _background
 
 
 class TestFinalize(TestCase):
@@ -16,8 +17,13 @@ class TestFinalize(TestCase):
         cls.meta.api_base_uri = 'https://test'
         cls.builder = MockBuilder()
         cls.oauth = MockOAuth()
+        cls.dialog = MockDialog()
 
-    def test_finalizing_step(self):
+    @patch('eduvpn.steps.finalize.thread_helper')
+    def test_finalizing_step(self, *_):
         finalizing_step(builder=self.builder, meta=self.meta, oauth=self.oauth)
 
+    @patch('eduvpn.steps.finalize.store_provider')
+    def test_background(self, *_):
+        _background(builder=self.builder, dialog=self.dialog, meta=self.meta, oauth=self.oauth)
 

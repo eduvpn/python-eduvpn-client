@@ -21,8 +21,7 @@ class TestCrypto(unittest.TestCase):
     def test_get_open_port(self):
         get_open_port()
 
-    @mock.patch('http.server.HTTPServer.handle_request')
-    def test_one_request(self, _):
-        # TODO: need to find a proper way to mock that path
-        with self.assertRaises(AttributeError):
-            one_request(1025)
+    @mock.patch('eduvpn.oauth2.HTTPServer')
+    @mock.patch('eduvpn.oauth2.urlparse')
+    def test_one_request(self, *_):
+        one_request(1025)

@@ -9,7 +9,7 @@ from mock import patch
 
 from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_instances, get_profile_config, \
     system_messages, user_messages, create_config, list_profiles, translate_display_name, user_info
-from eduvpn.test_util import MochResponse, MockOAuth, VerifyMock
+from eduvpn.test_util import MockResponse, MockOAuth, VerifyMock
 
 
 class TestRemote(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestRemote(unittest.TestCase):
     def test_get_instance_info(self, _):
         get_instance_info(instance_uri='test', verifier=self.verify)
 
-    @patch('requests.get', side_effect=lambda x: MochResponse())
+    @patch('requests.get', side_effect=lambda x: MockResponse())
     @patch('base64.b64decode', side_effect=lambda x: "decoded")
     def test_get_instances(self, _, __):
         get_instances(discovery_uri='test', verifier=self.verify)
