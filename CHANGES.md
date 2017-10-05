@@ -1,3 +1,11 @@
+1.0rc9
+======
+
+ * AttributeError #86
+ * python test suite fails during debian package build low priority #61
+ * test suite passes but raises errors in threads low priority #75
+
+
 1.0rc8
 ======
 
