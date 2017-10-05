@@ -1,4 +1,5 @@
 import unittest
+from mock import patch
 from eduvpn.util import get_prefix, have_dbus, make_unique_id, thread_helper, error_helper, bytes2pixbuf
 
 
@@ -18,5 +19,6 @@ class TestUtil(unittest.TestCase):
     def test_bytes2pixbuf(self):
         bytes2pixbuf(bytes())
 
-    # def test_error_helper(self):
-    #    error_helper(None, None, None)
+    @patch('eduvpn.util.Gtk.MessageDialog')
+    def test_error_helper(self, *_):
+        error_helper(None, None, None)

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mock import patch
-from eduvpn.test_util import MockBuilder, MockOAuth, MockDialog
+from tests.util import MockBuilder, MockOAuth, MockDialog
 from eduvpn.metadata import Metadata
 from eduvpn.steps.finalize import finalizing_step, _background
 

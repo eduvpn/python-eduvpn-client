@@ -43,4 +43,3 @@ class TestMetadata(unittest.TestCase):
         display_name = "end_of_the_world"
         metadata = Metadata.from_uuid(uuid=uuid, display_name=display_name)
         self.assertEqual(metadata.display_name, display_name)
-

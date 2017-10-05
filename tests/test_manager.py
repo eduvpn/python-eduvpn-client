@@ -11,6 +11,7 @@ from eduvpn.manager import list_providers, list_active, connect_provider, delete
     update_keys_provider
 from eduvpn.exceptions import EduvpnException
 from eduvpn.util import make_unique_id
+from tests.mock_config import mock_config
 
 
 here = path.dirname(__file__)
@@ -22,8 +23,7 @@ class TestNm(unittest.TestCase):
         self.meta.uuid = make_unique_id()
         self.meta.cert = "testcert"
         self.meta.key = "testkey"
-        with open(path.join(here, 'example.ovpn'), 'r') as f:
-            self.meta.config = f.read()
+        self.meta.config = mock_config
 
     def test_list_providers(self):
         list_providers()

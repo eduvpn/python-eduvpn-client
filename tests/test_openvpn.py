@@ -7,8 +7,7 @@ from os import path
 import unittest
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
 
-here = path.dirname(__file__)
-example = open(path.join(here, 'example.ovpn'), 'r').read()
+from tests.mock_config import mock_config
 
 
 class TestOpenvpn(unittest.TestCase):
@@ -16,4 +15,4 @@ class TestOpenvpn(unittest.TestCase):
         format_like_ovpn('test', 'test', 'test')
 
     def test_parse_ovpn(self):
-        parse_ovpn(example)
+        parse_ovpn(mock_config)

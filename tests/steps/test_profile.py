@@ -4,7 +4,7 @@ from mock import patch
 
 from eduvpn.metadata import Metadata
 from eduvpn.steps.profile import fetch_profile_step, select_profile_step, _background
-from eduvpn.test_util import MockBuilder, MockOAuth, MockResponse
+from tests.util import MockBuilder, MockOAuth, MockResponse
 from eduvpn.exceptions import EduvpnException
 
 

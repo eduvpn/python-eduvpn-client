@@ -1,4 +1,4 @@
-# OpenVPN Client Configuration
+mock_config = """# OpenVPN Client Configuration
 dev tun
 client
 nobind
@@ -156,3 +156,4 @@ SdooJUoYqqMaG2Yf63D4C8oTRIAqqPxsI+p3SSd6P4YnSN69fcmQ8qAy/RJQ0Mn5
 xL2Pccm97PHvBS/J8JMzBn8y3hhT0g==
 -----END PRIVATE KEY-----
 </key>
+"""

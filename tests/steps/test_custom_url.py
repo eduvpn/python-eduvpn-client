@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mock import MagicMock
-from eduvpn.test_util import MockBuilder
+from tests.util import MockBuilder
 from eduvpn.metadata import Metadata
 from eduvpn.steps.custom_url import custom_url
 

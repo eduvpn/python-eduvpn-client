@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mock import patch
-from eduvpn.test_util import MockBuilder, MockResponse
+from tests.util import MockBuilder, MockResponse
 from eduvpn.steps.provider import update_providers
 
 

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mock import patch, MagicMock
-from eduvpn.test_util import MockBuilder, MockOAuth
+from tests.util import MockBuilder, MockOAuth
 from eduvpn.metadata import Metadata
 from eduvpn.steps.reauth import reauth
 

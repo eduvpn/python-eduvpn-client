@@ -1,6 +1,6 @@
 import unittest
 from mock import MagicMock, patch
-from eduvpn.test_util import MockSelection
+from tests.util import MockSelection
 from eduvpn.actions.add import new_provider
 from eduvpn.actions.delete import delete_profile
 from eduvpn.actions.select import select_profile
@@ -22,8 +22,10 @@ class MockBuilder:
 class MockSwitch:
     def __init__(self, state=False):
         self.state = state
+
     def get_active(self):
         return self.state
+
 
 class TestActions(unittest.TestCase):
     uuid = 'test'

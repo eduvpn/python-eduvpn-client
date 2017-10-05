@@ -1,6 +1,6 @@
 import unittest
 from mock import MagicMock, patch
-from eduvpn.test_util import MockBuilder
+from tests.util import MockBuilder
 from eduvpn.actions.activate import activate_connection
 from eduvpn.metadata import Metadata
 

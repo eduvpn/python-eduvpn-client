@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mock import MagicMock, patch
-from eduvpn.test_util import MockBuilder, MockDialog
+from tests.util import MockBuilder, MockDialog
 from eduvpn.metadata import Metadata
 from eduvpn.steps.instance import fetch_instance_step, _fetch_background, select_instance_step
 
