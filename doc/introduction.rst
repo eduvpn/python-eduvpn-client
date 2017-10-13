@@ -23,7 +23,8 @@ as root or using sudo::
     - apt update
     - apt install eduvpn-client
 
-This has been tested on Ubuntu 17.04 (Zesty), Ubuntu 16.04 (Xenial) and Debian 9 (stretch).
+This has been tested on Ubuntu 17.04 (Zesty) and Debian 9 (stretch). Unfortunatly Ubuntu 16.04 LTS  (Xenial) is **not**
+supported. Ubuntu Xenial and older are bundled with an outdated and unsupporten OpenVPN.
 
 Fedora
 ------
