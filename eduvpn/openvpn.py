@@ -85,7 +85,7 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
                 'ipv6': {'method': 'auto'},
                 'vpn': {'data': {'auth': config.get('auth', 'SHA256'),
                                  'cipher': config.get('cipher', 'AES-256-CBC'),
-                                 'comp-lzo': config.get('auth', 'adaptive'),
+                                 'comp-lzo': config.get('comp-lzo', 'adaptive'),
                                  'connection-type': config.get('connection-type', 'tls'),
                                  'dev': 'tun',
                                  'remote': ",".join(":".join(r) for r in config['remote']),
@@ -97,10 +97,13 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
 
     # 2 factor auth enabled
     if 'auth-user-pass' in config:
+        assert username
         logger.info("looks like 2 factor authentication is enabled, enabling this in NM config")
         settings['vpn']['data']['cert-pass-flags'] = '0'
         settings['vpn']['data']['connection-type'] = 'password-tls'
         settings['vpn']['data']['password-flags'] = '2'
         settings['vpn']['data']['username'] = username
+    else:
+        assert not username
 
     return settings
