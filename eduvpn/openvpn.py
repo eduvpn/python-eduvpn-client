@@ -85,7 +85,7 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
                 'ipv6': {'method': 'auto'},
                 'vpn': {'data': {'auth': config.get('auth', 'SHA256'),
                                  'cipher': config.get('cipher', 'AES-256-CBC'),
-                                 'comp-lzo': config.get('comp-lzo', 'adaptive'),
+                                 'comp-lzo': config.get('comp-lzo', 'adaptive') or 'adaptive',
                                  'connection-type': config.get('connection-type', 'tls'),
                                  'dev': 'tun',
                                  'remote': ",".join(":".join(r) for r in config['remote']),
