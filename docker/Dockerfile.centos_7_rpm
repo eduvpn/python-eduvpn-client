@@ -12,22 +12,29 @@ RUN yum install -y	\
     python-gobject \
 	python-pynacl \
 	python-repoze-lru \
+	python-dateutil \
     python2-devel \
 	python2-configparser \
 	python2-future \
 	python2-requests-oauthlib \
 	python2-mock \
-    python2-pytest-runner
+    python2-pytest-runner \
+    gcc
+
+# GCC is required for the test run that will compile and install pynacl manually
 
 RUN rpmdev-setuptree
 
 ADD . /code
 WORKDIR /code
 
+RUN yum install -y
+
 RUN python setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
-#RUN rpmbuild -bs rpm/centos7.spec
-#RUN rpmbuild -bb rpm/centos7.spec
+
+RUN rpmbuild -bs rpm/centos7.spec
+RUN rpmbuild -bb rpm/centos7.spec
 
 
 

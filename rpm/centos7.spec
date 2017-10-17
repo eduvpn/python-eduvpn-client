@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        1.0rc7
+Version:        1.0rc11
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -11,17 +11,21 @@ URL:            https://pypi.python.org/pypi/%{srcname}
 Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires: pytest
+# BuildRequires: python2-pytest-runner   # - not included in centos7
 BuildRequires: gtk3
 BuildRequires: libnotify
 BuildRequires: dbus-python
 BuildRequires: python-gobject
-BuildRequires: python-pynacl
+# BuildRequires: python-pynacl   # - not included in centos7
 BuildRequires: python-repoze-lru
 BuildRequires: python2-devel
 BuildRequires: python2-requests-oauthlib
 BuildRequires: python2-configparser
 BuildRequires: python2-future
 BuildRequires: python2-mock
+BuildRequires: python-dateutil
+BuildRequires: gcc
+# GCC is required for the test run that will compile and install pynacl manually
 
 
 
@@ -33,7 +37,7 @@ Summary:        %{sum}
 %{?python_provide:%python_provide python2-eduvpn-client}
 Requires: python-gobject
 Requires: dbus-python
-Requires: python-pynacl
+# Requires: python-pynacl  # - not included in centos7
 Requires: python-repoze-lru
 Requires: python2-requests-oauthlib
 Requires: python2-configparser
@@ -78,11 +82,19 @@ eduVPN desktop client
 %{_bindir}/eduvpn-client
 %{_datarootdir}/applications/eduvpn-client.desktop
 %{_datarootdir}/eduvpn/eduvpn.png
-%{_datarootdir}/eduvpn/eduvpn.ui
 %{_datarootdir}/eduvpn/institute.png
 %{_datarootdir}/eduvpn/institute_small.png
 %{_datarootdir}/eduvpn/internet.png
 %{_datarootdir}/eduvpn/internet_small.png
+%{_datarootdir}/eduvpn/builder/2fa.ui
+%{_datarootdir}/eduvpn/builder/connection_type.ui
+%{_datarootdir}/eduvpn/builder/custom_url.ui
+%{_datarootdir}/eduvpn/builder/fetch.ui
+%{_datarootdir}/eduvpn/builder/instances.ui
+%{_datarootdir}/eduvpn/builder/profiles.ui
+%{_datarootdir}/eduvpn/builder/redirecturl.ui
+%{_datarootdir}/eduvpn/builder/token.ui
+%{_datarootdir}/eduvpn/builder/window.ui
 %{_datarootdir}/icons/hicolor/128x128/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png
