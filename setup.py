@@ -13,7 +13,6 @@ install_requires = [
     'pynacl',
     'requests_oauthlib',
     'future',
-    'configparser',
     'python-dateutil',
     'six',
     'repoze.lru',
