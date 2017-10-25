@@ -5,6 +5,8 @@
 
 import logging
 import gi
+from os import geteuid
+from sys import exit
 gi.require_version('Gtk', '3.0')
 from gi.repository import GObject, Gtk, GLib
 from eduvpn.util import have_dbus
@@ -13,6 +15,12 @@ from eduvpn.util import have_dbus
 def main():
     format_ = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
     logging.basicConfig(level=logging.INFO, format=format_)
+    logger = logging.getLogger(__name__)
+
+    if geteuid() == 0:
+        logger.error("Running eduVPN client as root is not supported (yet)")
+        exit(1)
+
     GObject.threads_init()
 
     if have_dbus():
