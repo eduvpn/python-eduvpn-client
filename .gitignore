@@ -112,3 +112,4 @@ ENV/
 tests/eduvpn.ovpn
 eduvpn.ovpn
 tmp
+.vagrant/
