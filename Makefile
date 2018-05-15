@@ -13,6 +13,7 @@ deb:
 	apt install -y \
 		gir1.2-gtk-3.0 \
 		gir1.2-notify-0.7 \
+		libdbus-1-dev \
 		libnotify4 \
 		python-gi \
 		python-dbus \
