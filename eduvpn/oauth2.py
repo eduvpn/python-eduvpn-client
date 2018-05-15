@@ -41,7 +41,7 @@ landing_page = """
 </html>
 """
 
-client_id = "org.eduvpn.app"
+client_id = "org.eduvpn.app.linux"
 scope = ["config"]
 
 
