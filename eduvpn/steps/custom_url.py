@@ -21,7 +21,7 @@ def custom_url(builder, meta, verifier):
     while True:
         response = dialog.run()
         if response == 1:
-            url = entry.get_text()
+            url = entry.get_text().strip()
             logger.info("ok pressed, entry text: {}".format(url))
             if not url.startswith('https://'):
                 GLib.idle_add(lambda: error_helper(dialog, "Invalid URL", "URL should start with https://"))
