@@ -43,7 +43,7 @@ def parse_ovpn(configtext):
             else:
                 yield (split[0], split[1:])
 
-    for tag in 'ca', 'tls-auth', 'cert', 'key':
+    for tag in 'ca', 'tls-auth', 'cert', 'key', 'tls-crypt':
         x = re.search('<{}>(.*)</{}>'.format(tag, tag), configtext, flags=re.S)
         if x:
             full_match = x.group(0)

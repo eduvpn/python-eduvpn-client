@@ -73,7 +73,12 @@ def store_provider(meta):
     cert_path = write_cert(meta.cert, 'cert', meta.uuid)
     key_path = write_cert(meta.key, 'key', meta.uuid)
     ca_path = write_cert(config_dict.pop('ca'), 'ca', meta.uuid)
-    ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', meta.uuid)
+    if 'tls-auth' in config_dict:
+        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', meta.uuid)
+    elif 'tls-crypt' in config_dict:
+        ta_path = write_cert(config_dict.pop('tls-crypt'), 'ta', meta.uuid)
+    else:
+        raise EduvpnException("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
     nm_config = ovpn_to_nm(config_dict, uuid=meta.uuid, display_name=meta.display_name, username=meta.username)
     nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
     insert_config(nm_config)
