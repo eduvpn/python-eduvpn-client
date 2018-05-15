@@ -33,3 +33,4 @@ def main():
     edu_vpn_app = EduVpnApp()
     edu_vpn_app.run()
     Gtk.main()
+    return 0
