@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
+from eduvpn.exceptions import EduvpnException
 
 import re
 
@@ -101,13 +102,16 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
 
     # 2 factor auth enabled
     if 'auth-user-pass' in config:
-        assert username
+        if not username:
+            raise EduvpnException("You need to enroll for 2FA in the user portal "
+                                  "first before being able to connect to this profile.")
         logger.info("looks like 2 factor authentication is enabled, enabling this in NM config")
         settings['vpn']['data']['cert-pass-flags'] = '0'
         settings['vpn']['data']['connection-type'] = 'password-tls'
         settings['vpn']['data']['password-flags'] = '2'
         settings['vpn']['data']['username'] = username
     else:
-        assert not username
+        if username:
+            raise EduvpnException("You are enrolled for 2FA but this is not enabled for this profile.")
 
     return settings
