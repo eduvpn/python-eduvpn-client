@@ -47,7 +47,7 @@ def list_providers():
         # fall back to just listing the json files
         try:
             providers = [i for i in os.listdir(providers_path) if i.endswith('.json')]
-        except IOError as e:
+        except (IOError, OSError) as e:
             logger.error("can't list configurations in {}".format(providers_path))
             raise StopIteration
         else:
