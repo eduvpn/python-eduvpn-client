@@ -14,7 +14,8 @@ RUN docker-apt-install \
         python-repoze.lru \
         python-dateutil \
         python-mock \
-        python-pytest
+        python-pytest \
+        python-setuptools
 
 
 ADD . /code
