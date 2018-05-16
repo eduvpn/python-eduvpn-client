@@ -24,7 +24,6 @@ class TestFinalize(TestCase):
         finalizing_step(builder=self.builder, meta=self.meta, oauth=self.oauth)
 
     @patch('eduvpn.steps.finalize.store_provider')
-    @patch('eduvpn.other_nm.Settings.GetConnectionByUuid')
     def test_background(self, *_):
         _background(builder=self.builder, dialog=self.dialog, meta=self.meta, oauth=self.oauth)
 
