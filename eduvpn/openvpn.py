@@ -86,7 +86,7 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
                 'ipv6': {'method': 'auto'},
                 'vpn': {'data': {'auth': config.get('auth', 'SHA256'),
                                  'cipher': config.get('cipher', 'AES-256-CBC'),
-                                 ## adaptive, gives problems on Ubuntu 16.04, expects yes or no
+                                 # adaptive, gives problems on Ubuntu 16.04, expects yes or no
                                  # 'comp-lzo': config.get('comp-lzo', 'adaptive') or 'adaptive',
                                  'comp-lzo': config.get('comp-lzo', 'yes') or 'yes',
                                  'connection-type': config.get('connection-type', 'tls'),
@@ -94,9 +94,9 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
                                  'remote': ",".join(":".join(r) for r in config['remote']),
                                  'remote-cert-tls': 'server',
                                  'ta-dir': config.get('key-direction', '1'),
-                                  ## 'tls-cipher' is not supported on ubuntu 16.04
-                                  #'tls-cipher': config.get('tls-cipher', 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384')
-                        },
+                                 # 'tls-cipher' is not supported on ubuntu 16.04
+                                 # 'tls-cipher': config.get('tls-cipher', 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384')
+                                 },
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
                 }
 
