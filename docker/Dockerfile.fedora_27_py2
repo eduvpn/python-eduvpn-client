@@ -1,25 +1,20 @@
-FROM centos:7
+FROM fedora:27
 
-RUN yum install -y epel-release
-
-RUN yum install -y \
+RUN dnf install -y \
         libnotify \
         gtk3 \
-        python-gobject \
-        python-repoze-lru \
         dbus-python \
+        python-repoze-lru \
+        python-gobject \
         python2-pynacl \
         python2-requests-oauthlib \
         python2-configparser \
         python2-future \
         python2-dateutil \
         python2-mock \
-        python2-pip \
-        pytest
-
+        python2-pytest
 
 ADD . /code
 WORKDIR /code
-RUN pip install --upgrade setuptools
-RUN pip install .
-RUN py.test
+RUN python setup.py install
+RUN python setup.py test

@@ -4,7 +4,7 @@ RUN yum install -y epel-release
 
 RUN yum install -y	\
     rpm-build \
-    rpmdevtools\
+    rpmdevtools \
     gtk3 \
     libnotify \
 	pytest \
@@ -28,7 +28,7 @@ RUN rpmdev-setuptree
 ADD . /code
 WORKDIR /code
 
-RUN yum install -y
+#RUN yum install -y
 
 RUN python setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
