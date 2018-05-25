@@ -19,10 +19,11 @@ def reauth(meta, verifier, builder):
     window = builder.get_object('eduvpn-window')
     dialog = Gtk.MessageDialog(window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION,
                                Gtk.ButtonsType.YES_NO,
-                               "Authorization for {}is expired or removed.".format(meta.display_name))
+                               "Authorization for {} is expired or removed.".format(meta.display_name))
     dialog.format_secondary_text("Do you want to re-authorize?")
     response = dialog.run()
     if response == Gtk.ResponseType.YES:
+        meta.token = None
         browser_step(builder, meta, verifier)
         delete_provider(meta.uuid)
     elif response == Gtk.ResponseType.NO:
