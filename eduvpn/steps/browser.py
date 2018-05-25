@@ -30,7 +30,8 @@ def _phase1_background(meta, dialog, verifier, builder):
         r = get_instance_info(instance_uri=meta.instance_base_uri, verifier=verifier)
         meta.api_base_uri, meta.authorization_endpoint, meta.token_endpoint = r
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(dialog, "Can't fetch instance info", "{}".format(str(e))))
+        error = e
+        GLib.idle_add(lambda: error_helper(dialog, "Can't fetch instance info", "{}".format(str(error))))
         GLib.idle_add(lambda: dialog.hide())
         raise
 
@@ -42,7 +43,8 @@ def _phase1_background(meta, dialog, verifier, builder):
             oauth = create_oauth_session(port, auto_refresh_url=meta.token_endpoint)
             auth_url = get_auth_url(oauth, code_verifier, meta.authorization_endpoint)
         except Exception as e:
-            GLib.idle_add(lambda: error_helper(dialog, "Can't create oauth session", "{}".format(str(e))))
+            error = e
+            GLib.idle_add(lambda: error_helper(dialog, "Can't create oauth session", "{}".format(str(error))))
             GLib.idle_add(lambda: dialog.hide())
             raise
         else:
@@ -92,7 +94,8 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
         logger.info("setting oauth token for metadata")
         meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(str(e))))
+        error = e
+        GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(str(error))))
         GLib.idle_add(lambda: dialog.hide())
         raise
     else:

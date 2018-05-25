@@ -34,7 +34,8 @@ def background(meta, oauth, builder):
     try:
         info = user_info(oauth, meta.api_base_uri)
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(window, "Can't fetch user info", str(e)))
+        error = e
+        GLib.idle_add(lambda: error_helper(window, "Can't fetch user info", str(error)))
         raise
 
     if info['is_disabled']:

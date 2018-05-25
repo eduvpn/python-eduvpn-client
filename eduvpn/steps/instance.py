@@ -19,7 +19,8 @@ def _fetch_background(dialog, meta, verifier, builder):
     try:
         authorization_type, instances = get_instances(discovery_uri=meta.discovery_uri, verifier=verifier)
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(dialog, "can't fetch instances", "{} {}".format(type(e), str(e))))
+        error = e
+        GLib.idle_add(lambda: error_helper(dialog, "can't fetch instances", "{} {}".format(type(error), str(error))))
         GLib.idle_add(lambda: dialog.hide())
         raise
     else:

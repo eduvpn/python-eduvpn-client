@@ -31,8 +31,9 @@ def _background(meta, oauth, dialog, builder):
         meta.key = key
         meta.config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(dialog, "can't finalize configuration", "{}: {}".format(type(e).__name__,
-                                                                                                   str(e))))
+        error = e
+        GLib.idle_add(lambda: error_helper(dialog, "can't finalize configuration", "{}: {}".format(type(error).__name__,
+                                                                                                   str(error))))
         GLib.idle_add(lambda: dialog.hide())
         raise
     else:
@@ -41,8 +42,9 @@ def _background(meta, oauth, dialog, builder):
             monitor_vpn(uuid=uuid, callback=lambda *args, **kwargs: vpn_change(builder=builder))
             GLib.idle_add(lambda: notify("eduVPN provider added", "added provider '{}'".format(meta.display_name)))
         except Exception as e:
-            GLib.idle_add(lambda: error_helper(dialog, "can't store configuration", "{}: {}".format(type(e).__name__,
-                                                                                                    str(e))))
+            error = e
+            GLib.idle_add(lambda: error_helper(dialog, "can't store configuration", "{}: {}".format(type(error).__name__,
+                                                                                                    str(error))))
             GLib.idle_add(lambda: dialog.hide())
             raise
         else:

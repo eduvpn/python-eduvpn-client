@@ -21,7 +21,8 @@ def _background(meta, builder, verifier):
     try:
         oauth = oauth_from_token(meta=meta)
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(window, "Can't reconstruct OAuth2 session", (str(e))))
+        error = e
+        GLib.idle_add(lambda: error_helper(window, "Can't reconstruct OAuth2 session", (str(error))))
         print(meta)
         raise
 

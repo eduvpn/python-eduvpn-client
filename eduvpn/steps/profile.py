@@ -30,7 +30,8 @@ def _background(oauth, meta, builder, dialog):
                                   "available profiles.")
 
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(dialog, "Can't fetch profile list", str(e)))
+        error = str(e)
+        GLib.idle_add(lambda: error_helper(dialog, "Can't fetch profile list", error))
         GLib.idle_add(lambda: dialog.hide())
         raise
 
