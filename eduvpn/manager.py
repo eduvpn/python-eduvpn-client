@@ -206,7 +206,13 @@ def update_config_provider(meta):
     logger.info("updating config for {} ({})".format(meta.display_name, meta.uuid))
     config_dict = parse_ovpn(meta.config)
     ca_path = write_cert(config_dict.pop('ca'), 'ca', meta.uuid)
-    ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', meta.uuid)
+
+    if 'tls-auth' in config_dict:
+        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', meta.uuid)
+    elif 'tls-crypt' in config_dict:
+        ta_path = write_cert(config_dict.pop('tls-crypt'), 'ta', meta.uuid)
+    else:
+        raise EduvpnException("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
 
     if have_dbus():
         nm_config = ovpn_to_nm(config_dict, uuid=meta.uuid, display_name=meta.display_name, username=meta.username)
