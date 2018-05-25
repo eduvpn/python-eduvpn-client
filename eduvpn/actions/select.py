@@ -65,5 +65,5 @@ def select_profile(builder, verifier):
         if meta.token:
             fetch_messages(meta=meta, builder=builder, verifier=verifier)
         else:
-            logger.warning("no token available so net fetching messages")
+            logger.warning("no token available so not fetching messages")
         return meta
