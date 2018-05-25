@@ -72,15 +72,8 @@ def store_provider(meta):
     config_dict = parse_ovpn(ovpn_text)
     cert_path = write_cert(meta.cert, 'cert', meta.uuid)
     key_path = write_cert(meta.key, 'key', meta.uuid)
-    ca_path = write_cert(config_dict.pop('ca'), 'ca', meta.uuid)
-    if 'tls-auth' in config_dict:
-        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', meta.uuid)
-    elif 'tls-crypt' in config_dict:
-        ta_path = write_cert(config_dict.pop('tls-crypt'), 'ta', meta.uuid)
-    else:
-        raise EduvpnException("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
-    nm_config = ovpn_to_nm(config_dict, uuid=meta.uuid, display_name=meta.display_name, username=meta.username)
-    nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path, 'ca': ca_path, 'ta': ta_path})
+    nm_config = update_prepare(meta, config_dict)
+    nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path})
     insert_config(nm_config)
     meta.write()
     return meta.uuid
@@ -194,6 +187,23 @@ def is_provider_connected(uuid):
                 return "", ""
 
 
+def update_prepare(meta, config_dict):
+    """code shared between store provider and update provider"""
+    logger.info("preparing update for {} ({})".format(meta.display_name, meta.uuid))
+    ca_path = write_cert(config_dict.pop('ca'), 'ca', meta.uuid)
+
+    nm_config = ovpn_to_nm(config_dict, uuid=meta.uuid, display_name=meta.display_name, username=meta.username)
+    nm_config['vpn']['data']['ca'] = ca_path
+
+    if 'tls-auth' in config_dict:
+        nm_config['vpn']['data']['ta'] = write_cert(config_dict.pop('tls-auth'), 'ta', meta.uuid)
+    elif 'tls-crypt' in config_dict:
+        nm_config['vpn']['data']['tls-crypt'] = write_cert(config_dict.pop('tls-crypt'), 'tc', meta.uuid)
+    else:
+        raise EduvpnException("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
+    return nm_config
+
+
 def update_config_provider(meta):
     """
     Update an existing network manager configuration
@@ -205,24 +215,15 @@ def update_config_provider(meta):
     """
     logger.info("updating config for {} ({})".format(meta.display_name, meta.uuid))
     config_dict = parse_ovpn(meta.config)
-    ca_path = write_cert(config_dict.pop('ca'), 'ca', meta.uuid)
-
-    if 'tls-auth' in config_dict:
-        ta_path = write_cert(config_dict.pop('tls-auth'), 'ta', meta.uuid)
-    elif 'tls-crypt' in config_dict:
-        ta_path = write_cert(config_dict.pop('tls-crypt'), 'ta', meta.uuid)
-    else:
-        raise EduvpnException("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
+    nm_config = update_prepare(meta, config_dict)
 
     if have_dbus():
-        nm_config = ovpn_to_nm(config_dict, uuid=meta.uuid, display_name=meta.display_name, username=meta.username)
         old_conn = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
         old_settings = old_conn.GetSettings()
         nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
-                                         'key': old_settings['vpn']['data']['key'],
-                                         'ca': ca_path, 'ta': ta_path})
+                                         'key': old_settings['vpn']['data']['key']})
         old_conn.Delete()
-        insert_config(nm_config)
+    insert_config(nm_config)
 
 
 def update_keys_provider(uuid, cert, key):
