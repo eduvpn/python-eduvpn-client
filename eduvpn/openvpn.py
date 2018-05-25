@@ -86,9 +86,6 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
                 'ipv6': {'method': 'auto'},
                 'vpn': {'data': {'auth': config.get('auth', 'SHA256'),
                                  'cipher': config.get('cipher', 'AES-256-CBC'),
-                                 # adaptive, gives problems on Ubuntu 16.04, expects yes or no
-                                 # 'comp-lzo': config.get('comp-lzo', 'adaptive') or 'adaptive',
-                                 'comp-lzo': config.get('comp-lzo', 'yes') or 'yes',
                                  'connection-type': config.get('connection-type', 'tls'),
                                  'dev': 'tun',
                                  'remote': ",".join(":".join(r) for r in config['remote']),
@@ -99,6 +96,10 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
                                  },
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
                 }
+
+    if 'comp-lzo' in config:
+        # todo: adaptive is not supported Ubuntu 16.04
+        settings['vpn']['data']['comp-lzo'] = config['comp-lzo'] or ''
 
     # 2 factor auth enabled
     if 'auth-user-pass' in config:
