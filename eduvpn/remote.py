@@ -8,6 +8,7 @@ import base64
 
 import dateutil.parser
 import requests
+from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
 from eduvpn.config import locale
 from eduvpn.crypto import gen_code_challenge
@@ -127,7 +128,10 @@ def create_keypair(oauth, api_base_uri):
         tuple(str, str): certificate and key
     """
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
-    response = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})
+    try:
+        response = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
@@ -150,7 +154,10 @@ def list_profiles(oauth, api_base_uri):
         list: of available profiles on the instance (display_name, profile_id, two_factor)
     """
     logger.info("Retrieving profile list from {}".format(api_base_uri))
-    response = oauth.get(api_base_uri + '/profile_list')
+    try:
+        response = oauth.get(api_base_uri + '/profile_list')
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
@@ -174,7 +181,10 @@ def user_info(oauth, api_base_uri):
         api_base_uri (str): the instance base URI
     """
     logger.info("Retrieving user info from {}".format(api_base_uri))
-    response = oauth.get(api_base_uri + '/user_info')
+    try:
+        response = oauth.get(api_base_uri + '/user_info')
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
@@ -195,7 +205,10 @@ def user_messages(oauth, api_base_uri):
         list: a list of dicts with date_time, message, type keys
     """
     logger.info("Retrieving user messages from {}".format(api_base_uri))
-    response = oauth.get(api_base_uri + '/user_messages')
+    try:
+        response = oauth.get(api_base_uri + '/user_messages')
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
@@ -216,7 +229,10 @@ def system_messages(oauth, api_base_uri):
         api_base_uri (str): the instance base URI
     """
     logger.info("Retrieving system messages from {}".format(api_base_uri))
-    response = oauth.get(api_base_uri + '/system_messages')
+    try:
+        response = oauth.get(api_base_uri + '/system_messages')
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
@@ -239,8 +255,11 @@ def create_config(oauth, api_base_uri, display_name, profile_id):
         profile_id (str):
     """
     logger.info("Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
-    response = oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
-                                                                 'profile_id': profile_id})
+    try:
+        response = oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
+                                                                     'profile_id': profile_id})
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
@@ -258,7 +277,10 @@ def get_profile_config(oauth, api_base_uri, profile_id):
         profile_id (str):
     """
     logger.info("Retrieving profile config from {}".format(api_base_uri))
-    response = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
+    try:
+        response = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
