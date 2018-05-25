@@ -34,7 +34,8 @@ def _background(meta, builder, verifier):
     except EduvpnAuthException:
         GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder))
     except Exception as e:
-        GLib.idle_add(lambda: error_helper(window, "Can't fetch user messages", str(e)))
+        error = str(e)
+        GLib.idle_add(lambda: error_helper(window, "Can't fetch user messages", error))
         raise
     else:
         if info['is_disabled']:
