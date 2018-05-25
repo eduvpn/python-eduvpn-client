@@ -85,7 +85,7 @@ def get_prefix():
         str: path to Python installation prefix
     """
     local = path.dirname(path.dirname(path.abspath(__file__)))
-    options = [local, '/usr/', '/usr/local']
+    options = [local, path.expanduser('~/.local'), '/usr/local', '/usr/']
     for option in options:
         if path.isfile(path.join(option, 'share/eduvpn/builder/window.ui')):
             return option
