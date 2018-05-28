@@ -1,3 +1,20 @@
+1.0rc12
+=======
+
+ * comp-lzo should not (always) be on bug #107 
+ * problems with lambdas handling exception in Python 3.6 #106 
+ * invalid refresh token / access token should trigger reauthorization 105 
+ * We support system wide install and virtualenv but not pip install in .local 104 
+ * python test suite fails during debian package build low priority 61
+ * API documentation on readthedocs partially broken #90
+ * username unknown while auth-user-pass is set bug #102 
+ * OAuth client ID enhancement#95 
+ * tls-crypt not supported bug #100 
+ * Manage script by entrypoint enhancement #101
+ * Ubuntu 16.04.3 LTS > 'property 'tls-cipher' invalid or not supported' #92
+ * Ubuntu 17.10 > no protocol specified #93 
+
+
 1.0rc9
 ======
 
