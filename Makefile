@@ -28,7 +28,8 @@ deb:
 		python3-dbus \
 		python3-nacl \
 		python3-requests-oauthlib \
-		python3-gi 
+		python3-gi \
+		network-manager-openvpn
 
 
 # install all required binary packages on a rpm based system
