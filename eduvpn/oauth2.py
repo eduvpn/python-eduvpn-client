@@ -113,14 +113,14 @@ def get_oauth_token_code(port):
     """
     logger.info("waiting for callback on port {}".format(port))
     response = one_request(port)
-    if 'code' in response:
+    if 'code' in response and 'state' in response:
         code = response['code'][0]
+        state = response['state'][0]
+        return code, state
     elif 'error' in response:
         raise Exception("Can't authenticate: {}".format(response['error']))
     else:
         raise Exception("Unknown error during authentication: {}".format(response))
-
-    return code
 
 
 def oauth_from_token(meta):

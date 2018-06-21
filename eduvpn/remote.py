@@ -313,4 +313,4 @@ def get_auth_url(oauth, code_verifier, auth_endpoint):
     authorization_url, state = oauth.authorization_url(auth_endpoint,
                                                        code_challenge_method=code_challenge_method,
                                                        code_challenge=code_challenge)
-    return authorization_url
+    return authorization_url, state

@@ -41,23 +41,23 @@ def _phase1_background(meta, dialog, verifier, builder):
         port = get_open_port()
         try:
             oauth = create_oauth_session(port, auto_refresh_url=meta.token_endpoint)
-            auth_url = get_auth_url(oauth, code_verifier, meta.authorization_endpoint)
+            auth_url, state = get_auth_url(oauth, code_verifier, meta.authorization_endpoint)
         except Exception as e:
             error = e
             GLib.idle_add(lambda: error_helper(dialog, "Can't create oauth session", "{}".format(str(error))))
             GLib.idle_add(lambda: dialog.hide())
             raise
         else:
-            GLib.idle_add(lambda: _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder))
+            GLib.idle_add(lambda: _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder, state))
     else:
         logger.info("we already have a token, skipping browser step")
         oauth = oauth_from_token(meta=meta)
         GLib.idle_add(lambda: _phase2_callback(meta=meta, oauth=oauth, dialog=dialog, builder=builder))
 
 
-def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder):
+def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder, state):
     thread_helper(lambda: _phase2_background(meta=meta, port=port, oauth=oauth, code_verifier=code_verifier,
-                                             auth_url=auth_url, dialog=dialog, builder=builder))
+                                             auth_url=auth_url, dialog=dialog, builder=builder, state=state))
     _show_dialog(dialog, auth_url, builder)
 
 
@@ -85,12 +85,15 @@ def _show_dialog(dialog, auth_url, builder):
             break
 
 
-def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, builder):
+def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, builder, state):
     try:
         logger.info("opening browser with url {}".format(auth_url))
         webbrowser.open(auth_url)
-        code = get_oauth_token_code(port)
+        code, other_state = get_oauth_token_code(port)
         logger.info("control returned by browser")
+        if state != other_state:
+            logger.error("received from state, expected: {}, received: {}".format(state, other_state))
+            raise Exception("oauth state has been tampered with")
         logger.info("setting oauth token for metadata")
         meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
     except Exception as e:

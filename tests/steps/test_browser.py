@@ -42,13 +42,20 @@ class TestSteps(TestCase):
     @patch('eduvpn.steps.browser.thread_helper')
     def test_phase1_callback(self, _):
         _phase1_callback(builder=self.builder, meta=self.meta, auth_url=None, dialog=self.dialog, code_verifier=None,
-                         oauth=self.oauth, port=1)
+                         oauth=self.oauth, port=1, state="1234")
 
     @patch('webbrowser.open')
-    @patch('eduvpn.steps.browser.get_oauth_token_code')
+    @patch('eduvpn.steps.browser.get_oauth_token_code', side_effect=lambda x: ("code", "state"))
     def test_phase2_background(self, *args):
         _phase2_background(builder=self.builder, meta=self.meta, auth_url=None, dialog=self.dialog, code_verifier=None,
-                           oauth=self.oauth, port=1)
+                           oauth=self.oauth, port=1, state="state")
+        
+    @patch('webbrowser.open')
+    @patch('eduvpn.steps.browser.get_oauth_token_code', side_effect=lambda x: ("code", "state"))
+    def test_phase2_background_wrong_state(self, *args):
+        with self.assertRaises(Exception):
+            _phase2_background(builder=self.builder, meta=self.meta, auth_url=None, dialog=self.dialog,
+                               code_verifier=None, oauth=self.oauth, port=1, state="wrongstate")
 
     @patch('eduvpn.steps.browser.fetch_profile_step')
     def test_phase2_callback(self, *_):
