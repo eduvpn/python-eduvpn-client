@@ -17,13 +17,13 @@ Debian and Ubuntu
 You can install the latest release on Debian or Ubuntu using the eduVPN packaging repository by running these commands
 as root or using sudo::
 
-    - apt install apt-transport-https curl
-    - curl -L https://repo.eduvpn.org/debian/eduvpn.key | apt-key add -
-    - echo "deb https://repo.eduvpn.org/debian/ stretch main" > /etc/apt/sources.list.d/eduvpn.list
-    - apt update
-    - apt install eduvpn-client
+    $ apt install apt-transport-https curl
+    $ curl -L https://repo.eduvpn.org/debian/eduvpn.key | apt-key add -
+    $ echo "deb https://repo.eduvpn.org/debian/ stretch main" > /etc/apt/sources.list.d/eduvpn.list
+    $ apt update
+    $ apt install eduvpn-client
 
-This has been tested on Ubuntu 17.04 (Zesty) and Debian 9 (stretch). Unfortunatly Ubuntu 16.04 LTS  (Xenial) is **not**
+This has been tested on Ubuntu 18.04 (Bionic) and Debian 9 (stretch). Unfortunatly Ubuntu 16.04 LTS  (Xenial) is **not**
 supported. Ubuntu Xenial and older are bundled with an outdated and unsupporten OpenVPN.
 
 Fedora
@@ -31,9 +31,9 @@ Fedora
 
 You can install the latest release of the eduVPN client on Fedora by running these commands as root or using sudo::
 
-    - dnf install dnf-plugins-core
-    - dnf copr enable gijzelaerr/eduvpn-client
-    - dnf install eduvpn-client
+    $ dnf install dnf-plugins-core
+    $ dnf copr enable gijzelaerr/eduvpn-client
+    $ dnf install eduvpn-client
 
 More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
 

@@ -12,6 +12,7 @@ Welcome to python-eduvpn-client's documentation!
 
    introduction
    API
+   release
 
 Indices and tables
 ==================

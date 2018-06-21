@@ -1,5 +1,11 @@
+Developer notes
+===============
+
+This page contains notes intended for developers only.
+
+
 How to make a release
-=====================
+---------------------
 
 * Determine version number (for example 1.0rc8)
 
@@ -19,12 +25,14 @@ How to make a release
 
 * Check if travis builds. If so, it will upload to pypi.
 
-* If it doesn't build fix and do a manual upload using twine
+* If it doesn't build fix and do a manual upload using `twine <https://github.com/pypa/twine>`_
 
-  https://github.com/pypa/twine
+* Make a SRPM and upload to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_
 
-* Make a SRPM and upload to https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/
-  
-  note: $make srpm will use docker to build a srpm and put it in tmp/
+.. note::
 
-* make a debian package https://github.com/eduvpn-debian/packaging
+   ``$ make srpm`` will use docker to build a srpm and put it in tmp/
+
+
+* Update the debian package using the `eduVPN Debian meta files <https://github.com/eduvpn-debian/packaging>`_.
+
