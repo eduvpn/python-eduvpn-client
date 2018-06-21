@@ -82,6 +82,10 @@ def one_request(port):
     httpd = HTTPServer(('', port), RequestHandler)
     httpd.handle_request()
     httpd.server_close()
+
+    if not hasattr(httpd, "path"):
+        raise Exception("Invalid response received")
+
     parsed = urlparse(httpd.path)
     logger.info("received a request {}".format(httpd.path))
     return parse_qs(parsed.query)
