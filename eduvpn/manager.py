@@ -12,6 +12,7 @@ from eduvpn.util import have_dbus
 if have_dbus():
     import eduvpn.other_nm as NetworkManager
     from dbus.exceptions import DBusException
+    import dbus
 
 from eduvpn.config import providers_path
 from eduvpn.io import write_cert
@@ -250,9 +251,9 @@ def monitor_all_vpn(callback):
     if not have_dbus():
         return []
 
-    for connection in NetworkManager.Settings.ListConnections():
-        if connection.GetSettings()['connection']['type'] == 'vpn':
-            connection.connect_to_signal('Updated', callback)
+    bus = dbus.SystemBus()
+    bus.add_signal_receiver(handler_function=callback, dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
+                            signal_name='VpnStateChanged')
 
 
 def monitor_vpn(uuid, callback):

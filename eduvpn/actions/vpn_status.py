@@ -23,6 +23,10 @@ def vpn_change(builder):
     # get the currently selected uuid
     meta = metadata_of_selected(builder=builder)
 
+    if not meta:
+        logger.info("VPN status changed but no profile selected")
+        return
+
     selected_uuid_active = False
     for active in active_connections():
         try:
