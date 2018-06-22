@@ -111,8 +111,5 @@ def ovpn_to_nm(config, uuid, display_name, username=None):
         settings['vpn']['data']['connection-type'] = 'password-tls'
         settings['vpn']['data']['password-flags'] = '2'
         settings['vpn']['data']['username'] = username
-    else:
-        if username:
-            raise EduvpnException("You are enrolled for 2FA but this is not enabled for this profile.")
 
     return settings
