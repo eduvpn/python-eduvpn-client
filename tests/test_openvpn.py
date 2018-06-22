@@ -5,11 +5,17 @@
 
 import unittest
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn, ovpn_to_nm
+from eduvpn.metadata import Metadata
 
 from tests.mock_config import mock_config
 
 
 class TestOpenvpn(unittest.TestCase):
+    @classmethod
+    def setUp(cls):
+        cls.meta = Metadata()
+        cls.meta.uuid = 'test'
+
     def test_format_like_ovpn(self):
         format_like_ovpn('test', 'test', 'test')
 
@@ -18,11 +24,21 @@ class TestOpenvpn(unittest.TestCase):
 
     def test_ovpn_to_nm(self):
         config = parse_ovpn(mock_config)
-        _ = ovpn_to_nm(config=config, uuid='test_uuid', display_name='test name')
+        _ = ovpn_to_nm(config=config, meta=self.meta, display_name='test name')
 
     def test_ovpn_to_nm_2fa(self):
         config = parse_ovpn(mock_config)
         config['auth-user-pass'] = True
         username = 'test_user'
-        nm_dict = ovpn_to_nm(config=config, uuid='test_uuid', display_name='test name', username=username)
+        nm_dict = ovpn_to_nm(config=config, meta=self.meta, display_name='test name', username=username)
         self.assertEqual(username, nm_dict['vpn']['data']['username'], username)
+
+    def test_ovpn_to_nm_tls_auth(self):
+        config = parse_ovpn(mock_config)
+        config['tls-auth'] = "bla"
+        _ = ovpn_to_nm(config=config, meta=self.meta, display_name='test name')
+
+    def test_ovpn_to_nm_tls_crypt(self):
+        config = parse_ovpn(mock_config)
+        config['tls-crypt'] = "bla"
+        _ = ovpn_to_nm(config=config, meta=self.meta, display_name='test name')
