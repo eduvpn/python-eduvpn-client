@@ -17,6 +17,7 @@ def custom_url(builder, meta, verifier):
     """the custom URL dialog where a user can enter a custom instance URL"""
     dialog = builder.get_object('custom-url-dialog')
     entry = builder.get_object('custom-url-entry')
+    entry.set_position(len(entry.get_text()))
     dialog.show_all()
     while True:
         response = dialog.run()
