@@ -20,11 +20,14 @@ def select_profile(builder, verifier):
     notebook = builder.get_object('outer-notebook')
     switch = builder.get_object('connect-switch')
     ipv4_label = builder.get_object('ipv4-label')
+    ipv4_label_label = builder.get_object('ipv4-label-label')
     ipv6_label = builder.get_object('ipv6-label')
+    ipv6_label_label = builder.get_object('ipv6-label-label')
     twofa_label = builder.get_object('2fa-label')
     twofa_label_label = builder.get_object('2fa-label-label')
     name_label = builder.get_object('name-label')
     profile_label = builder.get_object('profile-label')
+    profile_name_label = builder.get_object('profile-name-label')
     profile_image = builder.get_object('profile-image')
     meta = metadata_of_selected(builder)
 
@@ -42,6 +45,7 @@ def select_profile(builder, verifier):
             _, icon = get_pixbuf()
         profile_image.set_from_pixbuf(icon)
         profile_label.set_text(meta.connection_type)
+        profile_name_label.set_text(meta.profile_display_name)
         connected = is_provider_connected(uuid=meta.uuid)
         switch.set_state(bool(connected))
         if connected:
@@ -49,8 +53,9 @@ def select_profile(builder, verifier):
             ipv4_label.set_text(ipv4)
             ipv6_label.set_text(ipv6)
         else:
-            ipv4_label.set_text("")
-            ipv6_label.set_text("")
+            ipv4_label.set_text("-")
+            ipv6_label.set_text("-")
+
 
         if meta.username:
             twofa_label.set_text(meta.username)

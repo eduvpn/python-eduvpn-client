@@ -23,7 +23,7 @@ def update_providers(builder):
         logger.info("hiding introduction")
         introduction.hide()
         for meta in providers:
-            connection_type = "{}\n{}".format(meta.display_name, meta.connection_type)
+            connection_type = "{}\n{}\n{}".format(meta.display_name, meta.connection_type, meta.profile_display_name)
             if meta.icon_data:
                 icon = bytes2pixbuf(base64.b64decode(meta.icon_data.encode()))
             else:
