@@ -11,6 +11,13 @@ Installation
 
 Read the installation instructions [here](http://python-eduvpn-client.readthedocs.io/en/latest/introduction.html#installation).
 
+## From Git
+
+    $ pip3 install --user --upgrade git+https://github.com/eduvpn/python-eduvpn-client.git
+
+It may give errors about missing dependencies, you can install them using `dnf` 
+or `apt`.
+
 Documentation
 =============
 
