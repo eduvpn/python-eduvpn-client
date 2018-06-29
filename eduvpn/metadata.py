@@ -34,7 +34,6 @@ class Metadata:
         self.token = None
         self.token_endpoint = None
         self.authorization_type = None
-        self.profile_display_name = None
         self.two_factor = None
         self.cert = None
         self.key = None
@@ -46,6 +45,7 @@ class Metadata:
         self.discovery_uri = None
         self.display_name = "Unknown"
         self.connection_type = "Unknown"
+        self.profile_display_name = "Unknown"
 
     @staticmethod
     def from_uuid(uuid, display_name=None):

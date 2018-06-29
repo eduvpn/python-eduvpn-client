@@ -203,11 +203,10 @@ def update_config_provider(meta):
 
     if have_dbus():
         old_conn = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
-        old_settings = old_conn.GetSettings()
-        nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
-                                         'key': old_settings['vpn']['data']['key']})
-        old_conn.Delete()
-    insert_config(nm_config)
+        settings = old_conn.GetSettings()
+        nm_config['vpn']['data'].update({'cert': settings['vpn']['data']['cert'],
+                                         'key': settings['vpn']['data']['key']})
+        settings.Update(nm_config)
 
 
 def update_keys_provider(uuid, cert, key):
