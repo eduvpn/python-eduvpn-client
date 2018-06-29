@@ -202,11 +202,11 @@ def update_config_provider(meta):
     nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
 
     if have_dbus():
-        old_conn = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
-        settings = old_conn.GetSettings()
-        nm_config['vpn']['data'].update({'cert': settings['vpn']['data']['cert'],
-                                         'key': settings['vpn']['data']['key']})
-        settings.Update(nm_config)
+        connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
+        old_settings = connection.GetSettings()
+        nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
+                                         'key': old_settings['vpn']['data']['key']})
+        connection.Update(nm_config)
 
 
 def update_keys_provider(uuid, cert, key):
