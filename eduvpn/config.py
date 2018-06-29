@@ -11,14 +11,17 @@ others_path = path.join(config_path, 'other')
 
 secure_internet_uri = 'https://static.eduvpn.nl/disco/secure_internet.json'
 institute_access_uri = 'https://static.eduvpn.nl/disco/institute_access.json'
+verify_key = 'E5On0JTtyUVZmcWd+I/FXRm32nSq8R2ioyW7dcu/U88='
+
 secure_internet_uri_dev = 'https://static.eduvpn.nl/disco/secure_internet_dev.json'
 institute_access_uri_dev = 'https://static.eduvpn.nl/disco/institute_access_dev.json'
+verify_key_dev = ' zzls4TZTXHEyV3yxaxag1DZw3tSpIdBoaaOjUGH/Rwg=.'
 
 # use for debugging
-# secure_internet_uri = secure_internet_uri_dev
-# institute_access_uri = institute_access_uri_dev
+#secure_internet_uri = secure_internet_uri_dev
+#institute_access_uri = institute_access_uri_dev
+#verify_key = verify_key_dev
 
-verify_key = 'E5On0JTtyUVZmcWd+I/FXRm32nSq8R2ioyW7dcu/U88='
 
 locale = "en-US"
 
