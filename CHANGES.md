@@ -1,3 +1,17 @@
+1.0rc13
+=======
+
+ * 'distributed' does not work #124 
+ *  server-poll-timeout ignored #122
+ * key-direction ignored when importing profile #123 
+ * can't enable connection bug #110 
+ * key-direction only relevant for tls-auth, not tls-crypt bug #108 
+ * 2FA error makes no sense? bug #114 
+ * callback doesn't check state #72
+ * Ip addresses not shown with OS using netplan bug #99
+ * Add Ubuntu 18.04 to supported architectures in doc #98
+
+
 1.0rc12
 =======
 
