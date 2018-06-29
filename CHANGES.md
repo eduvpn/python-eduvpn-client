@@ -1,3 +1,8 @@
+1.0rc14
+=======
+
+* Dev servers were accidentally enabled for 1.0rc13
+
 1.0rc13
 =======
 
