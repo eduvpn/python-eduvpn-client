@@ -98,9 +98,12 @@ def ovpn_to_nm(config, meta, display_name, username=None):
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
                 }
 
+    if 'server-poll-timeout' in config:
+        settings['vpn']['data']['connect-timeout'] = config['server-poll-timeout']
+
     if 'comp-lzo' in config:
         # todo: adaptive is not supported Ubuntu 16.04
-        settings['vpn']['data']['comp-lzo'] = config['comp-lzo'] or ''
+        settings['vpn']['data']['comp-lzo'] = config['comp-lzo'] or 'adaptive'
 
     # 2 factor auth enabled
     if 'auth-user-pass' in config:
@@ -118,9 +121,9 @@ def ovpn_to_nm(config, meta, display_name, username=None):
 
     if 'tls-auth' in config:
         settings['vpn']['data']['ta'] = write_cert(config.pop('tls-auth'), 'ta', meta.uuid)
+        settings['vpn']['data']['ta-dir'] = config.get('key-direction', '1')
     elif 'tls-crypt' in config:
         settings['vpn']['data']['tls-crypt'] = write_cert(config.pop('tls-crypt'), 'tc', meta.uuid)
-        settings['vpn']['data']['ta-dir'] = config.get('key-direction', '1')
     else:
         logging.info("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
 
