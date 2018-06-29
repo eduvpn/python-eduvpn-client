@@ -79,24 +79,27 @@ class Metadata:
         with open(p, 'w') as f:
             f.write(serialized)
 
+        if self.authorization_type == 'distributed':
+            self.write_distributed_token()
+
+    def write_distributed_token(self):
+        tokens = get_distributed_tokens()
+        if self.discovery_uri in tokens:
+            tokens[self.discovery_uri]['token'] = self.token
+        else:
+            error = "updating distributed token for {} but it isn't present in {}, recreating"
+            logger.error(error.format(self.discovery_uri, distibuted_tokens_path))
+            tokens[self.discovery_uri] = {'token': self.token, 'token_endpoint': self.token_endpoint}
+        serialized = json.dumps(tokens)
+        mkdir_p(others_path)
+        with open(distibuted_tokens_path, 'w') as f:
+            logger.info("updating distributed token for {} to {}".format(self.discovery_uri,
+                                                                         distibuted_tokens_path))
+            f.write(serialized)
+
     def update_token(self, token):
         self.token = token
-        if self.authorization_type == 'distributed':
-            tokens = get_distributed_tokens()
-            if self.discovery_uri in tokens:
-                tokens[self.discovery_uri]['token'] = token
-            else:
-                error = "updating distributed token for {} but it isn't present in {}, recreating"
-                logger.error(error.format(self.discovery_uri, distibuted_tokens_path))
-                tokens[self.discovery_uri] = {'token': token, 'token_endpoint': self.token_endpoint}
-            serialized = json.dumps(tokens)
-            mkdir_p(others_path)
-            with open(distibuted_tokens_path, 'w') as f:
-                logger.info("updating distributed token for {} to {}".format(self.discovery_uri,
-                                                                             distibuted_tokens_path))
-                f.write(serialized)
-        else:
-            self.write()
+        self.write()
 
     def refresh_token(self):
         if self.authorization_type == 'distributed':
