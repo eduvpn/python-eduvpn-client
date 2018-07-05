@@ -70,13 +70,14 @@ If you want to try out the latest and greatest you can install eduVPN directly f
 you need to install some non-python binary dependencies. For Ubuntu you should run::
 
     $ 	apt install -y gir1.2-gtk-3.0 gir1.2-notify-0.7 libdbus-1-dev libnotify4 python3-dateutil \
-		python3-dbus python3-nacl python3-requests-oauthlib python3-gi network-manager-openvpn
+		python3-dbus python3-nacl python3-requests-oauthlib python3-gi network-manager-openvpn \
+		python3-pip git
         
 For fedora run::
 
     $ dnf install -y gtk3 libnotify python3-dateutil python3-networkmanager python3-pydbus \
 		python3-pynacl python3-requests-oauthlib python3-gobject python3-pip \
-        python3-configparser python3-future
+       		python3-configparser python3-future git
 
 
 Now you can install eduvpn-client using pip::
