@@ -55,11 +55,35 @@ You can install the dependencies for the user interface::
 
     $ pip install -e ".[client]"
 
+.. note::
 
-Note that the project depends on the ``python-gi`` package, which for now doesn't properly install in a virtualenv.
-If you do install ``python-eduvpn-client`` in a virtualenv it is recommended you create the virtualenv using the
-``--system-site-packages`` flag and install the python-gi package using your operating system package manager. Read
-more about this on the `pygobject website <https://pygobject.readthedocs.io/>`_.
+    the project depends on the ``python-gi`` package, which for now doesn't properly install in a virtualenv.
+    If you do install ``python-eduvpn-client`` in a virtualenv it is recommended you create the virtualenv using the
+    ``--system-site-packages`` flag and install the python-gi package using your operating system package manager. Read
+    more about this on the `pygobject website <https://pygobject.readthedocs.io/>`_.
+
+
+Developer setup
+---------------
+
+If you want to try out the latest and greatest you can install eduVPN directly from the git repository. But first
+you need to install some non-python binary dependencies. For Ubuntu you should run::
+
+    $ 	apt install -y gir1.2-gtk-3.0 gir1.2-notify-0.7 libdbus-1-dev libnotify4 python3-dateutil \
+		python3-dbus python3-nacl python3-requests-oauthlib python3-gi network-manager-openvpn
+        
+For fedora run::
+
+    $ dnf install -y gtk3 libnotify python3-dateutil python3-networkmanager python3-pydbus \
+		python3-pynacl python3-requests-oauthlib python3-gobject python3-pip \
+        python3-configparser python3-future
+
+
+Now you can install eduvpn-client using pip::
+
+    $ pip3 install git+https://github.com/eduvpn/python-eduvpn-client.git
+    
+Also here the note above applies about if you use a virtualenv.
 
 Issues
 ======
