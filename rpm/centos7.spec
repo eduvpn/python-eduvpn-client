@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        1.0rc12
+Version:        1.0rc14
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -52,7 +52,7 @@ eduVPN client API for Python2
 Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
-Requires:  python3-eduvpn-client
+Requires:  python2-eduvpn-client
 
 %description -n eduvpn-client
 eduVPN desktop client
