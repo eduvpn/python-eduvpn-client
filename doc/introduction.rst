@@ -8,8 +8,11 @@ of the API are usable on other platforms also. For the API Python 2.7, 3.4+ and 
 Installation
 ============
 
-It is recommended to use a package to install the eduVPN client. We currently support various Fedora, Debian and Ubuntu
-versions.
+It is recommended to use a package to install the eduVPN client, but you can also install using pip from py or directly
+from github. We distribute RPM packages for Fedora, and Deb packages for Debian and Ubuntu.
+
+.. note
+
 
 Debian and Ubuntu
 -----------------
