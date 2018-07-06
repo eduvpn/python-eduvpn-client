@@ -13,5 +13,6 @@ institute_access_uri = ...  # type: str
 secure_internet_uri_dev = ...  # type: str
 institute_access_uri_dev = ...  # type: str
 verify_key = ...  # type: str
+verify_key_dev = ...  # type: str
 locale = ...  # type: str
 icon_size = ...  # type: Any

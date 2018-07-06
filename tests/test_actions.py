@@ -37,7 +37,9 @@ class TestActions(unittest.TestCase):
         select_profile(builder=self.builder, verifier=self.verifier)
 
     def test_new_provider(self):
-        new_provider(builder=self.builder, verifier=self.verifier)
+        new_provider(builder=self.builder, verifier=self.verifier,
+                     institute_access_uri="bla",
+                     secure_internet_uri="bla")
 
     def test_vpn_change(self):
         vpn_change(builder=self.builder)

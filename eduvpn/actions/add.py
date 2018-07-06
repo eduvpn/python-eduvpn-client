@@ -5,14 +5,13 @@
 
 import logging
 from eduvpn.metadata import Metadata
-from eduvpn.config import secure_internet_uri, institute_access_uri
 from eduvpn.steps.instance import fetch_instance_step
 from eduvpn.steps.custom_url import custom_url
 
 logger = logging.getLogger(__name__)
 
 
-def new_provider(builder, verifier):
+def new_provider(builder, verifier, secure_internet_uri, institute_access_uri):
     """The connection type selection step"""
     logger.info("add configuration clicked")
     dialog = builder.get_object('connection-type-dialog')
