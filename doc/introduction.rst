@@ -92,7 +92,7 @@ For fedora:
 
     $ dnf install -y gtk3 libnotify python3-dateutil python3-networkmanager python3-pydbus \
         python3-pynacl python3-requests-oauthlib python3-gobject python3-pip \
-        python3-configparser python3-future git
+        python3-configparser python3-future git NetworkManager-openvpn NetworkManager-openvpn-gnome
 
 Issues
 ======

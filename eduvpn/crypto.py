@@ -25,6 +25,12 @@ def gen_code_verifier(length=128):
     return "".join(r.choice(choices) for _ in range(length))
 
 
+def gen_base32(length=20):
+    choices = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+    r = random.SystemRandom()
+    return "".join(r.choice(choices) for _ in range(length))
+
+
 def gen_code_challenge(code_verifier):
     """
     Transform the PKCE code verifier in a code challenge

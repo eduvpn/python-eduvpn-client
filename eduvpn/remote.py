@@ -12,7 +12,7 @@ from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
 from eduvpn.config import locale
 from eduvpn.crypto import gen_code_challenge
-from eduvpn.exceptions import EduvpnAuthException
+from eduvpn.exceptions import EduvpnAuthException, EduvpnException
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ def get_instances(discovery_uri, verifier=None):
     return authorization_type, instances
 
 
-def get_instance_info(instance_uri, verifier):
+def get_instance_info(instance_uri, verifier=None):
     """
     Retrieve information from instance
 
@@ -135,7 +135,7 @@ def create_keypair(oauth, api_base_uri):
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise Exception("can't create keypair, error code {}".format(response.status_code))
+        raise EduvpnException("can't create keypair, error code {}".format(response.status_code))
     keypair = response.json()['create_keypair']['data']
     cert = keypair['certificate']
     key = keypair['private_key']
@@ -161,7 +161,7 @@ def list_profiles(oauth, api_base_uri):
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise Exception("can't list profiles, error code {}".format(response.status_code))
+        raise EduvpnException("can't list profiles, error code {}".format(response.status_code))
     data = response.json()['profile_list']['data']
     profiles = []
     for profile in data:
@@ -188,7 +188,7 @@ def user_info(oauth, api_base_uri):
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise Exception("can't retrieve user info, error code {}".format(response.status_code))
+        raise EduvpnException("can't retrieve user info, error code {}".format(response.status_code))
     data = response.json()['user_info']['data']
     return data
 
@@ -212,7 +212,7 @@ def user_messages(oauth, api_base_uri):
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise Exception("can't fetch user messages, error code {}".format(response.status_code))
+        raise EduvpnException("can't fetch user messages, error code {}".format(response.status_code))
     messages = response.json()['user_messages']
     _ = messages['ok']
     data = messages['data']
@@ -236,7 +236,7 @@ def system_messages(oauth, api_base_uri):
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise Exception("can't fetch system messages, error code {}".format(response.status_code))
+        raise EduvpnException("can't fetch system messages, error code {}".format(response.status_code))
     messages = response.json()['system_messages']
     _ = messages['ok']
     data = messages['data']
@@ -263,7 +263,7 @@ def create_config(oauth, api_base_uri, display_name, profile_id):
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise Exception("can't create config, error code {}".format(response.status_code))
+        raise EduvpnException("can't create config, error code {}".format(response.status_code))
     return response.json()
 
 
@@ -284,7 +284,7 @@ def get_profile_config(oauth, api_base_uri, profile_id):
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise Exception("can't create profile, error code {}".format(response.status_code))
+        raise EduvpnException("can't create profile, error code {}".format(response.status_code))
     # note: this is a bit ambiguous, in case there is an error, the result is json, otherwise clear text.
     try:
         json = response.json()['profile_config']
@@ -293,9 +293,9 @@ def get_profile_config(oauth, api_base_uri, profile_id):
         return response.text
     else:
         if not json['ok']:
-            raise Exception(json['error'])
+            raise EduvpnException(json['error'])
         else:
-            raise Exception("Server error! No profile config returned but no error also.")
+            raise EduvpnException("Server error! No profile config returned but no error also.")
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):
@@ -314,3 +314,32 @@ def get_auth_url(oauth, code_verifier, auth_endpoint):
                                                        code_challenge_method=code_challenge_method,
                                                        code_challenge=code_challenge)
     return authorization_url, state
+
+
+def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
+    try:
+        response = oauth.post(api_base_uri + '/two_factor_enroll_yubi', data={'yubi_key_otp': yubi_key_otp})
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
+        raise EduvpnException("can't retrieve user info, error code {}".format(response.status_code))
+    data = response.json()['two_factor_enroll_yubi']
+    if not data['ok']:
+        raise EduvpnException(data['error'])
+
+
+def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
+    try:
+        response = oauth.post(api_base_uri + '/two_factor_enroll_totp', data={'totp_secret': secret,
+                                                                              'totp_key': key})
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
+        raise EduvpnException("can't retrieve user info, error code {}".format(response.status_code))
+    data = response.json()['two_factor_enroll_totp']
+    if not data['ok']:
+        raise EduvpnException(data['error'])
