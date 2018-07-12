@@ -13,7 +13,8 @@ class TestCrypto(unittest.TestCase):
     def test_create_oauth_session(self):
         create_oauth_session(port=1025, auto_refresh_url='test')
 
-    @mock.patch('eduvpn.oauth2.one_request', side_effect=lambda x: {"code": "blabla", "state": "blabla"})
+    @mock.patch('eduvpn.oauth2.one_request', side_effect=lambda port, timeout=None: {"code": "blabla",
+                                                                                     "state": "blabla"})
     @mock.patch('webbrowser.open')
     def test_get_oauth_token_code(self, _, __):
         get_oauth_token_code(port=1025)

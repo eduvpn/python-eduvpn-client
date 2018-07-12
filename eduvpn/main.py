@@ -52,7 +52,7 @@ def parse_args():
         return level, config.secure_internet_uri, config.institute_access_uri, config.verify_key
 
 
-def main():
+def init():
     level, secure_internet_uri, institute_access_uri, verify_key = parse_args()
 
     if geteuid() == 0:
@@ -72,5 +72,11 @@ def main():
                             institute_access_uri=institute_access_uri,
                             verify_key=verify_key)
     edu_vpn_app.run()
+    return edu_vpn_app
+
+
+
+def main():
+    init()
     Gtk.main()
     return 0

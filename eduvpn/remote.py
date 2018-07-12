@@ -331,15 +331,18 @@ def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
 
 
 def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
+    prefix = '/two_factor_enroll_totp'
+    url = api_base_uri + prefix
+    logger.info("2fa totp enroling on {}".format(url))
     try:
-        response = oauth.post(api_base_uri + '/two_factor_enroll_totp', data={'totp_secret': secret,
-                                                                              'totp_key': key})
+        response = oauth.post(url, data={'totp_secret': secret, 'totp_key': key})
     except InvalidGrantError as e:
         raise EduvpnAuthException(str(e))
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise EduvpnException("can't retrieve user info, error code {}".format(response.status_code))
+        logger.error(str(response.content))
+        raise EduvpnException("can't enable 2fa otp, error code {} response {}".format(response.status_code, response.content))
     data = response.json()['two_factor_enroll_totp']
     if not data['ok']:
         raise EduvpnException(data['error'])

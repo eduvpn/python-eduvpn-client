@@ -22,7 +22,8 @@ install_requires = [
 # reinstall and compile
 extras_require = {
     'client': ['dbus-python', 'pygobject'],
-    'test-online': ['mechanicalsoup', 'pyotp', 'futures'],
+    'test-online': ['mechanicalsoup', 'futures'],
+    'otp': ['qrcode[pil]'],
 }
 
 data_files = [

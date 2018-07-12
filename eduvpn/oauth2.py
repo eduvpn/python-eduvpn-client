@@ -60,7 +60,7 @@ def get_open_port():
     return port
 
 
-def one_request(port):
+def one_request(port, timeout=None):
     """
     Listen for one http request on port, then close and return request query
 
@@ -80,6 +80,8 @@ def one_request(port):
             self.server.path = self.path
 
     httpd = HTTPServer(('', port), RequestHandler)
+    if timeout:
+        httpd.socket.settimeout(timeout)
     httpd.handle_request()
     httpd.server_close()
 
@@ -106,7 +108,7 @@ def create_oauth_session(port, auto_refresh_url):
     return oauth
 
 
-def get_oauth_token_code(port):
+def get_oauth_token_code(port, timeout=None):
     """
     Start webserver, open browser, wait for callback response.
 
@@ -116,7 +118,7 @@ def get_oauth_token_code(port):
         str: the response code given by redirect
     """
     logger.info("waiting for callback on port {}".format(port))
-    response = one_request(port)
+    response = one_request(port, timeout)
     if 'code' in response and 'state' in response:
         code = response['code'][0]
         state = response['state'][0]

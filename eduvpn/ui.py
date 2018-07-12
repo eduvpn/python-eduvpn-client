@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 builder_files = (
     'window.ui',
     '2fa.ui',
+    '2fa_enroll.ui',
     'connection_type.ui',
     'custom_url.ui',
     'fetch.ui',
