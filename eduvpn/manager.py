@@ -65,15 +65,13 @@ def list_providers():
             yield Metadata.from_uuid(conn['uuid'], display_name=conn['id'])
 
 
-def store_provider(meta):
+def store_provider(meta, config):
     """Store the eduVPN configuration"""
     logger.info("storing profile with name {} using NetworkManager".format(meta.display_name))
     meta.uuid = make_unique_id()
-    ovpn_text = format_like_ovpn(meta.config, meta.cert, meta.key)
-    config_dict = parse_ovpn(ovpn_text)
     cert_path = write_cert(meta.cert, 'cert', meta.uuid)
     key_path = write_cert(meta.key, 'key', meta.uuid)
-    nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
+    nm_config = ovpn_to_nm(config, meta=meta, display_name=meta.display_name, username=meta.username)
     nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path})
     insert_config(nm_config)
     meta.write()

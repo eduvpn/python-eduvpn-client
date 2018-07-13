@@ -8,12 +8,12 @@ import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.remote import user_info
-from eduvpn.steps.finalize import finalizing_step
+from eduvpn.steps.two_way_enroll import two_fa_enroll_window
 
 logger = logging.getLogger(__name__)
 
 
-def choice_window(options, meta, oauth, builder):
+def _choice_window(options, meta, oauth, builder, config_dict):
     logger.info("presenting user with two-factor auth method dialog")
     two_dialog = builder.get_object('2fa-dialog')
 
@@ -24,11 +24,11 @@ def choice_window(options, meta, oauth, builder):
     if index >= 0:
         meta.username = options[index]
         logger.info("user selected '{}'".format(meta.username))
-        finalizing_step(oauth=oauth, meta=meta, builder=builder)
+        two_fa_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict)
     two_dialog.destroy()
 
 
-def background(meta, oauth, builder):
+def _background(meta, oauth, builder, config_dict):
     window = builder.get_object('eduvpn-window')
 
     try:
@@ -43,21 +43,22 @@ def background(meta, oauth, builder):
 
     if not info['two_factor_enrolled']:
         logger.info("no two factor auth enabled")
-        GLib.idle_add(lambda: finalizing_step(oauth=oauth, meta=meta, builder=builder))
+        GLib.idle_add(lambda: two_fa_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict))
 
     elif 'two_factor_enrolled_with' in info:
         options = info['two_factor_enrolled_with']
         if len(options) > 1:
-            GLib.idle_add(lambda: choice_window(options=options, meta=meta, oauth=oauth, builder=builder))
+            GLib.idle_add(lambda: _choice_window(options=options, meta=meta, oauth=oauth, builder=builder,
+                                                 config_dict=config_dict))
             return
         elif len(options) == 1:
             logger.info("selection only one two-factor auth methods available ({})".format(options[0]))
             meta.username = options[0]
         else:
             GLib.idle_add(lambda: error_helper(window, "two_factor_enrolled_with' doesn't contain any fields", ""))
-        GLib.idle_add(lambda: finalizing_step(oauth=oauth, meta=meta, builder=builder))
+        GLib.idle_add(lambda: two_fa_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict))
 
 
-def two_auth_step(builder, oauth, meta):
+def two_auth_step(builder, oauth, meta, config_dict):
     """checks if 2auth is enabled. If more than 1 option presents user with choice"""
-    thread_helper(lambda: background(meta, oauth, builder))
+    thread_helper(lambda: _background(meta, oauth, builder, config_dict=config_dict))

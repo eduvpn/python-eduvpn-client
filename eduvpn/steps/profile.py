@@ -8,7 +8,7 @@ import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.remote import list_profiles
-from eduvpn.steps.two_way_auth import two_auth_step
+from eduvpn.steps.parse_config import parse_config_step
 from eduvpn.exceptions import EduvpnException
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ def _background(oauth, meta, builder, dialog):
             GLib.idle_add(lambda: select_profile_step(builder=builder, profiles=profiles, meta=meta, oauth=oauth))
         elif len(profiles) == 1:
             meta.profile_display_name, meta.profile_id, meta.two_factor = profiles[0]
-            two_auth_step(builder=builder, oauth=oauth, meta=meta)
+            parse_config_step(builder=builder, oauth=oauth, meta=meta)
         else:
             raise EduvpnException("Either there are no VPN profiles defined, or this account does not have the "
                                   "required permissions to create a new VPN configurations for any of the "
@@ -65,7 +65,7 @@ def select_profile_step(builder, profiles, meta, oauth):
         model, treeiter = selection.get_selected()
         if treeiter:
             meta.profile_display_name, meta.profile_id, meta.two_factor = model[treeiter]
-            two_auth_step(builder=builder, oauth=oauth, meta=meta)
+            parse_config_step(builder=builder, oauth=oauth, meta=meta)
         else:
             logger.error("nothing selected")
             return
