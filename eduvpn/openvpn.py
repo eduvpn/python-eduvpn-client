@@ -98,8 +98,9 @@ def ovpn_to_nm(config, meta, display_name, username=None):
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
                 }
 
-    if 'server-poll-timeout' in config:
-        settings['vpn']['data']['connect-timeout'] = config['server-poll-timeout']
+    # issue #138, not supported by older network-manager-openvpn
+    #if 'server-poll-timeout' in config:
+    #    settings['vpn']['data']['connect-timeout'] = config['server-poll-timeout']
 
     if 'comp-lzo' in config:
         # todo: adaptive is not supported Ubuntu 16.04
