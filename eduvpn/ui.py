@@ -80,7 +80,7 @@ class EduVpnApp:
     def delete(self, _):
         delete_profile(builder=self.builder)
 
-    def select(self, _):
+    def select(self, *args):
         self.selected_meta = select_profile(builder=self.builder, verifier=self.verifier)
 
     def vpn_change(self, *args, **kwargs):
