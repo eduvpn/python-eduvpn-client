@@ -35,6 +35,7 @@ class Metadata:
         self.token_endpoint = None
         self.authorization_type = None
         self.two_factor = None
+        self.two_factor_method = []
         self.cert = None
         self.key = None
         self.config = None
@@ -43,6 +44,7 @@ class Metadata:
         self.instance_base_uri = None
         self.username = None
         self.discovery_uri = None
+        self.user_id = None
         self.display_name = "Unknown"
         self.connection_type = "Unknown"
         self.profile_display_name = "Unknown"

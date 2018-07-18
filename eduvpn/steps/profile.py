@@ -14,16 +14,28 @@ from eduvpn.exceptions import EduvpnException
 logger = logging.getLogger(__name__)
 
 
+# ui thread
+def fetch_profile_step(builder, meta, oauth):
+    """background action step, fetches profiles and shows 'fetching' screen"""
+    logger.info("fetching profile step")
+    dialog = builder.get_object('fetch-dialog')
+    window = builder.get_object('eduvpn-window')
+    dialog.set_transient_for(window)
+
+    dialog.show_all()
+    thread_helper(lambda: _background(oauth, meta, builder, dialog))
+
+
+# background thread
 def _background(oauth, meta, builder, dialog):
     try:
         profiles = list_profiles(oauth, meta.api_base_uri)
         logger.info("There are {} profiles on {}".format(len(profiles), meta.api_base_uri))
         if len(profiles) > 1:
             GLib.idle_add(lambda: dialog.hide())
-            GLib.idle_add(lambda: select_profile_step(builder=builder, profiles=profiles, meta=meta, oauth=oauth))
+            GLib.idle_add(lambda: _select_profile_step(builder=builder, profiles=profiles, meta=meta, oauth=oauth))
         elif len(profiles) == 1:
-            meta.profile_display_name, meta.profile_id, meta.two_factor = profiles[0]
-            parse_config_step(builder=builder, oauth=oauth, meta=meta)
+            _parse_choice(builder, meta, oauth, profiles[0])
         else:
             raise EduvpnException("Either there are no VPN profiles defined, or this account does not have the "
                                   "required permissions to create a new VPN configurations for any of the "
@@ -36,16 +48,8 @@ def _background(oauth, meta, builder, dialog):
         raise
 
 
-def fetch_profile_step(builder, meta, oauth):
-    """background action step, fetches profiles and shows 'fetching' screen"""
-    logger.info("fetching profile step")
-    dialog = builder.get_object('fetch-dialog')
-    dialog.show_all()
-
-    thread_helper(lambda: _background(oauth, meta, builder, dialog))
-
-
-def select_profile_step(builder, profiles, meta, oauth):
+# ui thread
+def _select_profile_step(builder, profiles, meta, oauth):
     """the profile selection step, doesn't do anything if only one profile"""
     logger.info("opening profile dialog")
 
@@ -64,8 +68,14 @@ def select_profile_step(builder, profiles, meta, oauth):
     else:
         model, treeiter = selection.get_selected()
         if treeiter:
-            meta.profile_display_name, meta.profile_id, meta.two_factor = model[treeiter]
-            parse_config_step(builder=builder, oauth=oauth, meta=meta)
+            _parse_choice(builder, meta, oauth, model[treeiter])
         else:
             logger.error("nothing selected")
             return
+
+
+# ui thread
+def _parse_choice(builder, meta, oauth, choice):
+    meta.profile_display_name, meta.profile_id, meta.two_factor, two_factor_method = choice
+    meta.two_factor_method = two_factor_method.split(",")
+    parse_config_step(builder=builder, oauth=oauth, meta=meta)

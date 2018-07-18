@@ -168,7 +168,15 @@ def list_profiles(oauth, api_base_uri):
         display_name = translate_display_name(profile["display_name"])
         profile_id = profile["profile_id"]
         two_factor = profile["two_factor"]
-        profiles.append((display_name, profile_id, two_factor))
+        if two_factor:
+            if "two_factor_method" in profile:
+                two_factor_method = profile["two_factor_method"]
+            else:
+                two_factor_method = ["yubi", "totp"]
+        else:
+            two_factor_method = []
+        # we load this into a GtkListModel which doesnt support lists, so we concat them with ,
+        profiles.append((display_name, profile_id, two_factor, ",".join(two_factor_method)))
     return profiles
 
 
@@ -190,6 +198,11 @@ def user_info(oauth, api_base_uri):
     elif response.status_code != 200:
         raise EduvpnException("can't retrieve user info, error code {}".format(response.status_code))
     data = response.json()['user_info']['data']
+    assert("is_disabled" in data)
+    assert("two_factor_enrolled" in data)
+    if data["two_factor_enrolled"]:
+        assert("two_factor_enrolled_with" in data)
+    assert("user_id" in data)
     return data
 
 
@@ -333,7 +346,7 @@ def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
 def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
     prefix = '/two_factor_enroll_totp'
     url = api_base_uri + prefix
-    logger.info("2fa totp enroling on {}".format(url))
+    logger.info("2fa totp enroling on {} with secret={} and key={}".format(url, secret, key))
     try:
         response = oauth.post(url, data={'totp_secret': secret, 'totp_key': key})
     except InvalidGrantError as e:

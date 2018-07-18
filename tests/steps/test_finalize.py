@@ -1,6 +1,7 @@
 from unittest import TestCase
 from mock import patch
 from tests.util import MockBuilder, MockOAuth, MockDialog
+from tests.mock_config import mock_config_dict
 from eduvpn.metadata import Metadata
 from eduvpn.steps.finalize import finalizing_step, _background
 from eduvpn.util import have_dbus
@@ -25,7 +26,7 @@ class TestFinalize(TestCase):
 
     @patch('eduvpn.steps.finalize.thread_helper')
     def test_finalizing_step(self, *_):
-        finalizing_step(builder=self.builder, meta=self.meta, oauth=self.oauth)
+        finalizing_step(builder=self.builder, meta=self.meta, config_dict=mock_config_dict)
 
     @patch('eduvpn.manager.monitor_vpn')
     @patch('eduvpn.steps.finalize.store_provider')
@@ -33,7 +34,7 @@ class TestFinalize(TestCase):
         store_provider.method.return_value = "blabla"
         store_provider.return_value = "blabla"
         try:
-            _background(builder=self.builder, dialog=self.dialog, meta=self.meta, oauth=self.oauth)
+            _background(builder=self.builder, dialog=self.dialog, meta=self.meta, config_dict=mock_config_dict)
         except DBusException as e:
             pass
 

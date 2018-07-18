@@ -28,4 +28,4 @@ def reauth(meta, verifier, builder):
         delete_provider(meta.uuid)
     elif response == Gtk.ResponseType.NO:
         pass
-    dialog.destroy()
+    dialog.hide()

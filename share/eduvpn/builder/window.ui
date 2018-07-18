@@ -14,40 +14,6 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkListStore" id="instances-model">
-    <columns>
-      <!-- column-name display_name -->
-      <column type="gchararray"/>
-      <!-- column-name base_uri -->
-      <column type="gchararray"/>
-      <!-- column-name logo -->
-      <column type="GdkPixbuf"/>
-      <!-- column-name logo_data -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="profiles-model">
-    <columns>
-      <!-- column-name display_name -->
-      <column type="gchararray"/>
-      <!-- column-name profile_id -->
-      <column type="gchararray"/>
-      <!-- column-name two_factor -->
-      <column type="gboolean"/>
-    </columns>
-  </object>
-
-  <object class="GtkImage" id="institute-image">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../institute_small.png</property>
-  </object>
-  <object class="GtkImage" id="internet-image">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../internet_small.png</property>
-  </object>
-
   <object class="GtkApplicationWindow" id="eduvpn-window">
     <property name="can_focus">False</property>
     <property name="border_width">8</property>
@@ -56,6 +22,9 @@
     <property name="icon">../../icons/hicolor/128x128/apps/eduvpn-client.png</property>
     <property name="gravity">center</property>
     <signal name="delete-event" handler="delete_window" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="eduvpn-top-widget">
         <property name="visible">True</property>
@@ -474,28 +443,28 @@
                 </child>
                 <child>
                   <object class="GtkScrolledWindow" id="messages-scrolledwindow">
-                      <property name="visible">True</property>
-                      <property name="can_focus">True</property>
-                      <property name="shadow_type">in</property>
-                      <property name="min_content_width">300</property>
-                      <property name="min_content_height">200</property>
-                      <child>
-                        <object class="GtkLabel" id="messages-label">
-                          <property name="visible">True</property>
-                          <property name="can_focus">True</property>
-                          <property name="selectable">False</property>
-                          <property name="halign">start</property>
-                          <property name="valign">start</property>
-                          <property name="margin_left">4</property>
-                          <property name="margin_right">4</property>
-                          <property name="margin_top">4</property>
-                          <property name="margin_bottom">4</property>
-                          <property name="wrap">True</property>
-                        </object>
-                        <packing>
-                          <property name="position">1</property>
-                        </packing>
-                      </child>
+                     <property name="visible">True</property>
+                     <property name="can_focus">True</property>
+                     <property name="shadow_type">in</property>
+                     <property name="min_content_width">300</property>
+                     <property name="min_content_height">200</property>
+                     <child>
+                       <object class="GtkLabel" id="messages-label">
+                         <property name="visible">True</property>
+                         <property name="can_focus">True</property>
+                         <property name="selectable">False</property>
+                         <property name="halign">start</property>
+                         <property name="valign">start</property>
+                         <property name="margin_left">4</property>
+                         <property name="margin_right">4</property>
+                         <property name="margin_top">4</property>
+                         <property name="margin_bottom">4</property>
+                         <property name="wrap">True</property>
+                       </object>
+                       <packing>
+                         <property name="position">1</property>
+                       </packing>
+                     </child>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -529,5 +498,27 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkListStore" id="instances-model">
+    <columns>
+      <!-- column-name display_name -->
+      <column type="gchararray"/>
+      <!-- column-name base_uri -->
+      <column type="gchararray"/>
+      <!-- column-name logo -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name logo_data -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkImage" id="institute-image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">../institute_small.png</property>
+  </object>
+  <object class="GtkImage" id="internet-image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">../internet_small.png</property>
   </object>
 </interface>

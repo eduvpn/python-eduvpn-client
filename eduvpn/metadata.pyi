@@ -3,7 +3,7 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from typing import Any
+from typing import Any, List
 
 def get_distributed_tokens(): ...
 
@@ -17,6 +17,7 @@ class Metadata:
     authorization_endpoint = ... # type: str
     profile_display_name = ...  # type: str
     two_factor = ...  # type: bool
+    two_factor_method = ... # type: List[str]
     cert = ...  # type: str
     key = ...  # type: str
     config = ...  # type: str

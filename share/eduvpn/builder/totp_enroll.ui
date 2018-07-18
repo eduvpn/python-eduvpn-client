@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkDialog" id="2fa-enroll-dialog">
+  <object class="GtkDialog" id="totp-enroll-dialog">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Connect your authenticator app</property>
     <property name="type_hint">dialog</property>
@@ -24,7 +24,7 @@
             <property name="hexpand">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkEntry" id="code-entry">
+              <object class="GtkEntry" id="totp-code-entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
@@ -36,7 +36,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="cancel-button">
+              <object class="GtkButton" id="totp-cancel-button">
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -49,7 +49,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="submit-button">
+              <object class="GtkButton" id="totp-submit-button">
                 <property name="label" translatable="yes">Submit</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -109,7 +109,7 @@ you need to enter below.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage" id="qr-image">
+          <object class="GtkImage" id="totp-qr-image">
             <property name="width_request">490</property>
             <property name="height_request">490</property>
             <property name="visible">True</property>
@@ -124,7 +124,7 @@ you need to enter below.</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="error-label">
+          <object class="GtkLabel" id="totp-error-label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="use_markup">True</property>
@@ -138,8 +138,8 @@ you need to enter below.</property>
       </object>
     </child>
     <action-widgets>
-      <action-widget response="1">cancel-button</action-widget>
-      <action-widget response="0">submit-button</action-widget>
+      <action-widget response="1">totp-cancel-button</action-widget>
+      <action-widget response="0">totp-submit-button</action-widget>
     </action-widgets>
   </object>
 </interface>

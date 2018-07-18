@@ -11,7 +11,7 @@ from eduvpn.manager import list_providers, list_active, connect_provider, delete
     update_keys_provider
 from eduvpn.exceptions import EduvpnException
 from eduvpn.util import make_unique_id
-from tests.mock_config import mock_config
+from tests.mock_config import mock_config, mock_config_dict
 
 
 here = path.dirname(__file__)
@@ -29,7 +29,7 @@ class TestNm(unittest.TestCase):
         list_providers()
 
     def test_store_provider(self):
-        uuid = store_provider(meta=self.meta)
+        uuid = store_provider(meta=self.meta, config_dict=mock_config_dict)
         update_config_provider(self.meta)
         delete_provider(uuid)
 

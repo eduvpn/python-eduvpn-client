@@ -26,8 +26,7 @@ def _background(meta, oauth, dialog, builder):
         meta.config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
         ovpn_text = format_like_ovpn(meta.config, meta.cert, meta.key)
         config_dict = parse_ovpn(ovpn_text)
-        if 'auth-user-pass' in config_dict and not meta.username:
-            # TODO: unset secret
+        if meta.two_factor:
             GLib.idle_add(lambda: two_auth_step(builder, oauth, meta, config_dict=config_dict))
         else:
             GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict))

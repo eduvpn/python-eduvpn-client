@@ -38,9 +38,9 @@ def delete_profile(builder):
             notify("eduVPN provider deleted", "Deleted '{}'".format(meta.display_name))
         except Exception as e:
             error_helper(window, "can't delete profile", str(e))
-            dialog.destroy()
+            dialog.hide()
             raise
         GLib.idle_add(lambda: update_providers(builder))
     elif response == Gtk.ResponseType.NO:
         logger.info("not deleting provider config")
-    dialog.destroy()
+    dialog.hide()

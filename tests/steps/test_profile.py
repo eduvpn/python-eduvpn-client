@@ -3,7 +3,7 @@ from unittest import TestCase
 from mock import patch
 
 from eduvpn.metadata import Metadata
-from eduvpn.steps.profile import fetch_profile_step, select_profile_step, _background
+from eduvpn.steps.profile import fetch_profile_step, _select_profile_step, _background
 from tests.util import MockBuilder, MockOAuth, MockResponse
 from eduvpn.exceptions import EduvpnException
 
@@ -27,9 +27,9 @@ class TestProfile(TestCase):
 
     @patch('eduvpn.steps.profile.thread_helper')
     @patch('eduvpn.steps.profile._background')
-    @patch('eduvpn.steps.profile.two_auth_step')
+    @patch('eduvpn.steps.profile._parse_choice')
     def test_select_profile_step(self, *_):
-        select_profile_step(builder=self.builder, meta=self.meta, oauth=self.oauth, profiles=[])
+        _select_profile_step(builder=self.builder, meta=self.meta, oauth=self.oauth, profiles=[])
 
     def test_background_no_profile(self):
         response = MockResponse(content_json={"profile_list": {"data": []}})
@@ -37,7 +37,7 @@ class TestProfile(TestCase):
         with self.assertRaises(EduvpnException):
             _background(meta=self.meta, builder=self.builder, dialog=None, oauth=oauth)
 
-    @patch('eduvpn.steps.profile.two_auth_step')
+    @patch('eduvpn.steps.profile._parse_choice')
     def test_background_one_profile(self, *_):
         response = MockResponse(content_json={"profile_list": {"data": [
             {
