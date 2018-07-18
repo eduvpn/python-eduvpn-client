@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 def fetch_profile_step(builder, meta, oauth):
     """background action step, fetches profiles and shows 'fetching' screen"""
     logger.info("fetching profile step")
+
+    if meta.profile_id:
+        logger.info("we already selected the profile in the past, not presenting user with choice again")
+        parse_config_step(builder=builder, oauth=oauth, meta=meta)
+        return
+
     dialog = builder.get_object('fetch-dialog')
     window = builder.get_object('eduvpn-window')
     dialog.set_transient_for(window)
