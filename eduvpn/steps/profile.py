@@ -21,9 +21,9 @@ def fetch_profile_step(builder, meta, oauth):
     dialog = builder.get_object('fetch-dialog')
     window = builder.get_object('eduvpn-window')
     dialog.set_transient_for(window)
-
     dialog.show_all()
     thread_helper(lambda: _background(oauth, meta, builder, dialog))
+    dialog.run()
 
 
 # background thread

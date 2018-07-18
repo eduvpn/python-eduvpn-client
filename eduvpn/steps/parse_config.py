@@ -14,8 +14,11 @@ def parse_config_step(builder, oauth, meta):
     """parse the config and see if action is still required, otherwise finalize"""
     logger.info("parse config step")
     dialog = builder.get_object('fetch-dialog')
+    window = builder.get_object('eduvpn-window')
+    dialog.set_transient_for(window)
     dialog.show_all()
     thread_helper(lambda: _background(meta=meta, oauth=oauth, dialog=dialog, builder=builder))
+    dialog.run()
 
 
 def _background(meta, oauth, dialog, builder):

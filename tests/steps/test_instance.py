@@ -26,7 +26,7 @@ class TestSteps(TestCase):
 
     @patch('eduvpn.steps.instance.get_instances', side_effect=lambda *_, **__: ('bla', 'bla'))
     def test_fetch_background(self, *_):
-        _fetch_background(dialog=self.dialog, meta=self.meta, verifier=self.verifier, builder=self.builder)
+        _fetch_background(meta=self.meta, verifier=self.verifier, builder=self.builder)
 
     def test_select_instance_step(self):
         select_instance_step(meta=self.meta, instances=[], builder=self.builder, verifier=self.verifier)

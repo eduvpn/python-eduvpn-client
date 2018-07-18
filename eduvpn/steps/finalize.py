@@ -20,8 +20,11 @@ def finalizing_step(builder, meta, config_dict):
     """finalise the add profile flow, add a configuration"""
     logger.info("finalizing step")
     dialog = builder.get_object('fetch-dialog')
+    window = builder.get_object('eduvpn-window')
+    dialog.set_transient_for(window)
     dialog.show_all()
     thread_helper(lambda: _background(meta=meta, dialog=dialog, builder=builder, config_dict=config_dict))
+    dialog.run()
 
 
 def _background(meta, dialog, builder, config_dict):
