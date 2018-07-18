@@ -92,7 +92,7 @@ def ovpn_to_nm(config, meta, display_name, username=None):
                                  'dev': 'tun',
                                  'remote': ",".join(":".join(r) for r in config['remote']),
                                  'remote-cert-tls': 'server',
-                                 # 'tls-cipher' is not supported on ubuntu 16.04
+                                 # 'tls-cipher' is not supported on older nm (like ubuntu 16.04)
                                  # 'tls-cipher': config.get('tls-cipher', 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384')
                                  },
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
@@ -103,7 +103,6 @@ def ovpn_to_nm(config, meta, display_name, username=None):
     #    settings['vpn']['data']['connect-timeout'] = config['server-poll-timeout']
 
     if 'comp-lzo' in config:
-        # todo: adaptive is not supported Ubuntu 16.04
         settings['vpn']['data']['comp-lzo'] = config['comp-lzo'] or 'adaptive'
 
     # 2 factor auth enabled
