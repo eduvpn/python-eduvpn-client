@@ -54,6 +54,8 @@ def _select_profile_step(builder, profiles, meta, oauth):
     logger.info("opening profile dialog")
 
     dialog = builder.get_object('profiles-dialog')
+    window = builder.get_object('eduvpn-window')
+    dialog.set_transient_for(window)
     model = builder.get_object('profiles-model')
     selection = builder.get_object('profiles-selection')
     dialog.show_all()
