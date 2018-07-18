@@ -25,7 +25,6 @@ def reauth(meta, verifier, builder):
     if response == Gtk.ResponseType.YES:
         meta.token = None
         browser_step(builder, meta, verifier)
-        delete_provider(meta.uuid)
     elif response == Gtk.ResponseType.NO:
         pass
     dialog.hide()

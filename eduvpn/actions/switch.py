@@ -15,14 +15,14 @@ from eduvpn.util import error_helper
 logger = logging.getLogger(__name__)
 
 
-def switched(meta, builder):
+def switched(meta, builder, verifier):
     switch = builder.get_object('connect-switch')
     state = switch.get_active()
     logger.info("switch activated, old state {}".format(state))
     if not state:
         logger.info("setting switch ON")
         GLib.idle_add(lambda: switch.set_active(True))
-        activate_connection(meta=meta, builder=builder)
+        activate_connection(meta=meta, builder=builder, verifier=verifier)
     else:
         notify("eduVPN disconnecting...", "Disconnecting from {}".format(meta.display_name))
         logger.info("setting switch OFF")

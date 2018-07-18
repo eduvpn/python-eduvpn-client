@@ -89,4 +89,4 @@ class EduVpnApp:
 
     def switched(self, selection, _):
         """called when the user releases the connection switch"""
-        switched(meta=self.selected_meta, builder=self.builder)
+        switched(meta=self.selected_meta, builder=self.builder, verifier=self.verifier)

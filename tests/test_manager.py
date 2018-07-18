@@ -29,8 +29,9 @@ class TestNm(unittest.TestCase):
         list_providers()
 
     def test_store_provider(self):
+        self.meta.uuid = None
         uuid = store_provider(meta=self.meta, config_dict=mock_config_dict)
-        update_config_provider(self.meta)
+        update_config_provider(self.meta, config_dict=mock_config_dict)
         delete_provider(uuid)
 
     def test_connect_provider(self):

@@ -55,7 +55,6 @@ def select_profile(builder, verifier):
             ipv4_label.set_text("-")
             ipv6_label.set_text("-")
 
-
         if meta.username:
             twofa_label.set_text(meta.username)
             twofa_label_label.set_text("2FA:")

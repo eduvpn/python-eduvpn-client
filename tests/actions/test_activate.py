@@ -19,4 +19,4 @@ class TestActions(unittest.TestCase):
     @patch('gi.repository.Gtk.MessageDialog')
     @patch('eduvpn.actions.activate.connect_provider')
     def test_activate_connection(self, *args):
-        activate_connection(builder=self.builder, meta=self.meta)
+        activate_connection(builder=self.builder, meta=self.meta, verifier=self.verifier)

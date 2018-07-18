@@ -16,7 +16,7 @@ if have_dbus():
 
 from eduvpn.config import providers_path
 from eduvpn.io import write_cert
-from eduvpn.openvpn import format_like_ovpn, parse_ovpn, ovpn_to_nm
+from eduvpn.openvpn import parse_ovpn, ovpn_to_nm
 from eduvpn.util import make_unique_id
 from eduvpn.exceptions import EduvpnException
 from eduvpn.metadata import Metadata
@@ -68,12 +68,20 @@ def list_providers():
 def store_provider(meta, config_dict):
     """Store the eduVPN configuration"""
     logger.info("storing profile with name {} using NetworkManager".format(meta.display_name))
-    meta.uuid = make_unique_id()
+    new = False
+    if not meta.uuid:
+        meta.uuid = make_unique_id()
+        new = True
     cert_path = write_cert(meta.cert, 'cert', meta.uuid)
     key_path = write_cert(meta.key, 'key', meta.uuid)
     nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
     nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path})
-    insert_config(nm_config)
+
+    if new:
+        insert_config(nm_config)
+    else:
+        update_config_provider(meta, config_dict)
+
     meta.write()
     return meta.uuid
 
@@ -186,7 +194,7 @@ def is_provider_connected(uuid):
                 return "", ""
 
 
-def update_config_provider(meta):
+def update_config_provider(meta, config_dict):
     """
     Update an existing network manager configuration
 
@@ -196,7 +204,6 @@ def update_config_provider(meta):
         config (str): The new OpenVPN configuration
     """
     logger.info("updating config for {} ({})".format(meta.display_name, meta.uuid))
-    config_dict = parse_ovpn(meta.config)
     nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
 
     if have_dbus():

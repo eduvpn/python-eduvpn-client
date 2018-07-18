@@ -116,14 +116,14 @@ def ovpn_to_nm(config, meta, display_name, username=None):
         settings['vpn']['data']['password-flags'] = '2'
         settings['vpn']['data']['username'] = username
 
-    ca_path = write_cert(config.pop('ca'), 'ca', meta.uuid)
+    ca_path = write_cert(config.get('ca'), 'ca', meta.uuid)
     settings['vpn']['data']['ca'] = ca_path
 
     if 'tls-auth' in config:
-        settings['vpn']['data']['ta'] = write_cert(config.pop('tls-auth'), 'ta', meta.uuid)
+        settings['vpn']['data']['ta'] = write_cert(config.get('tls-auth'), 'ta', meta.uuid)
         settings['vpn']['data']['ta-dir'] = config.get('key-direction', '1')
     elif 'tls-crypt' in config:
-        settings['vpn']['data']['tls-crypt'] = write_cert(config.pop('tls-crypt'), 'tc', meta.uuid)
+        settings['vpn']['data']['tls-crypt'] = write_cert(config.get('tls-crypt'), 'tc', meta.uuid)
     else:
         logging.info("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
 

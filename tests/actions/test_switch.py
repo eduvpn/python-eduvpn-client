@@ -44,7 +44,7 @@ class TestActions(unittest.TestCase):
     def test_switched_on(self, *args):
         builder = MockBuilder()
         builder.objects['connect-switch'] = MockSwitch(state=True)
-        switched(builder=self.builder, meta=self.meta)
+        switched(builder=self.builder, meta=self.meta, verifier=self.verifier)
 
     @patch('gi.repository.Gtk.MessageDialog')
     @patch('eduvpn.actions.switch.activate_connection')
@@ -52,4 +52,4 @@ class TestActions(unittest.TestCase):
     def test_switched_off(self, *args):
         builder = MockBuilder()
         builder.objects['connect-switch'] = MockSwitch(state=False)
-        switched(builder=self.builder, meta=self.meta)
+        switched(builder=self.builder, meta=self.meta, verifier=self.verifier)
