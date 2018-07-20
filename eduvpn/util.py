@@ -5,6 +5,7 @@
 import logging
 import threading
 import uuid
+import sys
 from os import path
 from future.standard_library import install_aliases
 install_aliases()
@@ -103,10 +104,12 @@ def get_prefix():
     returns:
         str: path to Python installation prefix
     """
+    target = 'share/eduvpn/builder/window.ui'
     local = path.dirname(path.dirname(path.abspath(__file__)))
-    options = [local, path.expanduser('~/.local'), '/usr/local', '/usr/']
+    options = [local, path.expanduser('~/.local'), '/usr/local', sys.prefix]
     for option in options:
-        if path.isfile(path.join(option, 'share/eduvpn/builder/window.ui')):
+        logger.debug("looking for '{}' in '{}'".format(target, option))
+        if path.isfile(path.join(option, target)):
             return option
     raise Exception("Can't find eduVPN installation")
 
