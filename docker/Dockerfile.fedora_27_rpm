@@ -14,7 +14,7 @@ RUN dnf install -y	\
 	python2-requests-oauthlib \
     python2-cryptography \
     python2-qrcode \
-    python2-pillow
+    python2-pillow \
 	python-repoze-lru \
 	dbus-python \
     python3-devel \
