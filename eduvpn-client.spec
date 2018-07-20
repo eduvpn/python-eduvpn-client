@@ -24,7 +24,7 @@ BuildRequires: python2-configparser
 BuildRequires: python2-future
 BuildRequires: python2-mock
 BuildRequires: python2-cryptography
-BuildRequires: python2-qrcode
+BuildRequires: (python2-qrcode or python-qrcode)
 BuildRequires: python2-pillow
 BuildRequires: python-repoze-lru
 BuildRequires: python3-devel
@@ -57,7 +57,7 @@ Requires: python2-future
 Requires: python2-dateutil
 Requires: python-repoze-lru
 Requires: python2-cryptography
-Requires: python2-qrcode
+Requires: (python2-qrcode or python-qrcode)
 Requires: python2-pillow
 
 %description -n python2-eduvpn-client
@@ -76,7 +76,7 @@ Requires: python3-dateutil
 Requires: python3-repoze-lru
 Requires: python3-cryptography
 Requires: python3-qrcode
-Requires: python3-qrcode
+Requires: python3-pillow
 
 %description -n python3-eduvpn-client
 eduVPN client API for Python3

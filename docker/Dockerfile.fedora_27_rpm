@@ -3,7 +3,6 @@ FROM fedora:27
 RUN dnf install -y	\
     fedora-packager \
     fedora-review \
-
     gtk3 \
     libnotify \
     python2-devel \
@@ -13,10 +12,12 @@ RUN dnf install -y	\
 	python2-pynacl \
 	python2-requests-oauthlib \
     python2-cryptography \
-    python2-qrcode \
     python2-pillow \
+	python2-mock \
+    python-qrcode \
 	python-repoze-lru \
 	dbus-python \
+	pytest \
     python3-devel \
 	python3-future \
 	python3-gobject  \
@@ -24,8 +25,7 @@ RUN dnf install -y	\
 	python3-requests-oauthlib \
 	python3-dbus \
 	python3-repoze-lru \
-	pytest \
-	python2-mock \
+    python3-mock \
     python2-pytest-runner \
     python3-pytest-runner \
     python3-cryptography \
