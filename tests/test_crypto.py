@@ -5,7 +5,8 @@
 
 import unittest
 
-from eduvpn.crypto import gen_code_challenge, gen_code_verifier
+from eduvpn.crypto import gen_code_challenge, gen_code_verifier, common_name_from_cert, gen_base32
+from tests.mock_config import mock_config_dict
 
 
 class TestCrypto(unittest.TestCase):
@@ -14,3 +15,11 @@ class TestCrypto(unittest.TestCase):
 
     def test_gen_code_verifier(self):
         gen_code_verifier()
+
+    def test_common_name_from_cert(self):
+        result = common_name_from_cert(mock_config_dict['cert'].encode('ascii'))
+        self.assertEqual(result, '9f43953f6371212130d2f8d65bad8694')
+
+    def test_gen_base32(self):
+        gen_base32()
+
