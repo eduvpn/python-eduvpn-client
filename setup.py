@@ -17,6 +17,7 @@ install_requires = [
     'six',
     'repoze.lru',
     'qrcode[pil]',
+    'cryptography',
 ]
 
 # sometimes the dbus-python package is not properly registered, triggering a

@@ -4,17 +4,17 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
-from datetime import datetime
 import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.oauth2 import oauth_from_token
 from eduvpn.manager import update_config_provider, update_keys_provider, connect_provider
-from eduvpn.remote import get_profile_config, create_keypair, user_info
+from eduvpn.remote import get_profile_config, create_keypair, user_info, check_certificate
 from eduvpn.steps.reauth import reauth
 from eduvpn.notify import notify
 from eduvpn.openvpn import parse_ovpn
-from eduvpn.exceptions import EduvpnAuthException
+from eduvpn.exceptions import EduvpnAuthException, EduvpnException
+from eduvpn.crypto import common_name_from_cert
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,11 @@ def _quick_check(oauth, meta, verifier, builder):
         _connect(oauth, meta)
     except EduvpnAuthException:
         GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder))
+    except Exception as e:
+        error = e
+        window = builder.get_object('eduvpn-window')
+        GLib.idle_add(lambda: error_helper(window, "Can't check account status", "{}".format(str(error))))
+        raise
 
 
 def _connect(oauth, meta):
@@ -56,9 +61,19 @@ def _connect(oauth, meta):
     config_dict = parse_ovpn(meta.config)
     update_config_provider(meta, config_dict)
 
-    if datetime.now() > datetime.fromtimestamp(meta.token['expires_at']):
-        logger.info("key pair is expired")
-        cert, key = create_keypair(oauth, meta.api_base_uri)
-        update_keys_provider(meta.uuid, cert, key)
+    common_name = common_name_from_cert(meta.cert.encode('ascii'))
+
+    cert_valid = check_certificate(oauth, meta.api_base_uri, common_name)
+
+    if not cert_valid['is_valid']:
+        logger.warning('client certificate not valid, reason: {}'.format(cert_valid['reason']))
+        if cert_valid['reason'] in ('certificate_missing', 'certificate_not_yet_valid', 'certificate_expired'):
+            logger.info('Going to try to fetch new keypair')
+            cert, key = create_keypair(oauth, meta.api_base_uri)
+            update_keys_provider(meta.uuid, cert, key)
+        elif cert_valid['reason'] == 'user_disabled':
+            raise EduvpnException('Your account has been disabled.')
+        else:
+            raise EduvpnException('Your client certificate is invalid ({})'.format(cert_valid['reason']))
 
     connect_provider(meta.uuid)

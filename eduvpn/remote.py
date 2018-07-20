@@ -355,7 +355,28 @@ def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
         logger.error(str(response.content))
-        raise EduvpnException("can't enable 2fa otp, error code {} response {}".format(response.status_code, response.content))
+        raise EduvpnException("can't enable 2fa otp, error code {} response {}".format(response.status_code,
+                                                                                       response.content))
     data = response.json()['two_factor_enroll_totp']
     if not data['ok']:
         raise EduvpnException(data['error'])
+
+
+def check_certificate(oauth, api_base_uri, common_name):
+    prefix = '/check_certificate'
+    url = api_base_uri + prefix
+    logger.info("checking client certificate on {} with common_name={}".format(url, common_name))
+    try:
+        response = oauth.get("{}?common_name={}".format(url, common_name))
+    except InvalidGrantError as e:
+        raise EduvpnAuthException(str(e))
+    if response.status_code == 401:
+        raise EduvpnAuthException("request returned error 401")
+    elif response.status_code != 200:
+        logger.error(str(response.content))
+        raise EduvpnException("can't check client certificate, error code {} response {}".format(response.status_code,
+                                                                                                 response.content))
+    parsed = response.json()['check_certificate']
+    if not parsed['ok']:
+        raise EduvpnException(parsed['error'])
+    return parsed['data']
