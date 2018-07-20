@@ -16,8 +16,13 @@ RUN docker-apt-install \
         python3-mock \
         python3-setuptools \
         python3-pytest \
-        pep8
+        python3-cryptography \
+        python3-qrcode \
+        python3-pillow \
+        pep8 \
+        mypy
 
 ADD . /code
 WORKDIR /code
 RUN pep8 eduvpn --ignore=E501,E402,W391,W292
+#RUN mypy eduvpn

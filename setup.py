@@ -16,7 +16,8 @@ install_requires = [
     'python-dateutil',
     'six',
     'repoze.lru',
-    'qrcode[pil]',
+    'qrcode',
+    'pillow',
     'cryptography',
 ]
 

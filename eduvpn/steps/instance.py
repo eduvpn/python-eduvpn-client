@@ -38,7 +38,7 @@ def fetch_instance_step(meta, builder, verifier):
     window = builder.get_object('eduvpn-window')
     dialog.set_transient_for(window)
     dialog.show_all()
-    thread_helper(lambda: _fetch_background( meta=meta, verifier=verifier, builder=builder))
+    thread_helper(lambda: _fetch_background(meta=meta, verifier=verifier, builder=builder))
     dialog.run()
 
 

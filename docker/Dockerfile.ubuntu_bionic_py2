@@ -15,7 +15,10 @@ RUN docker-apt-install \
         python-dateutil \
         python-mock \
         python-setuptools \
-        python-pytest
+        python-pytest \
+        python-cryptography \
+        python-qrcode \
+        python-pillow
 
 ADD . /code
 WORKDIR /code

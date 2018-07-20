@@ -17,11 +17,6 @@ secure_internet_uri_dev = 'https://static.eduvpn.nl/disco/secure_internet_dev.js
 institute_access_uri_dev = 'https://static.eduvpn.nl/disco/institute_access_dev.json'
 verify_key_dev = ' zzls4TZTXHEyV3yxaxag1DZw3tSpIdBoaaOjUGH/Rwg=.'
 
-# use for debugging
-#secure_internet_uri = secure_internet_uri_dev
-#institute_access_uri = institute_access_uri_dev
-#verify_key = verify_key_dev
-
 
 locale = "en-US"
 

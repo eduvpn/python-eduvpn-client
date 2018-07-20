@@ -48,6 +48,7 @@ class TestTwoWayAuth(TestCase):
 
     @patch('eduvpn.steps.two_way_auth.finalizing_step')
     @patch('eduvpn.steps.two_way_auth.Gtk.Dialog')
+    @patch('eduvpn.steps.two_way_auth.Gtk.Label')
     def test_choice_window(self, *_):
         _choice_window(builder=self.builder, meta=self.meta, oauth=self.oauth, options=['bla1', 'bla2'],
                        config_dict=mock_config_dict)

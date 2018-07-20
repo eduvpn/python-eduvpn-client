@@ -75,7 +75,6 @@ def init():
     return edu_vpn_app
 
 
-
 def main():
     init()
     Gtk.main()

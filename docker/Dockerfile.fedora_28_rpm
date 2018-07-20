@@ -11,6 +11,9 @@ RUN dnf install -y	\
 	python2-future \
 	python2-pynacl \
 	python2-requests-oauthlib \
+    python2-cryptography \
+    python2-qrcode \
+    python2-pillow \
 	python-repoze-lru \
 	dbus-python \
     python3-devel \
@@ -24,7 +27,10 @@ RUN dnf install -y	\
 	python2-mock \
     python3-mock  \
     python2-pytest-runner \
-    python3-pytest-runner
+    python3-pytest-runner \
+    python3-cryptography \
+    python3-qrcode \
+    python3-pillow
 
 RUN rpmdev-setuptree
 

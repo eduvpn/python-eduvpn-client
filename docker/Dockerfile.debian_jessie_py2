@@ -14,7 +14,10 @@ RUN docker-apt-install \
         python-pip \
         python-mock \
         python-repoze.lru \
-        python-pytest
+        python-pytest \
+        python-cryptography \
+        python-qrcode \
+        python-pillow
 
 ADD . /code
 WORKDIR /code

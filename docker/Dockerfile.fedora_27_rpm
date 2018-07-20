@@ -6,16 +6,17 @@ RUN dnf install -y	\
 
     gtk3 \
     libnotify \
-
     python2-devel \
     python-gobject \
 	python2-configparser \
 	python2-future \
 	python2-pynacl \
 	python2-requests-oauthlib \
+    python2-cryptography \
+    python2-qrcode \
+    python2-pillow
 	python-repoze-lru \
 	dbus-python \
-
     python3-devel \
 	python3-future \
 	python3-gobject  \
@@ -23,11 +24,13 @@ RUN dnf install -y	\
 	python3-requests-oauthlib \
 	python3-dbus \
 	python3-repoze-lru \
-
 	pytest \
 	python2-mock \
     python2-pytest-runner \
-    python3-pytest-runner
+    python3-pytest-runner \
+    python3-cryptography \
+    python3-qrcode \
+    python3-pillow
 
 RUN rpmdev-setuptree
 

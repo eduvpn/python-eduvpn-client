@@ -24,6 +24,9 @@ BuildRequires: python2-configparser
 BuildRequires: python2-future
 BuildRequires: python2-mock
 BuildRequires: python-dateutil
+BuildRequires: python2-cryptography
+BuildRequires: python-qrcode
+BuildRequires: python-pillow
 BuildRequires: gcc
 # GCC is required for the test run that will compile and install pynacl manually
 
@@ -43,6 +46,9 @@ Requires: python2-requests-oauthlib
 Requires: python2-configparser
 Requires: python2-future
 Requires: python2-dateutil
+Requires: python2-cryptography
+Requires: python-qrcode
+Requires: python-pillow
 
 
 %description -n python2-eduvpn-client
@@ -95,6 +101,8 @@ eduVPN desktop client
 %{_datarootdir}/eduvpn/builder/redirecturl.ui
 %{_datarootdir}/eduvpn/builder/token.ui
 %{_datarootdir}/eduvpn/builder/window.ui
+%{_datarootdir}/eduvpn/builder/totp_enroll.ui
+%{_datarootdir}/eduvpn/builder/yubi_enroll.ui
 %{_datarootdir}/icons/hicolor/128x128/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png

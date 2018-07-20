@@ -11,7 +11,10 @@ RUN dnf install -y \
         python3-future \
         python3-dateutil \
         python3-mock \
-        python3-pytest
+        python3-pytest \
+        python3-cryptography \
+        python3-qrcode \
+        python3-pillow
 
 ADD . /code
 WORKDIR /code

@@ -19,6 +19,9 @@ RUN yum install -y	\
 	python2-requests-oauthlib \
 	python2-mock \
     python2-pytest-runner \
+    python2-cryptography \
+    python-qrcode \
+    python-pillow \
     gcc
 
 # GCC is required for the test run that will compile and install pynacl manually

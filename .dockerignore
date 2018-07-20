@@ -3,11 +3,12 @@
 .gitignore
 .idea
 .ipynb_checkpoints
-.virtualenv/
-.virtualenv3/
+.virtualenv*/
+.venv*/
 .tox
 tmp
 build
 dist
 *.egg-info/
 .eggs/
+doc/_build/

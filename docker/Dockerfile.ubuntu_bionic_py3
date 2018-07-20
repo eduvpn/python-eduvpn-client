@@ -15,7 +15,10 @@ RUN docker-apt-install \
         python3-pip \
         python3-mock \
         python3-setuptools \
-        python3-pytest
+        python3-pytest \
+        python3-cryptography \
+        python3-qrcode \
+        python3-pillow
 
 ADD . /code
 WORKDIR /code

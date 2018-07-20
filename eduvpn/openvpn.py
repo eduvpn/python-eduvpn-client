@@ -99,8 +99,8 @@ def ovpn_to_nm(config, meta, display_name, username=None):
                 }
 
     # issue #138, not supported by older network-manager-openvpn
-    #if 'server-poll-timeout' in config:
-    #    settings['vpn']['data']['connect-timeout'] = config['server-poll-timeout']
+    # if 'server-poll-timeout' in config:
+    #     settings['vpn']['data']['connect-timeout'] = config['server-poll-timeout']
 
     if 'comp-lzo' in config:
         settings['vpn']['data']['comp-lzo'] = config['comp-lzo'] or 'adaptive'

@@ -1,9 +1,6 @@
 from os import environ
 import logging
-import mechanicalsoup
-from pyotp import TOTP
 from future.moves.urllib.parse import urlparse
-from concurrent.futures import ThreadPoolExecutor
 from eduvpn.exceptions import EduvpnAuthException
 from eduvpn.metadata import Metadata
 from eduvpn.crypto import gen_code_verifier
@@ -21,6 +18,12 @@ def check_online_tests():
         return user, password
     else:
         return False
+
+
+if check_online_tests():
+    import mechanicalsoup
+    from pyotp import TOTP
+    from concurrent.futures import ThreadPoolExecutor
 
 
 def disable_2fa(user, password, totp_secret, base_url):

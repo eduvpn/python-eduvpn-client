@@ -23,6 +23,9 @@ BuildRequires: python2-requests-oauthlib
 BuildRequires: python2-configparser
 BuildRequires: python2-future
 BuildRequires: python2-mock
+BuildRequires: python2-cryptography
+BuildRequires: python2-qrcode
+BuildRequires: python2-pillow
 BuildRequires: python-repoze-lru
 BuildRequires: python3-devel
 BuildRequires: python2-dateutil
@@ -34,7 +37,9 @@ BuildRequires: python3-future
 BuildRequires: python3-dateutil
 BuildRequires: python3-repoze-lru
 BuildRequires: python3-mock
-
+BuildRequires: python3-cryptography
+BuildRequires: python3-qrcode
+BuildRequires: python3-pillow
 
 
 %description
@@ -51,7 +56,9 @@ Requires: python2-configparser
 Requires: python2-future
 Requires: python2-dateutil
 Requires: python-repoze-lru
-
+Requires: python2-cryptography
+Requires: python2-qrcode
+Requires: python2-pillow
 
 %description -n python2-eduvpn-client
 eduVPN client API for Python2
@@ -67,6 +74,9 @@ Requires: python3-gobject
 Requires: python3-future
 Requires: python3-dateutil
 Requires: python3-repoze-lru
+Requires: python3-cryptography
+Requires: python3-qrcode
+Requires: python3-qrcode
 
 %description -n python3-eduvpn-client
 eduVPN client API for Python3
@@ -126,6 +136,8 @@ eduVPN desktop client
 %{_datarootdir}/eduvpn/builder/redirecturl.ui
 %{_datarootdir}/eduvpn/builder/token.ui
 %{_datarootdir}/eduvpn/builder/window.ui
+%{_datarootdir}/eduvpn/builder/totp_enroll.ui
+%{_datarootdir}/eduvpn/builder/yubi_enroll.ui
 %{_datarootdir}/icons/hicolor/128x128/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png
