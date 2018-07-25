@@ -8,7 +8,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import GLib
 from eduvpn.notify import notify
-from eduvpn.manager import active_connections
+from eduvpn.manager import list_active
 from eduvpn.util import metadata_of_selected
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def vpn_change(builder):
         return
 
     selected_uuid_active = False
-    for active in active_connections():
+    for active in list_active():
         try:
             if active.Uuid == meta.uuid:
                 selected_uuid_active = True

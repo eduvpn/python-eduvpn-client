@@ -155,10 +155,27 @@ def list_active():
         list: a list of NetworkManager.ActiveConnection objects
     """
     logger.info("getting list of active connections")
-    if have_dbus():
-        return NetworkManager.NetworkManager.ActiveConnections
-    else:
+    if not have_dbus():
         return []
+
+    try:
+        active = NetworkManager.NetworkManager.ActiveConnections
+        return [a for a in active if NetworkManager.Settings.GetConnectionByUuid(a.Uuid).GetSettings()['connection']['type'] == 'vpn']
+    except DBusException:
+        return []
+
+
+def disconnect_all():
+    """
+    Disconnect all active VPN connections.
+    """
+    if not have_dbus():
+        return []
+
+    for active in NetworkManager.NetworkManager.ActiveConnections:
+        conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)
+        if conn.GetSettings()['connection']['type'] == 'vpn':
+            disconnect_provider(active.Uuid)
 
 
 def disconnect_provider(uuid):
@@ -255,13 +272,3 @@ def monitor_vpn(uuid, callback):
 
     connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
     connection.connect_to_signal('Updated', callback)
-
-
-def active_connections():
-    if not have_dbus():
-        return []
-
-    try:
-        return NetworkManager.NetworkManager.ActiveConnections
-    except DBusException:
-        return []

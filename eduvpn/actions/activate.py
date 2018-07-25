@@ -8,7 +8,7 @@ import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.oauth2 import oauth_from_token
-from eduvpn.manager import update_config_provider, update_keys_provider, connect_provider
+from eduvpn.manager import update_config_provider, update_keys_provider, connect_provider, disconnect_all
 from eduvpn.remote import get_profile_config, create_keypair, user_info, check_certificate
 from eduvpn.steps.reauth import reauth
 from eduvpn.steps.two_way_auth import two_auth_step
@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 def activate_connection(meta, builder, verifier):
     """do the actual connecting action"""
     logger.info("Connecting to {}".format(meta.display_name))
+    disconnect_all()
     notify("eduVPN connecting...", "Connecting to '{}'".format(meta.display_name))
     try:
         if not meta.token:
