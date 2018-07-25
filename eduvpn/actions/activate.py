@@ -11,6 +11,7 @@ from eduvpn.oauth2 import oauth_from_token
 from eduvpn.manager import update_config_provider, update_keys_provider, connect_provider
 from eduvpn.remote import get_profile_config, create_keypair, user_info, check_certificate
 from eduvpn.steps.reauth import reauth
+from eduvpn.steps.two_way_auth import two_auth_step
 from eduvpn.notify import notify
 from eduvpn.openvpn import parse_ovpn
 from eduvpn.exceptions import EduvpnAuthException, EduvpnException
@@ -31,7 +32,7 @@ def activate_connection(meta, builder, verifier):
 
         else:
             oauth = oauth_from_token(meta=meta)
-            thread_helper(lambda: _quick_check(oauth, meta, verifier, builder))
+            thread_helper(lambda: _auth_check(oauth, meta, verifier, builder))
 
     except Exception as e:
         switch = builder.get_object('connect-switch')
@@ -41,11 +42,12 @@ def activate_connection(meta, builder, verifier):
         raise
 
 
-def _quick_check(oauth, meta, verifier, builder):
+# background thread
+def _auth_check(oauth, meta, verifier, builder):
     """quickly see if the can fetch messages, otherwise reauth"""
     try:
-        user_info(oauth, meta.api_base_uri)
-        _connect(oauth, meta)
+        info = user_info(oauth, meta.api_base_uri)
+        _cert_check(meta, oauth, builder, info)
     except EduvpnAuthException:
         GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder))
     except Exception as e:
@@ -55,14 +57,9 @@ def _quick_check(oauth, meta, verifier, builder):
         raise
 
 
-def _connect(oauth, meta):
-    config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
-    meta.config = config
-    config_dict = parse_ovpn(meta.config)
-    update_config_provider(meta, config_dict)
-
+# background thread
+def _cert_check(meta, oauth, builder, info):
     common_name = common_name_from_cert(meta.cert.encode('ascii'))
-
     cert_valid = check_certificate(oauth, meta.api_base_uri, common_name)
 
     if not cert_valid['is_valid']:
@@ -76,4 +73,23 @@ def _connect(oauth, meta):
         else:
             raise EduvpnException('Your client certificate is invalid ({})'.format(cert_valid['reason']))
 
-    connect_provider(meta.uuid)
+    _fetch_updated_config(oauth, meta, builder, info)
+
+
+# background thread
+def _fetch_updated_config(oauth, meta, builder, info):
+    config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
+    meta.config = config
+    config_dict = parse_ovpn(meta.config)
+    update_config_provider(meta, config_dict)
+
+    _2fa_check(meta, builder, oauth, config_dict, info)
+
+
+# background thread
+def _2fa_check(meta, builder, oauth, config_dict, info):
+    if meta.two_factor and not info['two_factor_enrolled']:
+        # 2fa is required, but the user is not enroled anymore
+        two_auth_step(builder, oauth, meta, config_dict)
+    else:
+        connect_provider(meta.uuid)
