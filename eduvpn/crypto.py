@@ -43,7 +43,7 @@ def gen_code_verifier(length=128):
     return "".join(r.choice(choices) for _ in range(length))
 
 
-def gen_base32(length=16):
+def gen_base32(length=20):
     choices = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
     r = random.SystemRandom()
     return "".join(r.choice(choices) for _ in range(length))
