@@ -28,6 +28,7 @@ class Metadata:
     discovery_uri = ...  # type: str
     display_name = ...  # type: str
     connection_type = ...  # type: str
+    user_id = ... # type: str
 
     def __init__(self): ...
     @staticmethod

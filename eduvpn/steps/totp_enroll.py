@@ -33,7 +33,8 @@ def _make_qr(builder, oauth, meta, config_dict, secret=None):
     if not secret:
         secret = gen_base32()
     host = urlparse(meta.api_base_uri).netloc
-    uri = "otpauth://totp/{host}?secret={secret}&issuer={host}".format(host=host, secret=secret)
+    uri = "otpauth://totp/{user_id}@{host}?secret={secret}&issuer={host}".format(user_id=meta.user_id, host=host,
+                                                                                 secret=secret)
     img = qrcode.make(uri)
     pixbuf = pil2pixbuf(img)
     image.set_from_pixbuf(pixbuf)
