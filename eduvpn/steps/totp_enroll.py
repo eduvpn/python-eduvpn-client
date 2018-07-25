@@ -71,7 +71,8 @@ def _enroll(builder, oauth, meta, config_dict, secret, key):
     try:
         two_factor_enroll_totp(oauth, meta.api_base_uri, secret=secret, key=key)
     except Exception as e:
-        GLib.idle_add(lambda: error_label.set_markup('<span color="red" size="large">{}</span>'.format(e)))
+        error = e
+        GLib.idle_add(lambda: error_label.set_markup('<span color="red" size="large">{}</span>'.format(error)))
         GLib.idle_add(lambda: submit_button.set_sensitive(True))
         GLib.idle_add(lambda: cancel_button.set_sensitive(True))
         raise
