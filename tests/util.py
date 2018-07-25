@@ -94,3 +94,6 @@ class MockDialog:
 
     def hide(self):
         return True
+
+    def get_property(self, property):
+        return True

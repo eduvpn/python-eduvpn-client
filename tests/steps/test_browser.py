@@ -45,7 +45,7 @@ class TestSteps(TestCase):
                          oauth=self.oauth, port=1, state="1234")
 
     @patch('webbrowser.open')
-    @patch('eduvpn.steps.browser.get_oauth_token_code', side_effect=lambda x: ("code", "state"))
+    @patch('eduvpn.steps.browser.get_oauth_token_code', side_effect=lambda x, timeout: ("code", "state"))
     def test_phase2_background(self, *args):
         _phase2_background(builder=self.builder, meta=self.meta, auth_url=None, dialog=self.dialog, code_verifier=None,
                            oauth=self.oauth, port=1, state="state")

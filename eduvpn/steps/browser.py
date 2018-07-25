@@ -5,6 +5,7 @@
 
 import logging
 import webbrowser
+from random import random
 import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
@@ -12,6 +13,7 @@ from eduvpn.crypto import gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.remote import get_instance_info, get_auth_url
 from eduvpn.steps.profile import fetch_profile_step
+
 
 logger = logging.getLogger(__name__)
 
@@ -86,9 +88,11 @@ def _show_dialog(dialog, auth_url, builder):
 
 
 def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, builder, state):
+    session = random()
+    logger.info("opening browser with url {}".format(auth_url))
     try:
-        logger.info("opening browser with url {}".format(auth_url))
         webbrowser.open(auth_url)
+        dialog.session = session
         code, other_state = get_oauth_token_code(port, timeout=120)
         logger.info("control returned by browser")
         if state != other_state:
@@ -98,7 +102,7 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
         meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
     except Exception as e:
         error = e
-        if dialog.get_property("visible"):
+        if dialog.get_property("visible") and dialog.session == session:
             GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(str(error))))
             GLib.idle_add(lambda: dialog.hide())
         else:
