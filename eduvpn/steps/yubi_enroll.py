@@ -39,7 +39,7 @@ def _parse_user_input(builder, oauth, meta, config_dict):
         if event.keyval in (Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_BackSpace, Gdk.KEY_End, Gdk.KEY_Home,
                             Gdk.KEY_Delete, Gdk.KEY_Return, Gdk.KEY_Escape):
             return False
-        return not event.keyval in range(0x20, 0x7e)
+        return event.keyval not in range(0x20, 0x7e)
 
     code_entry.connect("key-press-event", callback)
     cancel_button.set_sensitive(True)

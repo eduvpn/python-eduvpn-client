@@ -41,7 +41,6 @@ def _make_qr(builder, oauth, meta, config_dict, secret=None):
     qr.make()
     img = qr.make_image()
 
-    #img = qrcode.make(uri)
     pixbuf = pil2pixbuf(img)
     image.set_from_pixbuf(pixbuf)
     GLib.idle_add(lambda: _parse_user_input(builder, oauth, meta, config_dict=config_dict, secret=secret))
