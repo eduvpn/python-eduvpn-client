@@ -19,15 +19,16 @@ from eduvpn.steps.profile import fetch_profile_step
 logger = logging.getLogger(__name__)
 
 
-def browser_step(builder, meta, verifier):
+def browser_step(builder, meta, verifier, force_token_refresh=False):
     """The notorious browser step. if no token, starts webserver, wait for callback, show token dialog"""
     logger.info("opening token dialog")
     dialog = builder.get_object('token-dialog')
-    thread_helper(lambda: _phase1_background(meta=meta, dialog=dialog, verifier=verifier, builder=builder))
+    thread_helper(lambda: _phase1_background(meta=meta, dialog=dialog, verifier=verifier, builder=builder,
+                                             force_token_refresh=force_token_refresh))
     dialog.show_all()
 
 
-def _phase1_background(meta, dialog, verifier, builder):
+def _phase1_background(meta, dialog, verifier, builder, force_token_refresh):
     try:
         logger.info("starting token obtaining in background")
         r = get_instance_info(instance_uri=meta.instance_base_uri, verifier=verifier)
@@ -40,7 +41,7 @@ def _phase1_background(meta, dialog, verifier, builder):
 
     meta.refresh_token()
 
-    if not meta.token:
+    if not meta.token and not force_token_refresh:
         # lets see if other profiles already have a token we can use
         token = reuse_token_from_base_uri(meta.instance_base_uri)
         if token:

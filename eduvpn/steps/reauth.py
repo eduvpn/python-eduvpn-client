@@ -23,7 +23,7 @@ def reauth(meta, verifier, builder):
     response = dialog.run()
     if response == Gtk.ResponseType.YES:
         meta.token = None
-        browser_step(builder, meta, verifier)
+        browser_step(builder, meta, verifier, force_token_refresh=True)
     elif response == Gtk.ResponseType.NO:
         pass
     dialog.hide()

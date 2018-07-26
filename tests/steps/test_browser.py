@@ -37,7 +37,10 @@ class TestSteps(TestCase):
     @patch('requests.get')
     def test_phase1_background(self, mock_get):
         mock_get.get.side_effect = self.phase1_sideeffect
-        _phase1_background(builder=self.builder, meta=self.meta, verifier=self.verifier, dialog=self.dialog)
+        _phase1_background(builder=self.builder, meta=self.meta, verifier=self.verifier, dialog=self.dialog,
+                           force_token_refresh=True)
+        _phase1_background(builder=self.builder, meta=self.meta, verifier=self.verifier, dialog=self.dialog,
+                           force_token_refresh=False)
 
     @patch('eduvpn.steps.browser.thread_helper')
     def test_phase1_callback(self, _):

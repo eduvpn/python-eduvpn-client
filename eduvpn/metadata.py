@@ -71,7 +71,9 @@ class Metadata:
 
     def write(self):
         if not self.uuid:
-            raise EduvpnException('uuid field not set')
+            #raise EduvpnException('uuid field not set')
+            logger.warning("uuid field not yet set")
+            return
         fields = [f for f in dir(self) if not f.startswith('_') and not callable(getattr(self, f))]
         d = {field: getattr(self, field) for field in fields}
         p = path.join(providers_path, self.uuid + '.json')
