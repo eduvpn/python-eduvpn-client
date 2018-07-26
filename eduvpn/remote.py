@@ -5,6 +5,7 @@
 
 import logging
 import base64
+from multiprocessing.pool import ThreadPool
 
 import dateutil.parser
 import requests
@@ -71,12 +72,10 @@ def get_instances(discovery_uri, verifier=None):
             _ = verifier.verify(smessage=inst_doc.content, signature=decoded)
 
     parsed = inst_doc.json()
-
     authorization_type = parsed['authorization_type']
+    pool = ThreadPool()
 
-    instances = []
-
-    for instance in parsed['instances']:
+    def fetch(instance):
         display_name = translate_display_name(instance['display_name'])
         base_uri = instance['base_uri']
         logo_uri = instance['logo']
@@ -88,8 +87,9 @@ def get_instances(discovery_uri, verifier=None):
         else:
             logo_data = logo.content
 
-        instances.append((display_name, base_uri, logo_data))
+        return display_name, base_uri, logo_data
 
+    instances = pool.map(fetch, parsed['instances'])
     return authorization_type, instances
 
 

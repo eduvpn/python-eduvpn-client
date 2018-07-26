@@ -15,6 +15,19 @@ from eduvpn.steps.browser import browser_step
 logger = logging.getLogger(__name__)
 
 
+# ui thread
+def fetch_instance_step(meta, builder, verifier):
+    """fetch list of instances"""
+    logger.info("fetching instances step")
+    dialog = builder.get_object('fetch-dialog')
+    window = builder.get_object('eduvpn-window')
+    dialog.set_transient_for(window)
+    dialog.show_all()
+    thread_helper(lambda: _fetch_background(meta=meta, verifier=verifier, builder=builder))
+    dialog.run()
+
+
+# background thread
 def _fetch_background(meta, verifier, builder):
     dialog = builder.get_object('fetch-dialog')
     window = builder.get_object('eduvpn-window')
@@ -31,17 +44,7 @@ def _fetch_background(meta, verifier, builder):
         GLib.idle_add(lambda: select_instance_step(meta, instances, builder=builder, verifier=verifier))
 
 
-def fetch_instance_step(meta, builder, verifier):
-    """fetch list of instances"""
-    logger.info("fetching instances step")
-    dialog = builder.get_object('fetch-dialog')
-    window = builder.get_object('eduvpn-window')
-    dialog.set_transient_for(window)
-    dialog.show_all()
-    thread_helper(lambda: _fetch_background(meta=meta, verifier=verifier, builder=builder))
-    dialog.run()
-
-
+# ui thread
 def select_instance_step(meta, instances, builder, verifier):
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
