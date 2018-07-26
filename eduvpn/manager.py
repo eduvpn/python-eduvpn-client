@@ -44,7 +44,7 @@ def list_providers():
     """
     List all OpenVPN connections.
     """
-    if not have_dbus():
+    if have_dbus():
         # fall back to just listing the json files
         try:
             providers = [i for i in os.listdir(providers_path) if i.endswith('.json')]
@@ -107,7 +107,8 @@ def delete_provider(uuid):
     all_connections = NetworkManager.Settings.ListConnections()
     conns = [c for c in all_connections if c.GetSettings()['connection']['uuid'] == uuid]
     if len(conns) != 1:
-        raise EduvpnException("{} connections matching uid {}".format(len(conns), uuid))
+        logger.error("{} connections matching uid {}".format(len(conns), uuid))
+        return
 
     conn = conns[0]
     logger.info("removing certificates for {}".format(uuid))
