@@ -1,9 +1,11 @@
 import logging
+from builtins import chr
 import gi
-from gi.repository import GLib
+from gi.repository import GLib, Gdk
 from eduvpn.remote import two_factor_enroll_yubi
 from eduvpn.util import thread_helper
 from eduvpn.steps.finalize import finalizing_step
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,14 @@ def _parse_user_input(builder, oauth, meta, config_dict):
     cancel_button = builder.get_object('yubi-cancel-button')
     submit_button = builder.get_object('yubi-submit-button')
 
+    def callback(_, event):
+        valid = chr(event.keyval).isdigit()
+        logger.debug("user pressed {}, valid: {}".format(event.keyval, valid))
+        if event.keyval in (Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_BackSpace, Gdk.KEY_End, Gdk.KEY_Home, Gdk.KEY_Delete):
+            return False
+        return not event.keyval in range(0x20, 0x7e)
+
+    code_entry.connect("key-press-event", callback)
     cancel_button.set_sensitive(True)
     submit_button.set_sensitive(True)
     while True:

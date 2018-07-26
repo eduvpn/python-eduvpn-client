@@ -1,8 +1,9 @@
 import logging
+from builtins import chr
 from future.moves.urllib.parse import urlparse
 import qrcode
 import gi
-from gi.repository import GLib
+from gi.repository import GLib, Gdk
 from eduvpn.util import pil2pixbuf
 from eduvpn.remote import two_factor_enroll_totp
 from eduvpn.crypto import gen_base32
@@ -47,6 +48,16 @@ def _parse_user_input(builder, oauth, meta, config_dict, secret=None):
     code_entry = builder.get_object('totp-code-entry')
     cancel_button = builder.get_object('totp-cancel-button')
     submit_button = builder.get_object('totp-submit-button')
+
+    def callback(_, event):
+        valid = chr(event.keyval).isdigit()
+        logger.debug("user pressed {}, valid: {}".format(event.keyval, valid))
+        if event.keyval in (Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_BackSpace, Gdk.KEY_End, Gdk.KEY_Home, Gdk.KEY_Delete):
+            return False
+        return not chr(event.keyval).isdigit()
+
+    code_entry.connect("key-press-event", callback)
+    code_entry.set_max_length(6)
 
     cancel_button.set_sensitive(True)
     submit_button.set_sensitive(True)
