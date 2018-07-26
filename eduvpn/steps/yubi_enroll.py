@@ -36,7 +36,8 @@ def _parse_user_input(builder, oauth, meta, config_dict):
     def callback(_, event):
         valid = chr(event.keyval).isdigit()
         logger.debug("user pressed {}, valid: {}".format(event.keyval, valid))
-        if event.keyval in (Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_BackSpace, Gdk.KEY_End, Gdk.KEY_Home, Gdk.KEY_Delete):
+        if event.keyval in (Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_BackSpace, Gdk.KEY_End, Gdk.KEY_Home,
+                            Gdk.KEY_Delete, Gdk.KEY_Return, Gdk.KEY_Escape):
             return False
         return not event.keyval in range(0x20, 0x7e)
 

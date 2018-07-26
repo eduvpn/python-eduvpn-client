@@ -36,7 +36,12 @@ def _make_qr(builder, oauth, meta, config_dict, secret=None):
     host = urlparse(meta.api_base_uri).netloc
     uri = "otpauth://totp/{user_id}@{host}?secret={secret}&issuer={host}".format(user_id=meta.user_id, host=host,
                                                                                  secret=secret)
-    img = qrcode.make(uri)
+    qr = qrcode.QRCode(box_size=7, border=2)
+    qr.add_data(uri)
+    qr.make()
+    img = qr.make_image()
+
+    #img = qrcode.make(uri)
     pixbuf = pil2pixbuf(img)
     image.set_from_pixbuf(pixbuf)
     GLib.idle_add(lambda: _parse_user_input(builder, oauth, meta, config_dict=config_dict, secret=secret))
@@ -52,7 +57,8 @@ def _parse_user_input(builder, oauth, meta, config_dict, secret=None):
     def callback(_, event):
         valid = chr(event.keyval).isdigit()
         logger.debug("user pressed {}, valid: {}".format(event.keyval, valid))
-        if event.keyval in (Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_BackSpace, Gdk.KEY_End, Gdk.KEY_Home, Gdk.KEY_Delete):
+        if event.keyval in (Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_BackSpace, Gdk.KEY_End, Gdk.KEY_Home,
+                            Gdk.KEY_Delete, Gdk.KEY_Return, Gdk.KEY_Escape):
             return False
         return not chr(event.keyval).isdigit()
 

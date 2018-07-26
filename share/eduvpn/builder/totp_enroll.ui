@@ -114,8 +114,7 @@ you need to enter below.</property>
         </child>
         <child>
           <object class="GtkImage" id="totp-qr-image">
-            <property name="width_request">490</property>
-            <property name="height_request">490</property>
+            <property name="height_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="stock">gtk-missing-image</property>
