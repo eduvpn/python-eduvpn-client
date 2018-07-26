@@ -44,7 +44,7 @@ def list_providers():
     """
     List all OpenVPN connections.
     """
-    if have_dbus():
+    if not have_dbus():
         # fall back to just listing the json files
         try:
             providers = [i for i in os.listdir(providers_path) if i.endswith('.json')]

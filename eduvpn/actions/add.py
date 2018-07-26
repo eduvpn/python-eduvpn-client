@@ -15,6 +15,8 @@ def new_provider(builder, verifier, secure_internet_uri, institute_access_uri):
     """The connection type selection step"""
     logger.info("add configuration clicked")
     dialog = builder.get_object('connection-type-dialog')
+    window = builder.get_object('eduvpn-window')
+    dialog.set_transient_for(window)
     dialog.show_all()
     response = dialog.run()
     dialog.hide()
