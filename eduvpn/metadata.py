@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import json
-from os import path, listdir
+import os
 import logging
 
 from eduvpn.config import others_path, providers_path
@@ -14,7 +14,7 @@ from eduvpn.exceptions import EduvpnException
 
 logger = logging.getLogger(__name__)
 
-distibuted_tokens_path = path.join(others_path, 'distributed.json')
+distibuted_tokens_path = os.path.join(others_path, 'distributed.json')
 
 
 def get_distributed_tokens():
@@ -51,7 +51,7 @@ class Metadata:
 
     @staticmethod
     def from_uuid(uuid, display_name=None):
-        metadata_path = path.join(providers_path, uuid + '.json')
+        metadata_path = os.path.join(providers_path, uuid + '.json')
         metadata = Metadata()
         try:
             with open(metadata_path, 'r') as f:
@@ -76,7 +76,7 @@ class Metadata:
             return
         fields = [f for f in dir(self) if not f.startswith('_') and not callable(getattr(self, f))]
         d = {field: getattr(self, field) for field in fields}
-        p = path.join(providers_path, self.uuid + '.json')
+        p = os.path.join(providers_path, self.uuid + '.json')
         logger.info("storing metadata in {}".format(p))
         serialized = json.dumps(d)
         mkdir_p(providers_path)
@@ -115,7 +115,9 @@ class Metadata:
 
 
 def get_all_metadata():
-    metadatas = [Metadata.from_uuid(i[:-5]) for i in listdir(providers_path) if i.endswith('.json')]
+    if not os.access(providers_path, os.X_OK):
+        return []
+    metadatas = [Metadata.from_uuid(i[:-5]) for i in os.listdir(providers_path) if i.endswith('.json')]
     return metadatas
 
 
