@@ -44,6 +44,7 @@
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
+                <property name="receives_default">False</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -62,7 +63,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_bottom">14</property>
+            <property name="margin_bottom">27</property>
             <property name="label" translatable="yes">Enter custom provider URL</property>
             <property name="justify">center</property>
             <attributes>

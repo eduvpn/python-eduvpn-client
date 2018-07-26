@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.18"/>
-    <object class="GtkDialog" id="redirecturl-dialog">
+  <object class="GtkDialog" id="redirecturl-dialog">
     <property name="can_focus">False</property>
     <property name="border_width">8</property>
     <property name="title" translatable="yes">Choose your profile</property>
     <property name="type_hint">dialog</property>
-    <property name="transient_for">eduvpn-window</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -46,8 +49,8 @@
             <property name="margin_right">9</property>
             <property name="margin_top">18</property>
             <property name="margin_bottom">16</property>
-            <property name="label" translatable="yes">Copy the URL below and paste it in your
-the browser of your choice manually.</property>
+            <property name="label" translatable="yes">Copy the URL below and paste
+it in your browser  manually.</property>
             <property name="justify">center</property>
           </object>
           <packing>
@@ -58,6 +61,7 @@ the browser of your choice manually.</property>
         </child>
         <child>
           <object class="GtkEntry" id="redirect-url-entry">
+            <property name="width_request">400</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="text" translatable="yes">url</property>
@@ -75,4 +79,3 @@ the browser of your choice manually.</property>
     </action-widgets>
   </object>
 </interface>
-
