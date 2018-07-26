@@ -1,7 +1,7 @@
 
 import unittest
 from mock import patch
-from eduvpn.metadata import Metadata
+from eduvpn.metadata import Metadata, get_all_metadata
 from eduvpn.exceptions import EduvpnException
 
 
@@ -43,3 +43,7 @@ class TestMetadata(unittest.TestCase):
         display_name = "end_of_the_world"
         metadata = Metadata.from_uuid(uuid=uuid, display_name=display_name)
         self.assertEqual(metadata.display_name, display_name)
+
+    def test_get_all_metadata(self):
+        metadatas = get_all_metadata()
+        metadatas

@@ -12,6 +12,7 @@ from eduvpn.util import error_helper, thread_helper
 from eduvpn.crypto import gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.remote import get_instance_info, get_auth_url
+from eduvpn.metadata import reuse_token_from_base_uri
 from eduvpn.steps.profile import fetch_profile_step
 
 
@@ -38,6 +39,13 @@ def _phase1_background(meta, dialog, verifier, builder):
         raise
 
     meta.refresh_token()
+
+    if not meta.token:
+        # lets see if other profiles already have a token we can use
+        token = reuse_token_from_base_uri(meta.instance_base_uri)
+        if token:
+            meta.token = token
+
     if not meta.token:
         code_verifier = gen_code_verifier()
         port = get_open_port()

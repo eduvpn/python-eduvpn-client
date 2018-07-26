@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import json
-from os import path
+from os import path, listdir
 import logging
 
 from eduvpn.config import others_path, providers_path
@@ -110,3 +110,14 @@ class Metadata:
                 logger.info("using distributed token from {}".format(self.discovery_uri))
                 self.token = tokens[self.discovery_uri]['token']
                 self.token_endpoint = tokens[self.discovery_uri]['token_endpoint']
+
+
+def get_all_metadata():
+    metadatas = [Metadata.from_uuid(i[:-5]) for i in listdir(providers_path) if i.endswith('.json')]
+    return metadatas
+
+
+def reuse_token_from_base_uri(instance_base_uri):
+    for metadata in get_all_metadata():
+        if metadata.connection_type == u'Institute Access' and metadata.instance_base_uri == instance_base_uri:
+            return metadata.token
