@@ -1,3 +1,31 @@
+1.0rc16
+=======
+
+ * Make all UI element uniform (again) #143
+ * make sure OTP enroll dialog fits on 1366x768 resolution #146
+ * After re-auth flow completed, all other expired configurations create a popup low priority #121
+ * refreshing token when refresh token is expired broken #150
+ * limit totp and yubikey entry fields to specific chars #149
+ * disconnect active VPN connections when connecting #130
+ * kill webserver thread on cancel in browser step, better error parsing low priority #74 
+ * use username in qr token #144
+ * client does not detect removed TOTP secret #148
+ * increase length of TOTP secret #147
+ * no error in UI when entering wrong OTP key #145
+ * add qr and pillow dependency to all packages #142
+ * fix renew X.509 certificate #115
+ * Add yubi_enroll.ui install setup.py #140
+ * add QR dependency #141
+ * double clicking on icon to connect gives error #136
+ * "fetching" dialog doesn't have main screen as transient parent on Fedora #132
+ * OAuth token expiry - on/off switch only reports, doesn't trigger re-auth flow #126
+ * Reauthorize should not show "choose your profile" again #119
+ * 2fa is "used" when connecting to profile that has no 2fa bug #118
+ * deleting one provider deletes multiple from list bug #112
+ * revoking client gives error bug #111
+ * add cli flags to switch to debug server #131
+ 
+
 1.0rc15
 =======
 
