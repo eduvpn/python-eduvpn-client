@@ -1,5 +1,6 @@
 from eduvpn.main import init
-from eduvpn.steps.two_way_enroll import two_fa_enroll_window
+from eduvpn.steps.totp_enroll import totp_enroll_window
+from eduvpn.steps.yubi_enroll import yubi_enroll_window
 from tests.online import get_oauth_token, check_online_tests, disable_2fa
 from gi.repository import Gtk
 from pyotp import TOTP
@@ -13,5 +14,6 @@ config_dict = {}
 totp = TOTP(TOTP_SECRET)
 
 edu_vpn_app = init()
-two_fa_enroll_window(edu_vpn_app.builder, oauth=oauth, meta=meta, secret=TOTP_SECRET, config_dict=config_dict)
+yubi_enroll_window(builder=edu_vpn_app.builder, oauth=oauth, meta=meta, config_dict=config_dict)
+#totp_enroll_window(builder=edu_vpn_app.builder, oauth=oauth, meta=meta, config_dict=config_dict, secret=TOTP_SECRET)
 Gtk.main()
