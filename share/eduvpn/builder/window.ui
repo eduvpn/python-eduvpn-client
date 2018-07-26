@@ -92,7 +92,7 @@
                                 <property name="ypad">5</property>
                               </object>
                               <attributes>
-                                <attribute name="text">3</attribute>
+                                <attribute name="markup">3</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -508,15 +508,5 @@
       <!-- column-name logo_data -->
       <column type="gchararray"/>
     </columns>
-  </object>
-  <object class="GtkImage" id="institute-image">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../institute_small.png</property>
-  </object>
-  <object class="GtkImage" id="internet-image">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../internet_small.png</property>
   </object>
 </interface>
