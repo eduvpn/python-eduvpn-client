@@ -64,7 +64,7 @@ More information is available at `fedora copr <https://copr.fedorainfracloud.org
 
 .. note::
 
-    Currently, CentOS 7 ships with an outdated NetworkManager so some features might not work properly.
+    Currently CentOS 7 ships with an outdated NetworkManager so some features might not work properly.
 
 Pip
 ---
