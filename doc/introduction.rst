@@ -49,6 +49,23 @@ You can install the latest release of the eduVPN client on Fedora by running the
 More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
 
 
+Centos 7
+--------
+
+You can install the latest release of the eduVPN client on Centos 7 by running these commands as root or using sudo:
+
+.. code-block:: bash
+
+    $ yum install yum-plugin-copr
+    $ yum copr enable gijzelaerr/eduvpn-client
+    $ yum install eduvpn-client
+
+More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
+
+.. note::
+
+    Currently, CentOS 7 ships with an outdated NetworkManager so some features might not work properly.
+
 Pip
 ---
 
