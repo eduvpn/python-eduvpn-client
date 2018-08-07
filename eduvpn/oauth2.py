@@ -9,18 +9,20 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
 from future.moves.urllib.parse import urlparse, parse_qs
 from requests_oauthlib import OAuth2Session
-
+from eduvpn.util import get_prefix
 
 logger = logging.getLogger(__name__)
 
 landing_page = """
 <!doctype html>
 <html lang=en>
-<title>eduVPN - you can close this screen</title>
+<head>
+<meta charset=utf-8>
+<title>eduVPN - bye</title>
 <style>
-.center {
+.center {{
     font-family: arial;
-    font-size: 50px;
+    font-size: 30px;
     position: absolute;
     text-align: center;
     width: 800px;
@@ -29,14 +31,15 @@ landing_page = """
     left: 50%;
     margin-left: -400px; /* margin is -0.5 * dimension */
     margin-top: -25px;
-}
+}}
 </style>
-<head>
-<meta charset=utf-8>
-<title>blah</title>
 </head>
 <body>
-<div class="center">You can now close this window</div>
+
+<div class="center">
+<img src="data:image/png;base64,{logo}" width="150">
+<p>You can now close this window.</p>
+</div>
 </body>
 </html>
 """
@@ -76,7 +79,8 @@ def one_request(port, timeout=None):
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            self.wfile.write(landing_page.encode('utf-8'))
+            logo = stringify_image()
+            self.wfile.write(landing_page.format(logo=logo).encode('utf-8'))
             self.server.path = self.path
 
     httpd = HTTPServer(('', port), RequestHandler)
@@ -91,6 +95,12 @@ def one_request(port, timeout=None):
     parsed = urlparse(httpd.path)
     logger.info("received a request {}".format(httpd.path))
     return parse_qs(parsed.query)
+
+
+def stringify_image():
+    import base64
+    logo = get_prefix() + "/share/eduvpn/eduvpn.png"
+    return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
 def create_oauth_session(port, auto_refresh_url):
