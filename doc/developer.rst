@@ -26,6 +26,7 @@ Flow schema
 -----------
 
 .. image:: flow.png
+   :target: _images/flow.png
    :alt: The application flow
 
 
