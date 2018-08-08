@@ -19,4 +19,4 @@ class TestSteps(TestCase):
         cls.verifier = MagicMock()
 
     def test_custom_url(self):
-        custom_url(builder=self.builder, meta=self.meta, verifier=self.verifier)
+        custom_url(builder=self.builder, meta=self.meta, verifier=self.verifier, lets_connect=False)

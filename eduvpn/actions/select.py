@@ -10,12 +10,14 @@ from eduvpn.util import bytes2pixbuf, get_pixbuf, metadata_of_selected
 from eduvpn.config import icon_size
 from eduvpn.manager import is_provider_connected
 from eduvpn.steps.messages import fetch_messages
+from eduvpn.images import eduvpn_main_logo, letsconnect_main_logo
 
 
 logger = logging.getLogger(__name__)
 
 
-def select_profile(builder, verifier):
+# ui thread
+def select_profile(builder, verifier, lets_connect):
     """called when a users selects a configuration"""
     messages_label = builder.get_object('messages-label')
     notebook = builder.get_object('outer-notebook')
@@ -30,6 +32,11 @@ def select_profile(builder, verifier):
     profile_image = builder.get_object('profile-image')
     meta = metadata_of_selected(builder)
 
+    if lets_connect:
+        logo = letsconnect_main_logo
+    else:
+        logo = eduvpn_main_logo
+
     if not meta:
         logger.info("no configuration selected, showing main logo")
         notebook.set_current_page(0)
@@ -41,7 +48,7 @@ def select_profile(builder, verifier):
             icon = bytes2pixbuf(base64.b64decode(meta.icon_data.encode()),
                                 width=icon_size['width'] * 2, height=icon_size['height'] * 2)
         else:
-            _, icon = get_pixbuf()
+            _, icon = get_pixbuf(logo)
         profile_image.set_from_pixbuf(icon)
         profile_label.set_text(meta.connection_type)
         profile_name_label.set_text(meta.profile_display_name)
@@ -67,7 +74,7 @@ def select_profile(builder, verifier):
 
         messages_label.set_markup("")
         if meta.token:
-            fetch_messages(meta=meta, builder=builder, verifier=verifier)
+            fetch_messages(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect)
         else:
             logger.warning("no token available so not fetching messages")
 

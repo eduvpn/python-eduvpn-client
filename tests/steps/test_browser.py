@@ -32,37 +32,37 @@ class TestSteps(TestCase):
 
     @patch('eduvpn.steps.browser.thread_helper')
     def test_browser_step(self, *_):
-        browser_step(builder=self.builder, meta=self.meta, verifier=self.verifier)
+        browser_step(builder=self.builder, meta=self.meta, verifier=self.verifier, lets_connect=False)
 
     @patch('requests.get')
     def test_phase1_background(self, mock_get):
         mock_get.get.side_effect = self.phase1_sideeffect
         _phase1_background(builder=self.builder, meta=self.meta, verifier=self.verifier, dialog=self.dialog,
-                           force_token_refresh=True)
+                           force_token_refresh=True, lets_connect=False)
         _phase1_background(builder=self.builder, meta=self.meta, verifier=self.verifier, dialog=self.dialog,
-                           force_token_refresh=False)
+                           force_token_refresh=False, lets_connect=False)
 
     @patch('eduvpn.steps.browser.thread_helper')
     def test_phase1_callback(self, _):
         _phase1_callback(builder=self.builder, meta=self.meta, auth_url=None, dialog=self.dialog, code_verifier=None,
-                         oauth=self.oauth, port=1, state="1234")
+                         oauth=self.oauth, port=1, state="1234", lets_connect=False)
 
     @patch('webbrowser.open')
-    @patch('eduvpn.steps.browser.get_oauth_token_code', side_effect=lambda x, timeout: ("code", "state"))
+    @patch('eduvpn.steps.browser.get_oauth_token_code', side_effect=lambda x, lets_connect, timeout: ("code", "state"))
     def test_phase2_background(self, *args):
         _phase2_background(builder=self.builder, meta=self.meta, auth_url=None, dialog=self.dialog, code_verifier=None,
-                           oauth=self.oauth, port=1, state="state")
+                           oauth=self.oauth, port=1, state="state", lets_connect=False)
         
     @patch('webbrowser.open')
     @patch('eduvpn.steps.browser.get_oauth_token_code', side_effect=lambda x: ("code", "state"))
     def test_phase2_background_wrong_state(self, *args):
         with self.assertRaises(Exception):
             _phase2_background(builder=self.builder, meta=self.meta, auth_url=None, dialog=self.dialog,
-                               code_verifier=None, oauth=self.oauth, port=1, state="wrongstate")
+                               code_verifier=None, oauth=self.oauth, port=1, state="wrongstate", lets_connect=False)
 
     @patch('eduvpn.steps.browser.fetch_profile_step')
     def test_phase2_callback(self, *_):
-        _phase2_callback(builder=self.builder, meta=self.meta, dialog=self.dialog, oauth=self.oauth)
+        _phase2_callback(builder=self.builder, meta=self.meta, dialog=self.dialog, oauth=self.oauth, lets_connect=False)
 
     def test_show_dialog(self):
         _show_dialog(builder=self.builder, auth_url=None, dialog=self.dialog)

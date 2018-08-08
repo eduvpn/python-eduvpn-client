@@ -7,15 +7,27 @@ import base64
 import logging
 from eduvpn.manager import list_providers
 from eduvpn.util import bytes2pixbuf, get_pixbuf
+from eduvpn.images import letsconnect_main_logo, eduvpn_main_logo
 
 
 logger = logging.getLogger(__name__)
 
 
-def update_providers(builder):
+# ui thread
+def refresh_start(builder, lets_connect):
     logger.info("composing list of current eduVPN configurations")
     config_list = builder.get_object('configs-model')
     introduction = builder.get_object('introduction')
+    main_image = builder.get_object('main_image')
+    window = builder.get_object('eduvpn-window')
+
+    if lets_connect:
+        main_image.set_from_file(letsconnect_main_logo)
+        window.set_title("Let's Connect! Configuration Manager")
+        logo = letsconnect_main_logo
+    else:
+        logo = eduvpn_main_logo
+
     config_list.clear()
     providers = list(list_providers())
     providers.sort(key=lambda x: x.display_name)
@@ -28,7 +40,7 @@ def update_providers(builder):
             if meta.icon_data:
                 icon = bytes2pixbuf(base64.b64decode(meta.icon_data.encode()))
             else:
-                icon, _ = get_pixbuf()
+                icon, _ = get_pixbuf(logo)
             config_list.append((meta.uuid, meta.display_name, icon, connection_type))
     else:
         logger.info("showing introduction")

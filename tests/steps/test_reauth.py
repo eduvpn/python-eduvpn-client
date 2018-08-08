@@ -21,6 +21,6 @@ class TestSteps(TestCase):
 
     @patch('gi.repository.Gtk.MessageDialog')
     def test_reauth(self, _):
-        reauth(builder=self.builder, meta=self.meta, verifier=self.verifier)
+        reauth(builder=self.builder, meta=self.meta, verifier=self.verifier, lets_connect=False)
 
 

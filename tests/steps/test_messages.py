@@ -21,13 +21,13 @@ class TestSteps(TestCase):
 
     @patch('eduvpn.steps.messages.thread_helper')
     def test_fetch_messages(self, *_):
-        fetch_messages(builder=self.builder, meta=self.meta, verifier=self.verifier)
+        fetch_messages(builder=self.builder, meta=self.meta, verifier=self.verifier, lets_connect=False)
 
     @patch('eduvpn.steps.messages.user_messages')
     @patch('eduvpn.steps.messages.system_messages')
     @patch('eduvpn.steps.messages.user_info')
     def test_background(self, *_):
-        _background(builder=self.builder, meta=self.meta, verifier=self.verifier)
+        _background(builder=self.builder, meta=self.meta, verifier=self.verifier, lets_connect=False)
 
 
 

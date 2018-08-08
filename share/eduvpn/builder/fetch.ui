@@ -47,7 +47,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
+          <object class="GtkImage" id="fetch-image">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="pixbuf">../../icons/hicolor/128x128/apps/eduvpn-client.png</property>

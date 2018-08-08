@@ -15,13 +15,13 @@ class TestTotpEnroll(TestCase):
 
     def test_totp_enroll_window(self):
         totp_enroll_window(builder=self.builder, config_dict=mock_config_dict,
-                           meta=self.meta, oauth=self.oauth)
+                           meta=self.meta, oauth=self.oauth, lets_connect=False)
 
     def test_make(self):
         _make_qr(builder=self.builder, config_dict=mock_config_dict,
-                 meta=self.meta, oauth=self.oauth)
+                 meta=self.meta, oauth=self.oauth, lets_connect=False)
 
     def test_parse_user_input(self):
         _parse_user_input(builder=self.builder, config_dict=mock_config_dict,
-                          meta=self.meta, oauth=self.oauth, secret='bla')
+                          meta=self.meta, oauth=self.oauth, secret='bla', lets_connect=False)
 

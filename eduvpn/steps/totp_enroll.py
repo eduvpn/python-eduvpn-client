@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def totp_enroll_window(builder, oauth, meta, config_dict, secret=None):
+def totp_enroll_window(builder, oauth, meta, config_dict, lets_connect, secret=None):
     dialog = builder.get_object('totp-enroll-dialog')
     window = builder.get_object('eduvpn-window')
     dialog.set_transient_for(window)
@@ -25,11 +25,12 @@ def totp_enroll_window(builder, oauth, meta, config_dict, secret=None):
     submit_button.set_sensitive(False)
 
     dialog.show_all()
-    GLib.idle_add(lambda: _make_qr(meta=meta, oauth=oauth, builder=builder, config_dict=config_dict, secret=secret))
+    GLib.idle_add(lambda: _make_qr(meta=meta, oauth=oauth, builder=builder, config_dict=config_dict, secret=secret,
+                                   lets_connect=lets_connect))
 
 
 # background thread
-def _make_qr(builder, oauth, meta, config_dict, secret=None):
+def _make_qr(builder, oauth, meta, config_dict, lets_connect, secret=None):
     image = builder.get_object('totp-qr-image')
     if not secret:
         secret = gen_base32()
@@ -43,11 +44,12 @@ def _make_qr(builder, oauth, meta, config_dict, secret=None):
 
     pixbuf = pil2pixbuf(img)
     image.set_from_pixbuf(pixbuf)
-    GLib.idle_add(lambda: _parse_user_input(builder, oauth, meta, config_dict=config_dict, secret=secret))
+    GLib.idle_add(lambda: _parse_user_input(builder, oauth, meta, config_dict=config_dict,
+                                            lets_connect=lets_connect, secret=secret))
 
 
 # ui thread
-def _parse_user_input(builder, oauth, meta, config_dict, secret=None):
+def _parse_user_input(builder, oauth, meta, config_dict, lets_connect, secret=None):
     dialog = builder.get_object('totp-enroll-dialog')
     code_entry = builder.get_object('totp-code-entry')
     cancel_button = builder.get_object('totp-cancel-button')
@@ -72,14 +74,14 @@ def _parse_user_input(builder, oauth, meta, config_dict, secret=None):
             key = code_entry.get_text()
             cancel_button.set_sensitive(False)
             submit_button.set_sensitive(False)
-            thread_helper(lambda: _enroll(builder, oauth, meta, config_dict, secret, key))
+            thread_helper(lambda: _enroll(builder, oauth, meta, config_dict, secret, key, lets_connect))
         else:
             dialog.hide()
             break
 
 
 # background tread
-def _enroll(builder, oauth, meta, config_dict, secret, key):
+def _enroll(builder, oauth, meta, config_dict, secret, key, lets_connect):
     dialog = builder.get_object('totp-enroll-dialog')
     error_label = builder.get_object('totp-error-label')
     cancel_button = builder.get_object('totp-cancel-button')
@@ -94,5 +96,6 @@ def _enroll(builder, oauth, meta, config_dict, secret, key):
         GLib.idle_add(lambda: cancel_button.set_sensitive(True))
         raise
     else:
-        GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict))
+        GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict,
+                                              lets_connect=lets_connect))
         GLib.idle_add(lambda: dialog.hide())

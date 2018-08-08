@@ -25,6 +25,7 @@ def make_unique_id():
     return str(uuid.uuid4())
 
 
+# ui thread
 def error_helper(parent, msg_big, msg_small):
     """
     Shows a GTK error message dialog.
@@ -128,11 +129,13 @@ def have_dbus():
 
 
 @lru_cache(maxsize=1)
-def get_pixbuf():
+def get_pixbuf(logo=None):
+    if not logo:
         logo = path.join(get_prefix(), 'share/eduvpn/eduvpn.png')
-        small = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
-        big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'] * 2, icon_size['height'] * 2, True)
-        return small, big
+
+    small = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'], icon_size['height'], True)
+    big = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, icon_size['width'] * 2, icon_size['height'] * 2, True)
+    return small, big
 
 
 def metadata_of_selected(builder):

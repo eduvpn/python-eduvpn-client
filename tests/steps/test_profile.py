@@ -23,19 +23,19 @@ class TestProfile(TestCase):
 
     @patch('eduvpn.steps.profile.thread_helper')
     def test_fetch_profile_step(self, _):
-        fetch_profile_step(builder=self.builder, meta=self.meta, oauth=self.oauth)
+        fetch_profile_step(builder=self.builder, meta=self.meta, oauth=self.oauth, lets_connect=False)
 
     @patch('eduvpn.steps.profile.thread_helper')
     @patch('eduvpn.steps.profile._background')
     @patch('eduvpn.steps.profile._parse_choice')
     def test_select_profile_step(self, *_):
-        _select_profile_step(builder=self.builder, meta=self.meta, oauth=self.oauth, profiles=[])
+        _select_profile_step(builder=self.builder, meta=self.meta, oauth=self.oauth, profiles=[], lets_connect=False)
 
     def test_background_no_profile(self):
         response = MockResponse(content_json={"profile_list": {"data": []}})
         oauth = MockOAuth(response=response)
         with self.assertRaises(EduvpnException):
-            _background(meta=self.meta, builder=self.builder, dialog=None, oauth=oauth)
+            _background(meta=self.meta, builder=self.builder, dialog=None, oauth=oauth, lets_connect=False)
 
     @patch('eduvpn.steps.profile._parse_choice')
     def test_background_one_profile(self, *_):
@@ -47,7 +47,7 @@ class TestProfile(TestCase):
             },
         ]}})
         oauth = MockOAuth(response=response)
-        _background(meta=self.meta, builder=self.builder, dialog=None, oauth=oauth)
+        _background(meta=self.meta, builder=self.builder, dialog=None, oauth=oauth, lets_connect=False)
 
     def test_background_two_profile(self):
         response = MockResponse(content_json={"profile_list": {"data": [
@@ -63,4 +63,4 @@ class TestProfile(TestCase):
             },
         ]}})
         oauth = MockOAuth(response=response)
-        _background(meta=self.meta, builder=self.builder, dialog=None, oauth=oauth)
+        _background(meta=self.meta, builder=self.builder, dialog=None, oauth=oauth, lets_connect=False)

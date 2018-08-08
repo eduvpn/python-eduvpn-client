@@ -22,11 +22,13 @@ class TestSteps(TestCase):
 
     @patch('eduvpn.steps.instance.thread_helper')
     def test_fetch_instance_step(self, *_):
-        fetch_instance_step(builder=self.builder, meta=self.meta, verifier=self.verifier)
+        fetch_instance_step(builder=self.builder, meta=self.meta, verifier=self.verifier,
+                            lets_connect=False)
 
     @patch('eduvpn.steps.instance.get_instances', side_effect=lambda *_, **__: ('bla', 'bla'))
     def test_fetch_background(self, *_):
-        _fetch_background(meta=self.meta, verifier=self.verifier, builder=self.builder)
+        _fetch_background(meta=self.meta, verifier=self.verifier, builder=self.builder, lets_connect=False)
 
     def test_select_instance_step(self):
-        select_instance_step(meta=self.meta, instances=[], builder=self.builder, verifier=self.verifier)
+        select_instance_step(meta=self.meta, instances=[], builder=self.builder, verifier=self.verifier,
+                             lets_connect=False)

@@ -31,15 +31,15 @@ class TestActions(unittest.TestCase):
 
     @patch('gi.repository.Gtk.MessageDialog')
     def test_delete_profile(self, _):
-        delete_profile(builder=self.builder)
+        delete_profile(builder=self.builder, lets_connect=False)
 
     def test_select_profile(self):
-        select_profile(builder=self.builder, verifier=self.verifier)
+        select_profile(builder=self.builder, verifier=self.verifier, lets_connect=False)
 
     def test_new_provider(self):
         new_provider(builder=self.builder, verifier=self.verifier,
                      institute_access_uri="bla",
-                     secure_internet_uri="bla")
+                     secure_internet_uri="bla", lets_connect=False)
 
     def test_vpn_change(self):
         vpn_change(builder=self.builder)

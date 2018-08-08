@@ -6,22 +6,24 @@ from eduvpn.remote import create_keypair, get_profile_config
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
 from eduvpn.steps.two_way_auth import two_auth_step
 from eduvpn.steps.finalize import finalizing_step
+from eduvpn.steps.fetching import fetching_window
 
 logger = logging.getLogger(__name__)
 
 
-def parse_config_step(builder, oauth, meta):
+# ui thread
+def parse_config_step(builder, oauth, meta, lets_connect):
     """parse the config and see if action is still required, otherwise finalize"""
     logger.info("parse config step")
+    fetching_window(builder=builder, lets_connect=lets_connect)
     dialog = builder.get_object('fetch-dialog')
-    window = builder.get_object('eduvpn-window')
-    dialog.set_transient_for(window)
-    dialog.show_all()
-    thread_helper(lambda: _background(meta=meta, oauth=oauth, dialog=dialog, builder=builder))
+    thread_helper(lambda: _background(meta=meta, oauth=oauth, dialog=dialog, builder=builder,
+                                      lets_connect=lets_connect))
     dialog.run()
 
 
-def _background(meta, oauth, dialog, builder):
+# background thread
+def _background(meta, oauth, dialog, builder, lets_connect):
     try:
         cert, key = create_keypair(oauth, meta.api_base_uri)
         meta.cert = cert
@@ -30,9 +32,11 @@ def _background(meta, oauth, dialog, builder):
         ovpn_text = format_like_ovpn(meta.config, meta.cert, meta.key)
         config_dict = parse_ovpn(ovpn_text)
         if meta.two_factor:
-            GLib.idle_add(lambda: two_auth_step(builder, oauth, meta, config_dict=config_dict))
+            GLib.idle_add(lambda: two_auth_step(builder, oauth, meta, config_dict=config_dict,
+                                                lets_connect=lets_connect))
         else:
-            GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict))
+            GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict,
+                                                  lets_connect=lets_connect))
         GLib.idle_add(lambda: dialog.hide())
 
     except Exception as e:

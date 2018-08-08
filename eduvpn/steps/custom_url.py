@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def custom_url(builder, meta, verifier):
+def custom_url(builder, meta, verifier, lets_connect):
     """the custom URL dialog where a user can enter a custom instance URL"""
     dialog = builder.get_object('custom-url-dialog')
     window = builder.get_object('eduvpn-window')
@@ -39,7 +39,7 @@ def custom_url(builder, meta, verifier):
                 meta.connection_type = 'Custom Instance'
                 meta.authorization_type = 'local'
                 meta.icon_data = None
-                browser_step(builder=builder, meta=meta, verifier=verifier)
+                browser_step(builder=builder, meta=meta, verifier=verifier, lets_connect=lets_connect)
                 break
         else:  # cancel or close
             logger.info("cancel or close button pressed (response {})".format(response))

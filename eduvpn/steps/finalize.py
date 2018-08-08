@@ -9,25 +9,24 @@ from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.manager import store_provider, monitor_vpn
 from eduvpn.notify import notify
-from eduvpn.steps.provider import update_providers
+from eduvpn.steps.start import refresh_start
 from eduvpn.actions.vpn_status import vpn_change
-
+from eduvpn.steps.fetching import fetching_window
 
 logger = logging.getLogger(__name__)
 
 
-def finalizing_step(builder, meta, config_dict):
+def finalizing_step(builder, meta, config_dict, lets_connect):
     """finalise the add profile flow, add a configuration"""
     logger.info("finalizing step")
+    fetching_window(builder=builder, lets_connect=lets_connect)
     dialog = builder.get_object('fetch-dialog')
-    window = builder.get_object('eduvpn-window')
-    dialog.set_transient_for(window)
-    dialog.show_all()
-    thread_helper(lambda: _background(meta=meta, dialog=dialog, builder=builder, config_dict=config_dict))
+    thread_helper(lambda: _background(meta=meta, dialog=dialog, builder=builder, config_dict=config_dict,
+                                      lets_connect=lets_connect))
     dialog.run()
 
 
-def _background(meta, dialog, builder, config_dict):
+def _background(meta, dialog, builder, config_dict, lets_connect):
     try:
         uuid = store_provider(meta, config_dict)
         monitor_vpn(uuid=uuid, callback=lambda *args, **kwargs: vpn_change(builder=builder))
@@ -40,4 +39,4 @@ def _background(meta, dialog, builder, config_dict):
         raise
     else:
         GLib.idle_add(lambda: dialog.hide())
-        GLib.idle_add(lambda: update_providers(builder))
+        GLib.idle_add(lambda: refresh_start(builder, lets_connect=lets_connect))

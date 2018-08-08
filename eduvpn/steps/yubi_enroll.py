@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def yubi_enroll_window(builder, oauth, meta, config_dict):
+def yubi_enroll_window(builder, oauth, meta, config_dict, lets_connect):
     """finalise the add profile flow, add a configuration"""
     dialog = builder.get_object('yubi-enroll-dialog')
     window = builder.get_object('eduvpn-window')
@@ -23,11 +23,11 @@ def yubi_enroll_window(builder, oauth, meta, config_dict):
     submit_button.set_sensitive(False)
 
     dialog.show_all()
-    _parse_user_input(builder, oauth, meta, config_dict)
+    _parse_user_input(builder, oauth, meta, config_dict, lets_connect=lets_connect)
 
 
 # ui thread
-def _parse_user_input(builder, oauth, meta, config_dict):
+def _parse_user_input(builder, oauth, meta, config_dict, lets_connect):
     dialog = builder.get_object('yubi-enroll-dialog')
     code_entry = builder.get_object('yubi-code-entry')
     cancel_button = builder.get_object('yubi-cancel-button')
@@ -50,14 +50,14 @@ def _parse_user_input(builder, oauth, meta, config_dict):
             key = code_entry.get_text()
             cancel_button.set_sensitive(False)
             submit_button.set_sensitive(False)
-            thread_helper(lambda: _enroll(builder, oauth, meta, config_dict, key))
+            thread_helper(lambda: _enroll(builder, oauth, meta, config_dict, key, lets_connect=lets_connect))
         else:
             dialog.hide()
             break
 
 
 # background tread
-def _enroll(builder, oauth, meta, config_dict, key):
+def _enroll(builder, oauth, meta, config_dict, key, lets_connect):
     error_label = builder.get_object('yubi-error-label')
     dialog = builder.get_object('yubi-enroll-dialog')
     cancel_button = builder.get_object('yubi-cancel-button')
@@ -72,5 +72,6 @@ def _enroll(builder, oauth, meta, config_dict, key):
         GLib.idle_add(lambda: cancel_button.set_sensitive(True))
         raise
     else:
-        GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict))
+        GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict,
+                                              lets_connect=lets_connect))
         GLib.idle_add(lambda: dialog.hide())

@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def two_auth_step(builder, oauth, meta, config_dict):
+def two_auth_step(builder, oauth, meta, config_dict, lets_connect):
     """checks if 2auth is enabled. If more than 1 option presents user with choice"""
-    thread_helper(lambda: _background(meta, oauth, builder, config_dict=config_dict))
+    thread_helper(lambda: _background(meta, oauth, builder, config_dict=config_dict, lets_connect=lets_connect))
 
 
 # background thread
-def _background(meta, oauth, builder, config_dict):
+def _background(meta, oauth, builder, config_dict, lets_connect):
     window = builder.get_object('eduvpn-window')
 
     try:
@@ -39,21 +39,24 @@ def _background(meta, oauth, builder, config_dict):
     if info['two_factor_enrolled']:
         # Multiple 2fa can be enrolled, but we only support one.
         meta.username = info['two_factor_enrolled_with'][0]
-        GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict))
+        GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict,
+                                              lets_connect=lets_connect))
     else:
         if len(meta.two_factor_method) == 0:
             logger.info("no two factor auth enabled on server")
-            GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict))
+            GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict,
+                                                  lets_connect=lets_connect))
         elif len(meta.two_factor_method) > 1:
             logger.info("Multi two factor methods available")
             GLib.idle_add(lambda: _choice_window(options=meta.two_factor_method, meta=meta, oauth=oauth,
-                                                 builder=builder, config_dict=config_dict))
+                                                 builder=builder, config_dict=config_dict, lets_connect=lets_connect))
         else:
-            GLib.idle_add(lambda: _enroll(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict))
+            GLib.idle_add(lambda: _enroll(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict,
+                                          lets_connect=lets_connect))
 
 
 # ui thread
-def _choice_window(options, meta, oauth, builder, config_dict):
+def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
     logger.info("presenting user with two-factor auth method dialog")
     window = builder.get_object('eduvpn-window')
 
@@ -83,11 +86,13 @@ def _choice_window(options, meta, oauth, builder, config_dict):
     if index >= 0:
         meta.username = options[index]
         logger.info("user selected '{}'".format(meta.username))
-        _enroll(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict)
+        _enroll(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict, lets_connect=lets_connect)
 
 
-def _enroll(oauth, meta, builder, config_dict):
+def _enroll(oauth, meta, builder, config_dict, lets_connect):
     if meta.username == 'totp':
-        GLib.idle_add(lambda: totp_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict))
+        GLib.idle_add(lambda: totp_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict,
+                                                 lets_connect=lets_connect))
     elif meta.username == 'yubi':
-        GLib.idle_add(lambda: yubi_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict))
+        GLib.idle_add(lambda: yubi_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict,
+                                                 lets_connect=lets_connect))

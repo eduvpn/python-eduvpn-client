@@ -26,17 +26,17 @@ class TestTwoWayAuth(TestCase):
         response_2fa = MockResponse()
         response_2fa.content_json['user_info']['data']['two_factor_enrolled'] = True
         oauth_2fa = MockOAuth(response_2fa)
-        two_auth_step(builder=self.builder, meta=self.meta, oauth=oauth_2fa, config_dict=mock_config_dict)
+        two_auth_step(builder=self.builder, meta=self.meta, oauth=oauth_2fa, config_dict=mock_config_dict, lets_connect=False)
 
     def test_two_auth_background_step_no_2fa(self):
         oauth_no_2fa = MockOAuth()
-        _background(builder=self.builder, meta=self.meta, oauth=oauth_no_2fa, config_dict=mock_config_dict)
+        _background(builder=self.builder, meta=self.meta, oauth=oauth_no_2fa, config_dict=mock_config_dict, lets_connect=False)
 
     def test_two_auth_background_step_2fa(self):
         response_2fa = MockResponse()
         response_2fa.content_json['user_info']['data']['two_factor_enrolled'] = True
         oauth_2fa = MockOAuth(response_2fa)
-        _background(builder=self.builder, meta=self.meta, oauth=oauth_2fa, config_dict=mock_config_dict)
+        _background(builder=self.builder, meta=self.meta, oauth=oauth_2fa, config_dict=mock_config_dict, lets_connect=False)
 
     def test_two_auth_background_step_2fa_multiple(self):
         # multiple 2fa metods available
@@ -44,14 +44,14 @@ class TestTwoWayAuth(TestCase):
         response_2fa.content_json['user_info']['data']['two_factor_enrolled'] = True
         response_2fa.content_json['user_info']['data']['two_factor_enrolled_with'] = ['yubikey', 'totp']
         oauth_2fa = MockOAuth(response_2fa)
-        _background(builder=self.builder, meta=self.meta, oauth=oauth_2fa, config_dict=mock_config_dict)
+        _background(builder=self.builder, meta=self.meta, oauth=oauth_2fa, config_dict=mock_config_dict, lets_connect=False)
 
     @patch('eduvpn.steps.two_way_auth.finalizing_step')
     @patch('eduvpn.steps.two_way_auth.Gtk.Dialog')
     @patch('eduvpn.steps.two_way_auth.Gtk.Label')
     def test_choice_window(self, *_):
         _choice_window(builder=self.builder, meta=self.meta, oauth=self.oauth, options=['bla1', 'bla2'],
-                       config_dict=mock_config_dict)
+                       config_dict=mock_config_dict, lets_connect=False)
 
 
 

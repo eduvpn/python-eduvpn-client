@@ -10,13 +10,13 @@ from gi.repository import Gtk, GLib
 from eduvpn.manager import delete_provider
 from eduvpn.notify import notify
 from eduvpn.util import error_helper, metadata_of_selected
-from eduvpn.steps.provider import update_providers
+from eduvpn.steps.start import refresh_start
 
 
 logger = logging.getLogger(__name__)
 
 
-def delete_profile(builder):
+def delete_profile(builder, lets_connect):
     """called when the user presses the - button"""
     logger.info("delete provider clicked")
     meta = metadata_of_selected(builder)
@@ -40,7 +40,7 @@ def delete_profile(builder):
             error_helper(window, "can't delete profile", str(e))
             dialog.hide()
             raise
-        GLib.idle_add(lambda: update_providers(builder))
+        GLib.idle_add(lambda: refresh_start(builder, lets_connect=lets_connect))
     elif response == Gtk.ResponseType.NO:
         logger.info("not deleting provider config")
     dialog.hide()

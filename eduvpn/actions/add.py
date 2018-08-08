@@ -11,17 +11,22 @@ from eduvpn.steps.custom_url import custom_url
 logger = logging.getLogger(__name__)
 
 
-def new_provider(builder, verifier, secure_internet_uri, institute_access_uri):
+def new_provider(builder, verifier, secure_internet_uri, institute_access_uri, lets_connect):
     """The connection type selection step"""
     logger.info("add configuration clicked")
+    meta = Metadata()
+
+    # lets connect mode only supports custom URL
+    if lets_connect:
+        custom_url(builder=builder, meta=meta, verifier=verifier, lets_connect=lets_connect)
+        return
+
     dialog = builder.get_object('connection-type-dialog')
     window = builder.get_object('eduvpn-window')
     dialog.set_transient_for(window)
     dialog.show_all()
     response = dialog.run()
     dialog.hide()
-
-    meta = Metadata()
 
     if response == 0:  # cancel
         logger.info("cancel button pressed")
@@ -31,14 +36,14 @@ def new_provider(builder, verifier, secure_internet_uri, institute_access_uri):
         logger.info("secure button pressed")
         meta.connection_type = 'Secure Internet'
         meta.discovery_uri = secure_internet_uri
-        fetch_instance_step(meta=meta, builder=builder, verifier=verifier)
+        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect)
 
     elif response == 2:
         logger.info("institute button pressed")
         meta.connection_type = 'Institute Access'
         meta.discovery_uri = institute_access_uri
-        fetch_instance_step(meta=meta, builder=builder, verifier=verifier)
+        fetch_instance_step(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect)
 
     elif response == 3:
         logger.info("custom button pressed")
-        custom_url(builder=builder, meta=meta, verifier=verifier)
+        custom_url(builder=builder, meta=meta, verifier=verifier, lets_connect=lets_connect)

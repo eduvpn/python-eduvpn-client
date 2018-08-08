@@ -11,7 +11,7 @@ from gi.repository import Gtk
 from eduvpn.util import get_prefix
 from eduvpn.crypto import make_verifier
 from eduvpn.manager import monitor_all_vpn
-from eduvpn.steps.provider import update_providers
+from eduvpn.steps.start import refresh_start
 from eduvpn.actions.select import select_profile
 from eduvpn.actions.add import new_provider
 from eduvpn.actions.delete import delete_profile
@@ -36,11 +36,13 @@ builder_files = (
 
 
 class EduVpnApp:
-    def __init__(self, secure_internet_uri, institute_access_uri, verify_key):
+    def __init__(self, secure_internet_uri, institute_access_uri, verify_key, lets_connect):
         """setup UI thingies, don't do any fetching or DBus communication yet"""
 
         self.secure_internet_uri = secure_internet_uri
         self.institute_access_uri = institute_access_uri
+
+        self.lets_connect = lets_connect
 
         # minimal global state to pass around data between steps where otherwise difficult
         self.selected_meta = None
@@ -71,17 +73,20 @@ class EduVpnApp:
         # attach a callback to VPN connection monitor
         monitor_all_vpn(self.vpn_change)
         self.window.show_all()
-        update_providers(self.builder)
+        refresh_start(self.builder, self.lets_connect)
 
     def add(self, _):
         new_provider(builder=self.builder, verifier=self.verifier,
-                     secure_internet_uri=self.secure_internet_uri, institute_access_uri=self.institute_access_uri)
+                     secure_internet_uri=self.secure_internet_uri,
+                     institute_access_uri=self.institute_access_uri,
+                     lets_connect=self.lets_connect)
 
     def delete(self, _):
-        delete_profile(builder=self.builder)
+        delete_profile(builder=self.builder, lets_connect=self.lets_connect)
 
     def select(self, *args):
-        self.selected_meta = select_profile(builder=self.builder, verifier=self.verifier)
+        self.selected_meta = select_profile(builder=self.builder, verifier=self.verifier,
+                                            lets_connect=self.lets_connect)
 
     def vpn_change(self, *args, **kwargs):
         """called when the status of a VPN connection changes"""

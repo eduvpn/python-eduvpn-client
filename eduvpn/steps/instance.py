@@ -10,25 +10,24 @@ from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper, bytes2pixbuf
 from eduvpn.remote import get_instances
 from eduvpn.steps.browser import browser_step
+from eduvpn.steps.fetching import fetching_window
 
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
-def fetch_instance_step(meta, builder, verifier):
+def fetch_instance_step(meta, builder, verifier, lets_connect):
     """fetch list of instances"""
     logger.info("fetching instances step")
+    fetching_window(builder=builder, lets_connect=lets_connect)
     dialog = builder.get_object('fetch-dialog')
-    window = builder.get_object('eduvpn-window')
-    dialog.set_transient_for(window)
-    dialog.show_all()
-    thread_helper(lambda: _fetch_background(meta=meta, verifier=verifier, builder=builder))
+    thread_helper(lambda: _fetch_background(meta=meta, verifier=verifier, builder=builder, lets_connect=lets_connect))
     dialog.run()
 
 
 # background thread
-def _fetch_background(meta, verifier, builder):
+def _fetch_background(meta, verifier, builder, lets_connect):
     dialog = builder.get_object('fetch-dialog')
     window = builder.get_object('eduvpn-window')
     try:
@@ -41,11 +40,12 @@ def _fetch_background(meta, verifier, builder):
     else:
         GLib.idle_add(lambda: dialog.hide())
         meta.authorization_type = authorization_type
-        GLib.idle_add(lambda: select_instance_step(meta, instances, builder=builder, verifier=verifier))
+        GLib.idle_add(lambda: select_instance_step(meta, instances, builder=builder, verifier=verifier,
+                                                   lets_connect=lets_connect))
 
 
 # ui thread
-def select_instance_step(meta, instances, builder, verifier):
+def select_instance_step(meta, instances, builder, verifier, lets_connect):
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
     dialog = builder.get_object('instances-dialog')
@@ -72,6 +72,6 @@ def select_instance_step(meta, instances, builder, verifier):
             meta.display_name = display_name
             meta.instance_base_uri = instance_base_uri
             meta.icon_data = icon_data
-            browser_step(builder, meta, verifier)
+            browser_step(builder, meta, verifier, lets_connect=lets_connect)
         else:
             logger.info("nothing selected")

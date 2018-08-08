@@ -26,7 +26,7 @@ class TestFinalize(TestCase):
 
     @patch('eduvpn.steps.finalize.thread_helper')
     def test_finalizing_step(self, *_):
-        finalizing_step(builder=self.builder, meta=self.meta, config_dict=mock_config_dict)
+        finalizing_step(builder=self.builder, meta=self.meta, config_dict=mock_config_dict, lets_connect=False)
 
     @patch('eduvpn.manager.monitor_vpn')
     @patch('eduvpn.steps.finalize.store_provider')
@@ -34,7 +34,8 @@ class TestFinalize(TestCase):
         store_provider.method.return_value = "blabla"
         store_provider.return_value = "blabla"
         try:
-            _background(builder=self.builder, dialog=self.dialog, meta=self.meta, config_dict=mock_config_dict)
+            _background(builder=self.builder, dialog=self.dialog, meta=self.meta, config_dict=mock_config_dict,
+                        lets_connect=False)
         except DBusException as e:
             pass
 

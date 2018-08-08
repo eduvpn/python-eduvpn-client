@@ -12,7 +12,7 @@ from eduvpn.steps.browser import browser_step
 logger = logging.getLogger(__name__)
 
 
-def reauth(meta, verifier, builder):
+def reauth(meta, verifier, builder, lets_connect):
     """called when the authorization is expired"""
     logger.info("looks like authorization is expired or removed")
     window = builder.get_object('eduvpn-window')
@@ -23,7 +23,7 @@ def reauth(meta, verifier, builder):
     response = dialog.run()
     if response == Gtk.ResponseType.YES:
         meta.token = None
-        browser_step(builder, meta, verifier, force_token_refresh=True)
+        browser_step(builder, meta, verifier, force_token_refresh=True, lets_connect=lets_connect)
     elif response == Gtk.ResponseType.NO:
         pass
     dialog.hide()
