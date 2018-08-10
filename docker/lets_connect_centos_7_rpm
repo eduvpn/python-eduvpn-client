@@ -33,7 +33,6 @@ WORKDIR /code
 
 RUN python setup_letsconnect.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
-
-RUN rpmbuild -bs rpm/letsconnect_centos7.spec
-#RUN rpmbuild -bb rpm/letsconnect_centos7.spec
+RUN rpmbuild -bs rpm/lets_connect_centos7.spec
+RUN rpmbuild -bb rpm/lets_connect_centos7.spec
 

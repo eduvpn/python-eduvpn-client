@@ -29,7 +29,7 @@ extras_require = {
 }
 
 data_files = [
-    ('share/applications', ['share/applications/letsconnect.desktop']),
+    ('share/applications', ['share/applications/lets-connect-client.desktop']),
     ('share/eduvpn', [
         'share/eduvpn/eduvpn.png',
         'share/eduvpn/institute.png',
@@ -71,7 +71,7 @@ data_files = [
 
 
 setup(
-    name="letsconnect_client",
+    name="lets_connect_client",
     version=__version__,
     packages=find_packages(),
     data_files=data_files,

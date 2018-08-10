@@ -1,29 +1,32 @@
 language: python
 matrix:
   include:
-  - env: DIST=centos_7_py2
-  - env: DIST=centos_7_rpm
-  - env: DIST=debian_jessie_py2
-  - env: DIST=debian_jessie_py3
-  - env: DIST=fedora_27_py2
-  - env: DIST=fedora_27_py3
-  - env: DIST=fedora_28_py2
-  - env: DIST=fedora_28_py3
-  - env: DIST=fedora_27_rpm
-  - env: DIST=fedora_28_rpm
-  - env: DIST=ubuntu_xenial_py2
-  - env: DIST=ubuntu_bionic_py2
-  - env: DIST=ubuntu_bionic_py3
-  - env: DIST=ubuntu_bionic_py3_pep8
-  - env: DIST=ubuntu_bionic_py3_mypy
-  - env: DIST=ubuntu_bionic_doc
+  - env: DIST=eduvpn_centos_7_py2
+  - env: DIST=eduvpn_centos_7_rpm
+  - env: DIST=eduvpn_debian_jessie_py2
+  - env: DIST=eduvpn_debian_jessie_py3
+  - env: DIST=eduvpn_fedora_27_py2
+  - env: DIST=eduvpn_fedora_27_py3
+  - env: DIST=eduvpn_fedora_28_py2
+  - env: DIST=eduvpn_fedora_28_py3
+  - env: DIST=eduvpn_fedora_27_rpm
+  - env: DIST=eduvpn_fedora_28_rpm
+  - env: DIST=eduvpn_ubuntu_xenial_py2
+  - env: DIST=eduvpn_ubuntu_bionic_py2
+  - env: DIST=eduvpn_ubuntu_bionic_py3
+  - env: DIST=eduvpn_ubuntu_bionic_py3_pep8
+  - env: DIST=eduvpn_ubuntu_bionic_py3_mypy
+  - env: DIST=eduvpn_ubuntu_bionic_doc
+  - env: DIST=lets_connect_centos_7_rpm
+  - env: DIST=lets_connect_fedora_27_rpm
+  - env: DIST=lets_connect_fedora_28_rpm
 sudo: required
 services:
 - docker
 before_install:
 - true
 install:
-- docker build . -t ${DIST} -f docker/Dockerfile.${DIST}
+- docker build . -t ${DIST} -f docker/${DIST}
 before_script:
 - true
 script:
