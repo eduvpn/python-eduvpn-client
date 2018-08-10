@@ -1,6 +1,8 @@
 FROM centos:7
 
-RUN yum install -y epel-release
+RUN yum install -y yum-plugin-copr epel-release
+
+RUN yum copr enable -y gijzelaerr/eduvpn-client
 
 RUN yum install -y	\
     rpm-build \
@@ -22,22 +24,18 @@ RUN yum install -y	\
     python2-cryptography \
     python-qrcode \
     python-pillow \
-    gcc
-
-# GCC is required for the test run that will compile and install pynacl manually
+    python2-pynacl
 
 RUN rpmdev-setuptree
 
 ADD . /code
 WORKDIR /code
 
-#RUN yum install -y
-
 RUN python setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
 
-RUN rpmbuild -bs rpm/centos7.spec
-RUN rpmbuild -bb rpm/centos7.spec
+RUN rpmbuild -bs rpm/eduvpn_centos7.spec
+RUN rpmbuild -bb rpm/eduvpn_centos7.spec
 
 
 

@@ -39,8 +39,8 @@ WORKDIR /code
 
 RUN python setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
-RUN rpmbuild -bs eduvpn-client.spec
-RUN rpmbuild -bb eduvpn-client.spec
+RUN rpmbuild -bs rpm/eduvpn_fedora.spec
+RUN rpmbuild -bb rpm/eduvpn_fedora.spec
 
 
 
