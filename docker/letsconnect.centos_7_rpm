@@ -1,0 +1,39 @@
+FROM centos:7
+
+RUN yum install -y yum-plugin-copr epel-release
+
+RUN yum copr enable -y gijzelaerr/eduvpn-client
+
+RUN yum install -y	\
+    rpm-build \
+    rpmdevtools \
+    gtk3 \
+    libnotify \
+	pytest \
+	dbus-python \
+    python-gobject \
+	python-pynacl \
+	python-repoze-lru \
+	python-dateutil \
+    python2-devel \
+	python2-configparser \
+	python2-future \
+	python2-requests-oauthlib \
+	python2-mock \
+    python2-pytest-runner \
+    python2-cryptography \
+    python-qrcode \
+    python-pillow \
+    python2-pynacl
+
+RUN rpmdev-setuptree
+
+ADD . /code
+WORKDIR /code
+
+RUN python setup_letsconnect.py sdist
+RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
+
+RUN rpmbuild -bs rpm/letsconnect_centos7.spec
+#RUN rpmbuild -bb rpm/letsconnect_centos7.spec
+

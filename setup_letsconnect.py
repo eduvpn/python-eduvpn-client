@@ -104,7 +104,7 @@ setup(
         ],
     entry_points={
         'gui_scripts': [
-            'letsconnect-client = eduvpn.main:main_lets_connect',
+            'lets-connect-client = eduvpn.main:main_lets_connect',
         ]
 }
 )
