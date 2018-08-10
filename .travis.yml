@@ -14,6 +14,7 @@ matrix:
   - env: DIST=ubuntu_bionic_py2
   - env: DIST=ubuntu_bionic_py3
   - env: DIST=ubuntu_bionic_py3_pep8
+  - env: DIST=ubuntu_bionic_py3_mypy
   - env: DIST=ubuntu_bionic_doc
 sudo: required
 services:
