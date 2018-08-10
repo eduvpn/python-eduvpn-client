@@ -24,4 +24,5 @@ RUN docker-apt-install \
 
 ADD . /code
 WORKDIR /code
-RUN pep8 eduvpn --ignore=E501,E402,W391,W292
+RUN mypy eduvpn --ignore-missing-imports
+
