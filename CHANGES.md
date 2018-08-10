@@ -1,3 +1,9 @@
+1.0rc17
+=======
+
+ * Let's Connect integration #134
+ 
+ 
 1.0rc16
 =======
 

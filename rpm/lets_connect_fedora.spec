@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           lets_connect_client
-Version:        1.0rc16
+Version:        1.0rc17
 Release:        1%{?dist}
 Summary:        %{sum}
 
