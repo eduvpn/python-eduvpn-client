@@ -63,10 +63,10 @@ data_files = [
     ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/eduvpn-client.png']),
     ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/eduvpn-client.png']),
     ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/eduvpn-client.png']),
-    ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/letsconnect.png']),
-    ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/letsconnect.png']),
-    ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/letsconnect.png']),
-    ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/letsconnect.png']),
+    ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/lets-connect-client.png']),
+    ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/lets-connect-client.png']),
+    ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/lets-connect-client.png']),
+    ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/lets-connect-client.png']),
 ]
 
 
