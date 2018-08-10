@@ -103,10 +103,10 @@ Let's Connect desktop client
 %{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/512x512/apps/eduvpn-client.png
-%{_datarootdir}/icons/hicolor/48x48/apps/letsconnect.png
-%{_datarootdir}/icons/hicolor/256x256/apps/letsconnect.png
-%{_datarootdir}/icons/hicolor/512x512/apps/letsconnect.png
-%{_datarootdir}/icons/hicolor/128x128/apps/letsconnect.png
+%{_datarootdir}/icons/hicolor/48x48/apps/lets-connect-client.png
+%{_datarootdir}/icons/hicolor/256x256/apps/lets-connect-client.png
+%{_datarootdir}/icons/hicolor/512x512/apps/lets-connect-client.png
+%{_datarootdir}/icons/hicolor/128x128/apps/lets-connect-client.png
 %{_datarootdir}/letsconnect/settings_full.png
 %{_datarootdir}/letsconnect/connected.png
 %{_datarootdir}/letsconnect/connecting.png
