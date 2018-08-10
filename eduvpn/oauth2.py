@@ -9,8 +9,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
 from future.moves.urllib.parse import urlparse, parse_qs
 from requests_oauthlib import OAuth2Session
-from eduvpn.util import get_prefix
-from eduvpn.images import eduvpn_main_logo, letsconnect_main_logo
+from eduvpn.brand import get_brand
 
 logger = logging.getLogger(__name__)
 
@@ -80,12 +79,10 @@ def one_request(port, lets_connect, timeout=None):
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            if lets_connect:
-                logo = stringify_image(letsconnect_main_logo)
-                content = landing_page.format(logo=logo, brand="Let's Connect!").encode('utf-8')
-            else:
-                logo = stringify_image(eduvpn_main_logo)
-                content = landing_page.format(logo=logo, brand='eduVPN').encode('utf-8')
+
+            logo, name = get_brand(lets_connect)
+            logo = stringify_image(logo)
+            content = landing_page.format(logo=logo, brand=name).encode('utf-8')
             self.wfile.write(content)
             self.server.path = self.path
 

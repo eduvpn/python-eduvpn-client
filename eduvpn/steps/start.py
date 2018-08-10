@@ -7,7 +7,8 @@ import base64
 import logging
 from eduvpn.manager import list_providers
 from eduvpn.util import bytes2pixbuf, get_pixbuf
-from eduvpn.images import letsconnect_main_logo, eduvpn_main_logo
+from eduvpn.brand import lets_connect_main_logo, eduvpn_main_logo
+from eduvpn.brand import get_brand
 
 
 logger = logging.getLogger(__name__)
@@ -21,12 +22,9 @@ def refresh_start(builder, lets_connect):
     main_image = builder.get_object('main_image')
     window = builder.get_object('eduvpn-window')
 
-    if lets_connect:
-        main_image.set_from_file(letsconnect_main_logo)
-        window.set_title("Let's Connect! Configuration Manager")
-        logo = letsconnect_main_logo
-    else:
-        logo = eduvpn_main_logo
+    logo, name = get_brand(lets_connect)
+    main_image.set_from_file(logo)
+    window.set_title("{} Configuration Manager".format(name))
 
     config_list.clear()
     providers = list(list_providers())

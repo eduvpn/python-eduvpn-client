@@ -4,9 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from typing import Any, Optional
+from gi.repository import Notify
 
-image_path = ...  # type: Any
-image = ...  # type: Any
-notification = ...  # type: Any
-
-def notify(msg, small_msg: Optional[Any] = ...): ...
+def init_notify(lets_connect: bool) -> Notify: ...
+def notify(notification: Notify, msg, small_msg: Optional[Any] = ...) -> None: ...

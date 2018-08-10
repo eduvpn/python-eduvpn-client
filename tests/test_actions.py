@@ -42,4 +42,4 @@ class TestActions(unittest.TestCase):
                      secure_internet_uri="bla", lets_connect=False)
 
     def test_vpn_change(self):
-        vpn_change(builder=self.builder)
+        vpn_change(builder=self.builder, lets_connect=True)

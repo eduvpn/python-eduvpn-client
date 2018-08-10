@@ -7,7 +7,7 @@ import logging
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import GLib
-from eduvpn.notify import notify
+from eduvpn.notify import notify, init_notify
 from eduvpn.actions.activate import activate_connection
 from eduvpn.manager import disconnect_provider
 from eduvpn.util import error_helper
@@ -15,16 +15,17 @@ from eduvpn.util import error_helper
 logger = logging.getLogger(__name__)
 
 
-def switched(meta, builder, verifier):
+def switched(meta, builder, verifier, lets_connect):
     switch = builder.get_object('connect-switch')
     state = switch.get_active()
     logger.info("switch activated, old state {}".format(state))
     if not state:
         logger.info("setting switch ON")
         GLib.idle_add(lambda: switch.set_active(True))
-        activate_connection(meta=meta, builder=builder, verifier=verifier)
+        activate_connection(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect)
     else:
-        notify("eduVPN disconnecting...", "Disconnecting from {}".format(meta.display_name))
+        notification = init_notify(lets_connect)
+        notify(notification, "eduVPN disconnecting...", "Disconnecting from {}".format(meta.display_name))
         logger.info("setting switch OFF")
         GLib.idle_add(lambda: switch.set_active(False))
         try:

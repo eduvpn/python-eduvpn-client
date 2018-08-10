@@ -10,7 +10,7 @@ from eduvpn.util import bytes2pixbuf, get_pixbuf, metadata_of_selected
 from eduvpn.config import icon_size
 from eduvpn.manager import is_provider_connected
 from eduvpn.steps.messages import fetch_messages
-from eduvpn.images import eduvpn_main_logo, letsconnect_main_logo
+from eduvpn.brand import get_brand
 
 
 logger = logging.getLogger(__name__)
@@ -31,11 +31,7 @@ def select_profile(builder, verifier, lets_connect):
     profile_name_label = builder.get_object('profile-name-label')
     profile_image = builder.get_object('profile-image')
     meta = metadata_of_selected(builder)
-
-    if lets_connect:
-        logo = letsconnect_main_logo
-    else:
-        logo = eduvpn_main_logo
+    logo, _ = get_brand(lets_connect)
 
     if not meta:
         logger.info("no configuration selected, showing main logo")

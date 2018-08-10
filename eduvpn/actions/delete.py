@@ -8,7 +8,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 from eduvpn.manager import delete_provider
-from eduvpn.notify import notify
+from eduvpn.notify import notify, init_notify
 from eduvpn.util import error_helper, metadata_of_selected
 from eduvpn.steps.start import refresh_start
 
@@ -35,7 +35,8 @@ def delete_profile(builder, lets_connect):
         logger.info("deleting provider config")
         try:
             delete_provider(meta.uuid)
-            notify("eduVPN provider deleted", "Deleted '{}'".format(meta.display_name))
+            notification = init_notify(lets_connect)
+            notify(notification, "eduVPN provider deleted", "Deleted '{}'".format(meta.display_name))
         except Exception as e:
             error_helper(window, "can't delete profile", str(e))
             dialog.hide()

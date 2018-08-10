@@ -30,6 +30,13 @@ extras_require = {
 
 data_files = [
     ('share/applications', ['share/applications/letsconnect.desktop']),
+    ('share/eduvpn', [
+        'share/eduvpn/eduvpn.png',
+        'share/eduvpn/institute.png',
+        'share/eduvpn/institute_small.png',
+        'share/eduvpn/internet.png',
+        'share/eduvpn/internet_small.png',
+    ]),
     ('share/letsconnect', [
         'share/letsconnect/connected.png',
         'share/letsconnect/connecting.png',
@@ -52,6 +59,10 @@ data_files = [
         'share/eduvpn/builder/window.ui',
         'share/eduvpn/builder/yubi_enroll.ui',
     ]),
+    ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/eduvpn-client.png']),
+    ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/eduvpn-client.png']),
+    ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/eduvpn-client.png']),
+    ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/eduvpn-client.png']),
     ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/letsconnect.png']),
     ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/letsconnect.png']),
     ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/letsconnect.png']),
@@ -93,7 +104,7 @@ setup(
         ],
     entry_points={
         'gui_scripts': [
-            'letsconnect-client = eduvpn.main:main_letsconnect',
+            'letsconnect-client = eduvpn.main:main_lets_connect',
         ]
 }
 )

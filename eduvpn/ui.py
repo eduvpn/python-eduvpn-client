@@ -90,8 +90,8 @@ class EduVpnApp:
 
     def vpn_change(self, *args, **kwargs):
         """called when the status of a VPN connection changes"""
-        vpn_change(self.builder)
+        vpn_change(self.builder, self.lets_connect)
 
     def switched(self, selection, _):
         """called when the user releases the connection switch"""
-        switched(meta=self.selected_meta, builder=self.builder, verifier=self.verifier)
+        switched(meta=self.selected_meta, builder=self.builder, verifier=self.verifier, lets_connect=self.lets_connect)

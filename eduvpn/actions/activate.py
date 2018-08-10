@@ -12,20 +12,23 @@ from eduvpn.manager import update_config_provider, update_keys_provider, connect
 from eduvpn.remote import get_profile_config, create_keypair, user_info, check_certificate
 from eduvpn.steps.reauth import reauth
 from eduvpn.steps.two_way_auth import two_auth_step
-from eduvpn.notify import notify
+from eduvpn.notify import notify, init_notify
 from eduvpn.openvpn import parse_ovpn
 from eduvpn.exceptions import EduvpnAuthException, EduvpnException
 from eduvpn.crypto import common_name_from_cert
+from eduvpn.brand import get_brand
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
-def activate_connection(meta, builder, verifier):
+def activate_connection(meta, builder, verifier, lets_connect):
     """do the actual connecting action"""
     logger.info("Connecting to {}".format(meta.display_name))
     disconnect_all()
-    notify("eduVPN connecting...", "Connecting to '{}'".format(meta.display_name))
+    _, name = get_brand(lets_connect)
+    notification = init_notify(lets_connect)
+    notify(notification, "{} connecting...".format(name), "Connecting to '{}'".format(meta.display_name))
     try:
         if not meta.token:
             logger.error("metadata for {} doesn't contain oauth2 token".format(meta.uuid))

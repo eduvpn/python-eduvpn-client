@@ -8,7 +8,7 @@ import gi
 from gi.repository import GLib
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.manager import store_provider, monitor_vpn
-from eduvpn.notify import notify
+from eduvpn.notify import notify, init_notify
 from eduvpn.steps.start import refresh_start
 from eduvpn.actions.vpn_status import vpn_change
 from eduvpn.steps.fetching import fetching_window
@@ -29,8 +29,10 @@ def finalizing_step(builder, meta, config_dict, lets_connect):
 def _background(meta, dialog, builder, config_dict, lets_connect):
     try:
         uuid = store_provider(meta, config_dict)
-        monitor_vpn(uuid=uuid, callback=lambda *args, **kwargs: vpn_change(builder=builder))
-        GLib.idle_add(lambda: notify("eduVPN provider added", "added provider '{}'".format(meta.display_name)))
+        monitor_vpn(uuid=uuid, callback=lambda *args, **kwargs: vpn_change(builder=builder, lets_connect=lets_connect))
+        notification = init_notify(lets_connect)
+        GLib.idle_add(lambda: notify(notification, "eduVPN provider added",
+                                     "added provider '{}'".format(meta.display_name)))
     except Exception as e:
         error = e
         GLib.idle_add(lambda: error_helper(dialog, "can't store configuration", "{}: {}".format(type(error).__name__,

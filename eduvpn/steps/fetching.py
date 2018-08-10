@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
-from eduvpn.images import letsconnect_main_logo
+from eduvpn.brand import get_brand
 logger = logging.getLogger(__name__)
 
 
@@ -17,8 +17,6 @@ def fetching_window(builder, lets_connect):
     image = builder.get_object('fetch-image')
     window = builder.get_object('eduvpn-window')
     dialog.set_transient_for(window)
-
-    if lets_connect:
-        image.set_from_file(letsconnect_main_logo)
-
+    icon, _ = get_brand(lets_connect)
+    image.set_from_file(icon)
     dialog.show_all()

@@ -47,8 +47,8 @@ def parse_args():
 
     if args.test:
         logger.warning("using test discovery URLs")
-        return level, config.secure_internet_uri_dev, config.institute_access_uri_dev, config.verify_key_dev,\
-               args.lets_connect
+        return (level, config.secure_internet_uri_dev, config.institute_access_uri_dev, config.verify_key_dev,
+                args.lets_connect)
     else:
         logger.debug("using production discovery URLs")
         return level, config.secure_internet_uri, config.institute_access_uri, config.verify_key, args.lets_connect
