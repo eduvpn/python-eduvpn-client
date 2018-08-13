@@ -1,3 +1,9 @@
+1.0.1
+=====
+
+ * pypi doesnt show latest version - make 1.0(.1) release #135
+ 
+
 1.0rc17
 =======
 
