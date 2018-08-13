@@ -59,6 +59,7 @@ Requires: python-repoze-lru
 Requires: python2-cryptography
 Requires: (python2-qrcode or python-qrcode)
 Requires: python2-pillow
+Conflicts: python2-eduvpn-client 
 
 %description -n python2-lets-connect-client
 Let's Connect! client API for Python2
@@ -77,6 +78,7 @@ Requires: python3-repoze-lru
 Requires: python3-cryptography
 Requires: python3-qrcode
 Requires: python3-pillow
+Conflicts: python2-eduvpn-client 
 
 %description -n python3-lets-connect-client
 Let's Connect! client API for Python3
@@ -86,6 +88,7 @@ Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
 Requires:  python3-lets-connect-client
+Conflicts: python2-eduvpn-client 
 
 %description -n lets-connect-client
 Let's Connect! desktop client

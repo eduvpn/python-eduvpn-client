@@ -45,6 +45,7 @@ Requires: python2-dateutil
 Requires: python2-cryptography
 Requires: python-qrcode
 Requires: python-pillow
+Conflicts: python2-lets-connect-client
 
 
 %description -n python2-eduvpn-client
@@ -55,6 +56,7 @@ Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
 Requires:  python2-eduvpn-client
+Conflicts: lets-connect-client
 
 %description -n eduvpn-client
 eduVPN desktop client
