@@ -56,7 +56,7 @@ Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
 Requires:  python2-lets-connect-client
-Conflicts: python2-eduvpn-client 
+Conflicts: eduvpn-client 
 
 %description -n lets-connect-client
 Let's Connect desktop client
