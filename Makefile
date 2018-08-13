@@ -99,8 +99,13 @@ dockers:
 	for i in `ls docker/Dockerfile*`; do echo "*** $$i"; docker build . -f $$i; done
 
 srpm:
-	docker build -t fodora_rpm -f docker/Dockerffedora_28_rpm .
-	docker build -t fodora_rpm -f docker/Dockerfile.fedora_28_rpm .
+	docker build -t eduvpn_fedora_rpm -f docker/eduvpn_fedora_28_rpm .
+	docker build -t lets_connect_fedora_rpm -f docker/lets_connect_fedora_28_rpm .
+	docker build -t eduvpn_centos_rpm -f docker/eduvpn_centos_7_rpm .
+	docker build -t lets_connect_centos_rpm -f docker/lets_connect_centos_7_rpm .
 	mkdir tmp || true
-	docker run -v `pwd`/tmp:/tmp:rw srpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw eduvpn_fedora_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw lets_connect_fedora_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw eduvpn_centos_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw lets_connect_centos_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 
