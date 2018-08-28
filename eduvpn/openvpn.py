@@ -55,7 +55,7 @@ def parse_ovpn(configtext):
 
     # handle duplicate keys, make them a list
     results = {}
-    multiple = []
+    multiple = ['remote']  # remote needs to always be a list
     for keyword, value in configurator(configtext):
         if keyword in results:
             if keyword in multiple:
@@ -64,7 +64,10 @@ def parse_ovpn(configtext):
                 results[keyword] = [results[keyword], value]
                 multiple.append(keyword)
         else:
-            results[keyword] = value
+            if keyword in multiple:
+                results[keyword] = [value]
+            else:
+                results[keyword] = value
 
     config.update(results)
     return config
@@ -80,6 +83,8 @@ def ovpn_to_nm(config, meta, display_name, username=None):
         display_name (str): the display name of the configuration
         username (str): username to use for 2-factor authentication
     """
+
+
     logger.info("generating config for {} ({})".format(display_name, meta.uuid))
     settings = {'connection': {'id': display_name,
                                'type': 'vpn',
@@ -116,8 +121,9 @@ def ovpn_to_nm(config, meta, display_name, username=None):
         settings['vpn']['data']['password-flags'] = '2'
         settings['vpn']['data']['username'] = username
 
-    ca_path = write_cert(config.get('ca'), 'ca', meta.uuid)
-    settings['vpn']['data']['ca'] = ca_path
+    if 'ca' in config:
+        ca_path = write_cert(config.get('ca'), 'ca', meta.uuid)
+        settings['vpn']['data']['ca'] = ca_path
 
     if 'tls-auth' in config:
         settings['vpn']['data']['ta'] = write_cert(config.get('tls-auth'), 'ta', meta.uuid)

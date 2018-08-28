@@ -42,3 +42,22 @@ class TestOpenvpn(unittest.TestCase):
         config = parse_ovpn(mock_config)
         config['tls-crypt'] = "bla"
         _ = ovpn_to_nm(config=config, meta=self.meta, display_name='test name')
+
+    def test_multiple_remote(self):
+        configtext = """
+remote internet.demo.eduvpn.nl 1194 udp
+remote internet.demo.eduvpn.nl 1194 tcp
+"""
+        config = parse_ovpn(configtext)
+        settings = ovpn_to_nm(config, meta=self.meta, display_name='test name')
+        self.assertEqual(settings['vpn']['data']['remote'],
+                         'internet.demo.eduvpn.nl:1194:udp,internet.demo.eduvpn.nl:1194:tcp')
+
+    def test_single_remote(self):
+        configtext = """
+remote internet.demo.eduvpn.nl 1194 udp
+"""
+        config = parse_ovpn(configtext)
+        settings = ovpn_to_nm(config, meta=self.meta, display_name='test name')
+        self.assertEqual(settings['vpn']['data']['remote'],
+                         'internet.demo.eduvpn.nl:1194:udp')
