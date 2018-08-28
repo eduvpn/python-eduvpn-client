@@ -26,6 +26,7 @@ install_requires = [
 extras_require = {
     'client': ['dbus-python', 'pygobject'],
     'test-online': ['mechanicalsoup', 'futures'],
+    'docs': ['sphinx', 'mock', 'sphinx_rtd_theme', 'future' ,'repoze.lru', 'six'],
 }
 
 data_files = [

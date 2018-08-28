@@ -1,3 +1,6 @@
 sphinx
 mock
 sphinx_rtd_theme
+future
+repoze.lru
+six
