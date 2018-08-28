@@ -33,15 +33,13 @@ Flow schema
 How to make a release
 ---------------------
 
-* Determine version number (for example 1.0rc8)
+* Determine version number (for example 1.0.2)
 
 * Compose a list of changes (check issue tracker)
 
-* Make sure the development discovery URL's are disabled in eduvpn/config.py
-
 * Make sure the test suite runs with python2 and python3
 
-* Set version number in setup.py and eduvpn-client.spec
+* Set version number in setup.py and rpm/*.spec
 
 * add changes to CHANGES.md
 
@@ -52,6 +50,8 @@ How to make a release
 * Check if travis builds. If so, it will upload to pypi.
 
 * If it doesn't build fix and do a manual upload using `twine <https://github.com/pypa/twine>`_
+
+* For now you need to manually create the Let's connect! wheel and upload using twine.
 
 * Make a SRPM and upload to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_
 

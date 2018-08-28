@@ -1,3 +1,10 @@
+1.0.2
+=====
+
+ * client expects multiple remotes #156
+ * use LC client_id for for LC client #155
+
+
 1.0.1
 =====
 
