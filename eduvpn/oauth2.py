@@ -44,7 +44,7 @@ landing_page = """
 </html>
 """
 
-client_id = "org.eduvpn.app.linux"
+client_id = "org.letsconnect-vpn.app.linux"
 scope = ["config"]
 
 
