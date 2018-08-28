@@ -4,3 +4,6 @@ sphinx_rtd_theme
 future
 repoze.lru
 six
+oauthlib
+dateutil
+requests_oauthlib
