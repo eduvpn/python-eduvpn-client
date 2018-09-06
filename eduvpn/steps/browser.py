@@ -51,7 +51,7 @@ def _phase1_background(meta, dialog, verifier, builder, force_token_refresh, let
         code_verifier = gen_code_verifier()
         port = get_open_port()
         try:
-            oauth = create_oauth_session(port, auto_refresh_url=meta.token_endpoint)
+            oauth = create_oauth_session(port, lets_connect=lets_connect, auto_refresh_url=meta.token_endpoint)
             auth_url, state = get_auth_url(oauth, code_verifier, meta.authorization_endpoint)
         except Exception as e:
             error = e
@@ -63,7 +63,7 @@ def _phase1_background(meta, dialog, verifier, builder, force_token_refresh, let
                                                    lets_connect=lets_connect))
     else:
         logger.info("we already have a token, skipping browser step")
-        oauth = oauth_from_token(meta=meta)
+        oauth = oauth_from_token(meta=meta, lets_connect=lets_connect)
         GLib.idle_add(lambda: _phase2_callback(meta=meta, oauth=oauth, dialog=dialog, builder=builder,
                                                lets_connect=lets_connect))
 

@@ -11,7 +11,7 @@ from eduvpn.oauth2 import create_oauth_session, get_oauth_token_code, get_open_p
 
 class TestCrypto(unittest.TestCase):
     def test_create_oauth_session(self):
-        create_oauth_session(port=1025, auto_refresh_url='test')
+        create_oauth_session(port=1025, auto_refresh_url='test', lets_connect=False)
 
     @mock.patch('eduvpn.oauth2.one_request', side_effect=lambda port, letsconnect, timeout=None: {"code": "blabla",
                                                                                                   "state": "blabla"})

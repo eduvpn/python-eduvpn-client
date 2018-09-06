@@ -35,8 +35,8 @@ def activate_connection(meta, builder, verifier, lets_connect):
             connect_provider(meta.uuid)
 
         else:
-            oauth = oauth_from_token(meta=meta)
-            thread_helper(lambda: _auth_check(oauth, meta, verifier, builder))
+            oauth = oauth_from_token(meta=meta, lets_connect=lets_connect)
+            thread_helper(lambda: _auth_check(oauth, meta, verifier, builder, lets_connect=lets_connect))
 
     except Exception as e:
         switch = builder.get_object('connect-switch')
@@ -47,13 +47,13 @@ def activate_connection(meta, builder, verifier, lets_connect):
 
 
 # background thread
-def _auth_check(oauth, meta, verifier, builder):
+def _auth_check(oauth, meta, verifier, builder, lets_connect):
     """quickly see if the can fetch messages, otherwise reauth"""
     try:
         info = user_info(oauth, meta.api_base_uri)
         _cert_check(meta, oauth, builder, info)
     except EduvpnAuthException:
-        GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder))
+        GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder, lets_connect=lets_connect))
     except Exception as e:
         error = e
         window = builder.get_object('eduvpn-window')

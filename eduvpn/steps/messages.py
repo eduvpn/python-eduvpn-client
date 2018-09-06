@@ -26,7 +26,7 @@ def _background(meta, builder, verifier, lets_connect):
     label = builder.get_object('messages-label')
     window = builder.get_object('eduvpn-window')
     try:
-        oauth = oauth_from_token(meta=meta)
+        oauth = oauth_from_token(meta=meta, lets_connect=lets_connect)
     except Exception as e:
         error = e
         GLib.idle_add(lambda: error_helper(window, "Can't reconstruct OAuth2 session", (str(error))))

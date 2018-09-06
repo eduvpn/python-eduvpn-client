@@ -44,7 +44,9 @@ landing_page = """
 </html>
 """
 
-client_id = "org.letsconnect-vpn.app.linux"
+client_id_lets_connect = "org.letsconnect-vpn.app.linux"
+client_id_eduvpn = "org.eduvpn.app.linux"
+
 scope = ["config"]
 
 
@@ -105,17 +107,24 @@ def stringify_image(logo):
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
-def create_oauth_session(port, auto_refresh_url):
+def create_oauth_session(port, lets_connect, auto_refresh_url):
     """
     Create a oauth2 callback webserver
 
     args:
         port (int): the port where to listen to
+        lets_connect (bool): let's connect mode (true) or eduvpn (false)
     returns:
         OAuth2Session: a oauth2 session object
     """
     logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
+
+    if lets_connect:
+        client_id = client_id_lets_connect
+    else:
+        client_id = client_id_eduvpn
+
     oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, auto_refresh_url=auto_refresh_url, scope=scope)
     return oauth
 
@@ -126,6 +135,8 @@ def get_oauth_token_code(port, lets_connect, timeout=None):
 
     args:
         port (int): port where to listen for
+        lets_connect (bool): let's connect mode (true) or eduvpn (false)
+        timeout (int): number of seconds before timeout, leave None if no timeout
     returns:
         str: the response code given by redirect
     """
@@ -141,13 +152,13 @@ def get_oauth_token_code(port, lets_connect, timeout=None):
         raise Exception("Unknown error during authentication: {}".format(response))
 
 
-def oauth_from_token(meta):
+def oauth_from_token(meta, lets_connect):
     """
     Recreate a oauth2 object from a token
 
     args:
-        token (dict): a oauth2 token object
-        token_updater (func): a function that is triggered upon a token update
+        meta (eduvpn.metadata.Metadata): eduvpn metadata
+        lets_connect (bool):  let's connect mode (true) or eduvpn (false)
 
     returns:
         OAuth2Session: an auth2 session
@@ -155,6 +166,11 @@ def oauth_from_token(meta):
     """
     def inner(new_token):
         meta.update_token(new_token)
+
+    if lets_connect:
+        client_id = client_id_lets_connect
+    else:
+        client_id = client_id_eduvpn
 
     return OAuth2Session(token=meta.token, auto_refresh_url=meta.token_endpoint, scope=scope, token_updater=inner,
                          client_id=client_id)
