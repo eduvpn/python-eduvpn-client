@@ -116,7 +116,8 @@ Issues
 
 If you experience any issues you could and should report them at our
 `issue tracker <https://github.com/eduvpn/python-eduvpn-client/issues>`_. Please don't forget to mention your OS,
-method of installation, eduVPN client version and instructions on how to reproduce the problem.
+method of installation, eduVPN client version and instructions on how to reproduce the problem. If you have a problem
+enabling your VPN connection please also examine the `journalctl -u NetworkManager` logs.
 
 Source code
 -----------
