@@ -157,8 +157,10 @@ def detect_distro(release_file='/etc/os-release'):
 
     with open(release_file, 'r') as f:
         for line in f.readlines():
-            key, value = line.strip().split('=')
-            params[key] = value.strip('""')
+            splitted = line.strip().split('=')
+            if len(splitted) == 2:
+                key, value = splitted
+                params[key] = value.strip('""')
 
     if 'ID' not in params and 'VERSION_ID' not in params:
         raise EduvpnException("Can't detect distribution version, '/etc/os-release' doesn't "
