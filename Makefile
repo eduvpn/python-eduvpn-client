@@ -94,6 +94,11 @@ test3: .virtualenv3/bin/eduvpn-client
 run: .virtualenv3/bin/eduvpn-client
 	.virtualenv3/bin/eduvpn-client
 
+.virtualenv3/bin/jupyter-notebook: .virtualenv3/bin/eduvpn-client
+	.virtualenv3/bin/pip install -r notebooks/requirements.txt
+
+notebook: .virtualenv3/bin/jupyter-notebook
+	.virtualenv3/bin/jupyter-notebook
 
 dockers:
 	for i in `ls docker/Dockerfile*`; do echo "*** $$i"; docker build . -f $$i; done
