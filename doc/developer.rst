@@ -39,7 +39,7 @@ How to make a release
 
 * Make sure the test suite runs with python2 and python3
 
-* Set version number in setup.py, setup_letsconnect.py and rpm/*.spec
+* Set version number in ``setup.py``, ``setup_letsconnect.py`` and ``rpm/\*.spec``
 
 * add changes to CHANGES.md
 

@@ -11,9 +11,33 @@ Installation
 It is recommended to use a package to install the eduVPN client, but you can also install using pip from py or directly
 from github. We distribute RPM packages for Fedora, and Deb packages for Debian and Ubuntu.
 
+
++------------------+------------+-----------------------------------------------------------------------------+
+| Distribution     | Supported? | Why not?                                                                    |
++==================+============+=============================================================================+
+| Debian 8         | no         | Uses OpenVPN 2.3                                                            |
++------------------+------------+-----------------------------------------------------------------------------+
+| Debian 9         | no         | `network-manager-openvpn` >= 1.2.10 required for `tls-crypt` support        |
++------------------+------------+-----------------------------------------------------------------------------+
+| Ubuntu 16.04 LTS | no         | Uses OpenVPN 2.3                                                            |
++------------------+------------+-----------------------------------------------------------------------------+
+| Ubuntu 18.04 LTS | yes        | *Warning*: Client was leaking DNS information prior version 1.0.2           |
+|                  |            | `DNS leak information`__.                                                   |
++------------------+------------+-----------------------------------------------------------------------------+
+| Ubuntu 18.10     | yes        |                                                                             |
++------------------+------------+-----------------------------------------------------------------------------+
+| CentOS 7         | no         | `NetworkManager-openvpn` >= 1.2.10 required for `tls-crypt` support         |
+|                  |            | `RHBZ <https://bugzilla.redhat.com/show_bug.cgi?id=1520214>`_               |
++------------------+------------+-----------------------------------------------------------------------------+
+| Fedora 28        | yes        |                                                                             |
++------------------+------------+-----------------------------------------------------------------------------+
+
+__  https://gitlab.gnome.org/GNOME/NetworkManager-openvpn/issues/10
+
+
 .. note::
 
-    If you target is not supported the client might still work. You need to have
+    If you target is not supported the client might still, potentially work with limited functionality. You need to have
     `Network Manager <https://wiki.gnome.org/Projects/NetworkManager>`_ and `OpenVPN 2.4.0+ <https://openvpn.net/>`_
     installed.
 

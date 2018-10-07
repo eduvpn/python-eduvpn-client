@@ -34,7 +34,8 @@ MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'nacl', 'NetworkManager',
                 'dbus', 'nacl.encoding', 'nacl.signing', 'dbus.service',
                 'cryptography', 'cryptography.x509', 'cryptography.x509.oid',
                 'cryptography', 'cryptography.hazmat',
-                'cryptography.hazmat.backends']
+                'cryptography.hazmat.backends', 'OpenSSL.crypto',
+                'OpenSSL.SSL',]
 
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
