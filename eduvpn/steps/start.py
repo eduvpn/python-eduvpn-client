@@ -8,9 +8,18 @@ import logging
 from eduvpn.manager import list_providers
 from eduvpn.util import bytes2pixbuf, get_pixbuf
 from eduvpn.brand import get_brand
+from eduvpn.util import detect_distro
 
 
 logger = logging.getLogger(__name__)
+
+
+def support_check():
+    distro, version = detect_distro()
+    if distro == "debian" and version < 10:
+        error_helper(parent, msg_big, msg_small)
+
+
 
 
 # ui thread

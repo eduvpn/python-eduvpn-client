@@ -6,8 +6,11 @@ more information in this issue:
 
 https://github.com/eduvpn/python-eduvpn-client/issues/160
 """
+# type: ignore
 
-import eduvpn.other_nm as NetworkManager
+from eduvpn.util import have_dbus
+if have_dbus():
+    import eduvpn.other_nm as NetworkManager
 import dbus
 import subprocess
 
@@ -25,7 +28,7 @@ def get_link(interface):
 
 def get_active_vpn_device():
     # type: () -> str
-    devices = NetworkManager.NetworkManager.GetDevices()
+    devices = NetworkManager.NetworkManager.GetDevices()    # type: ignore
     interfaces = [x.Interface for x in devices if x.State == state_acticated and x.DeviceType == type_tun]
     assert(len(interfaces) == 1)
     interface = interfaces[0]
