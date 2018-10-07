@@ -6,6 +6,7 @@ import logging
 import threading
 import uuid
 import sys
+import os
 from os import path
 from future.standard_library import install_aliases
 install_aliases()
@@ -16,6 +17,7 @@ gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 from eduvpn.config import icon_size
 from eduvpn.metadata import Metadata
+from eduvpn.exceptions import EduvpnException
 
 
 logger = logging.getLogger(__name__)
@@ -146,3 +148,20 @@ def metadata_of_selected(builder):
     else:
         uuid_, _, _, _ = model[treeiter]
         return Metadata.from_uuid(uuid_)
+
+
+def detect_distro(release_file='/etc/os-release'):
+    params = {}
+    if not os.access(release_file, os.R_OK):
+        raise EduvpnException("Can't detect distribution version, '/etc/os-release' doesn't exist.")
+
+    with open(release_file, 'r') as f:
+        for line in f.readlines():
+            key, value = line.strip().split('=')
+            params[key] = value.strip('""')
+
+    if 'ID' not in params and 'VERSION_ID' not in params:
+        raise EduvpnException("Can't detect distribution version, '/etc/os-release' doesn't "
+                              "contain ID and VERSION_ID fields")
+
+    return params['ID'], params['VERSION_ID']

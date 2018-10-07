@@ -13,8 +13,22 @@ from eduvpn.util import metadata_of_selected
 
 logger = logging.getLogger(__name__)
 
+from eduvpn.util import detect_distro
+from eduvpn.security import get_active_vpn_device, get_link, set_link_domain
 
-def vpn_change(builder, lets_connect):
+
+def post_check():
+    """This should be called after VPN connection setup to make sure we don't leak DNS info on Ubuntu 18.04"""
+    distro, version = detect_distro()
+    if distro == 'ubuntu' and version == '18.04':
+        logger.warning("You are running Ubuntu 18.04, which leaks DNS information. We are enabling a workaround which "
+                       "will set the DNS domain for your VPN device to '.'.")
+        device = get_active_vpn_device()
+        link = get_link(device)
+        set_link_domain(link)
+
+
+def vpn_change(builder, lets_connect, state=0, reason=0):
     logger.info("VPN status change")
     switch = builder.get_object('connect-switch')
     ipv4_label = builder.get_object('ipv4-label')
@@ -28,6 +42,10 @@ def vpn_change(builder, lets_connect):
         return
 
     notification = init_notify(lets_connect)
+
+    # check if we need to secure the DNS for Ubuntu 18.04 on connect
+    if state == 5:
+        post_check()
 
     selected_uuid_active = False
     for active in list_active():
@@ -54,7 +72,7 @@ def vpn_change(builder, lets_connect):
                 break
         except Exception as e:
             logger.warning("probably race condition in network manager: {}".format(e))
-            pass
+            raise
 
     if not selected_uuid_active:
         logger.info("Our selected profile not active {}".format(meta.uuid))
