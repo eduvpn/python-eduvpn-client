@@ -20,8 +20,6 @@ def support_check():
         error_helper(parent, msg_big, msg_small)
 
 
-
-
 # ui thread
 def refresh_start(builder, lets_connect):
     logger.info("composing list of current eduVPN configurations")
