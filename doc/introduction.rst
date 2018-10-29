@@ -17,12 +17,11 @@ from github. We distribute RPM packages for Fedora, and Deb packages for Debian 
 +==================+============+=============================================================================+
 | Debian 8         | no         | Uses OpenVPN 2.3                                                            |
 +------------------+------------+-----------------------------------------------------------------------------+
-| Debian 9         | no         | `network-manager-openvpn` >= 1.2.10 required for `tls-crypt` support        |
+| Debian 9         | yes        | Dont forget to enable the backports repository                              |
 +------------------+------------+-----------------------------------------------------------------------------+
 | Ubuntu 16.04 LTS | no         | Uses OpenVPN 2.3                                                            |
 +------------------+------------+-----------------------------------------------------------------------------+
-| Ubuntu 18.04 LTS | yes        | *Warning*: Client was leaking DNS information prior version 1.0.2           |
-|                  |            | `DNS leak information`__.                                                   |
+| Ubuntu 18.04 LTS | yes        | *Warning*: Ubuntu VPN connections leak DNS information                      |
 +------------------+------------+-----------------------------------------------------------------------------+
 | Ubuntu 18.10     | yes        |                                                                             |
 +------------------+------------+-----------------------------------------------------------------------------+
@@ -31,9 +30,6 @@ from github. We distribute RPM packages for Fedora, and Deb packages for Debian 
 +------------------+------------+-----------------------------------------------------------------------------+
 | Fedora 28        | yes        |                                                                             |
 +------------------+------------+-----------------------------------------------------------------------------+
-
-__  https://gitlab.gnome.org/GNOME/NetworkManager-openvpn/issues/10
-
 
 .. note::
 
@@ -58,6 +54,25 @@ as root or using sudo:
 
 This has been tested on Ubuntu 18.04 (Bionic) and Debian 9 (stretch). Unfortunatly Ubuntu 16.04 LTS  (Xenial) is **not**
 supported. Ubuntu Xenial and older are bundled with an outdated and unsupporten OpenVPN.
+
+.. warning::
+
+    VPN configurations on Ubuntu 18.04 leak DNS information by default. The issue has been reported at Ubuntu, but
+    no fix has been published yet. You can follow the discussion in our
+    `issue tracker <https://github.com/eduvpn/python-eduvpn-client/issues/160>`_.
+
+.. note::
+
+    For Debian you need to enable the backports repository and manually update network manager.
+    `network-manager-openvpn` >= 1.2.10 is required for `tls-crypt` support. To enable the backports repository add
+    this line to your `/etc/apt/sources.list`::
+
+        deb http://deb.debian.org/debian stretch-backports main contrib non-free
+
+    And then update network-manager::
+
+        $ sudo apt-get update
+        $ sudo apt-get -t stretch-backports install network-manager-openvpn-gnome
 
 Fedora
 ------
