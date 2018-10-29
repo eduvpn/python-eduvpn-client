@@ -4,6 +4,8 @@
  * client expects multiple remotes #156
  * use LC client_id for for LC client #155
  * DNS leaking on Ubuntu 18.04 #160
+ * debian tls-crypt config parse bug #157
+ 
 
 1.0.1
 =====
