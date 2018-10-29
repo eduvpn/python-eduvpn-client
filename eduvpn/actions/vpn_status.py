@@ -15,7 +15,6 @@ from eduvpn.exceptions import EduvpnException
 logger = logging.getLogger(__name__)
 
 from eduvpn.util import detect_distro
-from eduvpn.security import get_active_vpn_device, get_link, set_link_domain
 
 
 def post_check():
@@ -27,11 +26,7 @@ def post_check():
         return
 
     if distro == 'ubuntu' and version == '18.04':
-        logger.warning("You are running Ubuntu 18.04, which leaks DNS information. We are enabling a workaround which "
-                       "will set the DNS domain for your VPN device to '.'.")
-        device = get_active_vpn_device()
-        link = get_link(device)
-        set_link_domain(link)
+        logger.critical("You are running Ubuntu 18.04, which leaks DNS information")
 
 
 def vpn_change(builder, lets_connect, state=0, reason=0):
