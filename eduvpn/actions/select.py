@@ -15,6 +15,8 @@ from eduvpn.brand import get_brand
 
 logger = logging.getLogger(__name__)
 
+from eduvpn.util import are_we_running_ubuntu1804
+
 
 # ui thread
 def select_profile(builder, verifier, lets_connect):
@@ -24,6 +26,10 @@ def select_profile(builder, verifier, lets_connect):
     switch = builder.get_object('connect-switch')
     ipv4_label = builder.get_object('ipv4-label')
     ipv6_label = builder.get_object('ipv6-label')
+
+    note_label = builder.get_object('note-label')
+    note_label_label = builder.get_object('note-label-label')
+
     twofa_label = builder.get_object('2fa-label')
     twofa_label_label = builder.get_object('2fa-label-label')
     name_label = builder.get_object('name-label')
@@ -64,6 +70,13 @@ def select_profile(builder, verifier, lets_connect):
         else:
             twofa_label.set_text("")
             twofa_label_label.set_text("")
+
+        if are_we_running_ubuntu1804():
+            note_label.set_markup('<a href="https://bugs.launchpad.net/ubuntu/+source/network-manager/+bug/1754671">Ubuntu 18.04 Leaks DNS info</a>')
+            note_label_label.set_markup('<span foreground="red">WARNING</span>:')
+        else:
+            note_label.set_text("")
+            note_label_label.set_text("")
 
         notebook.show_all()
         notebook.set_current_page(1)

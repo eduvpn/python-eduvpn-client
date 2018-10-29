@@ -167,3 +167,17 @@ def detect_distro(release_file='/etc/os-release'):
                               "contain ID and VERSION_ID fields")
 
     return params['ID'], params['VERSION_ID']
+
+
+def are_we_running_ubuntu1804():
+    try:
+        distro, version = detect_distro()
+    except EduvpnException as e:
+        logger.error("can't determine distribution and version: {}".format(e))
+        return False
+    else:
+        if distro == 'ubuntu' and version == '18.04':
+            logger.critical("You are running Ubuntu 18.04, which leaks DNS information")
+            return True
+        else:
+            return False
