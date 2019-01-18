@@ -105,6 +105,10 @@ def ovpn_to_nm(config, meta, display_name, username=None):
     # if 'server-poll-timeout' in config:
     #     settings['vpn']['data']['connect-timeout'] = config['server-poll-timeout']
 
+    if 'redirect-gateway' not in config:
+        settings['ipv4']['never-default'] = True
+        settings['ipv6']['never-default'] = True
+
     if 'comp-lzo' in config:
         settings['vpn']['data']['comp-lzo'] = config['comp-lzo'] or 'adaptive'
 
