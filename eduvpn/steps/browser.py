@@ -111,7 +111,7 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
             logger.error("received from state, expected: {}, received: {}".format(state, other_state))
             raise Exception("oauth state has been tampered with")
         logger.info("setting oauth token for metadata")
-        meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
+        meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier, client_id=oauth.client_id, include_client_id=True)
     except Exception as e:
         error = e
         if dialog.get_property("visible") and dialog.session == session:
