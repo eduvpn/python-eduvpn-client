@@ -32,22 +32,22 @@ builder_files = (
     'profiles.ui',
     'redirecturl.ui',
     'token.ui',
-)
+) # type: Iterable[str]
 
 
 class EduVpnApp:
     def __init__(self, secure_internet_uri, institute_access_uri, verify_key, lets_connect):
         """setup UI thingies, don't do any fetching or DBus communication yet"""
 
-        self.secure_internet_uri = secure_internet_uri
-        self.institute_access_uri = institute_access_uri
+        self.secure_internet_uri = secure_internet_uri # type str
+        self.institute_access_uri = institute_access_uri # type str
 
-        self.lets_connect = lets_connect
+        self.lets_connect = lets_connect # type bool
 
         # minimal global state to pass around data between steps where otherwise difficult
-        self.selected_meta = None
-        self.prefix = get_prefix()
-        self.builder = Gtk.Builder()
+        self.selected_meta = None # type: Any
+        self.prefix = get_prefix() # type: Any
+        self.builder = Gtk.Builder() # type: Any
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
             if not os.access(p, os.R_OK):
@@ -65,8 +65,8 @@ class EduVpnApp:
         }
 
         self.builder.connect_signals(handlers)
-        self.window = self.builder.get_object('eduvpn-window')
-        self.verifier = make_verifier(verify_key)
+        self.window = self.builder.get_object('eduvpn-window') # type: Any
+        self.verifier = make_verifier(verify_key) # type: Any
         self.window.set_position(Gtk.WindowPosition.CENTER)
 
     def run(self):

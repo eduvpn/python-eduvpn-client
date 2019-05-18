@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def reauth(meta, verifier, builder, lets_connect):
+    # type : (Metadata, verifier, Gtk.Builder, bool) -> None
     """called when the authorization is expired"""
     logger.info("looks like authorization is expired or removed")
     window = builder.get_object('eduvpn-window')

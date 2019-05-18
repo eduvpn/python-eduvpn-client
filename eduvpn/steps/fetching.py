@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def fetching_window(builder, lets_connect):
+    # type : (Gtk.Builder, bool) -> None
     """
     Don't forget to call dialog.run() after creating the fetch window!
     """
