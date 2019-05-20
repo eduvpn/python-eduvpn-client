@@ -51,7 +51,7 @@ def _make_qr(builder, oauth, meta, config_dict, lets_connect, secret=None):
 
 
 # ui thread
-def _parse_user_input(builder, oauth, meta, config_dict, lets_connect, secret=None)
+def _parse_user_input(builder, oauth, meta, config_dict, lets_connect, secret=None):
     # type : (Gtk.Builder, oauth, Metadata, dict, bool, secret) -> None
     dialog = builder.get_object('totp-enroll-dialog')
     code_entry = builder.get_object('totp-code-entry')
