@@ -29,28 +29,29 @@ def get_distributed_tokens():
 
 class Metadata:
     def __init__(self):
-        self.api_base_uri = None
-        self.profile_id = None
-        self.token = None
-        self.token_endpoint = None
-        self.authorization_type = None
-        self.two_factor = None
-        self.two_factor_method = []
-        self.cert = None
-        self.key = None
-        self.config = None
-        self.uuid = None
-        self.icon_data = None
-        self.instance_base_uri = None
-        self.username = None
-        self.discovery_uri = None
-        self.user_id = None
+        self.api_base_uri = None # type: str
+        self.profile_id = None # type: str
+        self.token = None # type: dict
+        self.token_endpoint = None # type: str
+        self.authorization_type = None # type: str
+        self.two_factor = None # type: bool
+        self.two_factor_method = [] # type: List[str]
+        self.cert = None  # type: str
+        self.key = None # type: str
+        self.config = None  # type: str
+        self.uuid = None # type: str
+        self.icon_data = None # type: str
+        self.instance_base_uri = None # type: str
+        self.username = None # type: str
+        self.discovery_uri = None # type: str
+        self.user_id = None # type: str
         self.display_name = "Unknown"
         self.connection_type = "Unknown"
         self.profile_display_name = "Unknown"
 
     @staticmethod
     def from_uuid(uuid, display_name=None):
+        # type: (# type: str, display_name=None) -> Metadata
         metadata_path = os.path.join(providers_path, uuid + '.json')
         metadata = Metadata()
         try:
@@ -115,6 +116,7 @@ class Metadata:
 
 
 def get_all_metadata():
+    # type: () -> List[Metadata]
     if not os.access(providers_path, os.X_OK):
         return []
     metadatas = [Metadata.from_uuid(i[:-5]) for i in os.listdir(providers_path) if i.endswith('.json')]
@@ -122,6 +124,7 @@ def get_all_metadata():
 
 
 def reuse_token_from_base_uri(instance_base_uri):
+    # type: (# type: str) -> Optional[dict]
     for metadata in get_all_metadata():
         if metadata.connection_type in (u'Institute Access', u'Custom Instance') and \
                 metadata.instance_base_uri == instance_base_uri:

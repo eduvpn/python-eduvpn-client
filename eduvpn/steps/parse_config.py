@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 # ui thread
 def parse_config_step(builder, oauth, meta, lets_connect):
+    # type : (Gtk.Builder, oauth, Metadata, bool) -> None
     """parse the config and see if action is still required, otherwise finalize"""
     logger.info("parse config step")
     fetching_window(builder=builder, lets_connect=lets_connect)
@@ -24,6 +25,7 @@ def parse_config_step(builder, oauth, meta, lets_connect):
 
 # background thread
 def _background(meta, oauth, dialog, builder, lets_connect):
+    # type : (Metadata, oauth, Gtk.Dialog, Gtk.Builder, bool) -> None
     try:
         cert, key = create_keypair(oauth, meta.api_base_uri)
         meta.cert = cert

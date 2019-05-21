@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 # ui thread
 def activate_connection(meta, builder, verifier, lets_connect):
+    # type : (Metadata, Gtk.Builder, verifier, bool) -> None
     """do the actual connecting action"""
     logger.info("Connecting to {}".format(meta.display_name))
     disconnect_all()
@@ -48,6 +49,7 @@ def activate_connection(meta, builder, verifier, lets_connect):
 
 # background thread
 def _auth_check(oauth, meta, verifier, builder, lets_connect):
+    # type : (oauth, Metadata, verifier, Gtk.Builder, bool) -> None
     """quickly see if the can fetch messages, otherwise reauth"""
     try:
         info = user_info(oauth, meta.api_base_uri)
@@ -63,6 +65,7 @@ def _auth_check(oauth, meta, verifier, builder, lets_connect):
 
 # background thread
 def _cert_check(meta, oauth, builder, info):
+    # type : (Metadata, oauth, Gtk.Builderr, info) -> None
     common_name = common_name_from_cert(meta.cert.encode('ascii'))
     cert_valid = check_certificate(oauth, meta.api_base_uri, common_name)
 
@@ -82,6 +85,7 @@ def _cert_check(meta, oauth, builder, info):
 
 # background thread
 def _fetch_updated_config(oauth, meta, builder, info):
+    # type : (oauth, Metadata, verifier, Gtk.Builder ) -> None
     config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
     meta.config = config
     config_dict = parse_ovpn(meta.config)

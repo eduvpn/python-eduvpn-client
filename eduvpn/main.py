@@ -20,6 +20,7 @@ log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
 
 
 def parse_args():
+    # type : () -> Tuple[str, str, str, str, bool]
     """
     Parses command line arguments:
 
@@ -55,6 +56,7 @@ def parse_args():
 
 
 def init(lets_connect):
+    # type : (bool) -> EduVpnApp
     level, secure_internet_uri, institute_access_uri, verify_key, lets_connect_arg = parse_args()
     lets_connect = lets_connect or lets_connect_arg
 
@@ -79,12 +81,14 @@ def init(lets_connect):
 
 
 def main_eduvpn():
+    # type : () -> int
     init(lets_connect=False)
     Gtk.main()
     return 0
 
 
 def main_lets_connect():
+    # type : () -> int
     init(lets_connect=True)
     Gtk.main()
     return 0

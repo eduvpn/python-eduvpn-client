@@ -14,6 +14,7 @@ from cryptography.hazmat.backends import default_backend
 
 
 def common_name_from_cert(pem_data):
+    # type: (str) -> str
     """
     Extract common name from client certificate.
 
@@ -29,6 +30,7 @@ def common_name_from_cert(pem_data):
 
 
 def gen_code_verifier(length=128):
+    # type: (Optional[int] = 128) -> None
     """
     Generate a high entropy code verifier, used for PKCE
 
@@ -44,6 +46,7 @@ def gen_code_verifier(length=128):
 
 
 def gen_base32(length=20):
+    # type: (int) -> str
     choices = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
     r = random.SystemRandom()
     return "".join(r.choice(choices) for _ in range(length))
@@ -62,6 +65,7 @@ def gen_code_challenge(code_verifier):
 
 
 def make_verifier(key):
+    # type: (str) -> nacl.signing.VerifyKey
     """
     Create a NaCL verifier
 

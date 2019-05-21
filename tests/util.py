@@ -8,8 +8,8 @@ from mock import MagicMock
 
 class MockSelection:
     def __init__(self, num_fields):
-        self.model = [['test'] * num_fields]
-        self.treeiter = 0
+        self.model = [['test'] * num_fields] # type: Any
+        self.treeiter = 0 # type: int
 
     def get_selected(self):
         return self.model, self.treeiter
@@ -20,9 +20,9 @@ class MockSelection:
 
 class MockResponse:
     def __init__(self, content_json=None):
-        self.status_code = 200
+        self.status_code = 200 # type: int
 
-        if content_json:
+        if content_json: # type: Any
             self.content_json = content_json
         else:
             self.content_json = {
@@ -52,7 +52,7 @@ class MockResponse:
 
 class MockOAuth:
     def __init__(self, response=MockResponse()):
-        self.response = response
+        self.response = response # type: Any
 
     def get(self, _):
         return self.response
@@ -74,7 +74,7 @@ class MockBuilder:
         self.objects = {
             'profiles-selection': MockSelection(3),
             'instances-selection': MockSelection(2),
-        }
+        } # type: dict
 
     def get_object(self, o):
         return self.objects.get(o, MagicMock())
@@ -86,7 +86,7 @@ class VerifyMock:
 
 
 class MockDialog:
-    def __init__(self, return_code=0):
+    def __init__(self, return_code=0): # type: int
         self.return_code = return_code
 
     def run(self):
