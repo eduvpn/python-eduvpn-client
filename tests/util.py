@@ -65,7 +65,7 @@ class MockOAuth:
     def post(self, uri, data):
         return MockResponse()
 
-    def fetch_token(self, token_endpoint, code, code_verifier, client_id, include_client_id):
+    def fetch_token(self, token_endpoint, code, code_verifier):
         return {}
 
 
