@@ -49,7 +49,6 @@ class Metadata:
         self.connection_type = "Unknown"
         self.profile_display_name = "Unknown"
 
-    @staticmethod
     def from_uuid(uuid, display_name=None):
         # type: (str, display_name=None) -> Metadata
         metadata_path = os.path.join(providers_path, uuid + '.json')
