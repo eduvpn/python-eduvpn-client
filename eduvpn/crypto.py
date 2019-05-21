@@ -30,7 +30,7 @@ def common_name_from_cert(pem_data):
 
 
 def gen_code_verifier(length=128):
-    # type: (Optional[int]) -> None
+    # type: (Optional[int] = 128) -> None
     """
     Generate a high entropy code verifier, used for PKCE
 

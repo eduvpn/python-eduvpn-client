@@ -49,8 +49,9 @@ class Metadata:
         self.connection_type = "Unknown"
         self.profile_display_name = "Unknown"
 
+    @staticmethod
     def from_uuid(uuid, display_name=None):
-        # type: (str, display_name=None) -> Metadata
+        # type: (# type: str, display_name=None) -> Metadata
         metadata_path = os.path.join(providers_path, uuid + '.json')
         metadata = Metadata()
         try:
@@ -123,7 +124,7 @@ def get_all_metadata():
 
 
 def reuse_token_from_base_uri(instance_base_uri):
-    # type: (str) -> Optional[dict]
+    # type: (# type: str) -> Optional[dict]
     for metadata in get_all_metadata():
         if metadata.connection_type in (u'Institute Access', u'Custom Instance') and \
                 metadata.instance_base_uri == instance_base_uri:
