@@ -5,7 +5,4 @@
 
 import pkg_resources
 
-try:
-    __version__ = pkg_resources.require("eduvpn")[0].version # type: str
-except pkg_resources.DistributionNotFound:
-    __version__ = "0.0dev" # type: str
+__version__ = pkg_resources.require("eduvpn")[0].version # type: str
