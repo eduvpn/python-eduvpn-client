@@ -330,6 +330,7 @@ def get_auth_url(oauth, code_verifier, auth_endpoint):
 
 
 def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
+    # type : (OAuth2Session, str, str) -> None
     try:
         response = oauth.post(api_base_uri + '/two_factor_enroll_yubi', data={'yubi_key_otp': yubi_key_otp})
     except InvalidGrantError as e:
@@ -344,6 +345,7 @@ def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
 
 
 def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
+    # type : (OAuth2Session, str, secret, str) -> None
     prefix = '/two_factor_enroll_totp'
     url = api_base_uri + prefix
     logger.info("2fa totp enroling on {} with secret={} and key={}".format(url, secret, key))
@@ -363,6 +365,7 @@ def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
 
 
 def check_certificate(oauth, api_base_uri, common_name):
+    # type : (OAuth2Session, str, common_name) -> dict
     prefix = '/check_certificate'
     url = api_base_uri + prefix
     logger.info("checking client certificate on {} with common_name={}".format(url, common_name))

@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def finalizing_step(builder, meta, config_dict, lets_connect):
+    # type : (Gtk.Builder, Metadata, dict, bool) -> None
     """finalise the add profile flow, add a configuration"""
     logger.info("finalizing step")
     fetching_window(builder=builder, lets_connect=lets_connect)
@@ -27,6 +28,7 @@ def finalizing_step(builder, meta, config_dict, lets_connect):
 
 
 def _background(meta, dialog, builder, config_dict, lets_connect):
+    # type : (Metadata, Gtk.Dialog, Gtk.Builder, dict, bool) -> None
     try:
         uuid = store_provider(meta, config_dict)
         monitor_vpn(uuid=uuid, callback=lambda *args, **kwargs: vpn_change(builder=builder, lets_connect=lets_connect))

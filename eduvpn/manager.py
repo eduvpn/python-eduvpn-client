@@ -66,6 +66,7 @@ def list_providers():
 
 
 def store_provider(meta, config_dict):
+    # type : (Metadata, dict) -> str
     """Store the eduVPN configuration"""
     logger.info("storing profile with name {} using NetworkManager".format(meta.display_name))
     new = False
@@ -213,6 +214,7 @@ def is_provider_connected(uuid):
 
 
 def update_config_provider(meta, config_dict):
+    # type : (Metadata, dict) -> None
     """
     Update an existing network manager configuration
 

@@ -58,6 +58,7 @@ def thread_helper(func):
 
 
 def pil2pixbuf(img):
+    # type : (Image.Image) -> GdkPixbuf.Pixbuf
     """
     Convert a pillow (pil) object to a pixbuf
 
@@ -76,6 +77,7 @@ def pil2pixbuf(img):
 
 
 def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], display_name=None):
+    # type : (data, Any = ..., Any = ..., Optional[Any] = ...) -> GtkPixbuf
     """
     converts raw bytes into a GTK PixBug
 
@@ -151,6 +153,7 @@ def metadata_of_selected(builder):
 
 
 def detect_distro(release_file='/etc/os-release'):
+    # type : () -> Tuple[str, str]
     params = {}
     if not os.access(release_file, os.R_OK):
         raise EduvpnException("Can't detect distribution version, '/etc/os-release' doesn't exist.")
@@ -170,6 +173,7 @@ def detect_distro(release_file='/etc/os-release'):
 
 
 def are_we_running_ubuntu1804():
+    # type : () -> bool
     try:
         distro, version = detect_distro()
     except EduvpnException as e:

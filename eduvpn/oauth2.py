@@ -42,15 +42,16 @@ landing_page = """
 </div>
 </body>
 </html>
-"""
+"""  # type : str
 
-client_id_lets_connect = "org.letsconnect-vpn.app.linux"
-client_id_eduvpn = "org.eduvpn.app.linux"
+client_id_lets_connect = "org.letsconnect-vpn.app.linux"  # type : str
+client_id_eduvpn = "org.eduvpn.app.linux"  # type : str
 
-scope = ["config"]
+scope = ["config"]  # type : Any
 
 
 def get_open_port():
+    # type : () -> int
     """
     find an unused local port
 
@@ -66,6 +67,7 @@ def get_open_port():
 
 
 def one_request(port, lets_connect, timeout=None):
+    # type : (int, bool, Optional[int]=None) -> dict
     """
     Listen for one http request on port, then close and return request query
 
@@ -108,6 +110,7 @@ def stringify_image(logo):
 
 
 def create_oauth_session(port, lets_connect, auto_refresh_url):
+    # type : (int, bool, str) -> None
     """
     Create a oauth2 callback webserver
 
@@ -130,6 +133,7 @@ def create_oauth_session(port, lets_connect, auto_refresh_url):
 
 
 def get_oauth_token_code(port, lets_connect, timeout=None):
+    # type : (int, bool, int = None) -> None
     """
     Start webserver, open browser, wait for callback response.
 
@@ -153,6 +157,7 @@ def get_oauth_token_code(port, lets_connect, timeout=None):
 
 
 def oauth_from_token(meta, lets_connect):
+    # type : (Metadata, bool) -> None
     """
     Recreate a oauth2 object from a token
 

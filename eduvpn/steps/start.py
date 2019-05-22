@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 # ui thread
 def refresh_start(builder, lets_connect):
+    # type : (Gtk.Builder, bool) -> None
     logger.info("composing list of current eduVPN configurations")
     config_list = builder.get_object('configs-model')
     introduction = builder.get_object('introduction')

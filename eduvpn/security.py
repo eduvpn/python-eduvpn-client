@@ -19,7 +19,7 @@ state_acticated = 100  # NM_DEVICE_STATE_ACTIVATED
 
 
 def get_link(interface):
-    # type: (str) -> int
+    # type : (str) -> int
     """
     Returns link ID associated with the interface name
     """
@@ -27,7 +27,7 @@ def get_link(interface):
 
 
 def get_active_vpn_device():
-    # type: () -> str
+    # type : () -> str
     devices = NetworkManager.NetworkManager.GetDevices()    # type: ignore
     interfaces = [x.Interface for x in devices if x.State == state_acticated and x.DeviceType == type_tun]
     assert(len(interfaces) == 1)
@@ -36,7 +36,7 @@ def get_active_vpn_device():
 
 
 def set_link_domain(link):
-    # type: (int) -> None
+    # type : (int) -> None
     bus = dbus.SystemBus()
     node = "/org/freedesktop/resolve1"
     bus_name = 'org.freedesktop.resolve1'

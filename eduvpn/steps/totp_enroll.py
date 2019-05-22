@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 # ui thread
 def totp_enroll_window(builder, oauth, meta, config_dict, lets_connect, secret=None):
+    # type : (Gtk.Builder, oauth, Metadata, dict, bool, secret=None) -> None
     dialog = builder.get_object('totp-enroll-dialog')
     window = builder.get_object('eduvpn-window')
     dialog.set_transient_for(window)
@@ -31,6 +32,7 @@ def totp_enroll_window(builder, oauth, meta, config_dict, lets_connect, secret=N
 
 # background thread
 def _make_qr(builder, oauth, meta, config_dict, lets_connect, secret=None):
+    # type : (Gtk.Builder, oauth, Metadata, dict, bool, secret=None) -> None
     image = builder.get_object('totp-qr-image')
     if not secret:
         secret = gen_base32()
@@ -50,6 +52,7 @@ def _make_qr(builder, oauth, meta, config_dict, lets_connect, secret=None):
 
 # ui thread
 def _parse_user_input(builder, oauth, meta, config_dict, lets_connect, secret=None):
+    # type : (Gtk.Builder, oauth, Metadata, dict, bool, secret) -> None
     dialog = builder.get_object('totp-enroll-dialog')
     code_entry = builder.get_object('totp-code-entry')
     cancel_button = builder.get_object('totp-cancel-button')
@@ -82,6 +85,7 @@ def _parse_user_input(builder, oauth, meta, config_dict, lets_connect, secret=No
 
 # background tread
 def _enroll(builder, oauth, meta, config_dict, secret, key, lets_connect):
+    # type : (Gtk.Builder, oauth, Metadata, config_dict, secret, key, bool) -> None
     dialog = builder.get_object('totp-enroll-dialog')
     error_label = builder.get_object('totp-error-label')
     cancel_button = builder.get_object('totp-cancel-button')

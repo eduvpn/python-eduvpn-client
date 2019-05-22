@@ -17,12 +17,14 @@ logger = logging.getLogger(__name__)
 
 # ui thread
 def two_auth_step(builder, oauth, meta, config_dict, lets_connect):
+    # type : (Gtk.Builder, oauth, Metadata, dict, bool) -> None
     """checks if 2auth is enabled. If more than 1 option presents user with choice"""
     thread_helper(lambda: _background(meta, oauth, builder, config_dict=config_dict, lets_connect=lets_connect))
 
 
 # background thread
 def _background(meta, oauth, builder, config_dict, lets_connect):
+    # type : (Metadata, oauth, Gtk.Builder, dict, bool) -> None
     window = builder.get_object('eduvpn-window')
 
     try:
@@ -57,6 +59,7 @@ def _background(meta, oauth, builder, config_dict, lets_connect):
 
 # ui thread
 def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
+    # type : (options, Metadata, oauth, Gtk.Builder, dict, bool) -> None
     logger.info("presenting user with two-factor auth method dialog")
     window = builder.get_object('eduvpn-window')
 
@@ -90,6 +93,7 @@ def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
 
 
 def _enroll(oauth, meta, builder, config_dict, lets_connect):
+    # type : (oauth, Metadata, Gtk.Builder, dict, bool) -> None
     if meta.username == 'totp':
         GLib.idle_add(lambda: totp_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict,
                                                  lets_connect=lets_connect))
