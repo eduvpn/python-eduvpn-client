@@ -105,5 +105,5 @@ def get_oauth_token(user, password, instance_uri):
         code, other_state = future.result()
 
     assert(state == other_state)
-    meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier, client_id=oauth.client_id, include_client_id=True)
+    meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
     return oauth, meta
