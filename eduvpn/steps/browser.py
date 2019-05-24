@@ -107,6 +107,8 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
     # type : (Metadata, port, oauth, code_verifier, auth_url, Gtk.Dialog, Gtk.Builder, state, bool) -> None
     session = random()
     logger.info("opening browser with url {}".format(auth_url))
+    client_id_lets_connect = "org.letsconnect-vpn.app.linux"
+    client_id_eduvpn = "org.eduvpn.app.linux"
     try:
         webbrowser.open(auth_url)
         dialog.session = session
@@ -116,8 +118,10 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
             logger.error("received from state, expected: {}, received: {}".format(state, other_state))
             raise Exception("oauth state has been tampered with")
         logger.info("setting oauth token for metadata")
-        oauth = create_oauth_session(port, auto_refresh_url=meta.token_endpoint, lets_connect=lets_connect)
-        meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier, client_id=oauth.client_id, include_client_id=True)
+        if lets_connect:
+            meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier, client_id=client_id_lets_connect, include_client_id=True)
+        else:
+            meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier, client_id=client_id_eduvpn, include_client_id=True)
     except Exception as e:
         error = e
         if dialog.get_property("visible") and dialog.session == session:
