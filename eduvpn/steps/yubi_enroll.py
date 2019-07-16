@@ -1,17 +1,18 @@
 import logging
 from builtins import chr
 import gi
-from gi.repository import GLib, Gdk
+from gi.repository import GLib, Gdk, Gtk
 from eduvpn.remote import two_factor_enroll_yubi
 from eduvpn.util import thread_helper
 from eduvpn.steps.finalize import finalizing_step
-
+from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
 def yubi_enroll_window(builder, oauth, meta, config_dict, lets_connect):
+    #type: (Gtk.builder, str, Metadata, dict, bool) -> None
     """finalise the add profile flow, add a configuration"""
     dialog = builder.get_object('yubi-enroll-dialog')
     window = builder.get_object('eduvpn-window')
@@ -28,6 +29,7 @@ def yubi_enroll_window(builder, oauth, meta, config_dict, lets_connect):
 
 # ui thread
 def _parse_user_input(builder, oauth, meta, config_dict, lets_connect):
+    #type: (Gtk.builder, str, Metadata, dict, bool) -> None
     dialog = builder.get_object('yubi-enroll-dialog')
     code_entry = builder.get_object('yubi-code-entry')
     cancel_button = builder.get_object('yubi-cancel-button')
@@ -58,6 +60,7 @@ def _parse_user_input(builder, oauth, meta, config_dict, lets_connect):
 
 # background tread
 def _enroll(builder, oauth, meta, config_dict, key, lets_connect):
+    #type: (Gtk.builder, str, Metadata, dict, str, bool) -> None
     error_label = builder.get_object('yubi-error-label')
     dialog = builder.get_object('yubi-enroll-dialog')
     cancel_button = builder.get_object('yubi-cancel-button')

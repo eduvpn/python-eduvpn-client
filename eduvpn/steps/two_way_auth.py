@@ -11,18 +11,21 @@ from eduvpn.remote import user_info
 from eduvpn.steps.totp_enroll import totp_enroll_window
 from eduvpn.steps.yubi_enroll import yubi_enroll_window
 from eduvpn.steps.finalize import finalizing_step
+from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
 def two_auth_step(builder, oauth, meta, config_dict, lets_connect):
+    #type: (Gtk.builder, str, Metadata, dict, bool) -> None
     """checks if 2auth is enabled. If more than 1 option presents user with choice"""
     thread_helper(lambda: _background(meta, oauth, builder, config_dict=config_dict, lets_connect=lets_connect))
 
 
 # background thread
 def _background(meta, oauth, builder, config_dict, lets_connect):
+    #type: (Metadata, str, Gtk.builder, dict, bool) -> None
     window = builder.get_object('eduvpn-window')
 
     try:
@@ -57,6 +60,7 @@ def _background(meta, oauth, builder, config_dict, lets_connect):
 
 # ui thread
 def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
+    #type: (dict, Metadata, str, Gtk.builder, dict, bool) -> None
     logger.info("presenting user with two-factor auth method dialog")
     window = builder.get_object('eduvpn-window')
 
@@ -90,6 +94,7 @@ def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
 
 
 def _enroll(oauth, meta, builder, config_dict, lets_connect):
+    #type: (str, Metadata, Gtk.builder, dict, bool) -> None
     if meta.username == 'totp':
         GLib.idle_add(lambda: totp_enroll_window(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict,
                                                  lets_connect=lets_connect))

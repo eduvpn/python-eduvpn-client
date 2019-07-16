@@ -10,11 +10,14 @@ from gi.repository import GLib
 from eduvpn.notify import notify, init_notify
 from eduvpn.manager import list_active
 from eduvpn.util import metadata_of_selected
+import Gtk
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 
 def vpn_change(builder, lets_connect, state=0, reason=0):
+    #type: (Gtk.builder, bool, Optional[int], Optional[int]) -> None
     logger.info("VPN status change")
     switch = builder.get_object('connect-switch')
     ipv4_label = builder.get_object('ipv4-label')

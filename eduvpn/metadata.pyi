@@ -9,7 +9,7 @@ def get_distributed_tokens(): ...
 
 
 class Metadata:
-    api_base_uri = ...  # type: str
+    api_base_uri = ...  #type: str
     profile_id = ...  # type: str
     token = ...  # type: dict
     token_endpoint = ...  # type: str
@@ -17,7 +17,7 @@ class Metadata:
     authorization_endpoint = ... # type: str
     profile_display_name = ...  # type: str
     two_factor = ...  # type: bool
-    two_factor_method = ... # type: List[str]
+    two_factor_method = ... #type: List[str]
     cert = ...  # type: str
     key = ...  # type: str
     config = ...  # type: str

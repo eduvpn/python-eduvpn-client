@@ -11,12 +11,14 @@ from eduvpn.manager import delete_provider
 from eduvpn.notify import notify, init_notify
 from eduvpn.util import error_helper, metadata_of_selected
 from eduvpn.steps.start import refresh_start
+import Gtk
 
 
 logger = logging.getLogger(__name__)
 
 
 def delete_profile(builder, lets_connect):
+    #type: (Gtk.builder, bool) -> None
     """called when the user presses the - button"""
     logger.info("delete provider clicked")
     meta = metadata_of_selected(builder)

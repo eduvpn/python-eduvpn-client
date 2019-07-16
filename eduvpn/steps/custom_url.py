@@ -7,13 +7,15 @@ import logging
 import gi
 from eduvpn.util import error_helper
 from eduvpn.steps.browser import browser_step
-
+from eduvpn.metadata import Metadata
+from gi.repository import Gtk
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
 def custom_url(builder, meta, verifier, lets_connect):
+    #type: (Gtk.builder, Metadata, str, bool) -> None
     """the custom URL dialog where a user can enter a custom instance URL"""
     dialog = builder.get_object('custom-url-dialog')
     window = builder.get_object('eduvpn-window')

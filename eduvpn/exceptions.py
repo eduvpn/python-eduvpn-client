@@ -5,10 +5,12 @@
 
 
 class EduvpnException(Exception):
+	#type: (Exception) -> None
     """base eduVPN exception"""
     pass
 
 
 class EduvpnAuthException(Exception):
+	#type: (Exception) -> None
     """eduVPN authentication exception"""
     pass

@@ -19,16 +19,23 @@ from eduvpn.config import icon_size
 from eduvpn.metadata import Metadata
 from eduvpn.exceptions import EduvpnException
 
+from typing import Any, Optional, Tuple
+from pil import Image
+import gi
+from gi.repository import GdkPixbuf
+
 
 logger = logging.getLogger(__name__)
 
 
 def make_unique_id():
+    #type: () -> str
     return str(uuid.uuid4())
 
 
 # ui thread
 def error_helper(parent, msg_big, msg_small):
+    #type: (Gtk.GObject, str, str) -> None
     """
     Shows a GTK error message dialog.
 
@@ -45,6 +52,7 @@ def error_helper(parent, msg_big, msg_small):
 
 
 def thread_helper(func):
+    #type: (Any) -> threading.Thread
     """
     Runs a function in a thread
 
@@ -58,6 +66,7 @@ def thread_helper(func):
 
 
 def pil2pixbuf(img):
+    #type: (Image.Image) -> GdkPixbuf.Pixbuf
     """
     Convert a pillow (pil) object to a pixbuf
 
@@ -76,6 +85,7 @@ def pil2pixbuf(img):
 
 
 def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], display_name=None):
+    #type: (bytes, int, int, Optional[str]) -> GdkPixbuf.Pixbuf
     """
     converts raw bytes into a GTK PixBug
 
@@ -101,6 +111,7 @@ def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], dis
 
 @lru_cache(maxsize=1)
 def get_prefix():
+    #type: () -> str
     """
     Returns the Python prefix where eduVPN is installed
 
@@ -119,6 +130,7 @@ def get_prefix():
 
 @lru_cache(maxsize=1)
 def have_dbus():
+    #type: () -> bool
     try:
         import dbus
         dbus = dbus.SystemBus(private=True)
@@ -132,6 +144,7 @@ def have_dbus():
 
 @lru_cache(maxsize=1)
 def get_pixbuf(logo=None):
+    #type: (Optional[str]) -> Tuple[GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf]
     if not logo:
         logo = path.join(get_prefix(), 'share/eduvpn/eduvpn.png')
 
@@ -141,6 +154,7 @@ def get_pixbuf(logo=None):
 
 
 def metadata_of_selected(builder):
+    #type: (Gtk.builder) -> Any
     selection = builder.get_object('provider-selection')
     model, treeiter = selection.get_selected()
     if treeiter is None:
@@ -151,6 +165,7 @@ def metadata_of_selected(builder):
 
 
 def detect_distro(release_file='/etc/os-release'):
+    #type: (str) -> Tuple[str, str]
     params = {}
     if not os.access(release_file, os.R_OK):
         raise EduvpnException("Can't detect distribution version, '/etc/os-release' doesn't exist.")
@@ -170,6 +185,7 @@ def detect_distro(release_file='/etc/os-release'):
 
 
 def are_we_running_ubuntu1804():
+    #type: () -> bool
     try:
         distro, version = detect_distro()
     except EduvpnException as e:

@@ -6,7 +6,8 @@
 import json
 import logging
 import os
-
+from eduvpn.metadata import Metadata
+from typing import Tuple, Any, Optional, NoReturn, Nothing
 from eduvpn.util import have_dbus
 
 if have_dbus():
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def insert_config(settings):
+	#type: (dict) -> NetworkManager.connection
     """
     Add a configuration to the networkmanager
 
@@ -41,6 +43,7 @@ def insert_config(settings):
 
 
 def list_providers():
+	#type: () -> Metadata
     """
     List all OpenVPN connections.
     """
@@ -66,6 +69,7 @@ def list_providers():
 
 
 def store_provider(meta, config_dict):
+	#type: (Metadata, dict) -> str
     """Store the eduVPN configuration"""
     logger.info("storing profile with name {} using NetworkManager".format(meta.display_name))
     new = False
@@ -87,6 +91,7 @@ def store_provider(meta, config_dict):
 
 
 def delete_provider(uuid):
+	#type: (str) -> None
     """
     Delete the network manager configuration by its UUID
 
@@ -131,24 +136,26 @@ def delete_provider(uuid):
 
 
 def connect_provider(uuid):
-    """
+   #type: (str) -> None
+	"""
     Enable the network manager configuration by its UUID
-
+    
     args:
         uuid (str): the unique ID of the configuration
     """
-    logger.info("connecting profile with uuid {} using NetworkManager".format(uuid))
-    if not have_dbus():
-        raise EduvpnException("No DBus daemon running")
+	logger.info("connecting profile with uuid {} using NetworkManager".format(uuid))
+	if not have_dbus():
+		raise EduvpnException("No DBus daemon running")
 
-    try:
-        connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
-        return NetworkManager.NetworkManager.ActivateConnection(connection, "/", "/")
-    except DBusException as e:
-        raise EduvpnException(e)
+	try:
+		connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
+		return NetworkManager.NetworkManager.ActivateConnection(connection, "/", "/")
+	except DBusException as e:
+		raise EduvpnException(e)
 
 
 def list_active():
+	#type: () -> list
     """
     List active connections
 
@@ -167,37 +174,40 @@ def list_active():
 
 
 def disconnect_all():
-    """
+    #type: () -> Any
+	"""
     Disconnect all active VPN connections.
     """
-    if not have_dbus():
-        return []
+	if not have_dbus():
+		return []
 
-    for active in NetworkManager.NetworkManager.ActiveConnections:
-        conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)
-        if conn.GetSettings()['connection']['type'] == 'vpn':
-            disconnect_provider(active.Uuid)
+	for active in NetworkManager.NetworkManager.ActiveConnections:
+		conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)
+		if conn.GetSettings()['connection']['type'] == 'vpn':
+			disconnect_provider(active.Uuid)
 
 
 def disconnect_provider(uuid):
-    """
+    #type: (str) -> None
+	"""
     Disconnect the network manager configuration by its UUID
 
     args:
         uuid (str): the unique ID of the configuration
     """
-    logger.info("Disconnecting profile with uuid {} using NetworkManager".format(uuid))
-    if not have_dbus():
-        raise EduvpnException("No DBus daemon running")
+	logger.info("Disconnecting profile with uuid {} using NetworkManager".format(uuid))
+	if not have_dbus():
+		raise EduvpnException("No DBus daemon running")
 
-    conns = [i for i in NetworkManager.NetworkManager.ActiveConnections if i.Uuid == uuid]
-    if len(conns) == 0:
-        raise EduvpnException("no active connection found with uuid {}".format(uuid))
-    for conn in conns:
-        NetworkManager.NetworkManager.DeactivateConnection(conn)
+	conns = [i for i in NetworkManager.NetworkManager.ActiveConnections if i.Uuid == uuid]
+	if len(conns) == 0:
+		raise EduvpnException("no active connection found with uuid {}".format(uuid))
+	for conn in conns:
+		NetworkManager.NetworkManager.DeactivateConnection(conn)
 
 
 def is_provider_connected(uuid):
+	#type: (str) -> Any
     """
     checks if a provider is connected
 
@@ -213,7 +223,8 @@ def is_provider_connected(uuid):
 
 
 def update_config_provider(meta, config_dict):
-    """
+    #type: (Metadata, dict) -> None
+	"""
     Update an existing network manager configuration
 
     args:
@@ -221,18 +232,19 @@ def update_config_provider(meta, config_dict):
         display_name (str): The new display name of the configuration
         config (str): The new OpenVPN configuration
     """
-    logger.info("updating config for {} ({})".format(meta.display_name, meta.uuid))
-    nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
+	logger.info("updating config for {} ({})".format(meta.display_name, meta.uuid))
+	nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
 
-    if have_dbus():
-        connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
-        old_settings = connection.GetSettings()
-        nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
-                                         'key': old_settings['vpn']['data']['key']})
-        connection.Update(nm_config)
+	if have_dbus():
+		connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
+		old_settings = connection.GetSettings()
+		nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
+										 'key': old_settings['vpn']['data']['key']})
+		connection.Update(nm_config)
 
 
 def update_keys_provider(uuid, cert, key):
+	#type: (str, str, str) -> None
     """
     Update the key pare in the network manager configuration. Typically called when the keypair is expired.
 
@@ -247,6 +259,7 @@ def update_keys_provider(uuid, cert, key):
 
 
 def monitor_all_vpn(callback):
+	#type: (Any) -> Any
     """
     This installs a dbus callback which will be called every time the state of any VPN connection changes.
 
@@ -262,6 +275,7 @@ def monitor_all_vpn(callback):
 
 
 def monitor_vpn(uuid, callback):
+	#type: (str, Any) -> None
     """
     This installs a dbus callback which will be called every time the state of a specific VPN changes
 

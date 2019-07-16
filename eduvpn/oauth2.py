@@ -10,6 +10,8 @@ import socket
 from future.moves.urllib.parse import urlparse, parse_qs
 from requests_oauthlib import OAuth2Session
 from eduvpn.brand import get_brand
+from typing import Any, Optional, Tuple
+from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
 
@@ -42,21 +44,17 @@ landing_page = """
 </div>
 </body>
 </html>
-"""
+""" #type: str
 
-client_id_lets_connect = "org.letsconnect-vpn.app.linux"
-client_id_eduvpn = "org.eduvpn.app.linux"
+client_id_lets_connect = "org.letsconnect-vpn.app.linux" #type: str
+client_id_eduvpn = "org.eduvpn.app.linux" #type: str
 
-scope = ["config"]
+scope = ["config"] #type: Any
 
 
 def get_open_port():
-    """
-    find an unused local port
-
-    returns:
-        int: an unused port number
-    """
+	#type: () -> int
+    """Find an unused local port."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("", 0))
     s.listen(1)
@@ -66,14 +64,8 @@ def get_open_port():
 
 
 def one_request(port, lets_connect, timeout=None):
-    """
-    Listen for one http request on port, then close and return request query
-
-    args:
-        port (int): the port to listen for the request
-    returns:
-        str: the request
-    """
+	#type: (int, bool, Optional[int]) -> str
+    """Listen for one http request on port, then close and return request query."""
     logger.info("listening for a request on port {}...".format(port))
 
     class RequestHandler(BaseHTTPRequestHandler):
@@ -103,20 +95,14 @@ def one_request(port, lets_connect, timeout=None):
 
 
 def stringify_image(logo):
+	#type: (str) -> str
     import base64
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
 def create_oauth_session(port, lets_connect, auto_refresh_url):
-    """
-    Create a oauth2 callback webserver
-
-    args:
-        port (int): the port where to listen to
-        lets_connect (bool): let's connect mode (true) or eduvpn (false)
-    returns:
-        OAuth2Session: a oauth2 session object
-    """
+	#type: (int, bool, str) -> OAuth2Session
+    """Create a oauth2 callback webserver."""
     logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
 
@@ -130,18 +116,10 @@ def create_oauth_session(port, lets_connect, auto_refresh_url):
 
 
 def get_oauth_token_code(port, lets_connect, timeout=None):
-    """
-    Start webserver, open browser, wait for callback response.
-
-    args:
-        port (int): port where to listen for
-        lets_connect (bool): let's connect mode (true) or eduvpn (false)
-        timeout (int): number of seconds before timeout, leave None if no timeout
-    returns:
-        str: the response code given by redirect
-    """
+	#type: (int, bool, int) -> Tuple[str, str]
+    """Start webserver, open browser, wait for callback response. """
     logger.info("waiting for callback on port {}".format(port))
-    response = one_request(port, lets_connect, timeout)
+    response = one_request(port, lets_connect, timeout) #type: str
     if 'code' in response and 'state' in response:
         code = response['code'][0]
         state = response['state'][0]
@@ -153,17 +131,8 @@ def get_oauth_token_code(port, lets_connect, timeout=None):
 
 
 def oauth_from_token(meta, lets_connect):
-    """
-    Recreate a oauth2 object from a token
-
-    args:
-        meta (eduvpn.metadata.Metadata): eduvpn metadata
-        lets_connect (bool):  let's connect mode (true) or eduvpn (false)
-
-    returns:
-        OAuth2Session: an auth2 session
-
-    """
+	#type: (Metadata, bool) -> OAuth2Session
+    """Recreate a oauth2 object from a token."""
     def inner(new_token):
         meta.update_token(new_token)
 

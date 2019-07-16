@@ -8,11 +8,13 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from eduvpn.steps.browser import browser_step
+from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
 
 
 def reauth(meta, verifier, builder, lets_connect):
+    #type: (Metadata, str, Gtk.builder, bool) -> None
     """called when the authorization is expired"""
     logger.info("looks like authorization is expired or removed")
     window = builder.get_object('eduvpn-window')

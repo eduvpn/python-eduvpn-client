@@ -6,18 +6,19 @@
 import logging
 import base64
 import gi
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
 from eduvpn.util import error_helper, thread_helper, bytes2pixbuf
 from eduvpn.remote import get_instances
 from eduvpn.steps.browser import browser_step
 from eduvpn.steps.fetching import fetching_window
-
+from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
 def fetch_instance_step(meta, builder, verifier, lets_connect):
+    #type: (Metadata, Gtk.builder, str, bool) -> None
     """fetch list of instances"""
     logger.info("fetching instances step")
     fetching_window(builder=builder, lets_connect=lets_connect)
@@ -28,6 +29,7 @@ def fetch_instance_step(meta, builder, verifier, lets_connect):
 
 # background thread
 def _fetch_background(meta, verifier, builder, lets_connect):
+    #type: (Metadata, str, Gtk.builder, bool) -> None
     dialog = builder.get_object('fetch-dialog')
     window = builder.get_object('eduvpn-window')
     try:
@@ -46,6 +48,7 @@ def _fetch_background(meta, verifier, builder, lets_connect):
 
 # ui thread
 def select_instance_step(meta, instances, builder, verifier, lets_connect):
+    #type: (Metadata, dict, Gtk.builder, str, bool) -> None
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
     dialog = builder.get_object('instances-dialog')

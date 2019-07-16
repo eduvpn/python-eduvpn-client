@@ -8,13 +8,15 @@ import logging
 from eduvpn.manager import list_providers
 from eduvpn.util import bytes2pixbuf, get_pixbuf
 from eduvpn.brand import get_brand
-
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
 def refresh_start(builder, lets_connect):
+    #type: (Gtk.builder, bool) -> None
     logger.info("composing list of current eduVPN configurations")
     config_list = builder.get_object('configs-model')
     introduction = builder.get_object('introduction')

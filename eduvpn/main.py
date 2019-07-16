@@ -13,6 +13,8 @@ from eduvpn.util import have_dbus
 from argparse import ArgumentParser
 from eduvpn import __version__
 from eduvpn import config
+from typing import Tuple
+from eduvpn.ui import EduVpnApp
 
 
 logger = logging.getLogger(__name__)
@@ -20,13 +22,8 @@ log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
 
 
 def parse_args():
-    """
-    Parses command line arguments:
-
-    returns:
-        (logging level (int), secure internet uri (str), institute access uri (str), verify key (str))
-
-    """
+	#type: () -> Tuple[int, str, str, str, bool]
+    """Parses command line arguments."""
     parser = ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true', help="enable debug logging")
     parser.add_argument('-v', '--version', action='store_true', help="print version and exit")
@@ -55,9 +52,11 @@ def parse_args():
 
 
 def init(lets_connect):
+    #type: (bool) -> EduVpnApp
+    """Initialise the main app."""
     level, secure_internet_uri, institute_access_uri, verify_key, lets_connect_arg = parse_args()
     lets_connect = lets_connect or lets_connect_arg
-
+	
     if geteuid() == 0:
         logger.error("Running eduVPN client as root is not supported (yet)")
         exit(1)
@@ -79,12 +78,16 @@ def init(lets_connect):
 
 
 def main_eduvpn():
+    #type: () -> int
+    """Start the app in EduVPN mode."""
     init(lets_connect=False)
     Gtk.main()
     return 0
 
 
 def main_lets_connect():
+    #type: () -> int
+    """Start the app in Let's connect mode."""
     init(lets_connect=True)
     Gtk.main()
     return 0

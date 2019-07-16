@@ -15,16 +15,16 @@ from eduvpn.config import locale
 from eduvpn.crypto import gen_code_challenge
 from eduvpn.exceptions import EduvpnAuthException, EduvpnException
 
+from nacl.signing import VerifyKey
+from typing import Optional, Tuple, Any, List
+from requests_oauthlib import OAuth2Session
+
 logger = logging.getLogger(__name__)
 
 
 def translate_display_name(display_name):
-    """
-    Translates a display_name in the current locale.
-
-    args:
-        display_name (str or dict):
-    """
+	#type: (dict) -> str
+    """Translates a display_name in the current locale."""
     if type(display_name) == dict:
         if locale in display_name:
             translated = display_name[locale]
@@ -39,6 +39,7 @@ def translate_display_name(display_name):
 
 
 def get_instances(discovery_uri, verifier=None):
+	#type: (str, VerifyKey) -> Tuple[Any, List[Tuple[str, str, Optional[bytes]]]]
     """
     retrieve a list of instances.
 
@@ -76,6 +77,7 @@ def get_instances(discovery_uri, verifier=None):
     pool = ThreadPool()
 
     def fetch(instance):
+		#type: (dict) -> Tuple[str, str, Optional[bytes]]
         display_name = translate_display_name(instance['display_name'])
         base_uri = instance['base_uri']
         logo_uri = instance['logo']
@@ -94,16 +96,8 @@ def get_instances(discovery_uri, verifier=None):
 
 
 def get_instance_info(instance_uri, verifier=None):
-    """
-    Retrieve information from instance
-
-    args:
-        instance_uri (str): the base URI for the instance
-        verifier (nacl.signing.VerifyKey): the verifykey used to verify the key
-
-    returns:
-        tuple(str, str, str): api_base_uri, authorization_endpoint, token_endpoint
-    """
+	#type: (str, VerifyKey) -> Tuple[str, str, str]
+    """Retrieve information from instance."""
     logger.info("Retrieving info from instance {}".format(instance_uri))
     info_uri = instance_uri + '/info.json'
     info = requests.get(info_uri)
@@ -117,16 +111,8 @@ def get_instance_info(instance_uri, verifier=None):
 
 
 def create_keypair(oauth, api_base_uri):
-    """
-    Create remote keypair and return results
-
-    args:
-        oauth (requests_oauthlib.OAuth2Session): oauth2 object
-        api_base_uri (str): the instance base URI
-
-    returns:
-        tuple(str, str): certificate and key
-    """
+	#type: (OAuth2Session, str) -> Tuple[str, str]
+    """Create remote keypair and return results"""
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     try:
         response = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})
@@ -143,6 +129,7 @@ def create_keypair(oauth, api_base_uri):
 
 
 def list_profiles(oauth, api_base_uri):
+    #type (OAuth2Session, str) -> dict
     """
     List profiles on instance
 
@@ -181,6 +168,7 @@ def list_profiles(oauth, api_base_uri):
 
 
 def user_info(oauth, api_base_uri):
+    #type: (OAuth2Session, str) -> dict
     """
     returns the user information
 
@@ -207,6 +195,7 @@ def user_info(oauth, api_base_uri):
 
 
 def user_messages(oauth, api_base_uri):
+    #type: (OAuth2Session, str) -> Any
     """
     These are messages specific to the user. It can contain a message about the user being blocked, or other personal
     messages from the VPN administrator.
@@ -234,6 +223,7 @@ def user_messages(oauth, api_base_uri):
 
 
 def system_messages(oauth, api_base_uri):
+    #type: (OAuth2Session, str) -> Any
     """
     Return all system messages
 
@@ -258,6 +248,7 @@ def system_messages(oauth, api_base_uri):
 
 
 def create_config(oauth, api_base_uri, display_name, profile_id):
+    #type: (OAuth2Session, str, str, str) -> str
     """
     Create a configuration for a given profile.
 
@@ -281,6 +272,7 @@ def create_config(oauth, api_base_uri, display_name, profile_id):
 
 
 def get_profile_config(oauth, api_base_uri, profile_id):
+    #type: (OAuth2Session, str, str) -> str
     """
     Return a profile configuration
 
@@ -312,6 +304,7 @@ def get_profile_config(oauth, api_base_uri, profile_id):
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):
+    #type: (OAuth2Session, str, str) -> Tuple[str, str]
     """"
     generate a authorization URL.
 
@@ -330,6 +323,7 @@ def get_auth_url(oauth, code_verifier, auth_endpoint):
 
 
 def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
+    #type: (OAuth2Session, str, str) -> None
     try:
         response = oauth.post(api_base_uri + '/two_factor_enroll_yubi', data={'yubi_key_otp': yubi_key_otp})
     except InvalidGrantError as e:
@@ -344,6 +338,7 @@ def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
 
 
 def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
+    #type: (OAuth2Session, str, str, str) -> None
     prefix = '/two_factor_enroll_totp'
     url = api_base_uri + prefix
     logger.info("2fa totp enroling on {} with secret={} and key={}".format(url, secret, key))
@@ -363,6 +358,7 @@ def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
 
 
 def check_certificate(oauth, api_base_uri, common_name):
+    #type: (OAuth2Session, str, str) -> dict
     prefix = '/check_certificate'
     url = api_base_uri + prefix
     logger.info("checking client certificate on {} with common_name={}".format(url, common_name))
