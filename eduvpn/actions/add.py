@@ -12,8 +12,7 @@ import Gtk
 logger = logging.getLogger(__name__)
 
 
-def new_provider(builder, verifier, secure_internet_uri, institute_access_uri, lets_connect):
-    #type: (Gtk.builder, str, str, str, bool) -> None
+def new_provider(builder, verifier, secure_internet_uri, institute_access_uri, lets_connect):  # type: (Gtk.builder, str, str, str, bool) -> None
     """The connection type selection step"""
     logger.info("add configuration clicked")
     meta = Metadata()

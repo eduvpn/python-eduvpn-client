@@ -21,8 +21,7 @@ logger = logging.getLogger(__name__)
 log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
 
 
-def parse_args():
-	#type: () -> Tuple[int, str, str, str, bool]
+def parse_args():  # type: () -> Tuple[int, str, str, str, bool]
     """Parses command line arguments."""
     parser = ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true', help="enable debug logging")
@@ -53,7 +52,6 @@ def parse_args():
 
 def init(lets_connect):
     #type: (bool) -> EduVpnApp
-    """Initialise the main app."""
     level, secure_internet_uri, institute_access_uri, verify_key, lets_connect_arg = parse_args()
     lets_connect = lets_connect or lets_connect_arg
 	
@@ -77,16 +75,14 @@ def init(lets_connect):
     return edu_vpn_app
 
 
-def main_eduvpn():
-    #type: () -> int
+def main_eduvpn():  # type: () -> int
     """Start the app in EduVPN mode."""
     init(lets_connect=False)
     Gtk.main()
     return 0
 
 
-def main_lets_connect():
-    #type: () -> int
+def main_lets_connect():   # type: () -> int
     """Start the app in Let's connect mode."""
     init(lets_connect=True)
     Gtk.main()

@@ -4,13 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 
-class EduvpnException(Exception):
-	#type: (Exception) -> None
+class EduvpnException(Exception):  # type: (Exception) -> None
     """base eduVPN exception"""
     pass
 
 
-class EduvpnAuthException(Exception):
-	#type: (Exception) -> None
+class EduvpnAuthException(Exception):  # type: (Exception) -> None
     """eduVPN authentication exception"""
     pass

@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def parse_config_step(builder, oauth, meta, lets_connect):
-    #type: (Gtk.builder, str, Metadata, bool) -> None
+def parse_config_step(builder, oauth, meta, lets_connect):  # type: (Gtk.builder, str, Metadata, bool) -> None
     """parse the config and see if action is still required, otherwise finalize"""
     logger.info("parse config step")
     fetching_window(builder=builder, lets_connect=lets_connect)

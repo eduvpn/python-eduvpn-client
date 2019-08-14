@@ -31,25 +31,25 @@ def get_distributed_tokens():
 
 class Metadata:
     def __init__(self):
-        self.api_base_uri = None #type: str
-        self.profile_id = None #type: str
-        self.token = None #type: dict
-        self.token_endpoint = None #type: str
-        self.authorization_type = None #type: str
-        self.two_factor = None #type: bool
-        self.two_factor_method = [] #type: List[str]
-        self.cert = None #type: str
-        self.key = None #type: str
-        self.config = None #type: str
-        self.uuid = None #type: str
-        self.icon_data = None #type: str
-        self.instance_base_uri = None #type: str
-        self.username = None #type: str
-        self.discovery_uri = None #type: str
-        self.user_id = None #type: str
-        self.display_name = "Unknown" #type: str
-        self.connection_type = "Unknown" #type: str
-        self.profile_display_name = "Unknown" #type: str
+        self.api_base_uri = None  # type: str
+        self.profile_id = None  # type: str
+        self.token = None  # type: dict
+        self.token_endpoint = None  # type: str
+        self.authorization_type = None  # type: str
+        self.two_factor = None  # type: bool
+        self.two_factor_method = []  # type: List[str]
+        self.cert = None  # type: str
+        self.key = None  # type: str
+        self.config = None  # type: str
+        self.uuid = None  # type: str
+        self.icon_data = None  # type: str
+        self.instance_base_uri = None  # type: str
+        self.username = None  # type: str
+        self.discovery_uri = None  # type: str
+        self.user_id = None  # type: str
+        self.display_name = "Unknown"  # type: str
+        self.connection_type = "Unknown"  # type: str
+        self.profile_display_name = "Unknown"  # type: str
 
     @staticmethod
     def from_uuid(uuid, display_name=None):

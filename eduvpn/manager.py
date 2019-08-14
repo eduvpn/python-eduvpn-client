@@ -7,7 +7,7 @@ import json
 import logging
 import os
 from eduvpn.metadata import Metadata
-from typing import Tuple, Any, Optional, NoReturn, Nothing
+from typing import Tuple, Any, Optional
 from eduvpn.util import have_dbus
 
 if have_dbus():
@@ -25,8 +25,7 @@ from eduvpn.metadata import Metadata
 logger = logging.getLogger(__name__)
 
 
-def insert_config(settings):
-	#type: (dict) -> NetworkManager.connection
+def insert_config(settings):  # type: (dict) -> NetworkManager.connection
     """
     Add a configuration to the networkmanager
 
@@ -42,8 +41,7 @@ def insert_config(settings):
     return connection
 
 
-def list_providers():
-	#type: () -> Metadata
+def list_providers():  # type: () -> Metadata
     """
     List all OpenVPN connections.
     """
@@ -68,8 +66,7 @@ def list_providers():
             yield Metadata.from_uuid(conn['uuid'], display_name=conn['id'])
 
 
-def store_provider(meta, config_dict):
-	#type: (Metadata, dict) -> str
+def store_provider(meta, config_dict):  # type: (Metadata, dict) -> str
     """Store the eduVPN configuration"""
     logger.info("storing profile with name {} using NetworkManager".format(meta.display_name))
     new = False
@@ -90,8 +87,7 @@ def store_provider(meta, config_dict):
     return meta.uuid
 
 
-def delete_provider(uuid):
-	#type: (str) -> None
+def delete_provider(uuid):  # type: (str) -> None
     """
     Delete the network manager configuration by its UUID
 
@@ -135,27 +131,25 @@ def delete_provider(uuid):
         raise
 
 
-def connect_provider(uuid):
-   #type: (str) -> None
-	"""
+def connect_provider(uuid):  # type: (str) -> None
+    """
     Enable the network manager configuration by its UUID
-    
+
     args:
         uuid (str): the unique ID of the configuration
     """
-	logger.info("connecting profile with uuid {} using NetworkManager".format(uuid))
-	if not have_dbus():
-		raise EduvpnException("No DBus daemon running")
+    logger.info("connecting profile with uuid {} using NetworkManager".format(uuid))
+    if not have_dbus():
+        raise EduvpnException("No DBus daemon running")
 
-	try:
-		connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
-		return NetworkManager.NetworkManager.ActivateConnection(connection, "/", "/")
-	except DBusException as e:
-		raise EduvpnException(e)
+    try:
+        connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
+        return NetworkManager.NetworkManager.ActivateConnection(connection, "/", "/")
+    except DBusException as e:
+        raise EduvpnException(e)
 
 
-def list_active():
-	#type: () -> list
+def list_active():  # type: () -> list
     """
     List active connections
 
@@ -173,8 +167,7 @@ def list_active():
         return []
 
 
-def disconnect_all():
-    #type: () -> Any
+def disconnect_all():  # type: () -> Any
 	"""
     Disconnect all active VPN connections.
     """
@@ -187,8 +180,7 @@ def disconnect_all():
 			disconnect_provider(active.Uuid)
 
 
-def disconnect_provider(uuid):
-    #type: (str) -> None
+def disconnect_provider(uuid):  # type: (str) -> None
 	"""
     Disconnect the network manager configuration by its UUID
 
@@ -206,8 +198,7 @@ def disconnect_provider(uuid):
 		NetworkManager.NetworkManager.DeactivateConnection(conn)
 
 
-def is_provider_connected(uuid):
-	#type: (str) -> Any
+def is_provider_connected(uuid):  # type: (str) -> Any
     """
     checks if a provider is connected
 
@@ -222,8 +213,7 @@ def is_provider_connected(uuid):
                 return "", ""
 
 
-def update_config_provider(meta, config_dict):
-    #type: (Metadata, dict) -> None
+def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
 	"""
     Update an existing network manager configuration
 
@@ -243,8 +233,7 @@ def update_config_provider(meta, config_dict):
 		connection.Update(nm_config)
 
 
-def update_keys_provider(uuid, cert, key):
-	#type: (str, str, str) -> None
+def update_keys_provider(uuid, cert, key):  # type: (str, str, str) -> None
     """
     Update the key pare in the network manager configuration. Typically called when the keypair is expired.
 
@@ -258,8 +247,7 @@ def update_keys_provider(uuid, cert, key):
     write_cert(key, 'key', uuid)
 
 
-def monitor_all_vpn(callback):
-	#type: (Any) -> Any
+def monitor_all_vpn(callback):  # type: (Any) -> Any
     """
     This installs a dbus callback which will be called every time the state of any VPN connection changes.
 
@@ -274,8 +262,7 @@ def monitor_all_vpn(callback):
                             signal_name='VpnStateChanged')
 
 
-def monitor_vpn(uuid, callback):
-	#type: (str, Any) -> None
+def monitor_vpn(uuid, callback):  # type: (str, Any) -> None
     """
     This installs a dbus callback which will be called every time the state of a specific VPN changes
 

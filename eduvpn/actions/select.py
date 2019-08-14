@@ -21,8 +21,7 @@ from eduvpn.util import are_we_running_ubuntu1804
 
 
 # ui thread
-def select_profile(builder, verifier, lets_connect):
-    #type: (Gtk.builder, str, bool) -> Metadata
+def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str, bool) -> Metadata
     """called when a users selects a configuration"""
     messages_label = builder.get_object('messages-label')
     notebook = builder.get_object('outer-notebook')

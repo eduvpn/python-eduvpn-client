@@ -16,15 +16,13 @@ from eduvpn.metadata import Metadata
 logger = logging.getLogger(__name__)
 
 
-def format_like_ovpn(config, cert, key):
-    #type: (str, str, str) -> str
+def format_like_ovpn(config, cert, key):  # type: (str, str, str) -> str
     """create a OVPN format config text."""
     logger.info("formatting config into ovpn format")
     return config + '\n<cert>\n{}\n</cert>\n<key>\n{}\n</key>\n'.format(cert, key)
 
 
-def parse_ovpn(configtext):
-    #type: (str) -> dict
+def parse_ovpn(configtext):  # type: (str) -> dict
     """
     Parse a ovpn like config file, return it in dict
 
@@ -53,7 +51,7 @@ def parse_ovpn(configtext):
             configtext = configtext.replace(full_match, '')
 
     # handle duplicate keys, make them a list
-    results = {} #type: dict
+    results = {}  # type: dict
     multiple = ['remote']  # remote needs to always be a list
     for keyword, value in configurator(configtext):
         if keyword in results:
@@ -72,8 +70,7 @@ def parse_ovpn(configtext):
     return config
 
 
-def ovpn_to_nm(config, meta, display_name, username=None):
-    #type: (dict, Metadata, str, Optional[str]) -> object
+def ovpn_to_nm(config, meta, display_name, username=None):  # type: (dict, Metadata, str, Optional[str]) -> object
     """Generate a NetworkManager style config dict from a parsed ovpn config dict."""
     logger.info("generating config for {} ({})".format(display_name, meta.uuid))
     settings = {'connection': {'id': display_name,

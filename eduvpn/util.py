@@ -21,8 +21,6 @@ from eduvpn.exceptions import EduvpnException
 
 from typing import Any, Optional, Tuple
 from pil import Image
-import gi
-from gi.repository import GdkPixbuf
 
 
 logger = logging.getLogger(__name__)
@@ -34,8 +32,7 @@ def make_unique_id():
 
 
 # ui thread
-def error_helper(parent, msg_big, msg_small):
-    #type: (Gtk.GObject, str, str) -> None
+def error_helper(parent, msg_big, msg_small):  # type: (Gtk.GObject, str, str) -> None
     """
     Shows a GTK error message dialog.
 
@@ -51,8 +48,7 @@ def error_helper(parent, msg_big, msg_small):
     error_dialog.hide()
 
 
-def thread_helper(func):
-    #type: (Any) -> threading.Thread
+def thread_helper(func):  # type: (Any) -> threading.Thread
     """
     Runs a function in a thread
 
@@ -65,8 +61,7 @@ def thread_helper(func):
     return thread
 
 
-def pil2pixbuf(img):
-    #type: (Image.Image) -> GdkPixbuf.Pixbuf
+def pil2pixbuf(img):  # type: (Image.Image) -> GdkPixbuf.Pixbuf
     """
     Convert a pillow (pil) object to a pixbuf
 
@@ -84,8 +79,7 @@ def pil2pixbuf(img):
     return pixbuf
 
 
-def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], display_name=None):
-    #type: (bytes, int, int, Optional[str]) -> GdkPixbuf.Pixbuf
+def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], display_name=None):  # type: (bytes, int, int, Optional[str]) -> GdkPixbuf.Pixbuf
     """
     converts raw bytes into a GTK PixBug
 
@@ -110,8 +104,7 @@ def bytes2pixbuf(data, width=icon_size['width'], height=icon_size['height'], dis
 
 
 @lru_cache(maxsize=1)
-def get_prefix():
-    #type: () -> str
+def get_prefix():  # type: () -> str
     """
     Returns the Python prefix where eduVPN is installed
 

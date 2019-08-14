@@ -17,8 +17,7 @@ import Gtk
 logger = logging.getLogger(__name__)
 
 
-def delete_profile(builder, lets_connect):
-    #type: (Gtk.builder, bool) -> None
+def delete_profile(builder, lets_connect):  # type: (Gtk.builder, bool) -> None
     """called when the user presses the - button"""
     logger.info("delete provider clicked")
     meta = metadata_of_selected(builder)

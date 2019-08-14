@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def fetch_instance_step(meta, builder, verifier, lets_connect):
-    #type: (Metadata, Gtk.builder, str, bool) -> None
+def fetch_instance_step(meta, builder, verifier, lets_connect):  # type: (Metadata, Gtk.builder, str, bool) -> None
     """fetch list of instances"""
     logger.info("fetching instances step")
     fetching_window(builder=builder, lets_connect=lets_connect)
@@ -47,8 +46,7 @@ def _fetch_background(meta, verifier, builder, lets_connect):
 
 
 # ui thread
-def select_instance_step(meta, instances, builder, verifier, lets_connect):
-    #type: (Metadata, dict, Gtk.builder, str, bool) -> None
+def select_instance_step(meta, instances, builder, verifier, lets_connect):  # type: (Metadata, dict, Gtk.builder, str, bool) -> None
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
     dialog = builder.get_object('instances-dialog')

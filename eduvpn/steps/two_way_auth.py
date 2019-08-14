@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def two_auth_step(builder, oauth, meta, config_dict, lets_connect):
-    #type: (Gtk.builder, str, Metadata, dict, bool) -> None
+def two_auth_step(builder, oauth, meta, config_dict, lets_connect):  # type: (Gtk.builder, str, Metadata, dict, bool) -> None
     """checks if 2auth is enabled. If more than 1 option presents user with choice"""
     thread_helper(lambda: _background(meta, oauth, builder, config_dict=config_dict, lets_connect=lets_connect))
 

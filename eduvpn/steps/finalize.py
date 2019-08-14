@@ -18,8 +18,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-def finalizing_step(builder, meta, config_dict, lets_connect):
-    #type: (Gtk.builder, Metadata, dict, bool) -> None
+def finalizing_step(builder, meta, config_dict, lets_connect):  # type: (Gtk.builder, Metadata, dict, bool) -> None
     """finalise the add profile flow, add a configuration"""
     logger.info("finalizing step")
     fetching_window(builder=builder, lets_connect=lets_connect)

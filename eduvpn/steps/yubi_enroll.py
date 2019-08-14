@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 # ui thread
-def yubi_enroll_window(builder, oauth, meta, config_dict, lets_connect):
-    #type: (Gtk.builder, str, Metadata, dict, bool) -> None
+def yubi_enroll_window(builder, oauth, meta, config_dict, lets_connect):  # type: (Gtk.builder, str, Metadata, dict, bool) -> None
     """finalise the add profile flow, add a configuration"""
     dialog = builder.get_object('yubi-enroll-dialog')
     window = builder.get_object('eduvpn-window')

@@ -20,8 +20,7 @@ from eduvpn.metadata import Metadata
 logger = logging.getLogger(__name__)
 
 
-def browser_step(builder, meta, verifier, lets_connect, force_token_refresh=False):
-    #type: (Gtk.builder, Metadata, str, bool, Optional[bool]) -> None
+def browser_step(builder, meta, verifier, lets_connect, force_token_refresh=False):  # type: (Gtk.builder, Metadata, str, bool, Optional[bool]) -> None
     """The notorious browser step. if no token, starts webserver, wait for callback, show token dialog"""
     logger.info("opening token dialog")
     dialog = builder.get_object('token-dialog')

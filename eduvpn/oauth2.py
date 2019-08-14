@@ -44,16 +44,15 @@ landing_page = """
 </div>
 </body>
 </html>
-""" #type: str
+"""  # type: str
 
-client_id_lets_connect = "org.letsconnect-vpn.app.linux" #type: str
-client_id_eduvpn = "org.eduvpn.app.linux" #type: str
+client_id_lets_connect = "org.letsconnect-vpn.app.linux"  # type: str
+client_id_eduvpn = "org.eduvpn.app.linux"  # type: str
 
-scope = ["config"] #type: Any
+scope = ["config"]  # type: Any
 
 
-def get_open_port():
-	#type: () -> int
+def get_open_port():  # type: () -> int
     """Find an unused local port."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("", 0))
@@ -63,8 +62,7 @@ def get_open_port():
     return port
 
 
-def one_request(port, lets_connect, timeout=None):
-	#type: (int, bool, Optional[int]) -> str
+def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional[int]) -> str
     """Listen for one http request on port, then close and return request query."""
     logger.info("listening for a request on port {}...".format(port))
 
@@ -100,8 +98,7 @@ def stringify_image(logo):
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
-def create_oauth_session(port, lets_connect, auto_refresh_url):
-	#type: (int, bool, str) -> OAuth2Session
+def create_oauth_session(port, lets_connect, auto_refresh_url):  # type: (int, bool, str) -> OAuth2Session
     """Create a oauth2 callback webserver."""
     logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
@@ -115,11 +112,10 @@ def create_oauth_session(port, lets_connect, auto_refresh_url):
     return oauth
 
 
-def get_oauth_token_code(port, lets_connect, timeout=None):
-	#type: (int, bool, int) -> Tuple[str, str]
+def get_oauth_token_code(port, lets_connect, timeout=None):  # type: (int, bool, int) -> Tuple[str, str]
     """Start webserver, open browser, wait for callback response. """
     logger.info("waiting for callback on port {}".format(port))
-    response = one_request(port, lets_connect, timeout) #type: str
+    response = one_request(port, lets_connect, timeout)  # type: str
     if 'code' in response and 'state' in response:
         code = response['code'][0]
         state = response['state'][0]
@@ -130,8 +126,7 @@ def get_oauth_token_code(port, lets_connect, timeout=None):
         raise Exception("Unknown error during authentication: {}".format(response))
 
 
-def oauth_from_token(meta, lets_connect):
-	#type: (Metadata, bool) -> OAuth2Session
+def oauth_from_token(meta, lets_connect):  # type: (Metadata, bool) -> OAuth2Session
     """Recreate a oauth2 object from a token."""
     def inner(new_token):
         meta.update_token(new_token)

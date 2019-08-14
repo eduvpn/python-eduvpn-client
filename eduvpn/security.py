@@ -18,8 +18,7 @@ type_tun = 16  # NM_DEVICE_TYPE_TUN
 state_acticated = 100  # NM_DEVICE_STATE_ACTIVATED
 
 
-def get_link(interface):
-    # type: (str) -> int
+def get_link(interface):  # type: (str) -> int
     """
     Returns link ID associated with the interface name
     """

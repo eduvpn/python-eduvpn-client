@@ -22,8 +22,7 @@ from requests_oauthlib import OAuth2Session
 logger = logging.getLogger(__name__)
 
 
-def translate_display_name(display_name):
-	#type: (dict) -> str
+def translate_display_name(display_name):  # type: (dict) -> str
     """Translates a display_name in the current locale."""
     if type(display_name) == dict:
         if locale in display_name:
@@ -38,8 +37,7 @@ def translate_display_name(display_name):
     return translated
 
 
-def get_instances(discovery_uri, verifier=None):
-	#type: (str, VerifyKey) -> Tuple[Any, List[Tuple[str, str, Optional[bytes]]]]
+def get_instances(discovery_uri, verifier=None):  # type: (str, VerifyKey) -> Tuple[Any, List[Tuple[str, str, Optional[bytes]]]]
     """
     retrieve a list of instances.
 
@@ -95,8 +93,7 @@ def get_instances(discovery_uri, verifier=None):
     return authorization_type, instances
 
 
-def get_instance_info(instance_uri, verifier=None):
-	#type: (str, VerifyKey) -> Tuple[str, str, str]
+def get_instance_info(instance_uri, verifier=None):  # type: (str, VerifyKey) -> Tuple[str, str, str]
     """Retrieve information from instance."""
     logger.info("Retrieving info from instance {}".format(instance_uri))
     info_uri = instance_uri + '/info.json'
@@ -110,8 +107,7 @@ def get_instance_info(instance_uri, verifier=None):
     return urls["api_base_uri"], urls["authorization_endpoint"], urls["token_endpoint"]
 
 
-def create_keypair(oauth, api_base_uri):
-	#type: (OAuth2Session, str) -> Tuple[str, str]
+def create_keypair(oauth, api_base_uri):  # type: (OAuth2Session, str) -> Tuple[str, str]
     """Create remote keypair and return results"""
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     try:
@@ -128,8 +124,7 @@ def create_keypair(oauth, api_base_uri):
     return cert, key
 
 
-def list_profiles(oauth, api_base_uri):
-    #type (OAuth2Session, str) -> dict
+def list_profiles(oauth, api_base_uri):  # type (OAuth2Session, str) -> dict
     """
     List profiles on instance
 
@@ -167,8 +162,7 @@ def list_profiles(oauth, api_base_uri):
     return profiles
 
 
-def user_info(oauth, api_base_uri):
-    #type: (OAuth2Session, str) -> dict
+def user_info(oauth, api_base_uri):  # type: (OAuth2Session, str) -> dict
     """
     returns the user information
 
@@ -194,8 +188,7 @@ def user_info(oauth, api_base_uri):
     return data
 
 
-def user_messages(oauth, api_base_uri):
-    #type: (OAuth2Session, str) -> Any
+def user_messages(oauth, api_base_uri):  # type: (OAuth2Session, str) -> Any
     """
     These are messages specific to the user. It can contain a message about the user being blocked, or other personal
     messages from the VPN administrator.
@@ -222,8 +215,7 @@ def user_messages(oauth, api_base_uri):
         yield dateutil.parser.parse(d['date_time']), d['type'], d['message']
 
 
-def system_messages(oauth, api_base_uri):
-    #type: (OAuth2Session, str) -> Any
+def system_messages(oauth, api_base_uri):  # type: (OAuth2Session, str) -> Any
     """
     Return all system messages
 
@@ -247,8 +239,7 @@ def system_messages(oauth, api_base_uri):
         yield dateutil.parser.parse(d['date_time']), d['type'], d['message']
 
 
-def create_config(oauth, api_base_uri, display_name, profile_id):
-    #type: (OAuth2Session, str, str, str) -> str
+def create_config(oauth, api_base_uri, display_name, profile_id):  # type: (OAuth2Session, str, str, str) -> str
     """
     Create a configuration for a given profile.
 
@@ -271,8 +262,7 @@ def create_config(oauth, api_base_uri, display_name, profile_id):
     return response.json()
 
 
-def get_profile_config(oauth, api_base_uri, profile_id):
-    #type: (OAuth2Session, str, str) -> str
+def get_profile_config(oauth, api_base_uri, profile_id):  # type: (OAuth2Session, str, str) -> str
     """
     Return a profile configuration
 
@@ -303,8 +293,7 @@ def get_profile_config(oauth, api_base_uri, profile_id):
             raise EduvpnException("Server error! No profile config returned but no error also.")
 
 
-def get_auth_url(oauth, code_verifier, auth_endpoint):
-    #type: (OAuth2Session, str, str) -> Tuple[str, str]
+def get_auth_url(oauth, code_verifier, auth_endpoint):  # type: (OAuth2Session, str, str) -> Tuple[str, str]
     """"
     generate a authorization URL.
 
