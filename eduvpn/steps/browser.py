@@ -30,7 +30,7 @@ def browser_step(builder, meta, verifier, lets_connect, force_token_refresh=Fals
 
 
 def _phase1_background(meta, dialog, verifier, builder, force_token_refresh, lets_connect):
-    #type: (Metadata, Any, str, Gtk.builder, Optional[bool], bool) -> None
+    # type: (Metadata, Any, str, Gtk.builder, Optional[bool], bool) -> None
     try:
         logger.info("starting token obtaining in background")
         r = get_instance_info(instance_uri=meta.instance_base_uri, verifier=verifier)
@@ -71,7 +71,7 @@ def _phase1_background(meta, dialog, verifier, builder, force_token_refresh, let
 
 
 def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder, state, lets_connect):
-    #type: (Metadata, int, str, str, str, Any, Gtk.builder, str, bool) -> None
+    # type: (Metadata, int, str, str, str, Any, Gtk.builder, str, bool) -> None
     thread_helper(lambda: _phase2_background(meta=meta, port=port, oauth=oauth, code_verifier=code_verifier,
                                              auth_url=auth_url, dialog=dialog, builder=builder, state=state,
                                              lets_connect=lets_connect))
@@ -79,7 +79,7 @@ def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder
 
 
 def _show_dialog(dialog, auth_url, builder):
-    #type: (Any, str, Gtk.builder) -> None
+    # type: (Any, str, Gtk.builder) -> None
     url_field = builder.get_object('redirect-url-entry')
     url_dialog = builder.get_object('redirecturl-dialog')
     while True:
@@ -104,7 +104,7 @@ def _show_dialog(dialog, auth_url, builder):
 
 
 def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, builder, state, lets_connect):
-    #type: (Metadata, int, Any, str, str, Any, Gtk.builder, str, bool) -> None
+    # type: (Metadata, int, Any, str, str, Any, Gtk.builder, str, bool) -> None
     session = random()
     logger.info("opening browser with url {}".format(auth_url))
     try:
@@ -131,7 +131,7 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
 
 
 def _phase2_callback(meta, oauth, dialog, builder, lets_connect):
-    #type: (Metadata, str, Any, Gtk.builder, bool) -> None
+    # type: (Metadata, str, Any, Gtk.builder, bool) -> None
     logger.info("hiding url and token dialog")
     url_dialog = builder.get_object('redirecturl-dialog')
     GLib.idle_add(lambda: url_dialog.hide())

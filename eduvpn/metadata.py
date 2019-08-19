@@ -19,7 +19,7 @@ distibuted_tokens_path = os.path.join(others_path, 'distributed.json')
 
 
 def get_distributed_tokens():
-	#type: () -> Any
+	# type: () -> Any
     json_path = distibuted_tokens_path
     try:
         with open(json_path, 'r') as f:
@@ -53,7 +53,7 @@ class Metadata:
 
     @staticmethod
     def from_uuid(uuid, display_name=None):
-        #type: (str, str) -> Metadata
+        # type: (str, str) -> Metadata
         metadata_path = os.path.join(providers_path, uuid + '.json')
         metadata = Metadata()
         try:
@@ -73,7 +73,7 @@ class Metadata:
             return metadata
 
     def write(self):
-        #type: () -> None
+        # type: () -> None
         if not self.uuid:
             # raise EduvpnException('uuid field not set')
             logger.warning("uuid field not yet set")
@@ -91,7 +91,7 @@ class Metadata:
             self.write_distributed_token()
 
     def write_distributed_token(self):
-        #type: () -> None
+        # type: () -> None
         tokens = get_distributed_tokens()
         if self.discovery_uri in tokens:
             tokens[self.discovery_uri]['token'] = self.token
@@ -107,12 +107,12 @@ class Metadata:
             f.write(serialized)
 
     def update_token(self, token):
-        #type: (dict) -> None
+        # type: (dict) -> None
         self.token = token
         self.write()
 
     def refresh_token(self):
-        #type: () -> None
+        # type: () -> None
         if self.authorization_type == 'distributed':
             tokens = get_distributed_tokens()
             if self.discovery_uri in tokens:
@@ -122,7 +122,7 @@ class Metadata:
 
 
 def get_all_metadata():
-    #type: () -> List[Metadata]
+    # type: () -> List[Metadata]
     if not os.access(providers_path, os.X_OK):
         return []
     metadatas = [Metadata.from_uuid(i[:-5]) for i in os.listdir(providers_path) if i.endswith('.json')]
@@ -130,7 +130,7 @@ def get_all_metadata():
 
 
 def reuse_token_from_base_uri(instance_base_uri):
-    #type: (str) -> Optional[dict]
+    # type: (str) -> Optional[dict]
     for metadata in get_all_metadata():
         if metadata.connection_type in (u'Institute Access', u'Custom Instance') and \
                 metadata.instance_base_uri == instance_base_uri:

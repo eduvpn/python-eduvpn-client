@@ -28,7 +28,7 @@ def fetch_instance_step(meta, builder, verifier, lets_connect):  # type: (Metada
 
 # background thread
 def _fetch_background(meta, verifier, builder, lets_connect):
-    #type: (Metadata, str, Gtk.builder, bool) -> None
+    # type: (Metadata, str, Gtk.builder, bool) -> None
     dialog = builder.get_object('fetch-dialog')
     window = builder.get_object('eduvpn-window')
     try:

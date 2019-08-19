@@ -72,25 +72,25 @@ class EduVpnApp:
         self.window.set_position(Gtk.WindowPosition.CENTER)
 
     def run(self):
-        #type: () -> None
+        # type: () -> None
         # attach a callback to VPN connection monitor
         monitor_all_vpn(self.vpn_change)
         self.window.show_all()
         refresh_start(self.builder, self.lets_connect)
 
     def add(self, _):
-        #type: (Any) -> None
+        # type: (Any) -> None
         new_provider(builder=self.builder, verifier=self.verifier,
                      secure_internet_uri=self.secure_internet_uri,
                      institute_access_uri=self.institute_access_uri,
                      lets_connect=self.lets_connect)
 
     def delete(self, _):
-        #type: (Any) -> None
+        # type: (Any) -> None
         delete_profile(builder=self.builder, lets_connect=self.lets_connect)
 
     def select(self, *args):
-        #type: (Any) -> None
+        # type: (Any) -> None
         self.selected_meta = select_profile(builder=self.builder, verifier=self.verifier,
                                             lets_connect=self.lets_connect)
 

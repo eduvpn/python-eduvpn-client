@@ -51,14 +51,12 @@ def parse_args():  # type: () -> Tuple[int, str, str, str, bool]
 
 
 def init(lets_connect):
-    #type: (bool) -> EduVpnApp
+    # type: (bool) -> EduVpnApp
     level, secure_internet_uri, institute_access_uri, verify_key, lets_connect_arg = parse_args()
     lets_connect = lets_connect or lets_connect_arg
-	
     if geteuid() == 0:
         logger.error("Running eduVPN client as root is not supported (yet)")
         exit(1)
-
     GObject.threads_init()
 
     if have_dbus():

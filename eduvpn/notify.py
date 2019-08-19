@@ -17,7 +17,7 @@ from gi.repository import Notify
 
 @lru_cache(maxsize=1)
 def init_notify(lets_connect):
-    #type: (bool) -> Notify
+    # type: (bool) -> Notify
     icon, name = get_brand(lets_connect)
     Notify.init(name + " client")
     image_path = path.join(icon)
@@ -29,7 +29,7 @@ def init_notify(lets_connect):
 
 
 def notify(notification, msg, small_msg=None):
-    #type: (Notify, str, Optional[Any]) -> None
+    # type: (Notify, str, Optional[Any]) -> None
     notification.update(msg, small_msg)
     if have_dbus():
         notification.show()

@@ -18,7 +18,6 @@ from eduvpn.exceptions import EduvpnAuthException, EduvpnException
 from eduvpn.crypto import common_name_from_cert
 from eduvpn.brand import get_brand
 from eduvpn.metadata import Metadata
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from typing import Any, Union, List
 
@@ -87,7 +86,7 @@ def _cert_check(meta, oauth, builder, info):
 
 # background thread
 def _fetch_updated_config(oauth, meta, builder, info):
-    #type: (str, Metadata, Gtk.builder, str) -> None
+    # type: (str, Metadata, Gtk.builder, str) -> None
     config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
     meta.config = config
     config_dict = parse_ovpn(meta.config)

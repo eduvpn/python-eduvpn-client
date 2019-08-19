@@ -168,34 +168,34 @@ def list_active():  # type: () -> list
 
 
 def disconnect_all():  # type: () -> Any
-	"""
+    """
     Disconnect all active VPN connections.
     """
-	if not have_dbus():
-		return []
+    if not have_dbus():
+        return []
 
-	for active in NetworkManager.NetworkManager.ActiveConnections:
-		conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)
-		if conn.GetSettings()['connection']['type'] == 'vpn':
-			disconnect_provider(active.Uuid)
+    for active in NetworkManager.NetworkManager.ActiveConnections:
+        conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)
+        if conn.GetSettings()['connection']['type'] == 'vpn':
+            disconnect_provider(active.Uuid)
 
 
 def disconnect_provider(uuid):  # type: (str) -> None
-	"""
+    """
     Disconnect the network manager configuration by its UUID
 
     args:
         uuid (str): the unique ID of the configuration
     """
-	logger.info("Disconnecting profile with uuid {} using NetworkManager".format(uuid))
-	if not have_dbus():
-		raise EduvpnException("No DBus daemon running")
+    logger.info("Disconnecting profile with uuid {} using NetworkManager".format(uuid))
+    if not have_dbus():
+        raise EduvpnException("No DBus daemon running")
 
-	conns = [i for i in NetworkManager.NetworkManager.ActiveConnections if i.Uuid == uuid]
-	if len(conns) == 0:
-		raise EduvpnException("no active connection found with uuid {}".format(uuid))
-	for conn in conns:
-		NetworkManager.NetworkManager.DeactivateConnection(conn)
+    conns = [i for i in NetworkManager.NetworkManager.ActiveConnections if i.Uuid == uuid]
+    if len(conns) == 0:
+        raise EduvpnException("no active connection found with uuid {}".format(uuid))
+    for conn in conns:
+        NetworkManager.NetworkManager.DeactivateConnection(conn)
 
 
 def is_provider_connected(uuid):  # type: (str) -> Any
@@ -214,7 +214,7 @@ def is_provider_connected(uuid):  # type: (str) -> Any
 
 
 def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
-	"""
+    """
     Update an existing network manager configuration
 
     args:
@@ -222,15 +222,15 @@ def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
         display_name (str): The new display name of the configuration
         config (str): The new OpenVPN configuration
     """
-	logger.info("updating config for {} ({})".format(meta.display_name, meta.uuid))
-	nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
+    logger.info("updating config for {} ({})".format(meta.display_name, meta.uuid))
+    nm_config = ovpn_to_nm(config_dict, meta=meta, display_name=meta.display_name, username=meta.username)
 
-	if have_dbus():
-		connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
-		old_settings = connection.GetSettings()
-		nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
-										 'key': old_settings['vpn']['data']['key']})
-		connection.Update(nm_config)
+    if have_dbus():
+        connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
+        old_settings = connection.GetSettings()
+        nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
+                                         'key': old_settings['vpn']['data']['key']})
+        connection.Update(nm_config)
 
 
 def update_keys_provider(uuid, cert, key):  # type: (str, str, str) -> None

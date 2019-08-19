@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def switched(meta, builder, verifier, lets_connect):
-    #type: (Metadata, Gtk.builder, str, bool) -> None
+    # type: (Metadata, Gtk.builder, str, bool) -> None
     switch = builder.get_object('connect-switch')
     state = switch.get_active()
     logger.info("switch activated, old state {}".format(state))

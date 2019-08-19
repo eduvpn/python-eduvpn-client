@@ -20,14 +20,13 @@ from eduvpn.metadata import Metadata
 from eduvpn.exceptions import EduvpnException
 
 from typing import Any, Optional, Tuple
-from pil import Image
 
 
 logger = logging.getLogger(__name__)
 
 
 def make_unique_id():
-    #type: () -> str
+    # type: () -> str
     return str(uuid.uuid4())
 
 
@@ -61,7 +60,7 @@ def thread_helper(func):  # type: (Any) -> threading.Thread
     return thread
 
 
-def pil2pixbuf(img):  # type: (Image.Image) -> GdkPixbuf.Pixbuf
+def pil2pixbuf(img):  # type: ("Image.Image") -> GdkPixbuf.Pixbuf
     """
     Convert a pillow (pil) object to a pixbuf
 
@@ -123,7 +122,7 @@ def get_prefix():  # type: () -> str
 
 @lru_cache(maxsize=1)
 def have_dbus():
-    #type: () -> bool
+    # type: () -> bool
     try:
         import dbus
         dbus = dbus.SystemBus(private=True)
@@ -137,7 +136,7 @@ def have_dbus():
 
 @lru_cache(maxsize=1)
 def get_pixbuf(logo=None):
-    #type: (Optional[str]) -> Tuple[GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf]
+    # type: (Optional[str]) -> Tuple[GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf]
     if not logo:
         logo = path.join(get_prefix(), 'share/eduvpn/eduvpn.png')
 
@@ -147,7 +146,7 @@ def get_pixbuf(logo=None):
 
 
 def metadata_of_selected(builder):
-    #type: (Gtk.builder) -> Any
+    # type: (Gtk.builder) -> Any
     selection = builder.get_object('provider-selection')
     model, treeiter = selection.get_selected()
     if treeiter is None:
@@ -158,7 +157,7 @@ def metadata_of_selected(builder):
 
 
 def detect_distro(release_file='/etc/os-release'):
-    #type: (str) -> Tuple[str, str]
+    # type: (str) -> Tuple[str, str]
     params = {}
     if not os.access(release_file, os.R_OK):
         raise EduvpnException("Can't detect distribution version, '/etc/os-release' doesn't exist.")
@@ -178,7 +177,7 @@ def detect_distro(release_file='/etc/os-release'):
 
 
 def are_we_running_ubuntu1804():
-    #type: () -> bool
+    # type: () -> bool
     try:
         distro, version = detect_distro()
     except EduvpnException as e:

@@ -26,7 +26,7 @@ def parse_config_step(builder, oauth, meta, lets_connect):  # type: (Gtk.builder
 
 # background thread
 def _background(meta, oauth, dialog, builder, lets_connect):
-    #type: (Metadata, str, Any, Gtk.builder, bool) -> None
+    # type: (Metadata, str, Any, Gtk.builder, bool) -> None
     try:
         cert, key = create_keypair(oauth, meta.api_base_uri)
         meta.cert = cert

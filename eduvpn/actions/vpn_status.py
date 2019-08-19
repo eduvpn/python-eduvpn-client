@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def vpn_change(builder, lets_connect, state=0, reason=0):
-    #type: (Gtk.builder, bool, Optional[int], Optional[int]) -> None
+    # type: (Gtk.builder, bool, Optional[int], Optional[int]) -> None
     logger.info("VPN status change")
     switch = builder.get_object('connect-switch')
     ipv4_label = builder.get_object('ipv4-label')

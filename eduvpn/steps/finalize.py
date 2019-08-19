@@ -29,7 +29,7 @@ def finalizing_step(builder, meta, config_dict, lets_connect):  # type: (Gtk.bui
 
 
 def _background(meta, dialog, builder, config_dict, lets_connect):
-    #type: (Metadata, Any, Gtk.builder, dict, bool) -> None
+    # type: (Metadata, Any, Gtk.builder, dict, bool) -> None
     try:
         uuid = store_provider(meta, config_dict)
         monitor_vpn(uuid=uuid, callback=lambda *args, **kwargs: vpn_change(builder=builder, lets_connect=lets_connect))

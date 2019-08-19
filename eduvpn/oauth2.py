@@ -93,7 +93,7 @@ def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional
 
 
 def stringify_image(logo):
-	#type: (str) -> str
+	# type: (str) -> str
     import base64
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
