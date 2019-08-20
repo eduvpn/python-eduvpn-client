@@ -5,19 +5,18 @@
 
 import logging
 import base64
-
 from eduvpn.util import bytes2pixbuf, get_pixbuf, metadata_of_selected
 from eduvpn.config import icon_size
 from eduvpn.manager import is_provider_connected
 from eduvpn.steps.messages import fetch_messages
 from eduvpn.brand import get_brand
-import Gtk
+import gi
+from gi.repository import Gtk
 from eduvpn.metadata import Metadata
 
 
+gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
-
-from eduvpn.util import are_we_running_ubuntu1804
 
 
 # ui thread
@@ -73,10 +72,6 @@ def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str,
             twofa_label.set_text("")
             twofa_label_label.set_text("")
 
-        if are_we_running_ubuntu1804():
-            note_label.set_markup('<a href="https://bugs.launchpad.net/ubuntu/+source/network-manager/+bug/1754671">Ubuntu 18.04 Leaks DNS info</a>')
-            note_label_label.set_markup('<span foreground="red">WARNING</span>:')
-        else:
             note_label.set_text("")
             note_label_label.set_text("")
 

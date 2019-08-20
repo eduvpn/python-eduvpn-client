@@ -13,6 +13,7 @@ from eduvpn.remote import user_messages, system_messages, user_info
 from eduvpn.exceptions import EduvpnAuthException
 from eduvpn.metadata import Metadata
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -62,4 +63,3 @@ def _background(meta, builder, verifier, lets_connect):
             text += "<small><i>system, {}</i></small>\n".format(type_)
             text += "{}\n\n".format(message)
         GLib.idle_add(lambda: label.set_markup(text))
-

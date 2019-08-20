@@ -59,7 +59,10 @@ def _background(oauth, meta, builder, dialog, lets_connect):
 
 
 # ui thread
-def _select_profile_step(builder, profiles, meta, oauth, lets_connect):  # type: (Gtk.builder, dict, Metadata, str, bool) -> None
+def _select_profile_step(builder,
+                         profiles,
+                         meta, oauth,
+                         lets_connect):  # type: (Gtk.builder, dict, Metadata, str, bool) -> None
     """the profile selection step, doesn't do anything if only one profile"""
     logger.info("opening profile dialog")
 

@@ -6,7 +6,6 @@
 import logging
 import os
 import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from eduvpn.util import get_prefix
 from eduvpn.crypto import make_verifier
@@ -20,8 +19,8 @@ from eduvpn.actions.switch import switched
 from typing import Any, Iterable
 
 
+gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
-
 builder_files = (
     'window.ui',
     '2fa.ui',
@@ -38,7 +37,11 @@ builder_files = (
 
 
 class EduVpnApp:
-    def __init__(self, secure_internet_uri, institute_access_uri, verify_key, lets_connect):  # type: (str, str, str, bool) -> None
+    def __init__(self,
+                 secure_internet_uri,
+                 institute_access_uri,
+                 verify_key,
+                 lets_connect):  # type: (str, str, str, bool) -> None
         """setup UI thingies, don't do any fetching or DBus communication yet"""
 
         self.secure_internet_uri = secure_internet_uri  # type: str

@@ -7,12 +7,19 @@ import logging
 from eduvpn.metadata import Metadata
 from eduvpn.steps.instance import fetch_instance_step
 from eduvpn.steps.custom_url import custom_url
-import Gtk
+import gi
+from gi.repository import Gtk
 
+
+gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 
 
-def new_provider(builder, verifier, secure_internet_uri, institute_access_uri, lets_connect):  # type: (Gtk.builder, str, str, str, bool) -> None
+def new_provider(builder,
+                 verifier,
+                 secure_internet_uri,
+                 institute_access_uri,
+                 lets_connect):  # type: (Gtk.builder, str, str, str, bool) -> None
     """The connection type selection step"""
     logger.info("add configuration clicked")
     meta = Metadata()

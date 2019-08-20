@@ -20,7 +20,11 @@ from eduvpn.metadata import Metadata
 logger = logging.getLogger(__name__)
 
 
-def browser_step(builder, meta, verifier, lets_connect, force_token_refresh=False):  # type: (Gtk.builder, Metadata, str, bool, Optional[bool]) -> None
+def browser_step(builder,
+                 meta,
+                 verifier,
+                 lets_connect,
+                 force_token_refresh=False):  # type: (Gtk.builder, Metadata, str, bool, Optional[bool]) -> None
     """The notorious browser step. if no token, starts webserver, wait for callback, show token dialog"""
     logger.info("opening token dialog")
     dialog = builder.get_object('token-dialog')
@@ -116,7 +120,11 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
             logger.error("received from state, expected: {}, received: {}".format(state, other_state))
             raise Exception("oauth state has been tampered with")
         logger.info("setting oauth token for metadata")
-        meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier, client_id=oauth.client_id, include_client_id=True)
+        meta.token = oauth.fetch_token(meta.token_endpoint,
+                                       code=code,
+                                       code_verifier=code_verifier,
+                                       client_id=oauth.client_id,
+                                       include_client_id=True)
     except Exception as e:
         error = e
         if dialog.get_property("visible") and dialog.session == session:

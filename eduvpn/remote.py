@@ -23,7 +23,12 @@ logger = logging.getLogger(__name__)
 
 
 def translate_display_name(display_name):  # type: (dict) -> str
-    """Translates a display_name in the current locale."""
+    """
+    Translates a display_name in the current locale.
+
+    args:
+        display_name (str or dict):
+    """
     if type(display_name) == dict:
         if locale in display_name:
             translated = display_name[locale]
@@ -37,7 +42,8 @@ def translate_display_name(display_name):  # type: (dict) -> str
     return translated
 
 
-def get_instances(discovery_uri, verifier=None):  # type: (str, VerifyKey) -> Tuple[Any, List[Tuple[str, str, Optional[bytes]]]]
+def get_instances(discovery_uri,
+                  verifier=None):  # type: (str, VerifyKey) -> Tuple[Any, List[Tuple[str, str, Optional[bytes]]]]
     """
     retrieve a list of instances.
 
@@ -75,7 +81,7 @@ def get_instances(discovery_uri, verifier=None):  # type: (str, VerifyKey) -> Tu
     pool = ThreadPool()
 
     def fetch(instance):
-		# type: (dict) -> Tuple[str, str, Optional[bytes]]
+        # type: (dict) -> Tuple[str, str, Optional[bytes]]
         display_name = translate_display_name(instance['display_name'])
         base_uri = instance['base_uri']
         logo_uri = instance['logo']
@@ -94,7 +100,15 @@ def get_instances(discovery_uri, verifier=None):  # type: (str, VerifyKey) -> Tu
 
 
 def get_instance_info(instance_uri, verifier=None):  # type: (str, VerifyKey) -> Tuple[str, str, str]
-    """Retrieve information from instance."""
+    """
+    Retrieve information from instance
+
+    args:
+        instance_uri (str): the base URI for the instance
+        verifier (nacl.signing.VerifyKey): the verifykey used to verify the key
+    returns:
+        tuple(str, str, str): api_base_uri, authorization_endpoint, token_endpoint
+    """
     logger.info("Retrieving info from instance {}".format(instance_uri))
     info_uri = instance_uri + '/info.json'
     info = requests.get(info_uri)
@@ -108,7 +122,15 @@ def get_instance_info(instance_uri, verifier=None):  # type: (str, VerifyKey) ->
 
 
 def create_keypair(oauth, api_base_uri):  # type: (OAuth2Session, str) -> Tuple[str, str]
-    """Create remote keypair and return results"""
+    """
+    Create remote keypair and return results
+
+    args:
+        oauth (requests_oauthlib.OAuth2Session): oauth2 object
+        api_base_uri (str): the instance base URI
+    returns:
+        tuple(str, str): certificate and key
+    """
     logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
     try:
         response = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})

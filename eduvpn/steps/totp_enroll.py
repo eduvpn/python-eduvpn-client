@@ -1,19 +1,24 @@
+# python-eduvpn-client - The GNU/Linux eduVPN client and Python API
+#
+# Copyright: 2017, The Commons Conservancy eduVPN Programme
+# SPDX-License-Identifier: GPL-3.0+
+
 import logging
 from builtins import chr
 from future.moves.urllib.parse import urlparse
 import qrcode
 import gi
-from gi.repository import GLib, Gdk
+from gi.repository import GLib, Gdk, Gtk
 from eduvpn.util import pil2pixbuf
 from eduvpn.remote import two_factor_enroll_totp
 from eduvpn.crypto import gen_base32
 from eduvpn.util import thread_helper
 from eduvpn.steps.finalize import finalizing_step
 from eduvpn.metadata import Metadata
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 from typing import Any, Optional
 
+
+gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 
 
