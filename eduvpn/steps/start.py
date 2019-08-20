@@ -5,6 +5,7 @@
 
 import base64
 import logging
+import gi
 from eduvpn.manager import list_providers
 from eduvpn.util import bytes2pixbuf, get_pixbuf
 from eduvpn.brand import get_brand
