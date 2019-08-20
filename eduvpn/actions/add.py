@@ -7,7 +7,9 @@ import logging
 from eduvpn.metadata import Metadata
 from eduvpn.steps.instance import fetch_instance_step
 from eduvpn.steps.custom_url import custom_url
-import Gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 logger = logging.getLogger(__name__)
 

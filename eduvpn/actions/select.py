@@ -5,13 +5,14 @@
 
 import logging
 import base64
-
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 from eduvpn.util import bytes2pixbuf, get_pixbuf, metadata_of_selected
 from eduvpn.config import icon_size
 from eduvpn.manager import is_provider_connected
 from eduvpn.steps.messages import fetch_messages
 from eduvpn.brand import get_brand
-import Gtk
 from eduvpn.metadata import Metadata
 
 
