@@ -63,7 +63,14 @@ def get_open_port():  # type: () -> int
 
 
 def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional[int]) -> str
-    """Listen for one http request on port, then close and return request query."""
+    """
+    Listen for one http request on port, then close and return request query
+
+    args:
+        port (int): the port to listen for the request
+    returns:
+        str: the request
+    """
     logger.info("listening for a request on port {}...".format(port))
 
     class RequestHandler(BaseHTTPRequestHandler):
@@ -93,13 +100,21 @@ def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional
 
 
 def stringify_image(logo):
-	# type: (str) -> str
+    # type: (str) -> str
     import base64
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
 def create_oauth_session(port, lets_connect, auto_refresh_url):  # type: (int, bool, str) -> OAuth2Session
-    """Create a oauth2 callback webserver."""
+    """
+    Create a oauth2 callback webserver
+
+    args:
+        port (int): the port where to listen to
+        lets_connect (bool): let's connect mode (true) or eduvpn (false)
+    returns:
+        OAuth2Session: a oauth2 session object
+    """
     logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
 
@@ -113,7 +128,16 @@ def create_oauth_session(port, lets_connect, auto_refresh_url):  # type: (int, b
 
 
 def get_oauth_token_code(port, lets_connect, timeout=None):  # type: (int, bool, int) -> Tuple[str, str]
-    """Start webserver, open browser, wait for callback response. """
+    """
+    Start webserver, open browser, wait for callback response.
+
+    args:
+        port (int): port where to listen for
+        lets_connect (bool): let's connect mode (true) or eduvpn (false)
+        timeout (int): number of seconds before timeout, leave None if no timeout
+    returns:
+        str: the response code given by redirect
+    """
     logger.info("waiting for callback on port {}".format(port))
     response = one_request(port, lets_connect, timeout)  # type: str
     if 'code' in response and 'state' in response:
@@ -127,7 +151,15 @@ def get_oauth_token_code(port, lets_connect, timeout=None):  # type: (int, bool,
 
 
 def oauth_from_token(meta, lets_connect):  # type: (Metadata, bool) -> OAuth2Session
-    """Recreate a oauth2 object from a token."""
+    """
+    Recreate a oauth2 object from a token
+
+    args:
+        meta (eduvpn.metadata.Metadata): eduvpn metadata
+        lets_connect (bool):  let's connect mode (true) or eduvpn (false)
+    returns:
+        OAuth2Session: an auth2 session
+    """
     def inner(new_token):
         meta.update_token(new_token)
 

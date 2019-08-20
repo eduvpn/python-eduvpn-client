@@ -9,10 +9,11 @@ https://github.com/eduvpn/python-eduvpn-client/issues/160
 # type: ignore
 
 from eduvpn.util import have_dbus
-if have_dbus():
-    import eduvpn.other_nm as NetworkManager
 import dbus
 import subprocess
+if have_dbus():
+    import eduvpn.other_nm as NetworkManager
+
 
 type_tun = 16  # NM_DEVICE_TYPE_TUN
 state_acticated = 100  # NM_DEVICE_STATE_ACTIVATED

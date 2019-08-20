@@ -13,6 +13,7 @@ from eduvpn.steps.browser import browser_step
 from eduvpn.steps.fetching import fetching_window
 from eduvpn.metadata import Metadata
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +47,11 @@ def _fetch_background(meta, verifier, builder, lets_connect):
 
 
 # ui thread
-def select_instance_step(meta, instances, builder, verifier, lets_connect):  # type: (Metadata, dict, Gtk.builder, str, bool) -> None
+def select_instance_step(meta,
+                         instances,
+                         builder,
+                         verifier,
+                         lets_connect):  # type: (Metadata, dict, Gtk.builder, str, bool) -> None
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
     dialog = builder.get_object('instances-dialog')

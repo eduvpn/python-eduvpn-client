@@ -3,9 +3,11 @@ from typing import Tuple
 
 prefix = get_prefix()
 
-eduvpn_main_logo = prefix + "/share/icons/hicolor/128x128/apps/eduvpn-client.png"  # type: str
+eduvpn_main_logo = prefix + "/share/icons/hicolor/" \
+                            "128x128/apps/eduvpn-client.png"  # type: str
 eduvpn_name = "eduVPN"  # type: str
-lets_connect_main_logo = prefix + "/share/icons/hicolor/128x128/apps/lets-connect-client.png"  # type: str
+lets_connect_main_logo = prefix + "/share/icons/hicolor/128x128" \
+                                  "/apps/lets-connect-client.png"  # type: str
 lets_connect_name = "Let's Connect!"  # type: str
 
 

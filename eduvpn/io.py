@@ -15,7 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 def write_cert(content, type_, unique_name):  # type: (str, str, str) -> str
-    """Write a certificate to the filesystem"""
+    """
+    Write a certificate to the filesystem
+    args:
+        content (str): content of certificate file
+        type (str): type of certificate file
+        unique_name (str): description of file
+    returns:
+        str: full path to certificate file
+    """
     home = expanduser("~")
     path = home + "/.cert/nm-openvpn/" + unique_name + "_" + type_ + ".pem"
     logger.info("writing {} file to {}".format(type_, path))
@@ -28,7 +36,11 @@ def write_cert(content, type_, unique_name):  # type: (str, str, str) -> str
 
 
 def mkdir_p(path):  # type: (str) -> None
-    """Create a folder with all its parents, like mkdir -p"""
+    """
+    Create a folder with all its parents, like mkdir -p
+    args:
+        path (str): path of directory to create
+    """
     logger.info("making sure config path {} exists".format(path))
     try:
         os.makedirs(path)

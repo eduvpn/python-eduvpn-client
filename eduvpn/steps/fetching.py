@@ -6,9 +6,12 @@
 import logging
 import gi
 from eduvpn.brand import get_brand
+from gi.repository import Gtk
+
+
 logger = logging.getLogger(__name__)
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+
 
 def fetching_window(builder, lets_connect):  # type: (Gtk.builder, bool) -> None
     """

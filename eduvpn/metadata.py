@@ -14,12 +14,11 @@ from typing import Any, List, Optional, Tuple
 
 
 logger = logging.getLogger(__name__)
-
 distibuted_tokens_path = os.path.join(others_path, 'distributed.json')
 
 
 def get_distributed_tokens():
-	# type: () -> Any
+    # type: () -> Any
     json_path = distibuted_tokens_path
     try:
         with open(json_path, 'r') as f:
@@ -64,7 +63,8 @@ class Metadata:
                         setattr(metadata, key, value)
                 return metadata
         except (ValueError, IOError) as e:
-            logger.error("can't open metdata file for {}: {}".format(uuid, str(e)))
+            logger.error("can't open metdata"
+                         "file for {}: {}".format(uuid, str(e)))
             metadata.uuid = uuid
             if display_name:
                 metadata.display_name = display_name
