@@ -12,6 +12,7 @@ from eduvpn.steps.totp_enroll import totp_enroll_window
 from eduvpn.steps.yubi_enroll import yubi_enroll_window
 from eduvpn.steps.finalize import finalizing_step
 from eduvpn.metadata import Metadata
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ def _background(meta, oauth, builder, config_dict, lets_connect):
 
 # ui thread
 def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
-    # type: (dict, Metadata, str, Gtk.builder, dict, bool) -> None
+    # type: (List[str], Metadata, str, Gtk.builder, dict, bool) -> None
     logger.info("presenting user with two-factor auth method dialog")
     window = builder.get_object('eduvpn-window')
 

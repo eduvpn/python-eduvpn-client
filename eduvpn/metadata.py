@@ -135,3 +135,4 @@ def reuse_token_from_base_uri(instance_base_uri):
         if metadata.connection_type in (u'Institute Access', u'Custom Instance') and \
                 metadata.instance_base_uri == instance_base_uri:
             return metadata.token
+    return None

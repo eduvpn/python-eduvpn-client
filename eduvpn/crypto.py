@@ -13,7 +13,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
 
-def common_name_from_cert(pem_data):  # type: (str) -> str
+def common_name_from_cert(pem_data):  # type: (bytes) -> str
     """Extract common name from client certificate."""
     cert = x509.load_pem_x509_certificate(pem_data, default_backend())
     return cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value

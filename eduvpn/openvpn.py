@@ -9,8 +9,7 @@ from eduvpn.exceptions import EduvpnException
 import re
 
 from eduvpn.io import write_cert
-
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List
 from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
@@ -77,7 +76,10 @@ def parse_ovpn(configtext):  # type: (str) -> dict
     return config
 
 
-def ovpn_to_nm(config, meta, display_name, username=None):  # type: (dict, Metadata, str, Optional[str]) -> object
+def ovpn_to_nm(config,
+               meta,
+               display_name,
+               username=None):  # type: (dict, Metadata, str, Optional[str]) -> Dict[str, object]
     """
     Generate a NetworkManager style config dict from a parsed ovpn config dict
 
