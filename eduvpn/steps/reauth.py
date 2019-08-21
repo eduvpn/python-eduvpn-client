@@ -8,6 +8,7 @@ import gi
 from gi.repository import Gtk
 from eduvpn.steps.browser import browser_step
 from eduvpn.metadata import Metadata
+from typing import Dict
 
 
 gi.require_version('Gtk', '3.0')
@@ -24,7 +25,7 @@ def reauth(meta, verifier, builder, lets_connect):  # type: (Metadata, str, Gtk.
     dialog.format_secondary_text("Do you want to re-authorize?")
     response = dialog.run()
     if response == Gtk.ResponseType.YES:
-        meta.token = None
+        meta.token = {None: None}
         browser_step(builder, meta, verifier, force_token_refresh=True, lets_connect=lets_connect)
     elif response == Gtk.ResponseType.NO:
         pass

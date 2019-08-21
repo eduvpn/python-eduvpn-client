@@ -7,7 +7,7 @@ import json
 import logging
 import os
 from eduvpn.metadata import Metadata
-from typing import Tuple, Any, Optional
+from typing import Tuple, Any, Optional, Iterable
 from eduvpn.util import have_dbus
 from eduvpn.config import providers_path
 from eduvpn.io import write_cert
@@ -42,7 +42,7 @@ def insert_config(settings):  # type: (dict) -> NetworkManager.connection
     return connection
 
 
-def list_providers():  # type: () -> Metadata
+def list_providers():  # type: () -> Iterable[Metadata]
     """
     List all OpenVPN connections.
     """

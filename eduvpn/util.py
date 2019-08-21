@@ -58,7 +58,7 @@ def thread_helper(func):  # type: (Any) -> threading.Thread
     return thread
 
 
-def pil2pixbuf(img):  # type: ("Image.Image") -> GdkPixbuf.Pixbuf
+def pil2pixbuf(img):  # type: (pil.Image) -> GdkPixbuf.Pixbuf
     """
     Convert a pillow (pil) object to a pixbuf
 

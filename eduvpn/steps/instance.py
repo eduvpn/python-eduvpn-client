@@ -12,6 +12,7 @@ from eduvpn.remote import get_instances
 from eduvpn.steps.browser import browser_step
 from eduvpn.steps.fetching import fetching_window
 from eduvpn.metadata import Metadata
+from typing import List, Tuple, Optional
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ def select_instance_step(meta,
                          instances,
                          builder,
                          verifier,
-                         lets_connect):  # type: (Metadata, dict, Gtk.builder, str, bool) -> None
+                         lets_connect):  # type: (Metadata, str, Gtk.builder, str, bool) -> None
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
     dialog = builder.get_object('instances-dialog')
@@ -77,7 +78,7 @@ def select_instance_step(meta,
             display_name, instance_base_uri, icon_pixbuf, icon_data = model[treeiter]
             meta.display_name = display_name
             meta.instance_base_uri = instance_base_uri
-            meta.icon_data = icon_data
+            meta.icon_data = str(icon_data)
             browser_step(builder, meta, verifier, lets_connect=lets_connect)
         else:
             logger.info("nothing selected")

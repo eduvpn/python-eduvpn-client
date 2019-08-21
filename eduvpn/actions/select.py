@@ -13,14 +13,14 @@ from eduvpn.brand import get_brand
 import gi
 from gi.repository import Gtk
 from eduvpn.metadata import Metadata
-
+from typing import Optional
 
 gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 
 
 # ui thread
-def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str, bool) -> Metadata
+def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str, bool) -> Optional[Metadata]
     """called when a users selects a configuration"""
     messages_label = builder.get_object('messages-label')
     notebook = builder.get_object('outer-notebook')
@@ -43,7 +43,7 @@ def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str,
     if not meta:
         logger.info("no configuration selected, showing main logo")
         notebook.set_current_page(0)
-        return
+        return None
     else:
         logger.info("configuration was selected {} ({})".format(meta.display_name, meta.uuid))
         name_label.set_text(meta.display_name)

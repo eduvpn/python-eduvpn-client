@@ -39,7 +39,7 @@ def custom_url(builder, meta, verifier, lets_connect):  # type: (Gtk.builder, Me
                 meta.instance_base_uri = url
                 meta.connection_type = 'Custom Instance'
                 meta.authorization_type = 'local'
-                meta.icon_data = None
+                meta.icon_data = ''
                 browser_step(builder=builder, meta=meta, verifier=verifier, lets_connect=lets_connect)
                 break
         else:  # cancel or close
