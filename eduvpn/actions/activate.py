@@ -67,7 +67,7 @@ def _auth_check(oauth, meta, verifier, builder, lets_connect):  # type: (str, Me
 
 # background thread
 def _cert_check(meta, oauth, builder, info, lets_connect):
-    # type: (Metadata, str, Gtk.builder, dict) -> None
+    # type: (Metadata, str, Gtk.builder, dict, bool) -> None
     common_name = common_name_from_cert(meta.cert.encode('ascii'))
     cert_valid = check_certificate(oauth, meta.api_base_uri, common_name)
 
@@ -87,7 +87,7 @@ def _cert_check(meta, oauth, builder, info, lets_connect):
 
 # background thread
 def _fetch_updated_config(oauth, meta, builder, info, lets_connect):
-    # type: (str, Metadata, Gtk.builder, dict) -> None
+    # type: (str, Metadata, Gtk.builder, dict, bool) -> None
     config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
     meta.config = config
     config_dict = parse_ovpn(meta.config)
@@ -98,7 +98,7 @@ def _fetch_updated_config(oauth, meta, builder, info, lets_connect):
 
 # background thread
 def _2fa_check(meta, builder, oauth, config_dict, info, lets_connect):
-    # type: (Metadata, Gtk.builder, str, dict, dict) -> None
+    # type: (Metadata, Gtk.builder, str, dict, dict, bool) -> None
     if meta.two_factor and not info['two_factor_enrolled']:
         # 2fa is required, but the user is not enroled anymore
         two_auth_step(builder, oauth, meta, config_dict, lets_connect)
