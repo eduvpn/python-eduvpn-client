@@ -101,7 +101,7 @@ notebook: .virtualenv3/bin/jupyter-notebook
 	.virtualenv3/bin/jupyter-notebook
 
 dockers:
-	for i in `ls docker/Dockerfile*`; do echo "*** $$i"; docker build . -f $$i; done
+	for i in `ls docker/*.docker`; do echo "*** $$i"; docker build . -f $$i; done
 
 srpm:
 	docker build -t eduvpn_fedora_rpm -f docker/eduvpn_fedora_28_rpm .

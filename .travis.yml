@@ -26,7 +26,7 @@ services:
 before_install:
 - true
 install:
-- docker build . -t ${DIST} -f docker/${DIST}
+- docker build . -t ${DIST} -f docker/${DIST}.docker
 before_script:
 - true
 script:
