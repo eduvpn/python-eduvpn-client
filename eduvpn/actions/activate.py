@@ -55,7 +55,7 @@ def _auth_check(oauth, meta, verifier, builder, lets_connect):  # type: (str, Me
     """quickly see if the can fetch messages, otherwise reauth"""
     try:
         info = user_info(oauth, meta.api_base_uri)
-        _cert_check(meta, oauth, builder, info)
+        _cert_check(meta, oauth, builder, info, lets_connect)
     except EduvpnAuthException:
         GLib.idle_add(lambda: reauth(meta=meta, verifier=verifier, builder=builder, lets_connect=lets_connect))
     except Exception as e:
@@ -66,7 +66,7 @@ def _auth_check(oauth, meta, verifier, builder, lets_connect):  # type: (str, Me
 
 
 # background thread
-def _cert_check(meta, oauth, builder, info):
+def _cert_check(meta, oauth, builder, info, lets_connect):
     # type: (Metadata, str, Gtk.builder, dict) -> None
     common_name = common_name_from_cert(meta.cert.encode('ascii'))
     cert_valid = check_certificate(oauth, meta.api_base_uri, common_name)
@@ -82,25 +82,25 @@ def _cert_check(meta, oauth, builder, info):
         else:
             raise EduvpnException('Your client certificate is invalid ({})'.format(cert_valid['reason']))
 
-    _fetch_updated_config(oauth, meta, builder, info)
+    _fetch_updated_config(oauth, meta, builder, info, lets_connect)
 
 
 # background thread
-def _fetch_updated_config(oauth, meta, builder, info):
+def _fetch_updated_config(oauth, meta, builder, info, lets_connect):
     # type: (str, Metadata, Gtk.builder, dict) -> None
     config = get_profile_config(oauth, meta.api_base_uri, meta.profile_id)
     meta.config = config
     config_dict = parse_ovpn(meta.config)
     update_config_provider(meta, config_dict)
 
-    _2fa_check(meta, builder, oauth, config_dict, info)
+    _2fa_check(meta, builder, oauth, config_dict, info, lets_connect)
 
 
 # background thread
-def _2fa_check(meta, builder, oauth, config_dict, info):
+def _2fa_check(meta, builder, oauth, config_dict, info, lets_connect):
     # type: (Metadata, Gtk.builder, str, dict, dict) -> None
     if meta.two_factor and not info['two_factor_enrolled']:
         # 2fa is required, but the user is not enroled anymore
-        two_auth_step(builder, oauth, meta, config_dict)
+        two_auth_step(builder, oauth, meta, config_dict, lets_connect)
     else:
         connect_provider(meta.uuid)
