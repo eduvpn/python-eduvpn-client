@@ -128,7 +128,7 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
     except Exception as e:
         error = e
         if dialog.get_property("visible") and dialog.session == session:
-            GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(str(error))))
+            GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(error)))
             GLib.idle_add(lambda: dialog.hide())
         else:
             logging.error(error)

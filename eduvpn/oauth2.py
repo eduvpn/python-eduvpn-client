@@ -139,7 +139,7 @@ def get_oauth_token_code(port, lets_connect, timeout=None):  # type: (int, bool,
         str: the response code given by redirect
     """
     logger.info("waiting for callback on port {}".format(port))
-    response = one_request(port, lets_connect, timeout)  # type: str
+    response = one_request(port, lets_connect, timeout)  # type: Any
     if 'code' in response and 'state' in response:
         code = response['code'][0]
         state = response['state'][0]
