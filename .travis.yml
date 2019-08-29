@@ -26,7 +26,7 @@ services:
 before_install:
 - true
 install:
-- docker build . -t ${DIST} -f docker/${DIST}
+- docker build . -t ${DIST} -f docker/${DIST}.docker
 before_script:
 - true
 script:
@@ -39,7 +39,7 @@ deploy:
   on:
     tags: true
     distributions: sdist bdist_wheel
-    repo: eduvpn/python-eduvpn-client
+    repo: wjhpeters/issue-185-EduVPN
 notifications:
   email:
     on_fail: always
