@@ -129,7 +129,7 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
             GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(error)))
             GLib.idle_add(lambda: dialog.hide())
         else:
-            logging.error(error)
+            logging.error(error)  # type: ignore
         raise
     else:
         GLib.idle_add(lambda: _phase2_callback(meta=meta, oauth=oauth, dialog=dialog, builder=builder,

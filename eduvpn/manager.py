@@ -89,7 +89,7 @@ def store_provider(meta, config_dict):  # type: (Metadata, dict) -> str
     nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path})
 
     if new:
-        insert_config(nm_config)
+        insert_config(nm_config)  # type: ignore
     else:
         update_config_provider(meta, config_dict)
 
