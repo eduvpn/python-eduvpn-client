@@ -39,7 +39,7 @@ deploy:
   on:
     tags: true
     distributions: sdist bdist_wheel
-    repo: wjhpeters/tmp
+    repo: eduvpn/python-eduvpn-client
 notifications:
   email:
     on_fail: always
