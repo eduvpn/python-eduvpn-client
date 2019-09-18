@@ -29,4 +29,4 @@ You can find the documentation on [http://python-eduvpn-client.readthedocs.io](h
 Development
 ===========
 
-[![Build Status](https://travis-ci.org/wjhpeters/issue-185-EduVPN.svg?branch=master)](https://travis-ci.org/wjhpeters/issue-185-EduVPN)
+[![Build Status](https://travis-ci.org/wjhpeters/tmp.svg?branch=master)](https://travis-ci.org/wjhpeters/tmp)

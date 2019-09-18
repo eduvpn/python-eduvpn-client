@@ -116,7 +116,7 @@ def get_instance_info(instance_uri, verifier=None):  # type: (str, VerifyKey) ->
     if info_sig.status_code == 404:
         logger.warning("can't verify signature for {} since there is no signature.".format(info_uri))
     else:
-        _ = verifier.verify(smessage=info.content, signature=info_sig.content.decode('base64'))
+        _ = verifier.verify(smessage=info.content, signature=info_sig.content.decode('base64'))  # type: ignore
     urls = info.json()['api']['http://eduvpn.org/api#2']
     return urls["api_base_uri"], urls["authorization_endpoint"], urls["token_endpoint"]
 

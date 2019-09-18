@@ -24,7 +24,7 @@ if have_dbus():
 logger = logging.getLogger(__name__)
 
 
-def insert_config(settings):  # type: (dict) -> NetworkManager.connection
+def insert_config(settings):  # type: (dict) -> Any
     """
     Add a configuration to the networkmanager
 
@@ -38,7 +38,7 @@ def insert_config(settings):  # type: (dict) -> NetworkManager.connection
     name = settings['connection']['id']
     logger.info("generating or updating OpenVPN"
                 "configuration with name {}".format(name))
-    connection = NetworkManager.Settings.AddConnection(settings)
+    connection = NetworkManager.Settings.AddConnection(settings)  # type: ignore
     return connection
 
 
@@ -62,7 +62,7 @@ def list_providers():  # type: () -> Iterable[Metadata]
                 except IOError as e:
                     logger.error("cant open {}: {}".format(p, e))
     else:
-        all_ = NetworkManager.Settings.ListConnections()
+        all_ = NetworkManager.Settings.ListConnections()  # type: ignore
         vpn_connections = ([c.GetSettings()['connection'] for c in all_
                            if c.GetSettings()['connection']['type'] == 'vpn'])
         logger.info("There are {} VPN connections in"
@@ -87,7 +87,7 @@ def store_provider(meta, config_dict):  # type: (Metadata, dict) -> str
     nm_config['vpn']['data'].update({'cert': cert_path, 'key': key_path})
 
     if new:
-        insert_config(nm_config)
+        insert_config(nm_config)  # type: ignore
     else:
         update_config_provider(meta, config_dict)
 
@@ -114,7 +114,7 @@ def delete_provider(uuid):  # type: (str) -> None
 
     logger.info("deleting profile with uuid {}"
                 "using NetworkManager".format(uuid))
-    all_connections = NetworkManager.Settings.ListConnections()
+    all_connections = NetworkManager.Settings.ListConnections()  # type: ignore
     conns = [c for c in all_connections
              if c.GetSettings()['connection']['uuid'] == uuid]
     if len(conns) != 1:
@@ -142,7 +142,7 @@ def delete_provider(uuid):  # type: (str) -> None
         raise
 
 
-def connect_provider(uuid):  # type: (str) -> None
+def connect_provider(uuid):  # type: (str) -> Any
     """
     Enable the network manager configuration by its UUID
 
@@ -155,10 +155,9 @@ def connect_provider(uuid):  # type: (str) -> None
         raise EduvpnException("No DBus daemon running")
 
     try:
-        connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
-        return NetworkManager.NetworkManager.ActivateConnection(connection,
-                                                                "/", "/")
-    except DBusException as e:
+        connection = NetworkManager.Settings.GetConnectionByUuid(uuid)  # type: ignore
+        return NetworkManager.ActivateConnection(connection, "/", "/")  # type: ignore
+    except DBusException as e:  # type: ignore
         raise EduvpnException(e)
 
 
@@ -174,10 +173,10 @@ def list_active():  # type: () -> list
         return []
 
     try:
-        active = NetworkManager.NetworkManager.ActiveConnections
-        return [a for a in active if NetworkManager.Settings.
-                GetConnectionByUuid(a.Uuid).GetSettings()
-                ['connection']['type'] == 'vpn']
+        active = NetworkManager.ActiveConnections  # type: ignore
+        return [a for a in active if NetworkManager.Settings.  # type: ignore
+                GetConnectionByUuid(a.Uuid).GetSettings()  # type: ignore
+                ['connection']['type'] == 'vpn']  # type: ignore
     except DBusException:
         return []
 
@@ -189,10 +188,10 @@ def disconnect_all():  # type: () -> Any
     if not have_dbus():
         return []
 
-    for active in NetworkManager.NetworkManager.ActiveConnections:
-        conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)
-        if conn.GetSettings()['connection']['type'] == 'vpn':
-            disconnect_provider(active.Uuid)
+    for active in NetworkManager.ActiveConnections:  # type: ignore
+        conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)  # type: ignore
+        if conn.GetSettings()['connection']['type'] == 'vpn':  # type: ignore
+            disconnect_provider(active.Uuid)  # type: ignore
 
 
 def disconnect_provider(uuid):  # type: (str) -> None
@@ -207,13 +206,13 @@ def disconnect_provider(uuid):  # type: (str) -> None
     if not have_dbus():
         raise EduvpnException("No DBus daemon running")
 
-    conns = [i for i in NetworkManager.NetworkManager.ActiveConnections
+    conns = [i for i in NetworkManager.ActiveConnections  # type: ignore
              if i.Uuid == uuid]
-    if len(conns) == 0:
+    if len(conns) == 0:  # type: ignore
         raise EduvpnException("no active connection found"
                               "with uuid {}".format(uuid))
     for conn in conns:
-        NetworkManager.NetworkManager.DeactivateConnection(conn)
+        NetworkManager.NetworkManager.DeactivateConnection(conn)  # type: ignore
 
 
 def is_provider_connected(uuid):  # type: (str) -> Any
@@ -248,10 +247,10 @@ def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
                            username=meta.username)
 
     if have_dbus():
-        connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
+        connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)  # type: ignore
         old_settings = connection.GetSettings()
         nm_config['vpn']['data'].update({'cert': (old_settings['vpn']['data']['cert']),
-                                         'key': (old_settings['vpn']['data']['key'])})
+                                         'key': (old_settings['vpn']['data']['key'])})  # type: ignore
         connection.Update(nm_config)
 
 
@@ -298,5 +297,5 @@ def monitor_vpn(uuid, callback):  # type: (str, Any) -> None
     if not have_dbus():
         return
 
-    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
-    connection.connect_to_signal('Updated', callback)
+    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)  # type: ignore
+    connection.connect_to_signal('Updated', callback)  # type: ignore

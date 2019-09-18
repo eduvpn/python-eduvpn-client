@@ -8,6 +8,8 @@
 # This code has been taken from https://github.com/seveas/python-networkmanager and modified slightly.
 # This way we have the same version on all platforms and we can solve some small issues.
 
+#  type: ignore
+
 import copy
 import dbus
 import dbus.service
