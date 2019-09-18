@@ -40,7 +40,7 @@ def insert_config(settings):  # type: (dict) -> Any
     name = settings['connection']['id']
     logger.info("generating or updating OpenVPN"
                 "configuration with name {}".format(name))
-    connection = NetworkManager.Settings.AddConnection(settings)
+    connection = NetworkManager.Settings.AddConnection(settings)  # type: ignore
     return connection
 
 
@@ -64,7 +64,7 @@ def list_providers():  # type: () -> Iterable[Metadata]
                 except IOError as e:
                     logger.error("cant open {}: {}".format(p, e))
     else:
-        all_ = NetworkManager.Settings.ListConnections()
+        all_ = NetworkManager.Settings.ListConnections()  # type: ignore
         vpn_connections = ([c.GetSettings()['connection'] for c in all_
                            if c.GetSettings()['connection']['type'] == 'vpn'])
         logger.info("There are {} VPN connections in"
@@ -116,7 +116,7 @@ def delete_provider(uuid):  # type: (str) -> None
 
     logger.info("deleting profile with uuid {}"
                 "using NetworkManager".format(uuid))
-    all_connections = NetworkManager.Settings.ListConnections()
+    all_connections = NetworkManager.Settings.ListConnections()  # type: ignore
     conns = [c for c in all_connections
              if c.GetSettings()['connection']['uuid'] == uuid]
     if len(conns) != 1:
@@ -157,9 +157,9 @@ def connect_provider(uuid):  # type: (str) -> None
         raise EduvpnException("No DBus daemon running")
 
     try:
-        connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
+        connection = NetworkManager.Settings.GetConnectionByUuid(uuid)  # type: ignore
         return NetworkManager.NetworkManager.ActivateConnection(connection,
-                                                                "/", "/")
+                                                                "/", "/")  # type: ignore
     except DBusException as e:
         raise EduvpnException(e)
 
