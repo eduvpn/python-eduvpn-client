@@ -3,7 +3,7 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-#  type: ignore
+# type: ignore
 
 import json
 import logging
@@ -26,7 +26,7 @@ if have_dbus():
 logger = logging.getLogger(__name__)
 
 
-def insert_config(settings):  # type: (dict) -> NetworkManager.connection
+def insert_config(settings):  # type: (dict) -> Any
     """
     Add a configuration to the networkmanager
 
