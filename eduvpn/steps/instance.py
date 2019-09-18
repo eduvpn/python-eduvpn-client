@@ -52,7 +52,7 @@ def select_instance_step(meta,
                          instances,
                          builder,
                          verifier,
-                         lets_connect):  # type: (Metadata, str, Gtk.builder, str, bool) -> None
+                         lets_connect):  # type: (Metadata, List[Tuple[str, str, Optional[bytes]]], Gtk.builder, str, bool) -> None
     """prompt user with instance dialog"""
     logger.info("presenting instances to user")
     dialog = builder.get_object('instances-dialog')
@@ -64,8 +64,8 @@ def select_instance_step(meta,
     dialog.show_all()
 
     for display_name, url, icon_data in instances:
-        icon = bytes2pixbuf(icon_data)
-        model.append((display_name, url, icon, base64.b64encode(icon_data).decode('ascii')))
+        icon = bytes2pixbuf(icon_data)  # type: ignore
+        model.append((display_name, url, icon, base64.b64encode(icon_data).decode('ascii')))  # type: ignore
 
     response = dialog.run()
     dialog.hide()

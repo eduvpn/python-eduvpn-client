@@ -94,8 +94,8 @@ def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional
     if not hasattr(httpd, "path"):
         raise Exception("Invalid response received")
 
-    parsed = urlparse(httpd.path)
-    logger.info("received a request {}".format(httpd.path))
+    parsed = urlparse(httpd.path)  # type: ignore
+    logger.info("received a request {}".format(httpd.path))  # type: ignore
     return parse_qs(parsed.query)
 
 
