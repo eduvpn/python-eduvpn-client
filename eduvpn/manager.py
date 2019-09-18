@@ -3,8 +3,6 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-# type: ignore
-
 import json
 import logging
 import os
@@ -160,7 +158,7 @@ def connect_provider(uuid):  # type: (str) -> None
         connection = NetworkManager.Settings.GetConnectionByUuid(uuid)  # type: ignore
         return NetworkManager.NetworkManager.ActivateConnection(connection,
                                                                 "/", "/")  # type: ignore
-    except DBusException as e:
+    except DBusException as e:  # type: ignore
         raise EduvpnException(e)
 
 
@@ -178,8 +176,8 @@ def list_active():  # type: () -> list
     try:
         active = NetworkManager.NetworkManager.ActiveConnections
         return [a for a in active if NetworkManager.Settings.
-                GetConnectionByUuid(a.Uuid).GetSettings()
-                ['connection']['type'] == 'vpn']
+                GetConnectionByUuid(a.Uuid).GetSettings()  # type: ignore
+                ['connection']['type'] == 'vpn']  # type: ignore
     except DBusException:
         return []
 
@@ -193,8 +191,8 @@ def disconnect_all():  # type: () -> Any
 
     for active in NetworkManager.NetworkManager.ActiveConnections:
         conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)
-        if conn.GetSettings()['connection']['type'] == 'vpn':
-            disconnect_provider(active.Uuid)
+        if conn.GetSettings()['connection']['type'] == 'vpn':  # type: ignore
+            disconnect_provider(active.Uuid)  # type: ignore
 
 
 def disconnect_provider(uuid):  # type: (str) -> None
@@ -211,11 +209,11 @@ def disconnect_provider(uuid):  # type: (str) -> None
 
     conns = [i for i in NetworkManager.NetworkManager.ActiveConnections
              if i.Uuid == uuid]
-    if len(conns) == 0:
+    if len(conns) == 0:  # type: ignore
         raise EduvpnException("no active connection found"
                               "with uuid {}".format(uuid))
     for conn in conns:
-        NetworkManager.NetworkManager.DeactivateConnection(conn)
+        NetworkManager.NetworkManager.DeactivateConnection(conn)  # type: ignore
 
 
 def is_provider_connected(uuid):  # type: (str) -> Any
@@ -253,7 +251,7 @@ def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
         connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)
         old_settings = connection.GetSettings()
         nm_config['vpn']['data'].update({'cert': (old_settings['vpn']['data']['cert']),
-                                         'key': (old_settings['vpn']['data']['key'])})
+                                         'key': (old_settings['vpn']['data']['key'])})  # type: ignore
         connection.Update(nm_config)
 
 
@@ -300,5 +298,5 @@ def monitor_vpn(uuid, callback):  # type: (str, Any) -> None
     if not have_dbus():
         return
 
-    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)
-    connection.connect_to_signal('Updated', callback)
+    connection = NetworkManager.Settings.GetConnectionByUuid(uuid)  # type: ignore
+    connection.connect_to_signal('Updated', callback)  # type: ignore
