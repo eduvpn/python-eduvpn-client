@@ -13,10 +13,10 @@ lets_connect_name = "Let's Connect!"  # type: str
 
 def get_brand(lets_connect):  # type: (bool) -> Tuple[str, str]
     """
-    args:	
-        lets_connect (bool): Let's connect mode?	
-    returns:	
-        (str, str): logo, name	
+    args:
+        lets_connect (bool): Let's connect mode?
+    returns:
+        (str, str): logo, name
     """
     if lets_connect:
         return lets_connect_main_logo, lets_connect_name
