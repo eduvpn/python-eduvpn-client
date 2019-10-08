@@ -8,6 +8,7 @@ from builtins import chr
 from future.moves.urllib.parse import urlparse
 import qrcode
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gdk, Gtk
 from eduvpn.util import pil2pixbuf
 from eduvpn.remote import two_factor_enroll_totp
@@ -18,7 +19,6 @@ from eduvpn.metadata import Metadata
 from typing import Any, Optional
 
 
-gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 
 
