@@ -53,7 +53,12 @@ scope = ["config"]  # type: Any
 
 
 def get_open_port():  # type: () -> int
-    """Find an unused local port."""
+    """
+    Find an unused local port.
+    
+    returns:	
+        int: an unused port number
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("", 0))
     s.listen(1)
@@ -99,8 +104,7 @@ def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional
     return parse_qs(parsed.query)
 
 
-def stringify_image(logo):
-    # type: (str) -> str
+def stringify_image(logo):  # type: (str) -> str
     import base64
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
