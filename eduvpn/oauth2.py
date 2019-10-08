@@ -55,7 +55,7 @@ scope = ["config"]  # type: Any
 def get_open_port():  # type: () -> int
     """
     Find an unused local port.
-    
+
     returns:	
         int: an unused port number
     """
