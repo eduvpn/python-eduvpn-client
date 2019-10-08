@@ -23,8 +23,7 @@ def parse_args():  # type: () -> Tuple[int, str, str, str, bool]
     """
     Parses command line arguments:
     returns:
-        (logging level (int), secure internet uri (str),
-         institute access uri (str), verify key (str))
+        (logging level (int), secure internet uri (str), institute access uri (str), verify key (str))
     """
     parser = ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true', help="enable debug logging")
@@ -46,23 +45,16 @@ def parse_args():  # type: () -> Tuple[int, str, str, str, bool]
 
     if args.test:
         logger.warning("using test discovery URLs")
-        return (level, config.secure_internet_uri_dev,
-                config.institute_access_uri_dev,
-                config.verify_key_dev,
-                args.lets_connect)
+        return (level, config.secure_internet_uri_dev, config.institute_access_uri_dev,
+                config.verify_key_dev, args.lets_connect)
     else:
         logger.debug("using production discovery URLs")
-        return (level, config.secure_internet_uri,
-                config.institute_access_uri,
-                config.verify_key,
-                args.lets_connect)
+        return (level, config.secure_internet_uri, config.institute_access_uri,
+                config.verify_key, args.lets_connect)
 
 
-def init(lets_connect):
-    # type: (bool) -> EduVpnApp
-    (level, secure_internet_uri,
-     institute_access_uri, verify_key,
-     lets_connect_arg) = parse_args()
+def init(lets_connect): # type: (bool) -> EduVpnApp
+    (level, secure_internet_uri, institute_access_uri, verify_key, lets_connect_arg) = parse_args()
     lets_connect = lets_connect or lets_connect_arg
     if geteuid() == 0:
         logger.error("Running eduVPN client as root is not supported (yet)")
