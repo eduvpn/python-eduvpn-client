@@ -249,8 +249,8 @@ def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
     if have_dbus():
         connection = NetworkManager.Settings.GetConnectionByUuid(meta.uuid)  # type: ignore
         old_settings = connection.GetSettings()
-        nm_config['vpn']['data'].update({'cert': (old_settings['vpn']['data']['cert']),
-                                         'key': (old_settings['vpn']['data']['key'])})  # type: ignore
+        nm_config['vpn']['data'].update({'cert': old_settings['vpn']['data']['cert'],
+                                         'key': old_settings['vpn']['data']['key']})  # type: ignore
         connection.Update(nm_config)
 
 

@@ -5,6 +5,7 @@
 
 import logging
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.oauth2 import oauth_from_token
@@ -20,8 +21,6 @@ from eduvpn.brand import get_brand
 from eduvpn.metadata import Metadata
 from typing import Any, Union, List
 
-
-gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 
 

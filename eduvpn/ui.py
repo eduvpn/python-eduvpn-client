@@ -6,6 +6,7 @@
 import logging
 import os
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from eduvpn.util import get_prefix
 from eduvpn.crypto import make_verifier
@@ -19,7 +20,6 @@ from eduvpn.actions.switch import switched
 from typing import Any, Iterable
 
 
-gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 builder_files = (
     'window.ui',

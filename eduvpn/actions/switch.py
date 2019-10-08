@@ -5,6 +5,7 @@
 
 import logging
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk
 from eduvpn.notify import notify, init_notify
 from eduvpn.actions.activate import activate_connection
@@ -13,7 +14,6 @@ from eduvpn.util import error_helper
 from eduvpn.metadata import Metadata
 
 
-gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 
 

@@ -6,13 +6,13 @@
 import base64
 import logging
 import gi
+gi.require_version('Gtk', '3.0')
 from eduvpn.manager import list_providers
 from eduvpn.util import bytes2pixbuf, get_pixbuf
 from eduvpn.brand import get_brand
 from gi.repository import Gtk
 
 
-gi.require_version('Gtk', '3.0')
 logger = logging.getLogger(__name__)
 
 

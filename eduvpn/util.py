@@ -9,22 +9,21 @@ import sys
 import os
 from os import path
 from future.standard_library import install_aliases
+install_aliases()
 from repoze.lru import lru_cache
 import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 from eduvpn.config import icon_size
 from eduvpn.metadata import Metadata
 from eduvpn.exceptions import EduvpnException
 from typing import Any, Optional, Tuple
 
-install_aliases()
-gi.require_version('Gtk', '3.0')
-gi.require_version('GdkPixbuf', '2.0')
 logger = logging.getLogger(__name__)
 
 
-def make_unique_id():
-    # type: () -> str
+def make_unique_id():  # type: () -> str
     return str(uuid.uuid4())
 
 
