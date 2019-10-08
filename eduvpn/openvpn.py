@@ -36,8 +36,7 @@ def parse_ovpn(configtext):  # type: (str) -> dict
     """
     config = {}
 
-    def configurator(text):
-        # type: (str) -> Any
+    def configurator(text):  # type: (str) -> Any
         for line in text.split('\n'):
             split = line.split('#')[0].strip().split()
             if len(split) == 0:
