@@ -11,6 +11,8 @@ from os import path
 from future.standard_library import install_aliases
 from repoze.lru import lru_cache
 import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 from eduvpn.config import icon_size
 from eduvpn.metadata import Metadata
@@ -18,8 +20,6 @@ from eduvpn.exceptions import EduvpnException
 from typing import Any, Optional, Tuple
 
 install_aliases()
-gi.require_version('Gtk', '3.0')
-gi.require_version('GdkPixbuf', '2.0')
 logger = logging.getLogger(__name__)
 
 
