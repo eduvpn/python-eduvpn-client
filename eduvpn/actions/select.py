@@ -11,11 +11,12 @@ from eduvpn.manager import is_provider_connected
 from eduvpn.steps.messages import fetch_messages
 from eduvpn.brand import get_brand
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from eduvpn.metadata import Metadata
 from typing import Optional
 
-gi.require_version('Gtk', '3.0')
+
 logger = logging.getLogger(__name__)
 
 
