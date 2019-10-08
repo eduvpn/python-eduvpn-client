@@ -4,13 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 import logging
-import gi
 from eduvpn.brand import get_brand
-from gi.repository import Gtk
-
-
-logger = logging.getLogger(__name__)
+import gi
 gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+logger = logging.getLogger(__name__)
 
 
 def fetching_window(builder, lets_connect):  # type: (Gtk.builder, bool) -> None
