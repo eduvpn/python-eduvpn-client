@@ -56,7 +56,7 @@ def get_open_port():  # type: () -> int
     """
     Find an unused local port.
 
-    returns:	
+    returns:
         int: an unused port number
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
