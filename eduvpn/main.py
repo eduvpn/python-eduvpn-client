@@ -53,7 +53,7 @@ def parse_args():  # type: () -> Tuple[int, str, str, str, bool]
                 config.verify_key, args.lets_connect)
 
 
-def init(lets_connect): # type: (bool) -> EduVpnApp
+def init(lets_connect):  # type: (bool) -> EduVpnApp
     (level, secure_internet_uri, institute_access_uri, verify_key, lets_connect_arg) = parse_args()
     lets_connect = lets_connect or lets_connect_arg
     if geteuid() == 0:
