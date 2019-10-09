@@ -2,13 +2,15 @@
 #
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
-
 import logging
 from eduvpn.brand import get_brand
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 logger = logging.getLogger(__name__)
 
 
-def fetching_window(builder, lets_connect):
+def fetching_window(builder, lets_connect):  # type: (Gtk.builder, bool) -> None
     """
     Don't forget to call dialog.run() after creating the fetch window!
     """

@@ -7,19 +7,24 @@ import logging
 import webbrowser
 from random import random
 import gi
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.crypto import gen_code_verifier
 from eduvpn.oauth2 import get_open_port, create_oauth_session, get_oauth_token_code, oauth_from_token
 from eduvpn.remote import get_instance_info, get_auth_url
 from eduvpn.metadata import reuse_token_from_base_uri
 from eduvpn.steps.profile import fetch_profile_step
-
+from typing import Optional, Any
+from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
 
 
-def browser_step(builder, meta, verifier, lets_connect, force_token_refresh=False):
+def browser_step(builder,
+                 meta,
+                 verifier,
+                 lets_connect,
+                 force_token_refresh=False):  # type: (Gtk.builder, Metadata, str, bool, Optional[bool]) -> None
     """The notorious browser step. if no token, starts webserver, wait for callback, show token dialog"""
     logger.info("opening token dialog")
     dialog = builder.get_object('token-dialog')
@@ -29,10 +34,11 @@ def browser_step(builder, meta, verifier, lets_connect, force_token_refresh=Fals
 
 
 def _phase1_background(meta, dialog, verifier, builder, force_token_refresh, lets_connect):
+    # type: (Metadata, Any, str, Gtk.builder, Optional[bool], bool) -> None
     try:
         logger.info("starting token obtaining in background")
         r = get_instance_info(instance_uri=meta.instance_base_uri, verifier=verifier)
-        meta.api_base_uri, meta.authorization_endpoint, meta.token_endpoint = r
+        meta.api_base_uri, meta.authorization_endpoint, meta.token_endpoint = r  # type: ignore
     except Exception as e:
         error = e
         GLib.idle_add(lambda: error_helper(dialog, "Can't fetch instance info", "{}".format(str(error))))
@@ -52,7 +58,7 @@ def _phase1_background(meta, dialog, verifier, builder, force_token_refresh, let
         port = get_open_port()
         try:
             oauth = create_oauth_session(port, lets_connect=lets_connect, auto_refresh_url=meta.token_endpoint)
-            auth_url, state = get_auth_url(oauth, code_verifier, meta.authorization_endpoint)
+            auth_url, state = get_auth_url(oauth, code_verifier, meta.authorization_endpoint)  # type: ignore
         except Exception as e:
             error = e
             GLib.idle_add(lambda: error_helper(dialog, "Can't create oauth session", "{}".format(str(error))))
@@ -69,6 +75,7 @@ def _phase1_background(meta, dialog, verifier, builder, force_token_refresh, let
 
 
 def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder, state, lets_connect):
+    # type: (Metadata, int, str, str, str, Any, Gtk.builder, str, bool) -> None
     thread_helper(lambda: _phase2_background(meta=meta, port=port, oauth=oauth, code_verifier=code_verifier,
                                              auth_url=auth_url, dialog=dialog, builder=builder, state=state,
                                              lets_connect=lets_connect))
@@ -76,6 +83,7 @@ def _phase1_callback(meta, port, code_verifier, oauth, auth_url, dialog, builder
 
 
 def _show_dialog(dialog, auth_url, builder):
+    # type: (Any, str, Gtk.builder) -> None
     url_field = builder.get_object('redirect-url-entry')
     url_dialog = builder.get_object('redirecturl-dialog')
     while True:
@@ -100,6 +108,7 @@ def _show_dialog(dialog, auth_url, builder):
 
 
 def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, builder, state, lets_connect):
+    # type: (Metadata, int, Any, str, str, Any, Gtk.builder, str, bool) -> None
     session = random()
     logger.info("opening browser with url {}".format(auth_url))
     try:
@@ -111,14 +120,16 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
             logger.error("received from state, expected: {}, received: {}".format(state, other_state))
             raise Exception("oauth state has been tampered with")
         logger.info("setting oauth token for metadata")
-        meta.token = oauth.fetch_token(meta.token_endpoint, code=code, code_verifier=code_verifier)
+        meta.token = oauth.fetch_token(meta.token_endpoint,
+                                       code=code,
+                                       code_verifier=code_verifier)
     except Exception as e:
         error = e
         if dialog.get_property("visible") and dialog.session == session:
-            GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(str(error))))
+            GLib.idle_add(lambda: error_helper(dialog, "Can't obtain token", "{}".format(error)))
             GLib.idle_add(lambda: dialog.hide())
         else:
-            logging.error(error)
+            logging.error(error)  # type: ignore
         raise
     else:
         GLib.idle_add(lambda: _phase2_callback(meta=meta, oauth=oauth, dialog=dialog, builder=builder,
@@ -126,6 +137,7 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
 
 
 def _phase2_callback(meta, oauth, dialog, builder, lets_connect):
+    # type: (Metadata, str, Any, Gtk.builder, bool) -> None
     logger.info("hiding url and token dialog")
     url_dialog = builder.get_object('redirecturl-dialog')
     GLib.idle_add(lambda: url_dialog.hide())

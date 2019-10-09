@@ -19,6 +19,7 @@ install_requires = [
     'qrcode',
     'pillow',
     'cryptography',
+    'typing',
 ]
 
 # sometimes the dbus-python package is not properly registered, triggering a

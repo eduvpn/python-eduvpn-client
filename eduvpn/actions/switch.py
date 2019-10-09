@@ -6,16 +6,19 @@
 import logging
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
 from eduvpn.notify import notify, init_notify
 from eduvpn.actions.activate import activate_connection
 from eduvpn.manager import disconnect_provider
 from eduvpn.util import error_helper
+from eduvpn.metadata import Metadata
+
 
 logger = logging.getLogger(__name__)
 
 
 def switched(meta, builder, verifier, lets_connect):
+    # type: (Metadata, Gtk.builder, str, bool) -> None
     switch = builder.get_object('connect-switch')
     state = switch.get_active()
     logger.info("switch activated, old state {}".format(state))

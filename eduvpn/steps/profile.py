@@ -11,13 +11,15 @@ from eduvpn.remote import list_profiles
 from eduvpn.steps.parse_config import parse_config_step
 from eduvpn.exceptions import EduvpnException
 from eduvpn.steps.fetching import fetching_window
-
+from eduvpn.metadata import Metadata
+from gi.repository import Gtk
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
-def fetch_profile_step(builder, meta, oauth, lets_connect):
+def fetch_profile_step(builder, meta, oauth, lets_connect):  # type: (Gtk.builder, Metadata, str, bool) -> None
     """background action step, fetches profiles and shows 'fetching' screen"""
     logger.info("fetching profile step")
 
@@ -34,6 +36,7 @@ def fetch_profile_step(builder, meta, oauth, lets_connect):
 
 # background thread
 def _background(oauth, meta, builder, dialog, lets_connect):
+    # type: (str, Metadata, Gtk.builder, Any, bool) -> None
     try:
         profiles = list_profiles(oauth, meta.api_base_uri)
         logger.info("There are {} profiles on {}".format(len(profiles), meta.api_base_uri))
@@ -56,7 +59,10 @@ def _background(oauth, meta, builder, dialog, lets_connect):
 
 
 # ui thread
-def _select_profile_step(builder, profiles, meta, oauth, lets_connect):
+def _select_profile_step(builder,
+                         profiles,
+                         meta, oauth,
+                         lets_connect):  # type: (Gtk.builder, dict, Metadata, str, bool) -> None
     """the profile selection step, doesn't do anything if only one profile"""
     logger.info("opening profile dialog")
 
@@ -85,6 +91,7 @@ def _select_profile_step(builder, profiles, meta, oauth, lets_connect):
 
 # ui thread
 def _parse_choice(builder, meta, oauth, choice, lets_connect):
+    # type: (Gtk.builder, Metadata, str, dict, bool) -> None
     meta.profile_display_name, meta.profile_id, meta.two_factor, two_factor_method = choice
     meta.two_factor_method = two_factor_method.split(",")
     parse_config_step(builder=builder, oauth=oauth, meta=meta, lets_connect=lets_connect)

@@ -1,18 +1,20 @@
 import logging
 import gi
-from gi.repository import GLib
+from gi.repository import GLib, Gtk
 from eduvpn.util import error_helper, thread_helper
 from eduvpn.remote import create_keypair, get_profile_config
 from eduvpn.openvpn import format_like_ovpn, parse_ovpn
 from eduvpn.steps.two_way_auth import two_auth_step
 from eduvpn.steps.finalize import finalizing_step
 from eduvpn.steps.fetching import fetching_window
+from eduvpn.metadata import Metadata
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 # ui thread
-def parse_config_step(builder, oauth, meta, lets_connect):
+def parse_config_step(builder, oauth, meta, lets_connect):  # type: (Gtk.builder, str, Metadata, bool) -> None
     """parse the config and see if action is still required, otherwise finalize"""
     logger.info("parse config step")
     fetching_window(builder=builder, lets_connect=lets_connect)
@@ -24,6 +26,7 @@ def parse_config_step(builder, oauth, meta, lets_connect):
 
 # background thread
 def _background(meta, oauth, dialog, builder, lets_connect):
+    # type: (Metadata, str, Any, Gtk.builder, bool) -> None
     try:
         cert, key = create_keypair(oauth, meta.api_base_uri)
         meta.cert = cert

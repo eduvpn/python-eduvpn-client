@@ -10,19 +10,18 @@ import errno
 import os
 from os.path import expanduser
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def write_cert(content, type_, unique_name):
+def write_cert(content, type_, unique_name):  # type: (Any, str, str) -> str
     """
     Write a certificate to the filesystem
-
     args:
         content (str): content of certificate file
         type (str): type of certificate file
         unique_name (str): description of file
-
     returns:
         str: full path to certificate file
     """
@@ -37,10 +36,9 @@ def write_cert(content, type_, unique_name):
     return path
 
 
-def mkdir_p(path):
+def mkdir_p(path):  # type: (str) -> None
     """
     Create a folder with all its parents, like mkdir -p
-
     args:
         path (str): path of directory to create
     """

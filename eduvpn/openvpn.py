@@ -9,11 +9,13 @@ from eduvpn.exceptions import EduvpnException
 import re
 
 from eduvpn.io import write_cert
+from typing import Any, Optional, Dict, Mapping
+from eduvpn.metadata import Metadata
 
 logger = logging.getLogger(__name__)
 
 
-def format_like_ovpn(config, cert, key):
+def format_like_ovpn(config, cert, key):  # type: (str, str, str) -> str
     """
     create a OVPN format config text
 
@@ -26,7 +28,7 @@ def format_like_ovpn(config, cert, key):
     return config + '\n<cert>\n{}\n</cert>\n<key>\n{}\n</key>\n'.format(cert, key)
 
 
-def parse_ovpn(configtext):
+def parse_ovpn(configtext):  # type: (str) -> dict
     """
     Parse a ovpn like config file, return it in dict
 
@@ -34,7 +36,7 @@ def parse_ovpn(configtext):
     """
     config = {}
 
-    def configurator(text):
+    def configurator(text):  # type: (str) -> Any
         for line in text.split('\n'):
             split = line.split('#')[0].strip().split()
             if len(split) == 0:
@@ -54,7 +56,7 @@ def parse_ovpn(configtext):
             configtext = configtext.replace(full_match, '')
 
     # handle duplicate keys, make them a list
-    results = {}
+    results = {}  # type: dict
     multiple = ['remote']  # remote needs to always be a list
     for keyword, value in configurator(configtext):
         if keyword in results:
@@ -73,7 +75,10 @@ def parse_ovpn(configtext):
     return config
 
 
-def ovpn_to_nm(config, meta, display_name, username=None):
+def ovpn_to_nm(config,
+               meta,
+               display_name,
+               username=None):  # type: (dict, Metadata, str, Optional[str]) -> Mapping[str, Any]
     """
     Generate a NetworkManager style config dict from a parsed ovpn config dict
 
@@ -99,7 +104,7 @@ def ovpn_to_nm(config, meta, display_name, username=None):
                                  # 'tls-cipher': config.get('tls-cipher', 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384')
                                  },
                         'service-type': 'org.freedesktop.NetworkManager.openvpn'}
-                }
+                }  # type: Mapping[str, Any]
 
     # issue #138, not supported by older network-manager-openvpn
     # if 'server-poll-timeout' in config:
