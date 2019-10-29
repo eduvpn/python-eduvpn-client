@@ -1,23 +1,25 @@
-FROM fedora:27
+FROM debian:buster
 
-RUN dnf install -y \
-        libnotify \
-        gtk3 \
+ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
+RUN docker-apt-install \
+        gir1.2-gtk-3.0 \
+        gir1.2-notify-0.7 \
+        python3-gi \
         python3-dbus \
-        python3-pynacl \
+        python3-nacl \
         python3-requests-oauthlib \
-        python3-repoze-lru \
-        python3-gobject \
         python3-future \
         python3-dateutil \
         python3-mock \
+        python3-repoze.lru \
         python3-pytest \
         python3-cryptography \
         python3-qrcode \
         python3-pillow
 
+
 ADD . /code
 WORKDIR /code
-RUN mkdir -p /usr/local/lib/python3.6/site-packages/
 RUN python3 setup.py install
 RUN python3 setup.py test
+
