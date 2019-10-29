@@ -156,7 +156,7 @@ def connect_provider(uuid):  # type: (str) -> Any
 
     try:
         connection = NetworkManager.Settings.GetConnectionByUuid(uuid)  # type: ignore
-        return NetworkManager.ActivateConnection(connection, "/", "/")  # type: ignore
+        return NetworkManager.NetworkManager.ActivateConnection(connection, "/", "/")  # type: ignore
     except DBusException as e:  # type: ignore
         raise EduvpnException(e)
 
@@ -173,7 +173,7 @@ def list_active():  # type: () -> list
         return []
 
     try:
-        active = NetworkManager.ActiveConnections  # type: ignore
+        active = NetworkManager.NetworkManager.ActiveConnections  # type: ignore
         return [a for a in active if NetworkManager.Settings.  # type: ignore
                 GetConnectionByUuid(a.Uuid).GetSettings()  # type: ignore
                 ['connection']['type'] == 'vpn']  # type: ignore
@@ -188,7 +188,7 @@ def disconnect_all():  # type: () -> Any
     if not have_dbus():
         return []
 
-    for active in NetworkManager.ActiveConnections:  # type: ignore
+    for active in NetworkManager.NetworkManager.ActiveConnections:  # type: ignore
         conn = NetworkManager.Settings.GetConnectionByUuid(active.Uuid)  # type: ignore
         if conn.GetSettings()['connection']['type'] == 'vpn':  # type: ignore
             disconnect_provider(active.Uuid)  # type: ignore
@@ -206,7 +206,7 @@ def disconnect_provider(uuid):  # type: (str) -> None
     if not have_dbus():
         raise EduvpnException("No DBus daemon running")
 
-    conns = [i for i in NetworkManager.ActiveConnections  # type: ignore
+    conns = [i for i in NetworkManager.NetworkManager.ActiveConnections  # type: ignore
              if i.Uuid == uuid]
     if len(conns) == 0:  # type: ignore
         raise EduvpnException("no active connection found"
