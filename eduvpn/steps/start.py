@@ -37,7 +37,9 @@ def refresh_start(builder, lets_connect):
         logger.info("hiding introduction")
         introduction.hide()
         for meta in providers:
-            connection_type = "<b>{}</b>\n{}\n<small><i>{}</i></small>".format(meta.display_name,
+            print(meta.display_name)
+            print(meta.profile_display_name)
+            connection_type = u"<b>{}</b>\n{}\n<small><i>{}</i></small>".format(meta.display_name,
                                                                                meta.connection_type,
                                                                                meta.profile_display_name)
             if meta.icon_data:

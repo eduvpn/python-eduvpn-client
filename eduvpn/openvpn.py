@@ -88,7 +88,7 @@ def ovpn_to_nm(config,
         display_name (str): the display name of the configuration
         username (str): username to use for 2-factor authentication
     """
-    logger.info("generating config for {} ({})".format(display_name, meta.uuid))
+    logger.info(u"generating config for {} ({})".format(display_name, meta.uuid))
     settings = {'connection': {'id': display_name,
                                'type': 'vpn',
                                'uuid': meta.uuid},

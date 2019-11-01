@@ -97,7 +97,7 @@ def bytes2pixbuf(data,
         loader.write(data)
         loader.close()
     except (GLib.Error, TypeError) as e:
-        logger.error("can't process icon for {}: {}".format(display_name, str(e)))
+        logger.error(u"can't process icon for {}: {}".format(display_name, str(e)))
     else:
         return loader.get_pixbuf()
 

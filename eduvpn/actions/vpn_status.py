@@ -38,31 +38,31 @@ def vpn_change(builder, lets_connect, state=0, reason=0):
             if active.Uuid == meta.uuid:
                 selected_uuid_active = True
                 if active.State == 2:  # activated
-                    logger.info("setting ip for {}".format(meta.uuid))
-                    logger.info("setting switch ON")
+                    logger.info(u"setting ip for {}".format(meta.uuid))
+                    logger.info(u"setting switch ON")
                     switch.set_active(True)
                     GLib.idle_add(lambda: ipv4_label.set_text(active.Ip4Config.AddressData[0]['address']))
                     GLib.idle_add(lambda: ipv6_label.set_text(active.Ip6Config.AddressData[0]['address']))
-                    notify(notification, "eduVPN connected", "Connected to '{}'".format(meta.display_name))
+                    notify(notification, u"eduVPN connected", u"Connected to '{}'".format(meta.display_name))
                 elif active.State == 1:  # activating
-                    logger.info("setting switch ON")
+                    logger.info(u"setting switch ON")
                     switch.set_active(True)
-                    notify(notification, "eduVPN connecting...", "Activating '{}'".format(meta.display_name))
+                    notify(notification, u"eduVPN connecting...", u"Activating '{}'".format(meta.display_name))
                 else:
-                    logger.info("clearing ip for '{}'".format(meta.uuid))
-                    logger.info("setting switch OFF")
+                    logger.info(u"clearing ip for '{}'".format(meta.uuid))
+                    logger.info(u"setting switch OFF")
                     switch.set_active(False)
                     GLib.idle_add(lambda: ipv4_label.set_text(""))
                     GLib.idle_add(lambda: ipv6_label.set_text(""))
                 break
         except Exception as e:
-            logger.warning("probably race condition in network manager: {}".format(e))
+            logger.warning(u"probably race condition in network manager: {}".format(e))
             raise
 
     if not selected_uuid_active:
-        logger.info("Our selected profile not active {}".format(meta.uuid))
-        notify(notification, "eduVPN Disconnected", "Disconnected from '{}'".format(meta.display_name))
-        logger.info("setting switch OFF")
+        logger.info(u"Our selected profile not active {}".format(meta.uuid))
+        notify(notification, u"eduVPN Disconnected", u"Disconnected from '{}'".format(meta.display_name))
+        logger.info(u"setting switch OFF")
         switch.set_active(False)
         GLib.idle_add(lambda: ipv4_label.set_text("-"))
         GLib.idle_add(lambda: ipv6_label.set_text("-"))

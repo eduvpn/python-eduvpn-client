@@ -36,8 +36,7 @@ def insert_config(settings):  # type: (dict) -> Any
         return
 
     name = settings['connection']['id']
-    logger.info("generating or updating OpenVPN"
-                "configuration with name {}".format(name))
+    logger.info(u"generating or updating OpenVPN configuration with name {}".format(name))
     connection = NetworkManager.Settings.AddConnection(settings)  # type: ignore
     return connection
 
@@ -77,8 +76,7 @@ def list_providers():  # type: () -> Iterable[Metadata]
 
 def store_provider(meta, config_dict):  # type: (Metadata, dict) -> str
     """Store the eduVPN configuration"""
-    logger.info("storing profile with name {}"
-                "using NetworkManager".format(meta.display_name))
+    logger.info(u"storing profile with name {} using NetworkManager".format(meta.display_name))
     new = False
     if not meta.uuid:
         meta.uuid = make_unique_id()
@@ -244,7 +242,7 @@ def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
         display_name (str): The new display name of the configuration
         config (str): The new OpenVPN configuration
     """
-    logger.info("updating config for {} ({})".format(meta.display_name,
+    logger.info(u"updating config for {} ({})".format(meta.display_name,
                                                      meta.uuid))
     nm_config = ovpn_to_nm(config_dict, meta=meta,
                            display_name=meta.display_name,

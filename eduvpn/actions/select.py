@@ -46,7 +46,7 @@ def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str,
         notebook.set_current_page(0)
         return None
     else:
-        logger.info("configuration was selected {} ({})".format(meta.display_name, meta.uuid))
+        logger.info(u"configuration was selected {} ({})".format(meta.display_name, meta.uuid))
         name_label.set_text(meta.display_name)
         if meta.icon_data:
             icon = bytes2pixbuf(base64.b64decode(meta.icon_data.encode()),
