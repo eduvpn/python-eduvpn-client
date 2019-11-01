@@ -98,8 +98,7 @@ class Metadata:
         serialized = json.dumps(tokens)
         mkdir_p(others_path)
         with open(distibuted_tokens_path, 'w') as f:
-            logger.info(u"updating distributed token for {} to {}".format(self.discovery_uri,
-                                                                         distibuted_tokens_path))
+            logger.info(u"updating distributed token for {} to {}".format(self.discovery_uri, distibuted_tokens_path))
             f.write(serialized)
 
     def update_token(self, token):  # type: (dict) -> None

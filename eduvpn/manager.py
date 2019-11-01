@@ -242,8 +242,7 @@ def update_config_provider(meta, config_dict):  # type: (Metadata, dict) -> None
         display_name (str): The new display name of the configuration
         config (str): The new OpenVPN configuration
     """
-    logger.info(u"updating config for {} ({})".format(meta.display_name,
-                                                     meta.uuid))
+    logger.info(u"updating config for {} ({})".format(meta.display_name, meta.uuid))
     nm_config = ovpn_to_nm(config_dict, meta=meta,
                            display_name=meta.display_name,
                            username=meta.username)

@@ -38,8 +38,8 @@ def refresh_start(builder, lets_connect):
         introduction.hide()
         for meta in providers:
             connection_type = u"<b>{}</b>\n{}\n<small><i>{}</i></small>".format(meta.display_name,
-                                                                               meta.connection_type,
-                                                                               meta.profile_display_name)
+                                                                                meta.connection_type,
+                                                                                meta.profile_display_name)
             if meta.icon_data:
                 icon = bytes2pixbuf(base64.b64decode(meta.icon_data.encode()))
             else:
