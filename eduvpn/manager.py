@@ -63,6 +63,10 @@ def list_providers():  # type: () -> Iterable[Metadata]
                     logger.error("cant open {}: {}".format(p, e))
     else:
         all_ = NetworkManager.Settings.ListConnections()  # type: ignore
+
+        # if the uuid is not set we probably can't access the object due to permission errors
+        all_ = [i for i in all_ if i.uuid]
+
         vpn_connections = ([c.GetSettings()['connection'] for c in all_
                            if c.GetSettings()['connection']['type'] == 'vpn'])
         logger.info("There are {} VPN connections in"
