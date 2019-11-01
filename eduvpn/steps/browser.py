@@ -122,7 +122,10 @@ def _phase2_background(meta, port, oauth, code_verifier, auth_url, dialog, build
         logger.info(u"setting oauth token for metadata")
         meta.token = oauth.fetch_token(meta.token_endpoint,
                                        code=code,
-                                       code_verifier=code_verifier)
+                                       code_verifier=code_verifier,
+                                       client_id=oauth.client_id,
+                                       include_client_id=True,
+                                       )
     except Exception as e:
         error = e
         if dialog.get_property("visible") and dialog.session == session:
