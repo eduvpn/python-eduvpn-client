@@ -36,7 +36,7 @@ def delete_profile(builder, lets_connect):  # type: (Gtk.builder, bool) -> None
         try:
             delete_provider(meta.uuid)
             notification = init_notify(lets_connect)
-            notify(notification, u"eduVPN provider deleted", "Deleted '{}'".format(meta.display_name))
+            notify(notification, "eduVPN provider deleted", "Deleted '{}'".format(meta.display_name.encode('utf-8')))
         except Exception as e:
             error_helper(window, u"can't delete profile", str(e))
             dialog.hide()

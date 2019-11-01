@@ -34,7 +34,6 @@ def _background(meta, builder, verifier, lets_connect):
     except Exception as e:
         error = e
         GLib.idle_add(lambda: error_helper(window, "Can't reconstruct OAuth2 session", (str(error))))
-        print(meta)
         raise
 
     text = ""

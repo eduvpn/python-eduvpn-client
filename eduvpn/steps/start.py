@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # ui thread
 def refresh_start(builder, lets_connect):
     # type: (Gtk.builder, bool) -> None
-    logger.info("composing list of current eduVPN configurations")
+    logger.info(u"composing list of current eduVPN configurations")
     config_list = builder.get_object('configs-model')
     introduction = builder.get_object('introduction')
     main_image = builder.get_object('main_image')
@@ -34,11 +34,9 @@ def refresh_start(builder, lets_connect):
     providers.sort(key=lambda x: x.display_name)
 
     if len(providers) > 0:
-        logger.info("hiding introduction")
+        logger.info(u"hiding introduction")
         introduction.hide()
         for meta in providers:
-            print(meta.display_name)
-            print(meta.profile_display_name)
             connection_type = u"<b>{}</b>\n{}\n<small><i>{}</i></small>".format(meta.display_name,
                                                                                meta.connection_type,
                                                                                meta.profile_display_name)
@@ -48,5 +46,5 @@ def refresh_start(builder, lets_connect):
                 icon, _ = get_pixbuf(logo)
             config_list.append((meta.uuid, meta.display_name, icon, connection_type))
     else:
-        logger.info("showing introduction")
+        logger.info(u"showing introduction")
         introduction.show()

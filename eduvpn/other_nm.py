@@ -328,7 +328,7 @@ class Connection(NMDbusInterface):
         try:
             self.uuid = self.GetSettings()['connection']['uuid']
         except dbus.exceptions.DBusException as e:
-            _logger.info("can't access configuration: {}".format(e))
+            _logger.info(u"can't access configuration: {}".format(e))
             self.uuid = None
 
     def GetSecrets(self, name=None):

@@ -51,7 +51,7 @@ def list_providers():  # type: () -> Iterable[Metadata]
             providers = [i for i in os.listdir(providers_path)
                          if i.endswith('.json')]
         except (IOError, OSError) as e:
-            logger.error("can't list configurations in"
+            logger.error(u"can't list configurations in"
                          "{}".format(providers_path))
             raise StopIteration
         else:
@@ -59,7 +59,7 @@ def list_providers():  # type: () -> Iterable[Metadata]
                 try:
                     yield Metadata.from_uuid(p[:-5])
                 except IOError as e:
-                    logger.error("cant open {}: {}".format(p, e))
+                    logger.error(u"cant open {}: {}".format(p, e))
     else:
         all_ = NetworkManager.Settings.ListConnections()  # type: ignore
 
@@ -68,7 +68,7 @@ def list_providers():  # type: () -> Iterable[Metadata]
 
         vpn_connections = ([c.GetSettings()['connection'] for c in all_
                            if c.GetSettings()['connection']['type'] == 'vpn'])
-        logger.info("There are {} VPN connections in"
+        logger.info(u"There are {} VPN connections in"
                     "networkmanager".format(len(vpn_connections)))
         for conn in vpn_connections:
             yield Metadata.from_uuid(conn['uuid'], display_name=conn['id'])
@@ -105,41 +105,41 @@ def delete_provider(uuid):  # type: (str) -> None
         uuid (str): the unique ID of the configuration
     """
     metadata = os.path.join(providers_path, uuid + '.json')
-    logger.info("deleting metadata file {}".format(metadata))
+    logger.info(u"deleting metadata file {}".format(metadata))
     try:
         os.remove(metadata)
     except Exception as e:
-        logger.error("can't remove ovpn file: {}".format(str(e)))
+        logger.error(u"can't remove ovpn file: {}".format(str(e)))
 
     if not have_dbus():
         return
 
-    logger.info("deleting profile with uuid {}"
+    logger.info(u"deleting profile with uuid {}"
                 "using NetworkManager".format(uuid))
     all_connections = NetworkManager.Settings.ListConnections()  # type: ignore
     conns = [c for c in all_connections
              if c.GetSettings()['connection']['uuid'] == uuid]
     if len(conns) != 1:
-        logger.error("{} connections matching uid {}".format(len(conns), uuid))
+        logger.error(u"{} connections matching uid {}".format(len(conns), uuid))
         return
 
     conn = conns[0]
-    logger.info("removing certificates for {}".format(uuid))
+    logger.info(u"removing certificates for {}".format(uuid))
     for f in ['ca', 'cert', 'key', 'ta']:
         if f not in conn.GetSettings()['vpn']['data']:
-            logger.error("key {} not in config for {}".format(f, uuid))
+            logger.error(u"key {} not in config for {}".format(f, uuid))
             continue
         path = conn.GetSettings()['vpn']['data'][f]
-        logger.info("removing certificate {}".format(path))
+        logger.info(u"removing certificate {}".format(path))
         try:
             os.remove(path)
         except (IOError, OSError) as e:
-            logger.error("can't remove certificate {}: {}".format(path, e))
+            logger.error(u"can't remove certificate {}: {}".format(path, e))
 
     try:
         conn.Delete()
     except Exception as e:
-        logger.error("can't remove networkmanager"
+        logger.error(u"can't remove networkmanager"
                      "connection: {}".format(str(e)))
         raise
 
@@ -151,7 +151,7 @@ def connect_provider(uuid):  # type: (str) -> Any
     args:
         uuid (str): the unique ID of the configuration
     """
-    logger.info("connecting profile with uuid {}"
+    logger.info(u"connecting profile with uuid {}"
                 "using NetworkManager".format(uuid))
     if not have_dbus():
         raise EduvpnException("No DBus daemon running")
@@ -170,7 +170,7 @@ def list_active():  # type: () -> list
     returns:
         list: a list of NetworkManager.ActiveConnection objects
     """
-    logger.info("getting list of active connections")
+    logger.info(u"getting list of active connections")
     if not have_dbus():
         return []
 
@@ -203,7 +203,7 @@ def disconnect_provider(uuid):  # type: (str) -> None
     args:
         uuid (str): the unique ID of the configuration
     """
-    logger.info("Disconnecting profile with uuid {}"
+    logger.info(u"Disconnecting profile with uuid {}"
                 "using NetworkManager".format(uuid))
     if not have_dbus():
         raise EduvpnException("No DBus daemon running")
@@ -265,7 +265,7 @@ def update_keys_provider(uuid, cert, key):  # type: (str, str, str) -> None
         cert (str):
         key (str):
     """
-    logger.info("updating key pare for uuid {}".format(uuid))
+    logger.info(u"updating key pare for uuid {}".format(uuid))
     write_cert(cert, 'cert', uuid)
     write_cert(key, 'key', uuid)
 

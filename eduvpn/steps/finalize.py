@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def finalizing_step(builder, meta, config_dict, lets_connect):  # type: (Gtk.builder, Metadata, dict, bool) -> None
     """finalise the add profile flow, add a configuration"""
-    logger.info("finalizing step")
+    logger.info(u"finalizing step")
     fetching_window(builder=builder, lets_connect=lets_connect)
     dialog = builder.get_object('fetch-dialog')
     thread_helper(lambda: _background(meta=meta, dialog=dialog, builder=builder, config_dict=config_dict,

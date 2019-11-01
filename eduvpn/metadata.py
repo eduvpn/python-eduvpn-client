@@ -23,7 +23,7 @@ def get_distributed_tokens():  # type: () -> Any
         with open(json_path, 'r') as f:
             return json.load(f)
     except (IOError, ValueError) as e:
-        logger.warning("can't open '{}': {}".format(json_path, str(e)))
+        logger.warning(u"can't open '{}': {}".format(json_path, str(e)))
         return {}
 
 
@@ -45,7 +45,7 @@ class Metadata:
         self.username = None  # type: str
         self.discovery_uri = None  # type: str
         self.user_id = None  # type: str
-        self.display_name = "Unknown"  # type: str
+        self.display_name = u"Unknown"  # type: str
         self.connection_type = "Unknown"  # type: str
         self.profile_display_name = "Unknown"  # type: str
 
@@ -61,7 +61,7 @@ class Metadata:
                         setattr(metadata, key, value)
                 return metadata
         except (ValueError, IOError) as e:
-            logger.error("can't open metdata"
+            logger.error(u"can't open metdata"
                          "file for {}: {}".format(uuid, str(e)))
             metadata.uuid = uuid
             if display_name:
@@ -73,12 +73,12 @@ class Metadata:
     def write(self):  # type: () -> None
         if not self.uuid:
             # raise EduvpnException('uuid field not set')
-            logger.warning("uuid field not yet set")
+            logger.warning(u"uuid field not yet set")
             return
         fields = [f for f in dir(self) if not f.startswith('_') and not callable(getattr(self, f))]
         d = {field: getattr(self, field) for field in fields}
         p = os.path.join(providers_path, self.uuid + '.json')
-        logger.info("storing metadata in {}".format(p))
+        logger.info(u"storing metadata in {}".format(p))
         serialized = json.dumps(d)
         mkdir_p(providers_path)
         with open(p, 'w') as f:
@@ -98,7 +98,7 @@ class Metadata:
         serialized = json.dumps(tokens)
         mkdir_p(others_path)
         with open(distibuted_tokens_path, 'w') as f:
-            logger.info("updating distributed token for {} to {}".format(self.discovery_uri,
+            logger.info(u"updating distributed token for {} to {}".format(self.discovery_uri,
                                                                          distibuted_tokens_path))
             f.write(serialized)
 
@@ -110,7 +110,7 @@ class Metadata:
         if self.authorization_type == 'distributed':
             tokens = get_distributed_tokens()
             if self.discovery_uri in tokens:
-                logger.info("using distributed token from {}".format(self.discovery_uri))
+                logger.info(u"using distributed token from {}".format(self.discovery_uri))
                 self.token = tokens[self.discovery_uri]['token']
                 self.token_endpoint = tokens[self.discovery_uri]['token_endpoint']
 

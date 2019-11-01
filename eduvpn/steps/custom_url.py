@@ -27,7 +27,7 @@ def custom_url(builder, meta, verifier, lets_connect):  # type: (Gtk.builder, Me
         response = dialog.run()
         if response == 1:
             url = entry.get_text().strip()
-            logger.info("ok pressed, entry text: {}".format(url))
+            logger.info(u"ok pressed, entry text: {}".format(url))
             if not url.startswith('https://'):
                 error_helper(dialog, "Invalid URL", "URL should start with https://")
             elif url == 'https://':
@@ -35,7 +35,7 @@ def custom_url(builder, meta, verifier, lets_connect):  # type: (Gtk.builder, Me
             else:
                 dialog.hide()
                 meta.display_name = url[8:].split('/')[0]
-                logger.info("using {} for display name".format(meta.display_name))
+                logger.info(u"using {} for display name".format(meta.display_name))
                 meta.instance_base_uri = url
                 meta.connection_type = 'Custom Instance'
                 meta.authorization_type = 'local'
@@ -43,6 +43,6 @@ def custom_url(builder, meta, verifier, lets_connect):  # type: (Gtk.builder, Me
                 browser_step(builder=builder, meta=meta, verifier=verifier, lets_connect=lets_connect)
                 break
         else:  # cancel or close
-            logger.info("cancel or close button pressed (response {})".format(response))
+            logger.info(u"cancel or close button pressed (response {})".format(response))
             dialog.hide()
             return

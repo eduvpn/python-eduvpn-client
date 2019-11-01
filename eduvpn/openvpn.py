@@ -24,7 +24,7 @@ def format_like_ovpn(config, cert, key):  # type: (str, str, str) -> str
         cert (str):
         key (str):
     """
-    logger.info("formatting config into ovpn format")
+    logger.info(u"formatting config into ovpn format")
     return config + '\n<cert>\n{}\n</cert>\n<key>\n{}\n</key>\n'.format(cert, key)
 
 
@@ -118,7 +118,7 @@ def ovpn_to_nm(config,
         if not username:
             raise EduvpnException("You need to enroll for 2FA in the user portal "
                                   "first before being able to connect to this profile.")
-        logger.info("looks like 2 factor authentication is enabled, enabling this in NM config")
+        logger.info(u"looks like 2 factor authentication is enabled, enabling this in NM config")
         settings['vpn']['data']['cert-pass-flags'] = '0'
         settings['vpn']['data']['connection-type'] = 'password-tls'
         settings['vpn']['data']['password-flags'] = '2'
@@ -134,6 +134,6 @@ def ovpn_to_nm(config,
     elif 'tls-crypt' in config:
         settings['vpn']['data']['tls-crypt'] = write_cert(config.get('tls-crypt'), 'tc', meta.uuid)
     else:
-        logging.info("'tls-crypt' and 'tls-auth' not found in configuration returned by server")
+        logger.info(u"'tls-crypt' and 'tls-auth' not found in configuration returned by server")
 
     return settings

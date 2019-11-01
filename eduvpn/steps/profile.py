@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 # ui thread
 def fetch_profile_step(builder, meta, oauth, lets_connect):  # type: (Gtk.builder, Metadata, str, bool) -> None
     """background action step, fetches profiles and shows 'fetching' screen"""
-    logger.info("fetching profile step")
+    logger.info(u"fetching profile step")
 
     if meta.profile_id:
-        logger.info("we already selected the profile in the past, not presenting user with choice again")
+        logger.info(u"we already selected the profile in the past, not presenting user with choice again")
         parse_config_step(builder=builder, oauth=oauth, meta=meta, lets_connect=lets_connect)
         return
 
@@ -39,7 +39,7 @@ def _background(oauth, meta, builder, dialog, lets_connect):
     # type: (str, Metadata, Gtk.builder, Any, bool) -> None
     try:
         profiles = list_profiles(oauth, meta.api_base_uri)
-        logger.info("There are {} profiles on {}".format(len(profiles), meta.api_base_uri))
+        logger.info(u"There are {} profiles on {}".format(len(profiles), meta.api_base_uri))
         if len(profiles) > 1:
             GLib.idle_add(lambda: dialog.hide())
             GLib.idle_add(lambda: _select_profile_step(builder=builder, profiles=profiles, meta=meta, oauth=oauth,
@@ -64,7 +64,7 @@ def _select_profile_step(builder,
                          meta, oauth,
                          lets_connect):  # type: (Gtk.builder, dict, Metadata, str, bool) -> None
     """the profile selection step, doesn't do anything if only one profile"""
-    logger.info("opening profile dialog")
+    logger.info(u"opening profile dialog")
 
     dialog = builder.get_object('profiles-dialog')
     window = builder.get_object('eduvpn-window')
@@ -78,14 +78,14 @@ def _select_profile_step(builder,
     dialog.hide()
 
     if response == 0:  # cancel
-        logger.info("cancel button pressed")
+        logger.info(u"cancel button pressed")
         return
     else:
         model, treeiter = selection.get_selected()
         if treeiter:
             _parse_choice(builder, meta, oauth, model[treeiter], lets_connect=lets_connect)
         else:
-            logger.error("nothing selected")
+            logger.error(u"nothing selected")
             return
 
 

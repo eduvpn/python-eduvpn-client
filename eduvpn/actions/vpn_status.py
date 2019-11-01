@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def vpn_change(builder, lets_connect, state=0, reason=0):
     # type: (Gtk.builder, bool, Optional[int], Optional[int]) -> None
-    logger.info("VPN status change")
+    logger.info(u"VPN status change")
     switch = builder.get_object('connect-switch')
     ipv4_label = builder.get_object('ipv4-label')
     ipv6_label = builder.get_object('ipv6-label')
@@ -27,7 +27,7 @@ def vpn_change(builder, lets_connect, state=0, reason=0):
     meta = metadata_of_selected(builder=builder)
 
     if not meta:
-        logger.info("VPN status changed but no profile selected")
+        logger.info(u"VPN status changed but no profile selected")
         return
 
     notification = init_notify(lets_connect)

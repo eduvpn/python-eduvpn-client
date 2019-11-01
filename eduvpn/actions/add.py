@@ -21,7 +21,7 @@ def new_provider(builder,
                  institute_access_uri,
                  lets_connect):  # type: (Gtk.builder, str, str, str, bool) -> None
     """The connection type selection step"""
-    logger.info("add configuration clicked")
+    logger.info(u"add configuration clicked")
     meta = Metadata()
 
     # lets connect mode only supports custom URL
@@ -37,21 +37,21 @@ def new_provider(builder,
     dialog.hide()
 
     if response == 0:  # cancel
-        logger.info("cancel button pressed")
+        logger.info(u"cancel button pressed")
         return
 
     elif response == 1:
-        logger.info("secure button pressed")
+        logger.info(u"secure button pressed")
         meta.connection_type = 'Secure Internet'
         meta.discovery_uri = secure_internet_uri
         fetch_instance_step(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect)
 
     elif response == 2:
-        logger.info("institute button pressed")
+        logger.info(u"institute button pressed")
         meta.connection_type = 'Institute Access'
         meta.discovery_uri = institute_access_uri
         fetch_instance_step(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect)
 
     elif response == 3:
-        logger.info("custom button pressed")
+        logger.info(u"custom button pressed")
         custom_url(builder=builder, meta=meta, verifier=verifier, lets_connect=lets_connect)

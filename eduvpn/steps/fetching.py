@@ -14,7 +14,7 @@ def fetching_window(builder, lets_connect):  # type: (Gtk.builder, bool) -> None
     """
     Don't forget to call dialog.run() after creating the fetch window!
     """
-    logger.info("fetching instances step")
+    logger.info(u"fetching instances step")
     dialog = builder.get_object('fetch-dialog')
     image = builder.get_object('fetch-image')
     window = builder.get_object('eduvpn-window')
