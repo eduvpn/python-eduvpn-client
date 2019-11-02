@@ -27,14 +27,14 @@ logger = logging.getLogger(__name__)
 # ui thread
 def activate_connection(meta, builder, verifier, lets_connect):  # type: (Metadata, Gtk.builder, str, bool) -> None
     """do the actual connecting action"""
-    logger.info("Connecting to {}".format(meta.display_name))
+    logger.info(u"Connecting to {}".format(meta.display_name))
     disconnect_all()
     _, name = get_brand(lets_connect)
     notification = init_notify(lets_connect)
-    notify(notification, "{} connecting...".format(name), "Connecting to '{}'".format(meta.display_name))
+    notify(notification, u"{} connecting...".format(name), u"Connecting to '{}'".format(meta.display_name))
     try:
         if not meta.token:
-            logger.error("metadata for {} doesn't contain oauth2 token".format(meta.uuid))
+            logger.error(u"metadata for {} doesn't contain oauth2 token".format(meta.uuid))
             connect_provider(meta.uuid)
 
         else:
@@ -45,7 +45,7 @@ def activate_connection(meta, builder, verifier, lets_connect):  # type: (Metada
         switch = builder.get_object('connect-switch')
         GLib.idle_add(switch.set_active, False)
         window = builder.get_object('eduvpn-window')
-        error_helper(window, "can't enable connection", "{}: {}".format(type(e).__name__, str(e)))
+        error_helper(window, u"can't enable connection", "{}: {}".format(type(e).__name__, str(e)))
         raise
 
 
@@ -60,7 +60,7 @@ def _auth_check(oauth, meta, verifier, builder, lets_connect):  # type: (str, Me
     except Exception as e:
         error = e
         window = builder.get_object('eduvpn-window')
-        GLib.idle_add(lambda: error_helper(window, "Can't check account status", "{}".format(str(error))))
+        GLib.idle_add(lambda: error_helper(window, u"Can't check account status", "{}".format(str(error))))
         raise
 
 
@@ -71,15 +71,15 @@ def _cert_check(meta, oauth, builder, info, lets_connect):
     cert_valid = check_certificate(oauth, meta.api_base_uri, common_name)
 
     if not cert_valid['is_valid']:
-        logger.warning('client certificate not valid, reason: {}'.format(cert_valid['reason']))
+        logger.warning(u'client certificate not valid, reason: {}'.format(cert_valid['reason']))
         if cert_valid['reason'] in ('certificate_missing', 'certificate_not_yet_valid', 'certificate_expired'):
-            logger.info('Going to try to fetch new keypair')
+            logger.info(u'Going to try to fetch new keypair')
             cert, key = create_keypair(oauth, meta.api_base_uri)
             update_keys_provider(meta.uuid, cert, key)
         elif cert_valid['reason'] == 'user_disabled':
-            raise EduvpnException('Your account has been disabled.')
+            raise EduvpnException(u'Your account has been disabled.')
         else:
-            raise EduvpnException('Your client certificate is invalid ({})'.format(cert_valid['reason']))
+            raise EduvpnException(u'Your client certificate is invalid ({})'.format(cert_valid['reason']))
 
     _fetch_updated_config(oauth, meta, builder, info, lets_connect)
 

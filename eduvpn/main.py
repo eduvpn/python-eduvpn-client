@@ -44,11 +44,11 @@ def parse_args():  # type: () -> Tuple[int, str, str, str, bool]
     logging.basicConfig(level=level, format=format_)
 
     if args.test:
-        logger.warning("using test discovery URLs")
+        logger.warning(u"using test discovery URLs")
         return (level, config.secure_internet_uri_dev, config.institute_access_uri_dev,
                 config.verify_key_dev, args.lets_connect)
     else:
-        logger.debug("using production discovery URLs")
+        logger.debug(u"using production discovery URLs")
         return (level, config.secure_internet_uri, config.institute_access_uri,
                 config.verify_key, args.lets_connect)
 
@@ -57,7 +57,7 @@ def init(lets_connect):  # type: (bool) -> EduVpnApp
     (level, secure_internet_uri, institute_access_uri, verify_key, lets_connect_arg) = parse_args()
     lets_connect = lets_connect or lets_connect_arg
     if geteuid() == 0:
-        logger.error("Running eduVPN client as root is not supported (yet)")
+        logger.error(u"Running eduVPN client as root is not supported (yet)")
         exit(1)
     GObject.threads_init()
 

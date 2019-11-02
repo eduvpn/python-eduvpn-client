@@ -42,11 +42,11 @@ def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str,
     logo, _ = get_brand(lets_connect)
 
     if not meta:
-        logger.info("no configuration selected, showing main logo")
+        logger.info(u"no configuration selected, showing main logo")
         notebook.set_current_page(0)
         return None
     else:
-        logger.info("configuration was selected {} ({})".format(meta.display_name, meta.uuid))
+        logger.info(u"configuration was selected {} ({})".format(meta.display_name, meta.uuid))
         name_label.set_text(meta.display_name)
         if meta.icon_data:
             icon = bytes2pixbuf(base64.b64decode(meta.icon_data.encode()),
@@ -83,7 +83,7 @@ def select_profile(builder, verifier, lets_connect):  # type: (Gtk.builder, str,
         if meta.token:
             fetch_messages(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect)
         else:
-            logger.warning("no token available so not fetching messages")
+            logger.warning(u"no token available so not fetching messages")
 
             messages_label.set_markup("<b><big>Warning</big></b>\nno token available so not fetching messages.")
         return meta

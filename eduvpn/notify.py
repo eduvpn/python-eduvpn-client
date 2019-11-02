@@ -7,7 +7,7 @@ from os import path
 import gi
 gi.require_version('Notify', '0.7')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Notify, GdkPixbuf
+from gi.repository import GdkPixbuf
 from repoze.lru import lru_cache
 from eduvpn.util import have_dbus
 from eduvpn.brand import get_brand

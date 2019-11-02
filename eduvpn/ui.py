@@ -56,7 +56,7 @@ class EduVpnApp:
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
             if not os.access(p, os.R_OK):
-                logger.error("Can't find {}! That is quite an important file.".format(p))
+                logger.error(u"Can't find {}! That is quite an important file.".format(p))
                 raise Exception
             self.builder.add_from_file(p)
 
@@ -99,7 +99,7 @@ class EduVpnApp:
 
     def vpn_change(self, state, reason):  # type: (int, int) -> None
         """called when the status of a VPN connection changes"""
-        logger.debug("VPN status change, state: {}, reason: {}".format(state, reason))
+        logger.debug(u"VPN status change, state: {}, reason: {}".format(state, reason))
         vpn_change(self.builder, self.lets_connect, state, reason)
 
     def switched(self, selection, _):  # type: (dict, Any) -> None

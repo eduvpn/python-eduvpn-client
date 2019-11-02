@@ -37,7 +37,7 @@ def error_helper(parent, msg_big, msg_small):  # type: (Gtk.GObject, str, str) -
         msg_big (str): the big string
         msg_small (str): the small string
     """
-    logger.error("{}: {}".format(msg_big, msg_small))
+    logger.error(u"{}: {}".format(msg_big, msg_small))
     error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, str(msg_big))
     error_dialog.format_secondary_text(str(msg_small))
     error_dialog.run()
@@ -97,7 +97,7 @@ def bytes2pixbuf(data,
         loader.write(data)
         loader.close()
     except (GLib.Error, TypeError) as e:
-        logger.error("can't process icon for {}: {}".format(display_name, str(e)))
+        logger.error(u"can't process icon for {}: {}".format(display_name, str(e)))
     else:
         return loader.get_pixbuf()
 
@@ -114,7 +114,7 @@ def get_prefix():  # type: () -> str
     local = path.dirname(path.dirname(path.abspath(__file__)))
     options = [local, path.expanduser('~/.local'), '/usr/local', sys.prefix]
     for option in options:
-        logger.debug("looking for '{}' in '{}'".format(target, option))
+        logger.debug(u"looking for '{}' in '{}'".format(target, option))
         if path.isfile(path.join(option, target)):
             return option
     raise Exception("Can't find eduVPN installation")
@@ -127,7 +127,7 @@ def have_dbus():
         import dbus
         dbus = dbus.SystemBus(private=True)
     except Exception as e:
-        logger.error("WARNING: dbus daemons not running, eduVPN client functionality limited")
+        logger.error(u"WARNING: dbus daemons not running, eduVPN client functionality limited")
         return False
     else:
         dbus.close()
@@ -181,7 +181,7 @@ def are_we_running_ubuntu1804():
     try:
         distro, version = detect_distro()
     except EduvpnException as e:
-        logger.error("can't determine distribution and version: {}".format(e))
+        logger.error(u"can't determine distribution and version: {}".format(e))
         return False
     else:
         if distro == 'ubuntu' and version == '18.04':

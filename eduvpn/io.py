@@ -27,7 +27,7 @@ def write_cert(content, type_, unique_name):  # type: (Any, str, str) -> str
     """
     home = expanduser("~")
     path = home + "/.cert/nm-openvpn/" + unique_name + "_" + type_ + ".pem"
-    logger.info("writing {} file to {}".format(type_, path))
+    logger.info(u"writing {} file to {}".format(type_, path))
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
     with open(path, "w") as f:
@@ -42,7 +42,7 @@ def mkdir_p(path):  # type: (str) -> None
     args:
         path (str): path of directory to create
     """
-    logger.info("making sure config path {} exists".format(path))
+    logger.info(u"making sure config path {} exists".format(path))
     try:
         os.makedirs(path)
     except OSError as exc:  # Python >2.5

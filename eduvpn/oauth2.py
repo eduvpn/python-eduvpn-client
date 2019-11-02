@@ -76,7 +76,7 @@ def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional
     returns:
         str: the request
     """
-    logger.info("listening for a request on port {}...".format(port))
+    logger.info(u"listening for a request on port {}...".format(port))
 
     class RequestHandler(BaseHTTPRequestHandler):
         def do_GET(self):
@@ -100,7 +100,7 @@ def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional
         raise Exception("Invalid response received")
 
     parsed = urlparse(httpd.path)  # type: ignore
-    logger.info("received a request {}".format(httpd.path))  # type: ignore
+    logger.info(u"received a request {}".format(httpd.path))  # type: ignore
     return parse_qs(parsed.query)
 
 
@@ -119,7 +119,7 @@ def create_oauth_session(port, lets_connect, auto_refresh_url):  # type: (int, b
     returns:
         OAuth2Session: a oauth2 session object
     """
-    logger.info("Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
+    logger.info(u"Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
     redirect_uri = 'http://127.0.0.1:%s/callback' % port
 
     if lets_connect:
@@ -142,7 +142,7 @@ def get_oauth_token_code(port, lets_connect, timeout=None):  # type: (int, bool,
     returns:
         str: the response code given by redirect
     """
-    logger.info("waiting for callback on port {}".format(port))
+    logger.info(u"waiting for callback on port {}".format(port))
     response = one_request(port, lets_connect, timeout)  # type: Any
     if 'code' in response and 'state' in response:
         code = response['code'][0]
