@@ -12,3 +12,4 @@ dist
 *.egg-info/
 .eggs/
 doc/_build/
+docker/*.docker
