@@ -25,7 +25,7 @@ class MockFile:
 class TestMetadata(unittest.TestCase):
     def test_metadata_write(self):
         metadata = Metadata()
-        #with self.assertRaises(EduvpnException):
+        # with self.assertRaises(EduvpnException):
         metadata.write()  # we disabled the raising of exceptions now to make it more robust
         metadata.uuid = 'test'
         metadata.write()

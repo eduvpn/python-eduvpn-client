@@ -4,7 +4,6 @@ from tests.util import MockBuilder, MockResponse
 from eduvpn.steps.start import refresh_start
 
 
-
 class TestProvider(TestCase):
     @classmethod
     def setUpClass(cls):

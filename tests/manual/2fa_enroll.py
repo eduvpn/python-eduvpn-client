@@ -14,6 +14,6 @@ config_dict = {}
 totp = TOTP(TOTP_SECRET)
 
 edu_vpn_app = init()
-#yubi_enroll_window(builder=edu_vpn_app.builder, oauth=oauth, meta=meta, config_dict=config_dict)
+# yubi_enroll_window(builder=edu_vpn_app.builder, oauth=oauth, meta=meta, config_dict=config_dict)
 totp_enroll_window(builder=edu_vpn_app.builder, oauth=oauth, meta=meta, config_dict=config_dict, secret=TOTP_SECRET)
 Gtk.main()
