@@ -2,40 +2,42 @@ FROM centos:8
 
 RUN yum install -y yum-plugin-copr epel-release
 
-RUN yum copr enable -y gijzelaerr/eduvpn-client
+## nothing there yet for centos8 so cant enable
+# RUN yum copr enable -y gijzelaerr/eduvpn-client
 
 RUN yum install -y	\
     rpm-build \
     rpmdevtools \
     gtk3 \
     libnotify \
-	pytest \
-	dbus-python \
-    python-gobject \
-	python-pynacl \
-	python-repoze-lru \
-	python-dateutil \
-    python2-devel \
-	python2-configparser \
-	python2-future \
-	python2-requests-oauthlib \
-	python2-mock \
-    python2-pytest-runner \
-    python2-cryptography \
-    python-qrcode \
-    python-pillow \
-    python2-pynacl
+    python3 \
+    python3-pytest \
+    python3-dbus \
+    python3-gobject \
+    python3-pynacl \
+    python3-dateutil \
+    python3-future \
+    python3-requests-oauthlib \
+    python3-pytest-runner \
+    python3-cryptography \
+    python3-qrcode \
+    python3-pillow
+
+## these packages don't exist (yet)
+# python3-configparser
+# python3-mock
+# python3-repoze-lru
 
 RUN rpmdev-setuptree
 
 ADD . /code
 WORKDIR /code
 
-RUN python setup.py sdist
+RUN python3 setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
 
-RUN rpmbuild -bs rpm/eduvpn_centos7.spec
-RUN rpmbuild -bb rpm/eduvpn_centos7.spec
+RUN rpmbuild -bs rpm/eduvpn_centos8.spec
+RUN rpmbuild -bb rpm/eduvpn_centos8.spec
 
 
 

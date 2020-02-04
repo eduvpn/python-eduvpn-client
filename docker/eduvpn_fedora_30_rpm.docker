@@ -5,17 +5,6 @@ RUN dnf install -y	\
     fedora-review \
     gtk3 \
     libnotify \
-    python2-devel \
-    python-gobject \
-	python2-configparser \
-	python2-future \
-	python2-pynacl \
-	python2-requests-oauthlib \
-    python2-cryptography \
-    python2-qrcode \
-    python2-pillow \
-	python-repoze-lru \
-	dbus-python \
     python3-devel \
 	python3-future \
 	python3-gobject  \
@@ -23,13 +12,12 @@ RUN dnf install -y	\
 	python3-requests-oauthlib \
 	python3-dbus \
 	python3-repoze-lru \
-	pytest \
-	python2-mock \
+	python3-pytest \
     python3-mock  \
-    python2-pytest-runner \
     python3-pytest-runner \
     python3-cryptography \
     python3-qrcode \
+    python3-configparser \
     python3-pillow
 
 RUN rpmdev-setuptree
@@ -37,7 +25,7 @@ RUN rpmdev-setuptree
 ADD . /code
 WORKDIR /code
 
-RUN python setup.py sdist
+RUN python3 setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
 RUN rpmbuild -bs rpm/eduvpn_fedora.spec
 RUN rpmbuild -bb rpm/eduvpn_fedora.spec

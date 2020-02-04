@@ -3,9 +3,9 @@ FROM fedora:30
 RUN dnf install -y \
         libnotify \
         gtk3 \
-        dbus-python \
-        python-repoze-lru \
-        python-gobject \
+        python2-dbus \
+        python2-repoze-lru \
+        python2-gobject \
         python2-pynacl \
         python2-requests-oauthlib \
         python2-configparser \
@@ -14,8 +14,10 @@ RUN dnf install -y \
         python2-mock \
         python2-pytest \
         python2-cryptography \
-        python2-qrcode \
         python2-pillow
+
+## package doesn't exist
+# python2-qrcode
 
 ADD . /code
 WORKDIR /code
