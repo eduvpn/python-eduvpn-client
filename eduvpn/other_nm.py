@@ -9,7 +9,7 @@
 # This way we have the same version on all platforms and we can solve some small issues.
 
 #  type: ignore
-
+import logging
 import copy
 import dbus
 import dbus.service
@@ -20,7 +20,8 @@ import time
 import warnings
 import xml.etree.ElementTree as etree
 
-from eduvpn.util import have_dbus
+
+_logger = logging.getLogger(__name__)
 
 
 class ObjectVanished(Exception):
@@ -324,7 +325,11 @@ class Connection(NMDbusInterface):
 
     def __init__(self, object_path):
         super(Connection, self).__init__(object_path)
-        self.uuid = self.GetSettings()['connection']['uuid']
+        try:
+            self.uuid = self.GetSettings()['connection']['uuid']
+        except dbus.exceptions.DBusException as e:
+            _logger.info(u"can't access configuration: {}".format(e))
+            self.uuid = None
 
     def GetSecrets(self, name=None):
         if not name:

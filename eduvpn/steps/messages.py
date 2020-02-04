@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # ui thread
 def fetch_messages(meta, builder, verifier, lets_connect):
     # type: (Metadata, Gtk.builder, str, bool) -> None
-    logger.info("fetching user and system messages from {} ({})".format(meta.display_name, meta.api_base_uri))
+    logger.info(u"fetching user and system messages from {} ({})".format(meta.display_name, meta.api_base_uri))
     thread_helper(lambda: _background(meta=meta, builder=builder, verifier=verifier, lets_connect=lets_connect))
 
 
@@ -34,7 +34,6 @@ def _background(meta, builder, verifier, lets_connect):
     except Exception as e:
         error = e
         GLib.idle_add(lambda: error_helper(window, "Can't reconstruct OAuth2 session", (str(error))))
-        print(meta)
         raise
 
     text = ""
@@ -53,13 +52,13 @@ def _background(meta, builder, verifier, lets_connect):
         if info['is_disabled']:
             GLib.idle_add(lambda: error_helper(window, "This account has been disabled", ""))
         for date_time, type_, message in messages_user:
-            logger.info("user message at {}: {}".format(date_time, message))
-            text += "<b><big>{}</big></b>\n".format(date_time)
-            text += "<small><i>user, {}</i></small>\n".format(type_)
-            text += "{}\n\n".format(message)
+            logger.info(u"user message at {}: {}".format(date_time, message))
+            text += u"<b><big>{}</big></b>\n".format(date_time)
+            text += u"<small><i>user, {}</i></small>\n".format(type_)
+            text += u"{}\n\n".format(message)
         for date_time, type_, message in messages_system:
-            logger.info("system message at {}: {}".format(date_time, message))
-            text += "<b><big>{}</big></b>\n".format(date_time)
-            text += "<small><i>system, {}</i></small>\n".format(type_)
-            text += "{}\n\n".format(message)
+            logger.info(u"system message at {}: {}".format(date_time, message))
+            text += u"<b><big>{}</big></b>\n".format(date_time)
+            text += u"<small><i>system, {}</i></small>\n".format(type_)
+            text += u"{}\n\n".format(message)
         GLib.idle_add(lambda: label.set_markup(text))

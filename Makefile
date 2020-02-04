@@ -114,3 +114,6 @@ srpm:
 	docker run -v `pwd`/tmp:/tmp:rw eduvpn_centos_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 	docker run -v `pwd`/tmp:/tmp:rw lets_connect_centos_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 
+mypy: .virtualenv3/
+	.virtualenv3/bin/mypy --ignore-missing-imports eduvpn tests
+

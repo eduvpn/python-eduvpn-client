@@ -19,10 +19,10 @@ RUN docker-apt-install \
         python3-cryptography \
         python3-qrcode \
         python3-pillow \
-        pep8 \
-        mypy
+	python3-pip
 
+RUN pip3 install --upgrade mypy
 ADD . /code
 WORKDIR /code
-RUN mypy eduvpn --ignore-missing-imports
+RUN mypy --config-file=setup.cfg eduvpn tests
 

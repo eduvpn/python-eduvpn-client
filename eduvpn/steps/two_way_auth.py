@@ -49,11 +49,11 @@ def _background(meta, oauth, builder, config_dict, lets_connect):
                                               lets_connect=lets_connect))
     else:
         if len(meta.two_factor_method) == 0:
-            logger.info("no two factor auth enabled on server")
+            logger.info(u"no two factor auth enabled on server")
             GLib.idle_add(lambda: finalizing_step(meta=meta, builder=builder, config_dict=config_dict,
                                                   lets_connect=lets_connect))
         elif len(meta.two_factor_method) > 1:
-            logger.info("Multi two factor methods available")
+            logger.info(u"Multi two factor methods available")
             GLib.idle_add(lambda: _choice_window(options=meta.two_factor_method, meta=meta, oauth=oauth,
                                                  builder=builder, config_dict=config_dict, lets_connect=lets_connect))
         else:
@@ -64,7 +64,7 @@ def _background(meta, oauth, builder, config_dict, lets_connect):
 # ui thread
 def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
     # type: (List[str], Metadata, str, Gtk.builder, dict, bool) -> None
-    logger.info("presenting user with two-factor auth method dialog")
+    logger.info(u"presenting user with two-factor auth method dialog")
     window = builder.get_object('eduvpn-window')
 
     # since we can't delete buttons from a dialog we have to create it manually
@@ -92,7 +92,7 @@ def _choice_window(options, meta, oauth, builder, config_dict, lets_connect):
     dialog.hide()
     if index >= 0:
         meta.username = options[index]
-        logger.info("user selected '{}'".format(meta.username))
+        logger.info(u"user selected '{}'".format(meta.username))
         _enroll(oauth=oauth, meta=meta, builder=builder, config_dict=config_dict, lets_connect=lets_connect)
 
 

@@ -54,7 +54,7 @@ def get_instances(discovery_uri,
     returns:
         generator: display_name, base_uri, logo_data
     """
-    logger.info("Discovering instances at {}".format(discovery_uri))
+    logger.info(u"Discovering instances at {}".format(discovery_uri))
     discovery_sig_uri = discovery_uri + '.sig'
     inst_doc = requests.get(discovery_uri)
     if inst_doc.status_code != 200:
@@ -63,16 +63,16 @@ def get_instances(discovery_uri,
         raise IOError(msg)
 
     if not verifier:
-        logger.warning("verification key not set, not verifying")
+        logger.warning(u"verification key not set, not verifying")
     else:
-        logger.info("Retrieving signature {}".format(discovery_sig_uri))
+        logger.info(u"Retrieving signature {}".format(discovery_sig_uri))
         inst_doc_sig = requests.get(discovery_sig_uri)
         if inst_doc_sig.status_code != 200:
             msg = "Can't retrieve signature, requesting {} gave error code {}".format(discovery_sig_uri,
                                                                                       inst_doc_sig.status_code)
             logger.warning(msg)
         else:
-            logger.info("verifying signature of {}".format(discovery_uri))
+            logger.info(u"verifying signature of {}".format(discovery_uri))
             decoded = base64.b64decode(inst_doc_sig.content)
             _ = verifier.verify(smessage=inst_doc.content, signature=decoded)
 
@@ -85,7 +85,7 @@ def get_instances(discovery_uri,
         display_name = translate_display_name(instance['display_name'])
         base_uri = instance['base_uri']
         logo_uri = instance['logo']
-        logger.info("getting logo for {} from {}".format(display_name.encode('utf-8'), logo_uri))
+        logger.info(u"getting logo for {} from {}".format(display_name, logo_uri))
         logo = requests.get(logo_uri)
 
         if logo.status_code != 200:
@@ -109,12 +109,12 @@ def get_instance_info(instance_uri, verifier=None):  # type: (str, VerifyKey) ->
     returns:
         tuple(str, str, str): api_base_uri, authorization_endpoint, token_endpoint
     """
-    logger.info("Retrieving info from instance {}".format(instance_uri))
+    logger.info(u"Retrieving info from instance {}".format(instance_uri))
     info_uri = instance_uri + '/info.json'
     info = requests.get(info_uri)
     info_sig = requests.get(info_uri + '.sig')
     if info_sig.status_code == 404:
-        logger.warning("can't verify signature for {} since there is no signature.".format(info_uri))
+        logger.warning(u"can't verify signature for {} since there is no signature.".format(info_uri))
     else:
         _ = verifier.verify(smessage=info.content, signature=info_sig.content.decode('base64'))  # type: ignore
     urls = info.json()['api']['http://eduvpn.org/api#2']
@@ -131,7 +131,7 @@ def create_keypair(oauth, api_base_uri):  # type: (OAuth2Session, str) -> Tuple[
     returns:
         tuple(str, str): certificate and key
     """
-    logger.info("Creating and retrieving key pair from {}".format(api_base_uri))
+    logger.info(u"Creating and retrieving key pair from {}".format(api_base_uri))
     try:
         response = oauth.post(api_base_uri + '/create_keypair', data={'display_name': 'eduVPN for Linux'})
     except InvalidGrantError as e:
@@ -157,7 +157,7 @@ def list_profiles(oauth, api_base_uri):  # type (OAuth2Session, str) -> dict
     returns:
         list: of available profiles on the instance (display_name, profile_id, two_factor)
     """
-    logger.info("Retrieving profile list from {}".format(api_base_uri))
+    logger.info(u"Retrieving profile list from {}".format(api_base_uri))
     try:
         response = oauth.get(api_base_uri + '/profile_list')
     except InvalidGrantError as e:
@@ -192,7 +192,7 @@ def user_info(oauth, api_base_uri):  # type: (OAuth2Session, str) -> dict
         oauth (requests_oauthlib.OAuth2Session): oauth2 object
         api_base_uri (str): the instance base URI
     """
-    logger.info("Retrieving user info from {}".format(api_base_uri))
+    logger.info(u"Retrieving user info from {}".format(api_base_uri))
     try:
         response = oauth.get(api_base_uri + '/user_info')
     except InvalidGrantError as e:
@@ -221,7 +221,7 @@ def user_messages(oauth, api_base_uri):  # type: (OAuth2Session, str) -> Any
     returns:
         list: a list of dicts with date_time, message, type keys
     """
-    logger.info("Retrieving user messages from {}".format(api_base_uri))
+    logger.info(u"Retrieving user messages from {}".format(api_base_uri))
     try:
         response = oauth.get(api_base_uri + '/user_messages')
     except InvalidGrantError as e:
@@ -245,7 +245,7 @@ def system_messages(oauth, api_base_uri):  # type: (OAuth2Session, str) -> Any
         oauth (requests_oauthlib.OAuth2Session): oauth2 object
         api_base_uri (str): the instance base URI
     """
-    logger.info("Retrieving system messages from {}".format(api_base_uri))
+    logger.info(u"Retrieving system messages from {}".format(api_base_uri))
     try:
         response = oauth.get(api_base_uri + '/system_messages')
     except InvalidGrantError as e:
@@ -271,7 +271,7 @@ def create_config(oauth, api_base_uri, display_name, profile_id):  # type: (OAut
         display_name (str):
         profile_id (str):
     """
-    logger.info("Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
+    logger.info(u"Creating config with name '{}' and profile '{}' at {}".format(display_name, profile_id, api_base_uri))
     try:
         response = oauth.post(api_base_uri + '/create_config', data={'display_name': display_name,
                                                                      'profile_id': profile_id})
@@ -280,7 +280,7 @@ def create_config(oauth, api_base_uri, display_name, profile_id):  # type: (OAut
     if response.status_code == 401:
         raise EduvpnAuthException("request returned error 401")
     elif response.status_code != 200:
-        raise EduvpnException("can't create config, error code {}".format(response.status_code))
+        raise EduvpnException(u"can't create config, error code {}".format(response.status_code))
     return response.json()
 
 
@@ -293,15 +293,15 @@ def get_profile_config(oauth, api_base_uri, profile_id):  # type: (OAuth2Session
         api_base_uri (str): the instance base URI
         profile_id (str):
     """
-    logger.info("Retrieving profile config from {}".format(api_base_uri))
+    logger.info(u"Retrieving profile config from {}".format(api_base_uri))
     try:
         response = oauth.get(api_base_uri + '/profile_config?profile_id={}'.format(profile_id))
     except InvalidGrantError as e:
         raise EduvpnAuthException(str(e))
     if response.status_code == 401:
-        raise EduvpnAuthException("request returned error 401")
+        raise EduvpnAuthException(u"request returned error 401")
     elif response.status_code != 200:
-        raise EduvpnException("can't create profile, error code {}".format(response.status_code))
+        raise EduvpnException(u"can't create profile, error code {}".format(response.status_code))
     # note: this is a bit ambiguous, in case there is an error, the result is json, otherwise clear text.
     try:
         json = response.json()['profile_config']
@@ -312,7 +312,7 @@ def get_profile_config(oauth, api_base_uri, profile_id):  # type: (OAuth2Session
         if not json['ok']:
             raise EduvpnException(json['error'])
         else:
-            raise EduvpnException("Server error! No profile config returned but no error also.")
+            raise EduvpnException(u"Server error! No profile config returned but no error also.")
 
 
 def get_auth_url(oauth, code_verifier, auth_endpoint):  # type: (OAuth2Session, str, str) -> Tuple[str, str]
@@ -324,7 +324,7 @@ def get_auth_url(oauth, code_verifier, auth_endpoint):  # type: (OAuth2Session, 
         code_verifier (str):
         auth_endpoint (str):
     """
-    logger.info("Generating authorisation URL using auth endpoint {}".format(auth_endpoint))
+    logger.info(u"Generating authorisation URL using auth endpoint {}".format(auth_endpoint))
     code_challenge_method = "S256"
     code_challenge = gen_code_challenge(code_verifier)
     authorization_url, state = oauth.authorization_url(auth_endpoint,
@@ -340,9 +340,9 @@ def two_factor_enroll_yubi(oauth, api_base_uri, yubi_key_otp):
     except InvalidGrantError as e:
         raise EduvpnAuthException(str(e))
     if response.status_code == 401:
-        raise EduvpnAuthException("request returned error 401")
+        raise EduvpnAuthException(u"request returned error 401")
     elif response.status_code != 200:
-        raise EduvpnException("can't retrieve user info, error code {}".format(response.status_code))
+        raise EduvpnException(u"can't retrieve user info, error code {}".format(response.status_code))
     data = response.json()['two_factor_enroll_yubi']
     if not data['ok']:
         raise EduvpnException(data['error'])
@@ -352,7 +352,7 @@ def two_factor_enroll_totp(oauth, api_base_uri, secret, key):
     # type: (OAuth2Session, str, str, str) -> None
     prefix = '/two_factor_enroll_totp'
     url = api_base_uri + prefix
-    logger.info("2fa totp enroling on {} with secret={} and key={}".format(url, secret, key))
+    logger.info(u"2fa totp enroling on {} with secret={} and key={}".format(url, secret, key))
     try:
         response = oauth.post(url, data={'totp_secret': secret, 'totp_key': key})
     except InvalidGrantError as e:
@@ -372,7 +372,7 @@ def check_certificate(oauth, api_base_uri, common_name):
     # type: (OAuth2Session, str, str) -> dict
     prefix = '/check_certificate'
     url = api_base_uri + prefix
-    logger.info("checking client certificate on {} with common_name={}".format(url, common_name))
+    logger.info(u"checking client certificate on {} with common_name={}".format(url, common_name))
     try:
         response = oauth.get("{}?common_name={}".format(url, common_name))
     except InvalidGrantError as e:

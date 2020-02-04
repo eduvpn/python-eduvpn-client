@@ -18,30 +18,30 @@ logger = logging.getLogger(__name__)
 
 def delete_profile(builder, lets_connect):  # type: (Gtk.builder, bool) -> None
     """called when the user presses the - button"""
-    logger.info("delete provider clicked")
+    logger.info(u"delete provider clicked")
     meta = metadata_of_selected(builder)
 
     if not meta:
-        logger.info("nothing selected")
+        logger.info(u"nothing selected")
         return
 
     window = builder.get_object('eduvpn-window')
 
     dialog = Gtk.MessageDialog(window, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO,
-                               "Are you sure you want to remove '{}'?".format(meta.display_name))
-    dialog.format_secondary_text("This action can't be undone.")
+                               u"Are you sure you want to remove '{}'?".format(meta.display_name))
+    dialog.format_secondary_text(u"This action can't be undone.")
     response = dialog.run()
     if response == Gtk.ResponseType.YES:
-        logger.info("deleting provider config")
+        logger.info(u"deleting provider config")
         try:
             delete_provider(meta.uuid)
             notification = init_notify(lets_connect)
-            notify(notification, "eduVPN provider deleted", "Deleted '{}'".format(meta.display_name))
+            notify(notification, "eduVPN provider deleted", "Deleted '{}'".format(meta.display_name.encode('utf-8')))
         except Exception as e:
-            error_helper(window, "can't delete profile", str(e))
+            error_helper(window, u"can't delete profile", str(e))
             dialog.hide()
             raise
         GLib.idle_add(lambda: refresh_start(builder, lets_connect=lets_connect))
     elif response == Gtk.ResponseType.NO:
-        logger.info("not deleting provider config")
+        logger.info(u"not deleting provider config")
     dialog.hide()

@@ -21,8 +21,8 @@ RUN yum install -y \
         pytest
 
 
+RUN pip install --upgrade "setuptools<45" pip
 ADD . /code
 WORKDIR /code
-RUN pip install --upgrade setuptools pip
 RUN pip install .
 RUN py.test -vv

@@ -19,9 +19,10 @@ RUN docker-apt-install \
         python3-cryptography \
         python3-qrcode \
         python3-pillow \
-        pep8 \
-        mypy
+	python3-pip
 
 ADD . /code
 WORKDIR /code
-RUN pep8 eduvpn --ignore=E501,E402,W391,W292
+RUN pip3 install --upgrade pycodestyle 
+RUN pycodestyle eduvpn tests
+
