@@ -1,3 +1,19 @@
+1.0.3
+=====
+
+bugfixes:
+
+ * can't finalize configuration: ValueError: Missing access token. #198
+ * Unicode providers don't work with python2 #191
+ * failure while reading networkmanager configuration #189
+ * Include client_id in phase 2 #184
+ 
+changes:
+
+ * Remove .pyi files #174
+ * Remove DNS leaking warming for 18.04 since it seems to be fixed. #177
+ 
+
 1.0.2
 =====
 

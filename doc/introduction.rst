@@ -11,28 +11,12 @@ Installation
 It is recommended to use a package to install the eduVPN client, but you can also install using pip from py or directly
 from github. We distribute RPM packages for Fedora, and Deb packages for Debian and Ubuntu.
 
+The eduVPN client has been tested with:
 
-+------------------+------------+--------------------------------------------------------------------------------------+
-| Distribution     | Supported? | Why not?                                                                             |
-+==================+============+======================================================================================+
-| Debian 8         | no         | Uses OpenVPN 2.3                                                                     |
-+------------------+------------+--------------------------------------------------------------------------------------+
-| Debian 9         | yes*       | network-manager-openvpn >= 1.2.10 required for tls-crypt support.                    |
-|                  |            | A backport MUST be installed, see below                                              |
-+------------------+------------+--------------------------------------------------------------------------------------+
-| Debian Testing   | yes        |                                                                                      |
-| (buster)         |            |                                                                                      |
-+------------------+------------+--------------------------------------------------------------------------------------+
-| Ubuntu 16.04 LTS | no         | Uses OpenVPN 2.3                                                                     |
-+------------------+------------+--------------------------------------------------------------------------------------+
-| Ubuntu 18.04 LTS | yes*       | `DNS leak <https://bugs.launchpad.net/ubuntu/+source/network-manager/+bug/1796648>`_ |                      
-+------------------+------------+--------------------------------------------------------------------------------------+
-| Ubuntu 18.10     | yes        |                                                                                      |
-+------------------+------------+--------------------------------------------------------------------------------------+
-| CentOS 7         | yes        |                                                                                      |
-+------------------+------------+--------------------------------------------------------------------------------------+
-| Fedora 28,29     | yes        |                                                                                      |
-+------------------+------------+--------------------------------------------------------------------------------------+
+ * Debian 9 (Stretch), Debian 10 (Buster)
+ * Ubuntu 18.04 LTS and 20.04 LTS
+ * CentOS 7 & 8
+ * Fedora 30 & 31
 
 .. note::
 
@@ -55,18 +39,12 @@ as root or using sudo:
     $ apt update
     $ apt install eduvpn-client
 
-This has been tested on Ubuntu 18.04 (Bionic) and Debian 9 (stretch). Unfortunatly Ubuntu 16.04 LTS  (Xenial) is **not**
-supported. Ubuntu Xenial and older are bundled with an outdated and unsupporten OpenVPN.
-
-.. warning::
-
-    VPN configurations on Ubuntu 18.04 leak DNS information by default. The issue has been reported at Ubuntu, but
-    no fix has been published yet. You can follow the discussion in our
-    `issue tracker <https://github.com/eduvpn/python-eduvpn-client/issues/160>`_.
+This has been tested on Ubuntu 18.04 (Bionic) and Debian 9 (stretch). Unfortunately, Ubuntu 16.04 LTS (Xenial) is **not**
+supported. Ubuntu Xenial and older are bundled with an outdated and unsupported OpenVPN.
 
 .. note::
 
-    For Debian you need to enable the backports repository and manually update network manager.
+    For Debian Stretch you need to enable the backports repository and manually update network manager.
     `network-manager-openvpn` >= 1.2.10 is required for `tls-crypt` support. To enable the backports repository add
     this line to your `/etc/apt/sources.list`::
 
@@ -91,10 +69,10 @@ You can install the latest release of the eduVPN client on Fedora by running the
 More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
 
 
-Centos 7
---------
+Centos
+------
 
-You can install the latest release of the eduVPN client on Centos 7 by running these commands as root or using sudo:
+You can install the latest release of the eduVPN client on Centos 7 or 8 by running these commands as root or using sudo:
 
 .. code-block:: bash
 

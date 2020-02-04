@@ -5,7 +5,7 @@
 
 from setuptools import setup, find_packages
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 
 install_requires = [
@@ -19,7 +19,7 @@ install_requires = [
     'qrcode',
     'pillow',
     'cryptography',
-    'typing',
+    'typing;python_version<"3.5"',
 ]
 
 # sometimes the dbus-python package is not properly registered, triggering a
@@ -27,7 +27,7 @@ install_requires = [
 extras_require = {
     'client': ['dbus-python', 'pygobject'],
     'test-online': ['mechanicalsoup', 'futures'],
-    'docs': ['sphinx', 'mock', 'sphinx_rtd_theme', 'future' ,'repoze.lru', 'six'],
+    'docs': ['sphinx', 'mock', 'sphinx_rtd_theme'],
 }
 
 data_files = [
