@@ -53,7 +53,7 @@ def list_providers():  # type: () -> Iterable[Metadata]
         except (IOError, OSError) as e:
             logger.error(u"can't list configurations in"
                          "{}".format(providers_path))
-            raise StopIteration
+            return
         else:
             for p in providers:
                 try:
