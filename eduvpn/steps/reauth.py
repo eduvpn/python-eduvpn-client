@@ -25,7 +25,7 @@ def reauth(meta, verifier, builder, lets_connect):  # type: (Metadata, str, Gtk.
     dialog.format_secondary_text("Do you want to re-authorize?")
     response = dialog.run()
     if response == Gtk.ResponseType.YES:
-        meta.token = {None: None}
+        meta.token = {}
         browser_step(builder, meta, verifier, force_token_refresh=True, lets_connect=lets_connect)
     elif response == Gtk.ResponseType.NO:
         pass
