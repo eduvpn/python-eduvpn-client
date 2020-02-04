@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        1.0.2
+Version:        1.0.3
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -10,25 +10,13 @@ License:        MIT
 URL:            https://pypi.python.org/pypi/%{srcname}
 Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
-BuildRequires: pytest
-BuildRequires: python2-pytest-runner
-BuildRequires: python3-pytest-runner
 BuildRequires: gtk3
 BuildRequires: libnotify
-BuildRequires: dbus-python
-BuildRequires: python-gobject
-BuildRequires: python2-devel
-BuildRequires: python2-pynacl
-BuildRequires: python2-requests-oauthlib
-BuildRequires: python2-configparser
-BuildRequires: python2-future
-BuildRequires: python2-mock
-BuildRequires: python2-cryptography
-BuildRequires: (python2-qrcode or python-qrcode)
-BuildRequires: python2-pillow
-BuildRequires: python-repoze-lru
+BuildRequires: python3-configparser
+BuildRequires: python3-pytest
+BuildRequires: python3-pytest-runner
+BuildRequires: python3-qrcode
 BuildRequires: python3-devel
-BuildRequires: python2-dateutil
 BuildRequires: python3-dbus
 BuildRequires: python3-pynacl
 BuildRequires: python3-requests-oauthlib
@@ -44,26 +32,6 @@ BuildRequires: python3-pillow
 
 %description
 An python module which provides a convenient example.
-
-%package -n python2-eduvpn-client
-Summary:        %{sum}
-%{?python_provide:%python_provide python2-eduvpn-client}
-Requires: python-gobject
-Requires: dbus-python
-Requires: python2-pynacl
-Requires: python2-requests-oauthlib
-Requires: python2-configparser
-Requires: python2-future
-Requires: python2-dateutil
-Requires: python-repoze-lru
-Requires: python2-cryptography
-Requires: (python2-qrcode or python-qrcode)
-Requires: python2-pillow
-Conflicts: python2-lets-connect-client
-
-%description -n python2-eduvpn-client
-eduVPN client API for Python2
-
 
 %package -n python3-eduvpn-client
 Summary:        %{sum}
@@ -97,23 +65,16 @@ eduVPN desktop client
 %autosetup -n %{srcname}-%{version}
 
 %build
-%py2_build
 %py3_build
 
 
 %install
-%py2_install
 %py3_install
 
 
 %check
 %{__python3} setup.py test
-%{__python2} setup.py test
 
-%files -n python2-eduvpn-client
-%license LICENSE
-%doc README.md
-%{python2_sitelib}/*
 
 %files -n python3-eduvpn-client
 %license LICENSE

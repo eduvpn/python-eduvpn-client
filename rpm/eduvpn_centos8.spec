@@ -1,7 +1,7 @@
-%global srcname lets_connect_client
+%global srcname eduvpn_client
 %global sum client for eduVPN
 
-Name:           lets_connect_client
+Name:           eduvpn_client
 Version:        1.0.3
 Release:        1%{?dist}
 Summary:        %{sum}
@@ -12,81 +12,76 @@ Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{sr
 BuildArch:      noarch
 BuildRequires: gtk3
 BuildRequires: libnotify
-BuildRequires: python3-configparser
 BuildRequires: python3-pytest
 BuildRequires: python3-pytest-runner
-BuildRequires: python3-qrcode
-BuildRequires: python3-devel
 BuildRequires: python3-dbus
+BuildRequires: python3-gobject
 BuildRequires: python3-pynacl
 BuildRequires: python3-requests-oauthlib
-BuildRequires: python3-gobject
 BuildRequires: python3-future
 BuildRequires: python3-dateutil
-BuildRequires: python3-repoze-lru
-BuildRequires: python3-mock
 BuildRequires: python3-cryptography
 BuildRequires: python3-qrcode
 BuildRequires: python3-pillow
-
+# BuildRequires: python3-mock
+# BuildRequires: python3-configparser
+# BuildRequires: python3-repoze-lru
 
 %description
-An python module which provides a convenient example.
+The eduVPN client.
 
-
-%package -n python3-lets-connect-client
+%package -n python3-eduvpn-client
 Summary:        %{sum}
-%{?python_provide:%python_provide python3-lets-connect-client}
+%{?python_provide:%python_provide python3-eduvpn-client}
+Requires: python3-gobject
 Requires: python3-dbus
 Requires: python3-pynacl
 Requires: python3-requests-oauthlib
-Requires: python3-gobject
 Requires: python3-future
 Requires: python3-dateutil
-Requires: python3-repoze-lru
 Requires: python3-cryptography
 Requires: python3-qrcode
 Requires: python3-pillow
-Conflicts: python3-eduvpn-client
+Conflicts: python3-lets-connect-client
+# Requires: python3-configparser
+# Requires: python3-repoze-lru
 
-%description -n python3-lets-connect-client
-Let's Connect! client API for Python3
 
-%package -n lets-connect-client
+%description -n python3-eduvpn-client
+eduVPN client API for Python3
+
+%package -n eduvpn-client
 Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
-Requires:  python3-lets-connect-client
-Conflicts: python3-eduvpn-client
+Requires:  python3-eduvpn-client
+Conflicts: lets-connect-client
 
-%description -n lets-connect-client
-Let's Connect! desktop client
+%description -n eduvpn-client
+eduVPN desktop client
 
 %prep
 %autosetup -n %{srcname}-%{version}
 
 %build
-%{__python3} setup_letsconnect.py build
-
+%{__python3} setup.py build
 
 %install
-%{__python3} setup_letsconnect.py install --root $RPM_BUILD_ROOT
-
+%{__python3} setup.py install --root $RPM_BUILD_ROOT
 
 %check
-%{__python3} setup_letsconnect.py test
+%{__python3} setup.py test
 
-
-%files -n python3-lets-connect-client
+%files -n python3-eduvpn-client
 %license LICENSE
 %doc README.md
 %{python3_sitelib}/*
 
-%files -n lets-connect-client
+%files -n eduvpn-client
 %license LICENSE
 %doc README.md
-%{_bindir}/lets-connect-client
-%{_datarootdir}/applications/lets-connect-client.desktop
+%{_bindir}/eduvpn-client
+%{_datarootdir}/applications/eduvpn-client.desktop
 %{_datarootdir}/eduvpn/eduvpn.png
 %{_datarootdir}/eduvpn/institute.png
 %{_datarootdir}/eduvpn/institute_small.png
@@ -107,16 +102,5 @@ Let's Connect! desktop client
 %{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/512x512/apps/eduvpn-client.png
-%{_datarootdir}/icons/hicolor/48x48/apps/lets-connect-client.png
-%{_datarootdir}/icons/hicolor/256x256/apps/lets-connect-client.png
-%{_datarootdir}/icons/hicolor/512x512/apps/lets-connect-client.png
-%{_datarootdir}/icons/hicolor/128x128/apps/lets-connect-client.png
-%{_datarootdir}/letsconnect/settings_full.png
-%{_datarootdir}/letsconnect/connected.png
-%{_datarootdir}/letsconnect/connecting.png
-%{_datarootdir}/letsconnect/tray.png
-%{_datarootdir}/letsconnect/settings.png
-%{_datarootdir}/letsconnect/fallback.png
-%{_datarootdir}/letsconnect/disconnected.png
 
 %changelog

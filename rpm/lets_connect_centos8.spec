@@ -1,5 +1,5 @@
 %global srcname lets_connect_client
-%global sum client for eduVPN
+%global sum client for Let's Connect!
 
 Name:           lets_connect_client
 Version:        1.0.3
@@ -11,56 +11,53 @@ URL:            https://pypi.python.org/pypi/%{srcname}
 Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires: gtk3
-BuildRequires: libnotify
-BuildRequires: python3-configparser
 BuildRequires: python3-pytest
 BuildRequires: python3-pytest-runner
-BuildRequires: python3-qrcode
-BuildRequires: python3-devel
 BuildRequires: python3-dbus
+BuildRequires: python3-gobject
 BuildRequires: python3-pynacl
 BuildRequires: python3-requests-oauthlib
-BuildRequires: python3-gobject
 BuildRequires: python3-future
 BuildRequires: python3-dateutil
-BuildRequires: python3-repoze-lru
-BuildRequires: python3-mock
 BuildRequires: python3-cryptography
 BuildRequires: python3-qrcode
 BuildRequires: python3-pillow
-
+# BuildRequires: python3-mock
+# BuildRequires: python3-configparser
+# BuildRequires: python3-repoze-lru
 
 %description
 An python module which provides a convenient example.
 
-
 %package -n python3-lets-connect-client
 Summary:        %{sum}
 %{?python_provide:%python_provide python3-lets-connect-client}
+Requires: python3-gobject
 Requires: python3-dbus
 Requires: python3-pynacl
 Requires: python3-requests-oauthlib
-Requires: python3-gobject
 Requires: python3-future
 Requires: python3-dateutil
-Requires: python3-repoze-lru
 Requires: python3-cryptography
 Requires: python3-qrcode
 Requires: python3-pillow
-Conflicts: python3-eduvpn-client
+Conflicts: python3-lets-connect-client
+# Requires: python3-configparser
+# Requires: python3-repoze-lru
+
 
 %description -n python3-lets-connect-client
-Let's Connect! client API for Python3
+Let's Connect client API for Python3
 
 %package -n lets-connect-client
 Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
 Requires:  python3-lets-connect-client
-Conflicts: python3-eduvpn-client
+Conflicts: eduvpn-client
 
 %description -n lets-connect-client
-Let's Connect! desktop client
+Let's Connect desktop client
 
 %prep
 %autosetup -n %{srcname}-%{version}
@@ -75,7 +72,6 @@ Let's Connect! desktop client
 
 %check
 %{__python3} setup_letsconnect.py test
-
 
 %files -n python3-lets-connect-client
 %license LICENSE
