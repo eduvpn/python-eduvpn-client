@@ -3,7 +3,6 @@ matrix:
   include:
   - env: DIST=eduvpn_centos_7_py2
   - env: DIST=eduvpn_centos_7_rpm
-  - env: DIST=eduvpn_centos_8_py2
   - env: DIST=eduvpn_centos_8_py3
   - env: DIST=eduvpn_centos_8_rpm
   - env: DIST=eduvpn_debian_buster_py2
@@ -20,6 +19,7 @@ matrix:
   - env: DIST=eduvpn_ubuntu_bionic_py3_pep8
   - env: DIST=eduvpn_ubuntu_bionic_py3_mypy
   - env: DIST=eduvpn_ubuntu_bionic_doc
+  - env: DIST=eduvpn_ubuntu_focal_py3
   - env: DIST=lets_connect_centos_7_rpm
   - env: DIST=lets_connect_centos_8_rpm
   - env: DIST=lets_connect_fedora_30_rpm
