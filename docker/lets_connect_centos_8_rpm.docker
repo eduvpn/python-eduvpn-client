@@ -2,7 +2,8 @@ FROM centos:8
 
 RUN yum install -y yum-plugin-copr epel-release
 
-RUN yum copr enable -y gijzelaerr/eduvpn-client
+## nothing there yet for centos8 so cant enable
+# RUN yum copr enable -y gijzelaerr/eduvpn-client
 
 RUN yum install -y	\
     rpm-build \
@@ -32,7 +33,7 @@ RUN rpmdev-setuptree
 ADD . /code
 WORKDIR /code
 
-RUN python setup_letsconnect.py sdist
+RUN python3 setup_letsconnect.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
 RUN rpmbuild -bs rpm/lets_connect_centos8.spec
 RUN rpmbuild -bb rpm/lets_connect_centos8.spec
