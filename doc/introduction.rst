@@ -13,14 +13,14 @@ from github. We distribute RPM packages for Fedora, and Deb packages for Debian 
 
 The eduVPN client has been tested with:
 
- * Debian 9 (Stretch), Debian 10 (Buster)
+ * Debian 10 (Buster)  and Debian 9 (Stretch)
  * Ubuntu 18.04 LTS and 20.04 LTS
- * CentOS 7 & 8
+ * CentOS 7
  * Fedora 30 & 31
 
 .. note::
 
-    If you target is not supported the client might still, potentially work with limited functionality. You need to have
+    If you target is not supported the client might still work with limited functionality. You need to have
     `Network Manager <https://wiki.gnome.org/Projects/NetworkManager>`_ and `OpenVPN 2.4.0+ <https://openvpn.net/>`_
     installed.
 
@@ -38,9 +38,6 @@ as root or using sudo:
     $ echo "deb https://repo.eduvpn.org/debian/ stretch main" > /etc/apt/sources.list.d/eduvpn.list
     $ apt update
     $ apt install eduvpn-client
-
-This has been tested on Ubuntu 18.04 (Bionic) and Debian 9 (stretch). Unfortunately, Ubuntu 16.04 LTS (Xenial) is **not**
-supported. Ubuntu Xenial and older are bundled with an outdated and unsupported OpenVPN.
 
 .. note::
 
@@ -72,7 +69,7 @@ More information is available at `fedora copr <https://copr.fedorainfracloud.org
 Centos
 ------
 
-You can install the latest release of the eduVPN client on Centos 7 or 8 by running these commands as root or using sudo:
+You can install the latest release of the eduVPN client on Centos 7 by running these commands as root or using sudo:
 
 .. code-block:: bash
 
