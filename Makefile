@@ -104,15 +104,19 @@ dockers:
 	for i in `ls docker/*.docker`; do echo "*** $$i"; docker build . -f $$i; done
 
 srpm:
-	docker build -t eduvpn_fedora_rpm -f docker/eduvpn_fedora_28_rpm .
-	docker build -t lets_connect_fedora_rpm -f docker/lets_connect_fedora_28_rpm .
-	docker build -t eduvpn_centos_rpm -f docker/eduvpn_centos_7_rpm .
-	docker build -t lets_connect_centos_rpm -f docker/lets_connect_centos_7_rpm .
+	docker build -t eduvpn_fedora_rpm -f docker/eduvpn_fedora_31_rpm.docker .
+	docker build -t lets_connect_fedora_rpm -f docker/lets_connect_fedora_31_rpm.docker .
+	docker build -t eduvpn_centos7_rpm -f docker/eduvpn_centos_7_rpm.docker .
+	docker build -t lets_connect_centos7_rpm -f docker/lets_connect_centos_7_rpm.docker .
+	docker build -t eduvpn_centos8_rpm -f docker/eduvpn_centos_8_rpm.docker .
+	docker build -t lets_connect_centos8_rpm -f docker/lets_connect_centos_8_rpm.docker .
 	mkdir tmp || true
 	docker run -v `pwd`/tmp:/tmp:rw eduvpn_fedora_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 	docker run -v `pwd`/tmp:/tmp:rw lets_connect_fedora_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
-	docker run -v `pwd`/tmp:/tmp:rw eduvpn_centos_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
-	docker run -v `pwd`/tmp:/tmp:rw lets_connect_centos_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw eduvpn_centos7_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw lets_connect_centos7_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw eduvpn_centos8_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
+	docker run -v `pwd`/tmp:/tmp:rw lets_connect_centos8_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 
 mypy: .virtualenv3/
 	.virtualenv3/bin/mypy --ignore-missing-imports eduvpn tests
