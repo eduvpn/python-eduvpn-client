@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from setuptools import setup, find_packages
+from sys import version_info
 
 __version__ = "1.0.3"
-
 
 install_requires = [
     'requests',
@@ -19,8 +19,10 @@ install_requires = [
     'qrcode',
     'pillow',
     'cryptography',
-    'typing;python_version<"3.5"',
 ]
+
+if version_info.major == 2:
+    install_requires.append('typing')
 
 # sometimes the dbus-python package is not properly registered, triggering a
 # reinstall and compile
@@ -71,7 +73,6 @@ data_files = [
     ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/lets-connect-client.png']),
 ]
 
-
 setup(
     name="lets_connect_client",
     version=__version__,
@@ -103,10 +104,10 @@ setup(
         "Topic :: System :: Operating System Kernels :: Linux",
         "Topic :: System :: Networking",
         "Environment :: X11 Applications",
-        ],
+    ],
     entry_points={
         'gui_scripts': [
             'lets-connect-client = eduvpn.main:main_lets_connect',
         ]
-}
+    }
 )
