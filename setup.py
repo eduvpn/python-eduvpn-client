@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0+
 
 from setuptools import setup, find_packages
+from sys import version_info
 
 __version__ = "1.0.3"
 
@@ -19,8 +20,11 @@ install_requires = [
     'qrcode',
     'pillow',
     'cryptography',
-    'typing;python_version<"3.5"',
 ]
+
+if version_info.major == 2:
+    install_requires.append('typing')
+
 
 # sometimes the dbus-python package is not properly registered, triggering a
 # reinstall and compile
@@ -90,10 +94,10 @@ setup(
         "Topic :: System :: Operating System Kernels :: Linux",
         "Topic :: System :: Networking",
         "Environment :: X11 Applications",
-        ],
+    ],
     entry_points={
         'gui_scripts': [
             'eduvpn-client = eduvpn.main:main_eduvpn',
         ]
-}
+    }
 )
