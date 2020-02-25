@@ -25,6 +25,7 @@ RUN yum install -y	\
     python2-pytest-runner \
     python2-cryptography \
     python2-pynacl \
+    python2-typing \
     python2-pip
 
 RUN pip install --upgrade "setuptools<45" pip

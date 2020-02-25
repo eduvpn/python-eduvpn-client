@@ -27,6 +27,7 @@ BuildRequires: python-dateutil
 BuildRequires: python2-cryptography
 BuildRequires: python-qrcode
 BuildRequires: python-pillow
+BuildRequires: python2-typing
 
 %description
 An python module which provides a convenient example.
@@ -45,6 +46,7 @@ Requires: python2-dateutil
 Requires: python2-cryptography
 Requires: python-qrcode
 Requires: python-pillow
+Requires: python2-typing
 Conflicts: python2-lets-connect-client
 
 
