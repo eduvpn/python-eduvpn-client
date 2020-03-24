@@ -7,6 +7,7 @@ from eduvpn.actions.select import select_profile
 from eduvpn.actions.switch import switched
 from eduvpn.actions.vpn_status import vpn_change
 from eduvpn.metadata import Metadata
+from eduvpn.util import have_dbus_notification_service
 
 
 class MockBuilder:
@@ -41,6 +42,7 @@ class TestActions(unittest.TestCase):
     @patch('gi.repository.Gtk.MessageDialog')
     @patch('eduvpn.actions.switch.activate_connection')
     @patch('eduvpn.actions.switch.disconnect_provider')
+    @unittest.skipUnless(have_dbus_notification_service(), "DBus notification service not available")
     def test_switched_on(self, *args):
         builder = MockBuilder()
         builder.objects['connect-switch'] = MockSwitch(state=True)
@@ -49,6 +51,7 @@ class TestActions(unittest.TestCase):
     @patch('gi.repository.Gtk.MessageDialog')
     @patch('eduvpn.actions.switch.activate_connection')
     @patch('eduvpn.actions.switch.disconnect_provider')
+    @unittest.skipUnless(have_dbus_notification_service(), "DBus notification service not available")
     def test_switched_off(self, *args):
         builder = MockBuilder()
         builder.objects['connect-switch'] = MockSwitch(state=False)
