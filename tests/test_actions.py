@@ -6,6 +6,7 @@ from eduvpn.actions.delete import delete_profile
 from eduvpn.actions.select import select_profile
 from eduvpn.actions.vpn_status import vpn_change
 from eduvpn.metadata import Metadata
+from eduvpn.util import have_dbus_notification_service
 
 
 class MockBuilder:
@@ -41,5 +42,6 @@ class TestActions(unittest.TestCase):
                      institute_access_uri="bla",
                      secure_internet_uri="bla", lets_connect=False)
 
+    @unittest.skipUnless(have_dbus_notification_service(), "DBus notification service not available")
     def test_vpn_change(self):
         vpn_change(builder=self.builder, lets_connect=False)

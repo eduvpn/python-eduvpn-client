@@ -18,6 +18,7 @@ from gi.repository import Gtk, GdkPixbuf, GLib
 from eduvpn.config import icon_size
 from eduvpn.metadata import Metadata
 from eduvpn.exceptions import EduvpnException
+from dbus.exceptions import NameExistsException
 from typing import Any, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -128,6 +129,25 @@ def have_dbus():
         dbus = dbus.SystemBus(private=True)
     except Exception as e:
         logger.error(u"WARNING: dbus daemons not running, eduVPN client functionality limited")
+        return False
+    else:
+        dbus.close()
+        return True
+
+
+#lru_cache(maxsize=1)
+def have_dbus_notification_service():
+    # type: () -> bool
+    try:
+        import dbus
+        dbus = dbus.SessionBus(private=True)
+        proxy = dbus.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+    except NameExistsException as e:
+        logger.error(u"WARNING: dbus notification service not available, eduVPN client functionality limited")
+        dbus.close()
+        return False
+    except Exception as e:
+        logger.error(u"WARNING: dbus daemon not running, eduVPN client functionality limited")
         return False
     else:
         dbus.close()
