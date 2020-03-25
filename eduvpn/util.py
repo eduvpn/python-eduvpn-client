@@ -135,7 +135,7 @@ def have_dbus():
         return True
 
 
-#lru_cache(maxsize=1)
+@lru_cache(maxsize=1)
 def have_dbus_notification_service():
     # type: () -> bool
     try:
