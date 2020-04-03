@@ -23,7 +23,6 @@ BuildRequires: python3-cryptography
 BuildRequires: python3-qrcode
 BuildRequires: python3-pillow
 # BuildRequires: python3-mock
-# BuildRequires: python3-configparser
 # BuildRequires: python3-repoze-lru
 
 %description
@@ -42,7 +41,6 @@ Requires: python3-cryptography
 Requires: python3-qrcode
 Requires: python3-pillow
 Conflicts: python3-lets-connect-client
-# Requires: python3-configparser
 # Requires: python3-repoze-lru
 
 

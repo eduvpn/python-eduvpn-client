@@ -21,7 +21,6 @@ RUN dnf install -y \
 ## these packages are not (yet) available
 # python3-repoze-lru
 # python3-mock
-# python3-configparser
 
 ADD . /code
 WORKDIR /code

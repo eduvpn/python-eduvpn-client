@@ -21,9 +21,6 @@ install_requires = [
     'cryptography',
 ]
 
-if version_info.major == 2:
-    install_requires.append('typing')
-
 # sometimes the dbus-python package is not properly registered, triggering a
 # reinstall and compile
 extras_require = {
@@ -101,6 +98,9 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3 :: Only",
         "Topic :: System :: Operating System Kernels :: Linux",
         "Topic :: System :: Networking",
         "Environment :: X11 Applications",

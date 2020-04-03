@@ -12,7 +12,6 @@ Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{sr
 BuildArch:      noarch
 BuildRequires: gtk3
 BuildRequires: libnotify
-BuildRequires: python3-configparser
 BuildRequires: python3-pytest
 BuildRequires: python3-pytest-runner
 BuildRequires: python3-qrcode
