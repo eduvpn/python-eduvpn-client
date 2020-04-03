@@ -63,19 +63,11 @@ fedora:
 
 
 .virtualenv/:
-	virtualenv --system-site-packages -p python2 .virtualenv
+	virtualenv --system-site-packages -p python3 .virtualenv
 
 
 .virtualenv/bin/eduvpn-client: .virtualenv/
 	.virtualenv/bin/pip install -e ".[client]"
-
-
-.virtualenv3/:
-	virtualenv --system-site-packages -p python3 .virtualenv3
-
-
-.virtualenv3/bin/eduvpn-client: .virtualenv3/
-	.virtualenv3/bin/pip install -e ".[client]"
 
 
 doc:  .virtualenv/
@@ -87,18 +79,14 @@ test: .virtualenv/bin/eduvpn-client
 	.virtualenv/bin/python setup.py test
 
 
-test3: .virtualenv3/bin/eduvpn-client
-	.virtualenv3/bin/python setup.py test
+run: .virtualenv/bin/eduvpn-client
+	.virtualenv/bin/eduvpn-client
 
+.virtualenv/bin/jupyter-notebook: .virtualenv/bin/eduvpn-client
+	.virtualenv/bin/pip install -r notebooks/requirements.txt
 
-run: .virtualenv3/bin/eduvpn-client
-	.virtualenv3/bin/eduvpn-client
-
-.virtualenv3/bin/jupyter-notebook: .virtualenv3/bin/eduvpn-client
-	.virtualenv3/bin/pip install -r notebooks/requirements.txt
-
-notebook: .virtualenv3/bin/jupyter-notebook
-	.virtualenv3/bin/jupyter-notebook
+notebook: .virtualenv/bin/jupyter-notebook
+	.virtualenv/bin/jupyter-notebook
 
 dockers:
 	for i in `ls docker/*.docker`; do echo "*** $$i"; docker build . -f $$i; done
@@ -106,18 +94,14 @@ dockers:
 srpm:
 	docker build -t eduvpn_fedora_rpm -f docker/eduvpn_fedora_31_rpm.docker .
 	docker build -t lets_connect_fedora_rpm -f docker/lets_connect_fedora_31_rpm.docker .
-	docker build -t eduvpn_centos7_rpm -f docker/eduvpn_centos_7_rpm.docker .
-	docker build -t lets_connect_centos7_rpm -f docker/lets_connect_centos_7_rpm.docker .
 	docker build -t eduvpn_centos8_rpm -f docker/eduvpn_centos_8_rpm.docker .
 	docker build -t lets_connect_centos8_rpm -f docker/lets_connect_centos_8_rpm.docker .
 	mkdir tmp || true
 	docker run -v `pwd`/tmp:/tmp:rw eduvpn_fedora_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 	docker run -v `pwd`/tmp:/tmp:rw lets_connect_fedora_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
-	docker run -v `pwd`/tmp:/tmp:rw eduvpn_centos7_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
-	docker run -v `pwd`/tmp:/tmp:rw lets_connect_centos7_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 	docker run -v `pwd`/tmp:/tmp:rw eduvpn_centos8_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 	docker run -v `pwd`/tmp:/tmp:rw lets_connect_centos8_rpm sh -c "cp /root/rpmbuild/SRPMS/* /tmp"
 
-mypy: .virtualenv3/
-	.virtualenv3/bin/mypy --ignore-missing-imports eduvpn tests
+mypy: .virtualenv/
+	.virtualenv/bin/mypy --ignore-missing-imports eduvpn tests
 
