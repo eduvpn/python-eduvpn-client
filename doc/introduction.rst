@@ -13,9 +13,9 @@ from github. We distribute RPM packages for Fedora, and Deb packages for Debian 
 
 The eduVPN client has been tested with:
 
- * Debian 10 (Buster)  and Debian 9 (Stretch)
+ * Debian 10 (Buster) and Debian 9 (Stretch)
  * Ubuntu 18.04 LTS and 20.04 LTS
- * CentOS 7
+ * CentOS 8
  * Fedora 30 & 31
 
 .. note::
@@ -126,7 +126,7 @@ For fedora:
 
     $ dnf install -y gtk3 libnotify python3-dateutil python3-networkmanager python3-pydbus \
         python3-pynacl python3-requests-oauthlib python3-gobject python3-pip \
-        python3-configparser python3-future git NetworkManager-openvpn NetworkManager-openvpn-gnome
+        python3-future git NetworkManager-openvpn NetworkManager-openvpn-gnome
 
 Issues
 ======

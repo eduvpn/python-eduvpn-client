@@ -22,9 +22,6 @@ install_requires = [
     'cryptography',
 ]
 
-if version_info.major == 2:
-    install_requires.append('typing')
-
 
 # sometimes the dbus-python package is not properly registered, triggering a
 # reinstall and compile
@@ -84,13 +81,14 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3 :: Only",
         "Topic :: System :: Operating System Kernels :: Linux",
         "Topic :: System :: Networking",
         "Environment :: X11 Applications",

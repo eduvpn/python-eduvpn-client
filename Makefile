@@ -19,7 +19,6 @@ deb:
 		python-dbus \
 		python-nacl \
 		python-requests-oauthlib \
-		python-configparser \
 		python-future \
 		python-dateutil \
 		python-mock \
@@ -38,17 +37,6 @@ fedora:
 		gtk3 \
 		libnotify \
 		python-gobject \
-		python2-networkmanager \
-		python2-pydbus \
-		python2-pynacl \
-		python2-requests-oauthlib \
-		python2-pip \
-		python2-configparser \
-		python2-future \
-		python2-nose \
-		python2-mock \
-		python2-virtualenv \
-		python2-dateutil \
 		python3-dateutil \
 		python3-networkmanager \
 		python3-pydbus \
@@ -56,7 +44,6 @@ fedora:
 		python3-requests-oauthlib \
 		python3-gobject \
 		python3-pip \
-		python3-configparser \
 		python3-future \
 		python3-nose \
 		python3-mock

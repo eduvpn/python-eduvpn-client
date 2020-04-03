@@ -5,6 +5,7 @@ changes:
 
  * Remove Python 2 support #192
  * Remove CentOS 7 support #192
+ * Use stdlib instead of python3-configparser dependency #210
 
 1.0.3
 =====
