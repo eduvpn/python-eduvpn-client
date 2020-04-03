@@ -1,3 +1,11 @@
+Work in progress
+================
+
+changes:
+
+ * Remove Python 2 support #192
+ * Remove CentOS 7 support #192
+
 1.0.3
 =====
 
