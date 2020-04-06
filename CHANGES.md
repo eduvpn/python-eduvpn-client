@@ -5,7 +5,6 @@ changes:
 
  * Remove Python 2 support #192
  * Remove CentOS 7 support #192
- * Remove Debian Stretch support #211
  * Use stdlib instead of python3-configparser dependency #210
  * Use stdlib instead of python3-mock dependency #211
 
