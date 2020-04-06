@@ -5,7 +5,7 @@
 
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 
 from eduvpn.remote import create_keypair, get_auth_url, get_instance_info, get_instances, get_profile_config, \
     system_messages, user_messages, create_config, list_profiles, translate_display_name, user_info

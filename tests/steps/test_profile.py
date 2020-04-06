@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mock import patch
+from unittest.mock import patch
 
 from eduvpn.metadata import Metadata
 from eduvpn.steps.profile import fetch_profile_step, _select_profile_step, _background

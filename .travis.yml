@@ -4,6 +4,7 @@ matrix:
   - env: DIST=eduvpn_centos_8_py3
   - env: DIST=eduvpn_centos_8_rpm
   - env: DIST=eduvpn_debian_buster_py3
+  - env: DIST=eduvpn_debian_stretch_py3
   - env: DIST=eduvpn_fedora_30_py3
   - env: DIST=eduvpn_fedora_31_py3
   - env: DIST=eduvpn_fedora_30_rpm

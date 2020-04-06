@@ -1,5 +1,5 @@
 from unittest import TestCase
-from mock import patch
+from unittest.mock import patch
 from tests.util import MockBuilder, MockOAuth, MockDialog
 from tests.mock_config import mock_config_dict
 from eduvpn.metadata import Metadata
