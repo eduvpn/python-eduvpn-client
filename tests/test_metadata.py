@@ -1,6 +1,6 @@
 
 import unittest
-from mock import patch
+from unittest.mock import patch
 from eduvpn.metadata import Metadata, get_all_metadata
 from eduvpn.exceptions import EduvpnException
 
