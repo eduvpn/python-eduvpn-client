@@ -23,9 +23,6 @@ RUN yum install -y	\
     python3-qrcode \
     python3-pillow
 
-## these packages don't exist (yet)
-# python3-repoze-lru
-
 RUN rpmdev-setuptree
 
 ADD . /code

@@ -11,7 +11,6 @@ RUN docker-apt-install \
         python3-requests-oauthlib \
         python3-future \
         python3-dateutil \
-        python3-repoze.lru \
         python3-pip \
         python3-setuptools \
         python3-pytest \

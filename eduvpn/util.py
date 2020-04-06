@@ -10,7 +10,7 @@ import os
 from os import path
 from future.standard_library import install_aliases
 install_aliases()
-from repoze.lru import lru_cache
+from functools import lru_cache
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GdkPixbuf', '2.0')

@@ -7,6 +7,7 @@ changes:
  * Remove CentOS 7 support #192
  * Use stdlib instead of python3-configparser dependency #210
  * Use stdlib instead of python3-mock dependency #211
+ * Use stdlib instead of python3-repoze-lru #212
 
 1.0.3
 =====
