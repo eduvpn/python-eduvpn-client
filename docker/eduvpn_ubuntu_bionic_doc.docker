@@ -2,10 +2,11 @@ FROM ubuntu:bionic
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
 RUN docker-apt-install \
-        python-pip
+        python3-pip \
+        python3-sphinx
 
 ADD . /code
 WORKDIR /code
-RUN pip install -r doc/requirements.txt
+RUN pip3 install -r doc/requirements.txt
 
 RUN sphinx-build -T -E -b html doc doc/_build

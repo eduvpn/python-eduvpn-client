@@ -18,7 +18,7 @@
 #
 import os
 import sys
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.abspath('..'))
 from eduvpn import __version__
