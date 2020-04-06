@@ -23,7 +23,6 @@ BuildRequires: python3-gobject
 BuildRequires: python3-future
 BuildRequires: python3-dateutil
 BuildRequires: python3-repoze-lru
-BuildRequires: python3-mock
 BuildRequires: python3-cryptography
 BuildRequires: python3-qrcode
 BuildRequires: python3-pillow

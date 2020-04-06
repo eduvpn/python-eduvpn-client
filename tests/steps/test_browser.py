@@ -1,5 +1,5 @@
 from unittest import TestCase, skip
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 from tests.util import MockBuilder, MockOAuth, MockResponse, MockDialog
 from eduvpn.metadata import Metadata
 from eduvpn.steps.browser import browser_step, _phase1_background, _phase1_callback, _phase2_background,\

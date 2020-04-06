@@ -1,5 +1,5 @@
 from unittest import TestCase
-from mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from tests.util import MockResponse, MockOAuth, MockBuilder
 from tests.mock_config import mock_config_dict
 from eduvpn.metadata import Metadata

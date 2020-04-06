@@ -45,8 +45,7 @@ fedora:
 		python3-gobject \
 		python3-pip \
 		python3-future \
-		python3-nose \
-		python3-mock
+		python3-nose
 
 
 .virtualenv/:

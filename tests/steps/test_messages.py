@@ -1,5 +1,5 @@
 from unittest import TestCase
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 from tests.util import MockBuilder
 from eduvpn.metadata import Metadata
 from eduvpn.steps.messages import fetch_messages, _background
