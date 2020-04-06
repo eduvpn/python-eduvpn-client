@@ -15,14 +15,6 @@ deb:
 		gir1.2-notify-0.7 \
 		libdbus-1-dev \
 		libnotify4 \
-		python-gi \
-		python-dbus \
-		python-nacl \
-		python-requests-oauthlib \
-		python-future \
-		python-dateutil \
-		python-mock \
-		python-pytest \
 		python3-dateutil \
 		python3-dbus \
 		python3-nacl \
