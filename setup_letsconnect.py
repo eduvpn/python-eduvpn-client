@@ -15,7 +15,6 @@ install_requires = [
     'future',
     'python-dateutil',
     'six',
-    'repoze.lru',
     'qrcode',
     'pillow',
     'cryptography',

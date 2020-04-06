@@ -23,7 +23,6 @@ BuildRequires: python3-dateutil
 BuildRequires: python3-cryptography
 BuildRequires: python3-qrcode
 BuildRequires: python3-pillow
-# BuildRequires: python3-repoze-lru
 
 %description
 The eduVPN client.
@@ -41,8 +40,6 @@ Requires: python3-cryptography
 Requires: python3-qrcode
 Requires: python3-pillow
 Conflicts: python3-lets-connect-client
-# Requires: python3-repoze-lru
-
 
 %description -n python3-eduvpn-client
 eduVPN client API for Python3
