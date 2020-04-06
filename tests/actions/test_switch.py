@@ -1,5 +1,5 @@
 import unittest
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 from tests.util import MockSelection
 from eduvpn.actions.add import new_provider
 from eduvpn.actions.delete import delete_profile

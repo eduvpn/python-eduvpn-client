@@ -3,7 +3,7 @@
 # Copyright: 2017, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 
 class MockSelection:

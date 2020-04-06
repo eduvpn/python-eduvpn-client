@@ -24,7 +24,6 @@ RUN yum install -y	\
     python3-pillow
 
 ## these packages don't exist (yet)
-# python3-mock
 # python3-repoze-lru
 
 RUN rpmdev-setuptree
