@@ -6,7 +6,7 @@
 from setuptools import setup, find_packages
 from sys import version_info
 
-__version__ = "1.0.3"
+__version__ = "1.1"
 
 install_requires = [
     'requests',
