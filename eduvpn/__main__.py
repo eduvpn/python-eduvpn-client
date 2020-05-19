@@ -1,5 +1,5 @@
 import logging
-from sys import exit
+from sys import exit, argv
 from pathlib import Path
 from typing import Optional, List
 from requests_oauthlib import OAuth2Session
@@ -13,16 +13,16 @@ from eduvpn.crypto import make_verifier
 import argparse
 
 
-def parse_args() -> Optional[str]:
+def parse_args(args: List[str]) -> Optional[str]:
     parser = argparse.ArgumentParser(description='The eduVPN command line client')
     parser.add_argument('search', metavar='search', type=str, nargs='?', help='A URL or search term')
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     return args.search
 
 
-def main():
+def main(args: List[str]):
     logging.basicConfig(level=logging.INFO)
-    search_term = parse_args()
+    search_term = parse_args(args)
 
     verifier = make_verifier(Ed25519_PUBLIC_KEY)
 
@@ -76,4 +76,4 @@ def letsconnect():
 
 
 if __name__ == '__main__':
-    main()
+    main(args=argv)

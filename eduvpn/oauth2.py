@@ -44,7 +44,7 @@ landing_page = """
 """
 
 
-def stringify_image(logo):  # type: (str) -> str
+def stringify_image(logo: str) -> str:
     import base64
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
