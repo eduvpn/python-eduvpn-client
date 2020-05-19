@@ -2,8 +2,8 @@ FROM ubuntu:bionic
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
 RUN docker-apt-install \
-        python3-pip \
-        python3-sphinx
+    python3-pip \
+    python3-sphinx
 
 ADD . /code
 WORKDIR /code

@@ -1,9 +1,6 @@
 FROM centos:8
 
-RUN yum install -y yum-plugin-copr epel-release
-
-## nothing there yet for centos8 so cant enable
-# RUN yum copr enable -y gijzelaerr/eduvpn-client
+RUN yum install -y epel-release
 
 RUN yum install -y	\
     rpm-build \
@@ -12,16 +9,13 @@ RUN yum install -y	\
     libnotify \
     python3 \
     python3-pytest \
-    python3-dbus \
     python3-gobject \
-    python3-pynacl \
-    python3-dateutil \
-    python3-future \
     python3-requests-oauthlib \
-    python3-pytest-runner \
     python3-cryptography \
-    python3-qrcode \
-    python3-pillow
+    python3-pynacl \
+    python3-dbus \
+    python3-pytest-runner
+
 
 RUN rpmdev-setuptree
 

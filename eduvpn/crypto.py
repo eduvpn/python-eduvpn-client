@@ -1,32 +1,25 @@
-# python-eduvpn-client - The GNU/Linux eduVPN client and Python API
-#
-# Copyright: 2017, The Commons Conservancy eduVPN Programme
-# SPDX-License-Identifier: GPL-3.0+
-
-import base64
+from base64 import urlsafe_b64encode, b64decode
 import hashlib
 import random
-import nacl.signing
-import nacl.encoding
 from cryptography.x509.oid import NameOID
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from nacl.signing import VerifyKey
 
 
-def common_name_from_cert(pem_data):  # type: (bytes) -> str
+def gen_code_challenge(code_verifier: str) -> bytes:
     """
-    Extract common name from client certificate.
+    Transform the PKCE code verifier in a code challenge.
 
     args:
-        pem_data (str): PEM encoded certificate
-    returns:
-        str: the common name of the client certificate.
+        code_verifier (str): a string generated with `gen_code_verifier()`
     """
-    cert = x509.load_pem_x509_certificate(pem_data, default_backend())
-    return cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
+    sha256 = hashlib.sha256(code_verifier.encode())
+    encoded = urlsafe_b64encode(sha256.digest())
+    return encoded.rstrip(b'=')
 
 
-def gen_code_verifier(length=128):  # type: (int) -> str
+def gen_code_verifier(length: int = 128) -> str:
     """
     Generate a high entropy code verifier, used for PKCE.
 
@@ -41,32 +34,28 @@ def gen_code_verifier(length=128):  # type: (int) -> str
     return "".join(r.choice(choices) for _ in range(length))
 
 
-def gen_base32(length=20):  # type: (int) -> str
-    """Generate a base32 string."""
-    choices = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-    r = random.SystemRandom()
-    return "".join(r.choice(choices) for _ in range(length))
-
-
-def gen_code_challenge(code_verifier):  # type: (str) -> bytes
+def common_name_from_cert(pem_data: bytes) -> str:
     """
-    Transform the PKCE code verifier in a code challenge.
+    Extract common name from client certificate.
 
     args:
-        code_verifier (str): a string generated with `gen_code_verifier()`
+        pem_data (str): PEM encoded certificate
+    returns:
+        str: the common name of the client certificate.
     """
-    sha256 = hashlib.sha256(code_verifier.encode())
-    encoded = base64.urlsafe_b64encode(sha256.digest())
-    return encoded.rstrip(b'=')
+    cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+    return cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
 
 
-def make_verifier(key):  # type: (str) -> nacl.signing.VerifyKey
+def make_verifier(key: str) -> VerifyKey:
     """
     Create a NaCL verifier.
 
     args:
-        key (str): A verification key
+        key (str): A public key in minisign format
+                   base64(<signature_algorithm> || <key_id> || <public_key>)
     returns:
         nacl.signing.VerifyKey: a nacl verifykey object
     """
-    return nacl.signing.VerifyKey(key, encoder=nacl.encoding.Base64Encoder)
+    decoded = b64decode(key)[10:]
+    return VerifyKey(decoded)

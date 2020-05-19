@@ -1,17 +1,14 @@
-# python-eduvpn-client - The GNU/Linux eduVPN client and Python API
-#
-# Copyright: 2017, The Commons Conservancy eduVPN Programme
-# SPDX-License-Identifier: GPL-3.0+
-
 import logging
-# noinspection PyCompatibility
+import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
-from future.moves.urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 from requests_oauthlib import OAuth2Session
-from eduvpn.brand import get_brand
-from typing import Any, Optional, Tuple
-from eduvpn.metadata import Metadata
+from eduvpn.settings import get_brand
+from typing import Optional
+from eduvpn.settings import CLIENT_ID, SCOPE, CODE_CHALLENGE_METHOD
+
+from eduvpn.crypto import gen_code_verifier, gen_code_challenge
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +41,12 @@ landing_page = """
 </div>
 </body>
 </html>
-"""  # type: str
+"""
 
-client_id_lets_connect = "org.letsconnect-vpn.app.linux"  # type: str
-client_id_eduvpn = "org.eduvpn.app.linux"  # type: str
 
-scope = ["config"]  # type: Any
+def stringify_image(logo):  # type: (str) -> str
+    import base64
+    return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
 def get_open_port():  # type: () -> int
@@ -67,7 +64,7 @@ def get_open_port():  # type: () -> int
     return port
 
 
-def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional[int]) -> str
+def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None)  -> str:
     """
     Listen for one http request on port, then close and return request query
 
@@ -104,73 +101,21 @@ def one_request(port, lets_connect, timeout=None):  # type: (int, bool, Optional
     return parse_qs(parsed.query)
 
 
-def stringify_image(logo):  # type: (str) -> str
-    import base64
-    return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
+def get_oauth(token_endpoint: str, authorization_endpoint: str):
+    port = get_open_port()
+    redirect_uri = f'http://127.0.0.1:{port}/callback'
+    oauth = OAuth2Session(CLIENT_ID, redirect_uri=redirect_uri, auto_refresh_url=token_endpoint, scope=SCOPE)
 
+    code_verifier = gen_code_verifier()
+    code_challenge = gen_code_challenge(code_verifier)
+    authorization_url, state = oauth.authorization_url(url=authorization_endpoint,
+                                                       code_challenge_method=CODE_CHALLENGE_METHOD,
+                                                       code_challenge=code_challenge)
 
-def create_oauth_session(port, lets_connect, auto_refresh_url):  # type: (int, bool, str) -> OAuth2Session
-    """
-    Create a oauth2 callback webserver
-
-    args:
-        port (int): the port where to listen to
-        lets_connect (bool): let's connect mode (true) or eduvpn (false)
-    returns:
-        OAuth2Session: a oauth2 session object
-    """
-    logger.info(u"Creating an oauth session, temporarily starting webserver on port {} for auth callback".format(port))
-    redirect_uri = 'http://127.0.0.1:%s/callback' % port
-
-    if lets_connect:
-        client_id = client_id_lets_connect
-    else:
-        client_id = client_id_eduvpn
-
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, auto_refresh_url=auto_refresh_url, scope=scope)
+    webbrowser.open(authorization_url)
+    response = one_request(port, lets_connect=False)
+    code = response['code'][0]
+    assert (state == response['state'][0])
+    token = oauth.fetch_token(token_url=token_endpoint, code=code, code_verifier=code_verifier,
+                              client_id=oauth.client_id, include_client_id=True)
     return oauth
-
-
-def get_oauth_token_code(port, lets_connect, timeout=None):  # type: (int, bool, int) -> Tuple[str, str]
-    """
-    Start webserver, open browser, wait for callback response.
-
-    args:
-        port (int): port where to listen for
-        lets_connect (bool): let's connect mode (true) or eduvpn (false)
-        timeout (int): number of seconds before timeout, leave None if no timeout
-    returns:
-        str: the response code given by redirect
-    """
-    logger.info(u"waiting for callback on port {}".format(port))
-    response = one_request(port, lets_connect, timeout)  # type: Any
-    if 'code' in response and 'state' in response:
-        code = response['code'][0]
-        state = response['state'][0]
-        return code, state
-    elif 'error' in response:
-        raise Exception("Can't authenticate: {}".format(response['error']))
-    else:
-        raise Exception("Unknown error during authentication: {}".format(response))
-
-
-def oauth_from_token(meta, lets_connect):  # type: (Metadata, bool) -> OAuth2Session
-    """
-    Recreate a oauth2 object from a token
-
-    args:
-        meta (eduvpn.metadata.Metadata): eduvpn metadata
-        lets_connect (bool):  let's connect mode (true) or eduvpn (false)
-    returns:
-        OAuth2Session: an auth2 session
-    """
-    def inner(new_token):
-        meta.update_token(new_token)
-
-    if lets_connect:
-        client_id = client_id_lets_connect
-    else:
-        client_id = client_id_eduvpn
-
-    return OAuth2Session(token=meta.token, auto_refresh_url=meta.token_endpoint, scope=scope, token_updater=inner,
-                         client_id=client_id)

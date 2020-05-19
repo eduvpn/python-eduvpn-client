@@ -1,63 +1,28 @@
-# python-eduvpn-client - The GNU/Linux eduVPN client and Python API
-#
-# Copyright: 2017, The Commons Conservancy eduVPN Programme
-# SPDX-License-Identifier: GPL-3.0+
-
 from setuptools import setup, find_packages
-from sys import version_info
 
-__version__ = "1.1"
-
+__version__ = "1.9.0"
 
 install_requires = [
     'requests',
-    'pynacl',
     'requests_oauthlib',
-    'future',
-    'python-dateutil',
-    'six',
-    'qrcode',
-    'pillow',
     'cryptography',
+    'pynacl',
 ]
 
-
-# sometimes the dbus-python package is not properly registered, triggering a
-# reinstall and compile
 extras_require = {
-    'client': ['dbus-python', 'pygobject'],
-    'test-online': ['mechanicalsoup', 'futures'],
-    'docs': ['sphinx', 'mock', 'sphinx_rtd_theme'],
+    'gui': ['pygobject'],
 }
 
 data_files = [
     ('share/applications', ['share/applications/eduvpn-client.desktop']),
     ('share/eduvpn', [
         'share/eduvpn/eduvpn.png',
-        'share/eduvpn/institute.png',
-        'share/eduvpn/institute_small.png',
-        'share/eduvpn/internet.png',
-        'share/eduvpn/internet_small.png',
-    ]),
-    ('share/eduvpn/builder', [
-        'share/eduvpn/builder/2fa.ui',
-        'share/eduvpn/builder/connection_type.ui',
-        'share/eduvpn/builder/custom_url.ui',
-        'share/eduvpn/builder/fetch.ui',
-        'share/eduvpn/builder/instances.ui',
-        'share/eduvpn/builder/profiles.ui',
-        'share/eduvpn/builder/redirecturl.ui',
-        'share/eduvpn/builder/token.ui',
-        'share/eduvpn/builder/totp_enroll.ui',
-        'share/eduvpn/builder/window.ui',
-        'share/eduvpn/builder/yubi_enroll.ui',
     ]),
     ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/eduvpn-client.png']),
     ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/eduvpn-client.png']),
     ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/eduvpn-client.png']),
     ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/eduvpn-client.png']),
 ]
-
 
 setup(
     name="eduvpn_client",
@@ -75,14 +40,13 @@ setup(
     test_suite="tests",
     keywords="vpn openvpn networking security",
     url="https://github.com/eduvpn/python-eduvpn-client",
+    python_requires='>=3.6',
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
@@ -93,8 +57,8 @@ setup(
         "Environment :: X11 Applications",
     ],
     entry_points={
-        'gui_scripts': [
-            'eduvpn-client = eduvpn.main:main_eduvpn',
+        'console_scripts': [
+            'eduvpn = eduvpn.__main__:main'
         ]
     }
 )

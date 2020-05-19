@@ -9,7 +9,18 @@ Read more about eduVPN on the eduVPN website http://eduvpn.org/.
 Installation
 ============
 
-Read the installation instructions [here](http://python-eduvpn-client.readthedocs.io/en/latest/introduction.html#installation).
+The python eduVPN client is available on pypi:
+
+```bash
+$ pip install eduvpn
+```
+
+Or to install the Graphical User Interface and/or the Network manager integration:
+
+```bash
+$ pip install "eduvpn[gui]"
+
+For more detailed instruction you can find the full installation instructions [here](http://python-eduvpn-client.readthedocs.io/en/latest/introduction.html#installation).
 
 Documentation
 =============

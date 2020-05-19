@@ -3,7 +3,7 @@ Introduction
 ============
 
 This is the GNU/Linux desktop client and Python API for eduVPN. The Desktop client only works on Linux, but most parts
-of the API are usable on other platforms also. For the API Python 2.7, 3.4+ and pypy are supported.
+of the API are usable on other platforms also. Python 3.6+ is required.
 
 Installation
 ============
@@ -13,10 +13,10 @@ from github. We distribute RPM packages for Fedora, and Deb packages for Debian 
 
 The eduVPN client has been tested with:
 
- * Debian 10 (Buster) and Debian 9 (Stretch)
- * Ubuntu 18.04 LTS and 20.04 LTS
+ * Debian 10 (Buster)
+ * Ubuntu 20.04 LTS & 18.04 LTS
  * CentOS 8
- * Fedora 30 & 31
+ * Fedora 32
 
 .. note::
 
@@ -90,27 +90,20 @@ You can install the client API from pypi:
 
 .. code-block:: bash
 
-    $ pip install eduvpn-client
+    $ pip install eduvpn
 
 
 Or if you want to try out the bleading edge development version:
 
 .. code-block:: bash
 
-    $ pip install git+https://github.com/eduvpn/python-eduvpn-client.git
+    $ pip install git+https://github.com/eduvpn/python-eduvpn.git
 
 You can install the dependencies for the user interface:
 
 .. code-block:: bash
 
-    $ pip install -e ".[client]"
-
-.. note::
-
-    the project depends on the ``python-gi`` package, which for now doesn't properly install in a virtualenv.
-    If you do install ``python-eduvpn-client`` in a virtualenv it is recommended you create the virtualenv using the
-    ``--system-site-packages`` flag and install the python-gi package using your operating system package manager. Read
-    more about this on the `pygobject website <https://pygobject.readthedocs.io/>`_.
+    $ pip install -e ".[gui]"
 
 If you use eduVPN this way you need to make sure all non-Python dependies are installed. For Debian or Ubuntu:
 

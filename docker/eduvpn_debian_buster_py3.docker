@@ -1,21 +1,16 @@
 FROM debian:buster
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
-RUN docker-apt-install \
-        gir1.2-gtk-3.0 \
-        gir1.2-notify-0.7 \
-        python3-gi \
-        python3-dbus \
-        python3-nacl \
-        python3-requests-oauthlib \
-        python3-future \
-        python3-dateutil \
-        python3-setuptools \
-        python3-pytest \
-        python3-cryptography \
-        python3-qrcode \
-        python3-pillow
 
+RUN docker-apt-install \
+    gir1.2-gtk-3.0 \
+    gir1.2-notify-0.7 \
+    python3-gi \
+    python3-requests-oauthlib \
+    python3-cryptography \
+    python3-setuptools \
+    python3-nacl \
+    python3-pytest
 
 ADD . /code
 WORKDIR /code

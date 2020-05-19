@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        1.1
+Version:        1.9.0
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -18,11 +18,9 @@ BuildRequires: python3-dbus
 BuildRequires: python3-gobject
 BuildRequires: python3-pynacl
 BuildRequires: python3-requests-oauthlib
-BuildRequires: python3-future
 BuildRequires: python3-dateutil
 BuildRequires: python3-cryptography
-BuildRequires: python3-qrcode
-BuildRequires: python3-pillow
+
 
 %description
 The eduVPN client.
@@ -34,11 +32,8 @@ Requires: python3-gobject
 Requires: python3-dbus
 Requires: python3-pynacl
 Requires: python3-requests-oauthlib
-Requires: python3-future
 Requires: python3-dateutil
 Requires: python3-cryptography
-Requires: python3-qrcode
-Requires: python3-pillow
 Conflicts: python3-lets-connect-client
 
 %description -n python3-eduvpn-client

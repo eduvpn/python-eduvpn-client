@@ -3,7 +3,5 @@ include README.md
 include share/icons/hicolor/*/apps/*.png
 include share/applications/*
 include share/eduvpn/*
-include share/letsconnect/*
-include share/eduvpn/builder/*
 include doc/*
 
