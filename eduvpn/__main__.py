@@ -20,8 +20,6 @@ def parse_args() -> Optional[str]:
     return args.search
 
 
-
-
 def main():
     logging.basicConfig(level=logging.INFO)
     search_term = parse_args()
@@ -71,6 +69,10 @@ def main():
         target = Path('eduVPN.ovpn').resolve()
         print(f"Writing configuration to {target}")
         write_config(config, private_key, certificate, target)
+
+
+def letsconnect():
+    raise NotImplementedError("todo :)")
 
 
 if __name__ == '__main__':

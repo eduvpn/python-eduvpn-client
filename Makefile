@@ -6,8 +6,8 @@
 .PHONY: all dockers
 
 
-all: venv/bin/eduvpn
-	venv/bin/eduvpn
+all: venv/bin/eduvpn-client
+	venv/bin/eduvpn-client
 
 venv/bin/pip:
 	python3 -m venv venv

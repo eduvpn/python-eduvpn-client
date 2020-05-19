@@ -14,7 +14,11 @@ extras_require = {
 }
 
 data_files = [
-    ('share/applications', ['share/applications/eduvpn-client.desktop']),
+    ('share/applications', [
+        'share/applications/eduvpn-client.desktop',
+        'share/applications/lets-connect-client.desktop',
+    ]),
+
     ('share/eduvpn', [
         'share/eduvpn/eduvpn.png',
     ]),
@@ -22,6 +26,10 @@ data_files = [
     ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/eduvpn-client.png']),
     ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/eduvpn-client.png']),
     ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/eduvpn-client.png']),
+    ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/lets-connect-client.png']),
+    ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/lets-connect-client.png']),
+    ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/lets-connect-client.png']),
+    ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/lets-connect-client.png']),
 ]
 
 setup(
@@ -58,7 +66,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'eduvpn = eduvpn.__main__:main'
+            'eduvpn-client = eduvpn.__main__:main',
+            'letsconnect-client = eduvpn.__main__:letsconnect',
         ]
     }
 )

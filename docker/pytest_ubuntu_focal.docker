@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
 RUN docker-apt-install \
@@ -8,10 +8,10 @@ RUN docker-apt-install \
     python3-gi \
     python3-requests-oauthlib \
     python3-pip \
-    python3-setuptools \
     python3-pytest \
-    python3-pynacl \
+    python3-nacl \
     python3-cryptography
+
 
 ADD . /code
 WORKDIR /code

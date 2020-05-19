@@ -1,4 +1,4 @@
-FROM fedora:31
+FROM fedora:32
 
 RUN dnf install -y	\
     fedora-packager \
@@ -12,17 +12,17 @@ RUN dnf install -y	\
     python3-pytest-runner \
     python3-pynacl \
     python3-dbus \
+    python3-dateutil \
     python3-cryptography
-
 
 RUN rpmdev-setuptree
 
 ADD . /code
 WORKDIR /code
 
-RUN python3 setup_letsconnect.py sdist
+RUN python3 setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
-RUN rpmbuild -bs rpm/lets_connect_fedora.spec
-RUN rpmbuild -bb rpm/lets_connect_fedora.spec
+RUN rpmbuild -bs eduvpn.spec
+RUN rpmbuild -bb eduvpn.spec
 
 

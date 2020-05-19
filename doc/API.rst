@@ -32,7 +32,7 @@ Crypto
 
 
 eduVPN Storage
-=========
+==============
 
 .. automodule:: eduvpn.storage
     :members:
