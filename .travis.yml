@@ -1,22 +1,17 @@
 language: python
 matrix:
   include:
-  - env: DIST=eduvpn_centos_8_py3
-  - env: DIST=eduvpn_centos_8_rpm
-  - env: DIST=eduvpn_debian_buster_py3
-  - env: DIST=eduvpn_debian_stretch_py3
-  - env: DIST=eduvpn_fedora_30_py3
-  - env: DIST=eduvpn_fedora_31_py3
-  - env: DIST=eduvpn_fedora_30_rpm
-  - env: DIST=eduvpn_fedora_31_rpm
-  - env: DIST=eduvpn_ubuntu_bionic_py3
-  - env: DIST=eduvpn_ubuntu_bionic_py3_pep8
-  - env: DIST=eduvpn_ubuntu_bionic_py3_mypy
-  - env: DIST=eduvpn_ubuntu_bionic_doc
-  - env: DIST=eduvpn_ubuntu_focal_py3
-  - env: DIST=lets_connect_centos_8_rpm
-  - env: DIST=lets_connect_fedora_30_rpm
-  - env: DIST=lets_connect_fedora_31_rpm
+  - env: DIST=doc
+  - env: DIST=mypy
+  - env: DIST=pep8
+  - env: DIST=pytest_centos_8
+  - env: DIST=pytest_debian_buster
+  - env: DIST=pytest_fedora_31
+  - env: DIST=pytest_fedora_32
+  - env: DIST=pytest_ubuntu_bionic
+  - env: DIST=pytest_ubuntu_focal
+  - env: DIST=rpm_centos_8
+  - env: DIST=rpm_fedora_32
 sudo: required
 services:
 - docker
