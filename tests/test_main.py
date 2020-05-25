@@ -18,7 +18,6 @@ class TestMain(TestCase):
     @mock.patch('eduvpn.__main__.get_info')
     @mock.patch('eduvpn.__main__.write_config')
     @mock.patch('eduvpn.__main__.write_to_nm_choice')
-
     def test_main(
             self,
             write_to_nm_choice: mock.MagicMock,

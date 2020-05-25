@@ -22,8 +22,8 @@ def fetch_servers_orgs():
     return servers, orgs
 
 
-def match_term(servers, orgs, search_term: Optional[str], exact=False) -> Tuple[
-    List[Tuple[int, dict]], List[Tuple[int, dict]]]:
+def match_term(servers, orgs, search_term: Optional[str], exact=False) -> Tuple[List[Tuple[int, dict]],
+                                                                                List[Tuple[int, dict]]]:
     """
     Search the list of institutes and organisations for a string match.
 
