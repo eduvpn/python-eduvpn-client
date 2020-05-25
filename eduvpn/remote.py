@@ -1,6 +1,6 @@
 import requests
 import logging
-from typing import Tuple
+from typing import Tuple, Optional
 from base64 import b64decode
 from requests_oauthlib import OAuth2Session
 from eduvpn.crypto import common_name_from_cert
@@ -9,7 +9,7 @@ from nacl.signing import VerifyKey
 logger = logging.getLogger(__name__)
 
 
-def verified_request(uri: str, verifier: VerifyKey) -> dict:
+def request(uri: str, verifier: Optional[VerifyKey] = None) -> dict:
     """
     Do a request and check the signature using our public key verifier.
     """
@@ -19,18 +19,20 @@ def verified_request(uri: str, verifier: VerifyKey) -> dict:
         msg = "Got error code {} requesting {}".format(response.status_code, uri)
         logger.error(msg)
         raise IOError(msg)
-    sig_uri = uri + '.minisig'
-    logger.info(u"Retrieving signature {}".format(sig_uri))
-    sig_response = requests.get(sig_uri)
-    if sig_response.status_code != 200:
-        msg = "Can't retrieve signature, requesting {} gave error code {}".format(sig_uri, sig_response.status_code)
-        logger.error(msg)
-        raise IOError(msg)
 
-    logger.info(u"verifying signature of {}".format(sig_response))
-    signature = sig_response.content.decode('utf-8').split("\n")[1]
-    decoded = b64decode(signature)[10:]
-    _ = verifier.verify(smessage=response.content, signature=decoded)
+    if verifier:
+        sig_uri = uri + '.minisig'
+        logger.info(u"Retrieving signature {}".format(sig_uri))
+        sig_response = requests.get(sig_uri)
+        if sig_response.status_code != 200:
+            msg = "Can't retrieve signature, requesting {} gave error code {}".format(sig_uri, sig_response.status_code)
+            logger.error(msg)
+            raise IOError(msg)
+
+        logger.info(u"verifying signature of {}".format(uri))
+        signature = sig_response.content.decode('utf-8').split("\n")[1]
+        decoded = b64decode(signature)[10:]
+        _ = verifier.verify(smessage=response.content, signature=decoded)
     return response.json()
 
 
@@ -48,16 +50,16 @@ def oauth_request(oauth: OAuth2Session, uri: str, method: str = 'get'):
 
 
 def list_orgs(uri: str, verifier: VerifyKey):
-    return verified_request(uri, verifier)['organization_list']
+    return request(uri, verifier)['organization_list']
 
 
 def list_servers(uri: str, verifier: VerifyKey):
-    return verified_request(uri, verifier)['server_list']
+    return request(uri, verifier)['server_list']
 
 
-def get_info(base_uri: str, verifier: VerifyKey):
+def get_info(base_uri: str):
     uri = base_uri + 'info.json'
-    info = verified_request(uri, verifier)['api']['http://eduvpn.org/api#2']
+    info = request(uri)['api']['http://eduvpn.org/api#2']
     api_base_uri = info['api_base_uri']
     token_endpoint = info['token_endpoint']
     auth_endpoint = info['authorization_endpoint']

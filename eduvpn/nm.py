@@ -1,3 +1,4 @@
+from sys import modules
 from logging import getLogger
 from pathlib import Path
 from shutil import rmtree
@@ -9,7 +10,9 @@ logger = getLogger(__name__)
 
 try:
     gi.require_version('NM', '1.0')
-    from gi.repository import NM, GLib   # type: ignore
+    from gi.repository import NM, GLib  # type: ignore
+
+    NM
 except (ImportError, ValueError) as e:
     logger.warning("Network Manager not available")
 
@@ -23,7 +26,7 @@ def nm_available() -> bool:
     """
     check if Network Manager is available
     """
-    return bool('NM' in vars())
+    return bool('gi.repository.NM' in modules)
 
 
 def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
@@ -33,7 +36,8 @@ def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
     conn = None
     for vpn_info in NM.VpnPluginInfo.list_load():
         try:
-            conn = vpn_info.load_editor_plugin().import_(str(target)).normalize()
+            conn = vpn_info.load_editor_plugin().import_(str(target))
+            conn.normalize()
         except Exception as e:
             logger.debug(f"{vpn_info} can't import {target}: {e}")
             continue
