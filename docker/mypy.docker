@@ -14,8 +14,7 @@ RUN docker-apt-install \
     python3-cryptography \
     python3-pip
 
-RUN pip3 install --upgrade mypy
 ADD . /code
 WORKDIR /code
+RUN pip3 install ".[test]"
 RUN mypy --config-file=setup.cfg eduvpn tests
-

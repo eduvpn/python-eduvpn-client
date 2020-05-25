@@ -15,6 +15,6 @@ RUN docker-apt-install \
 
 ADD . /code
 WORKDIR /code
-RUN pip3 install --upgrade pycodestyle 
+RUN pip3 install ".[test]"
 RUN pycodestyle eduvpn tests
 

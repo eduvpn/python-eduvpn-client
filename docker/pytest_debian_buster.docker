@@ -15,5 +15,4 @@ RUN docker-apt-install \
 ADD . /code
 WORKDIR /code
 RUN python3 setup.py install
-RUN python3 setup.py test
-
+RUN pytest-3

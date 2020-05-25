@@ -2,6 +2,13 @@ from setuptools import setup, find_packages
 
 __version__ = "1.9.0"
 
+tests_require = [
+        'pytest',
+        'PyGObject-stubs',
+        'mypy',
+        'pycodestyle',
+],
+
 install_requires = [
     'requests',
     'requests_oauthlib',
@@ -11,6 +18,7 @@ install_requires = [
 
 extras_require = {
     'gui': ['pygobject'],
+    'test': tests_require,
 }
 
 data_files = [
@@ -44,7 +52,7 @@ setup(
     description="eduVPN client",
     license="GPL3",
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'PyGObject-stubs', 'mypy'],
+    tests_require=tests_require,
     test_suite="tests",
     keywords="vpn openvpn networking security",
     url="https://github.com/eduvpn/python-eduvpn-client",

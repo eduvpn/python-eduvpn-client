@@ -9,7 +9,7 @@ logger = getLogger(__name__)
 
 try:
     gi.require_version('NM', '1.0')
-    from gi.repository import NM, GLib  # type: ignore
+    from gi.repository import NM, GLib   # type: ignore
 except (ImportError, ValueError) as e:
     logger.warning("Network Manager not available")
 
@@ -23,7 +23,7 @@ def nm_available() -> bool:
     """
     check if Network Manager is available
     """
-    return bool(NM)
+    return bool('NM' in vars())
 
 
 def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
