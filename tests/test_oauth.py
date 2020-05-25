@@ -7,8 +7,10 @@ class TestOauth(TestCase):
     @mock.patch.object(OAuth2Session, 'fetch_token')
     @mock.patch.object(OAuth2Session, 'authorization_url')
     @mock.patch('eduvpn.oauth2.one_request')
+    @mock.patch('eduvpn.oauth2.webbrowser.open')
     def test_get_oauth(
             self,
+            webbrowser_open: mock.MagicMock,
             one_request: mock.MagicMock,
             authorization_url: mock.MagicMock,
             fetch_token: mock.MagicMock,
