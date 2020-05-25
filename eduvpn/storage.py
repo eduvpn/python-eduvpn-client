@@ -46,6 +46,8 @@ def get_entry(base_url: str) -> Optional[Tuple[OAuth2Token, url, url, url]]:
     if base_url in storage:
         v = storage[base_url]
         return OAuth2Token(v['token']), v['api_base_uri'], v['token_endpoint'], v['authorization_endpoint']
+    else:
+        return None
 
 
 def set_entry(

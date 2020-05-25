@@ -1,18 +1,17 @@
 from logging import getLogger
-from typing import Optional
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
+from typing import Optional
+import gi
 
 logger = getLogger(__name__)
 
 try:
-    import gi
     gi.require_version('NM', '1.0')
-    from gi.repository import NM, GLib
+    from gi.repository import NM, GLib  # type: ignore
 except (ImportError, ValueError) as e:
     logger.warning("Network Manager not available")
-    NM = GLib = None
 
 from eduvpn.storage import set_eduvpn_uuid, get_eduvpn_uuid, write_config
 from eduvpn.utils import get_logger
@@ -27,33 +26,39 @@ def nm_available() -> bool:
     return bool(NM)
 
 
-def ovpn_import(target: str) -> Optional['NM.Connection']:
+def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
     """
     Use the Network Manager VPN config importer to import an OpenVPN configuration file.
     """
+    conn = None
     for vpn_info in NM.VpnPluginInfo.list_load():
         try:
-            return vpn_info.load_editor_plugin().import_(str(target))
+            conn = vpn_info.load_editor_plugin().import_(str(target)).normalize()
         except Exception as e:
+            logger.debug(f"{vpn_info} can't import {target}: {e}")
             continue
-    return None
+
+    if not conn:
+        logger.error(f"Network Manager is not able to import '{target}'")
+
+    return conn
 
 
-def import_ovpn(config: str, private_key: str, certificate: str) -> 'NM.Connection':
+def import_ovpn(config: str, private_key: str, certificate: str) -> Optional['NM.Connection']:
     """
     Import the OVPN string into Network Manager.
     """
     target_parent = Path(mkdtemp())
     target = target_parent / "eduVPN.ovpn"
     write_config(config, private_key, certificate, target)
-    connection = ovpn_import(target)
-    connection.normalize()
+    connection = nm_ovpn_import(target)
     rmtree(target_parent)
     return connection
 
 
 def add_connection(client: 'NM.Client', connection: 'NM.Connection', main_loop: 'GLib.MainLoop'):
     logger.info("Adding new connection")
+
     def add_callback(client, result, data):
         try:
             new_con = client.add_connection_finish(result)
@@ -71,6 +76,7 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', main_l
     Update an existing Network Manager connection with the settings from another Network Manager connection
     """
     logger.info("Updating existing connection with new configuration")
+
     def update_callback(client, result, data):
         main_loop.quit()
 

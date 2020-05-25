@@ -44,7 +44,7 @@ setup(
     description="eduVPN client",
     license="GPL3",
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'PyGObject-stubs', 'mypy'],
     test_suite="tests",
     keywords="vpn openvpn networking security",
     url="https://github.com/eduvpn/python-eduvpn-client",

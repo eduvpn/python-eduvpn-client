@@ -49,8 +49,7 @@ def menu(institutes: List[dict], orgs: List[dict], search_term: Optional[str] = 
     """
     if not search_term:
         return provider_choice(institutes, orgs)
-
-    if search_term:
+    else:
         return search(institutes, orgs, search_term)
 
 
@@ -63,8 +62,8 @@ def search(institutes: List[dict], orgs: List[dict], search_term: str) -> Option
     """
     institute_match = [i for i in institutes if search_term in extract_translation(i['display_name']).lower()]
 
-    org_match = [i for i in orgs if search_term in extract_translation(i['display_name']).lower() or
-                 ('keyword_list' in i and search_term in i['keyword_list'])]
+    org_match = [i for i in orgs if search_term in extract_translation(i['display_name']).lower()
+                 or ('keyword_list' in i and search_term in i['keyword_list'])]
 
     if len(institute_match) == 0 and len(org_match) == 0:
         print(f"The filter '{search_term}' had no matches")
@@ -81,7 +80,8 @@ def search(institutes: List[dict], orgs: List[dict], search_term: str) -> Option
         matches = [i['display_name'] for i in chain(institute_match, org_match)]
         print(f"filter '{search_term}' matched with {len(matches)} organisations, please be more specific.")
         print("Matches:")
-        [print(f" - {extract_translation(m)}") for m in matches]
+        for m in matches:
+            print(f" - {extract_translation(m)}")
         return None
 
 

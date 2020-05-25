@@ -72,4 +72,10 @@ $(VENV)/bin/mypy: $(VENV)/bin/pip
 	$(VENV)/bin/pip install mypy
 
 mypy: $(VENV)/bin/mypy
-	$(VENV)/bin/mypy --ignore-missing-imports eduvpn tests
+	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests
+
+$(VENV)/bin/pycodestyle: $(VENV)/bin/pip
+	$(VENV)/bin/pip install pycodestyle
+
+pycodestyle: $(VENV)/bin/pycodestyle
+	$(VENV)/bin/pycodestyle eduvpn tests

@@ -1,5 +1,6 @@
 import logging
 import webbrowser
+from typing import Dict, List
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
 from urllib.parse import urlparse, parse_qs
@@ -64,7 +65,7 @@ def get_open_port():  # type: () -> int
     return port
 
 
-def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None)  -> str:
+def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None) -> Dict[str, List[str]]:
     """
     Listen for one http request on port, then close and return request query
 

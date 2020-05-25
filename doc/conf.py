@@ -18,6 +18,7 @@
 #
 import os
 import sys
+from typing import Dict
 from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.abspath('..'))
@@ -142,7 +143,7 @@ htmlhelp_basename = 'python-eduvpn-clientdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',

@@ -16,8 +16,8 @@ import argparse
 def parse_args(args: List[str]) -> Optional[str]:
     parser = argparse.ArgumentParser(description='The eduVPN command line client')
     parser.add_argument('search', metavar='search', type=str, nargs='?', help='A URL or search term')
-    args = parser.parse_args(args)
-    return args.search
+    parsed = parser.parse_args(args)
+    return parsed.search
 
 
 def main(args: List[str]):
