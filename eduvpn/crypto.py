@@ -1,10 +1,18 @@
 from base64 import urlsafe_b64encode, b64decode
 import hashlib
 import random
+import logging
+from typing import List
+from functools import lru_cache
 from cryptography.x509.oid import NameOID
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
+from eduvpn.settings import VERIFY_KEYS
+
+
+logger = logging.getLogger(__name__)
 
 
 def gen_code_challenge(code_verifier: str) -> bytes:
@@ -59,3 +67,28 @@ def make_verifier(key: str) -> VerifyKey:
     """
     decoded = b64decode(key)[10:]
     return VerifyKey(decoded)
+
+
+@lru_cache(1)
+def make_verifiers() -> List[VerifyKey]:
+    """
+    Create a list of NaCL verifiers.
+
+    returns:
+        a list of nacl verify key objects.
+    """
+    # expecting format: base64(<signature_algorithm> || <key_id> || <public_key>)
+
+    return [VerifyKey(b64decode(k)[10:]) for k in VERIFY_KEYS]
+
+
+def validate(signature: str, content: bytes) -> bytes:
+    decoded = b64decode(signature)[10:]
+    verifiers = make_verifiers()
+
+    for f in verifiers:
+        try:
+            return f.verify(smessage=content, signature=decoded)
+        except BadSignatureError as e:
+            logger.debug(f"Skipping signature {f}")
+    raise BadSignatureError

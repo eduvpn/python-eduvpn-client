@@ -1,7 +1,7 @@
 from functools import lru_cache
 from sys import prefix
 from os import path
-
+from functools import wraps as decorator
 from logging import getLogger
 
 

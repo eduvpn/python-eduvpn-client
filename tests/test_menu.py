@@ -19,8 +19,8 @@ class TestMenu(TestCase):
         base_uri = 'bla'
         institutes = [{'display_name': 'test', 'base_url': base_uri}]
         with mock.patch('builtins.input', lambda _: '0'):
-            type_, url = provider_choice(institutes=institutes, orgs=[])
-        self.assertEqual(type_, 'base_url')
+            url, secure_internet = provider_choice(institutes=institutes, orgs=[])
+        self.assertEqual(secure_internet, False)
         self.assertEqual(base_uri, url)
 
     def test_write_to_nm_choice(self):

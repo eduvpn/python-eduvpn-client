@@ -4,12 +4,13 @@ from typing import Tuple, Optional
 from base64 import b64decode
 from requests_oauthlib import OAuth2Session
 from eduvpn.crypto import common_name_from_cert
+from eduvpn.crypto import validate
 from nacl.signing import VerifyKey
 
 logger = logging.getLogger(__name__)
 
 
-def request(uri: str, verifier: Optional[VerifyKey] = None) -> dict:
+def request(uri: str, verify: bool = False) -> dict:
     """
     Do a request and check the signature using our public key verifier.
     """
@@ -20,7 +21,7 @@ def request(uri: str, verifier: Optional[VerifyKey] = None) -> dict:
         logger.error(msg)
         raise IOError(msg)
 
-    if verifier:
+    if verify:
         sig_uri = uri + '.minisig'
         logger.info(u"Retrieving signature {}".format(sig_uri))
         sig_response = requests.get(sig_uri)
@@ -31,8 +32,7 @@ def request(uri: str, verifier: Optional[VerifyKey] = None) -> dict:
 
         logger.info(u"verifying signature of {}".format(uri))
         signature = sig_response.content.decode('utf-8').split("\n")[1]
-        decoded = b64decode(signature)[10:]
-        _ = verifier.verify(smessage=response.content, signature=decoded)
+        _ = validate(content=response.content, signature=signature)
     return response.json()
 
 
@@ -49,12 +49,12 @@ def oauth_request(oauth: OAuth2Session, uri: str, method: str = 'get'):
     return response
 
 
-def list_orgs(uri: str, verifier: VerifyKey):
-    return request(uri, verifier)['organization_list']
+def list_orgs(uri: str):
+    return request(uri, verify=True)['organization_list']
 
 
-def list_servers(uri: str, verifier: VerifyKey):
-    return request(uri, verifier)['server_list']
+def list_servers(uri: str):
+    return request(uri, verify=True)['server_list']
 
 
 def get_info(base_uri: str):
@@ -66,7 +66,7 @@ def get_info(base_uri: str):
     return api_base_uri, token_endpoint, auth_endpoint
 
 
-def get_config(oauth: OAuth2Session, base_uri: str, profile_id: int) -> str:
+def get_config(oauth: OAuth2Session, base_uri: str, profile_id: str) -> str:
     uri = base_uri + f'/profile_config?profile_id={profile_id}'
     return oauth_request(oauth, uri).text
 

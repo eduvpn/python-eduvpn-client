@@ -3,7 +3,7 @@ from logging import getLogger
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
-from typing import Optional
+from typing import Optional, Tuple
 import gi
 
 logger = getLogger(__name__)
@@ -11,12 +11,10 @@ logger = getLogger(__name__)
 try:
     gi.require_version('NM', '1.0')
     from gi.repository import NM, GLib  # type: ignore
-
-    NM
 except (ImportError, ValueError) as e:
     logger.warning("Network Manager not available")
 
-from eduvpn.storage import set_eduvpn_uuid, get_eduvpn_uuid, write_config
+from eduvpn.storage import set_uuid, get_uuid, write_config
 from eduvpn.utils import get_logger
 
 logger = get_logger(__file__)
@@ -66,7 +64,7 @@ def add_connection(client: 'NM.Client', connection: 'NM.Connection', main_loop: 
     def add_callback(client, result, data):
         try:
             new_con = client.add_connection_finish(result)
-            set_eduvpn_uuid(uuid=new_con.get_uuid())
+            set_uuid(uuid=new_con.get_uuid())
         except Exception as e:
             logger.error("ERROR: failed to add connection: %s\n" % e)
         main_loop.quit()
@@ -89,8 +87,9 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', main_l
 
 
 def save_connection(config, private_key, certificate):
+    print("writing configuration to Network Manager")
     new_con = import_ovpn(config, private_key, certificate)
-    uuid = get_eduvpn_uuid()
+    uuid = get_uuid()
     main_loop = GLib.MainLoop()
     client = NM.Client.new()
     if uuid:
@@ -102,3 +101,38 @@ def save_connection(config, private_key, certificate):
     else:
         add_connection(client=client, connection=new_con, main_loop=main_loop)
     main_loop.run()
+
+
+def get_cert_key(uuid: str) -> Tuple[str, str]:
+    client = NM.Client.new()
+    connection = client.get_connection_by_uuid(uuid)
+    cert_path = connection.get_setting_vpn().get_data_item('cert')
+    key_path = connection.get_setting_vpn().get_data_item('key')
+    cert = open(cert_path).read()
+    key = open(key_path).read()
+    return cert, key
+
+
+def activate_connection(uuid: str):
+    client = NM.Client.new()
+    con = client.get_connection_by_uuid(uuid)
+    main_loop = GLib.MainLoop()
+
+    def callback(*args, **kwargs):
+        main_loop.quit()
+
+    client.activate_connection_async(connection=con, callback=callback)
+
+
+def deactivate_connection(uuid: str):
+    client = NM.Client.new()
+    con = client.get_primary_connection()
+    active_uuid = con.get_uuid()
+
+    if uuid == active_uuid:
+        main_loop = GLib.MainLoop()
+
+        def callback(*args, **kwargs):
+            main_loop.quit()
+
+        client.deactivate_connection_async( active=con, callback=callback)

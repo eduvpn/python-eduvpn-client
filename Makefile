@@ -79,3 +79,9 @@ $(VENV)/bin/pycodestyle: $(VENV)/bin/pip
 
 pycodestyle: $(VENV)/bin/pycodestyle
 	$(VENV)/bin/pycodestyle eduvpn tests
+	
+$(VENV)/bin/jupyter-notebook: $(VENV)/bin/eduvpn-client
+	$(VENV)/bin/pip install -r notebooks/requirements.txt
+
+notebook: $(VENV)/bin/jupyter-notebook
+	$(VENV)/bin/jupyter-notebook --notebook-dir= notebooks/

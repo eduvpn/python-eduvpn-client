@@ -113,6 +113,7 @@ def get_oauth(token_endpoint: str, authorization_endpoint: str):
                                                        code_challenge_method=CODE_CHALLENGE_METHOD,
                                                        code_challenge=code_challenge)
 
+    print(f"opening browser with {authorization_url}")
     webbrowser.open(authorization_url)
     response = one_request(port, lets_connect=False)
     code = response['code'][0]
