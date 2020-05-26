@@ -135,4 +135,4 @@ def deactivate_connection(uuid: str):
         def callback(*args, **kwargs):
             main_loop.quit()
 
-        client.deactivate_connection_async( active=con, callback=callback)
+        client.deactivate_connection_async(active=con, callback=callback)

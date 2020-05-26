@@ -194,8 +194,10 @@ def start(auth_url, secure_internet: Optional[list] = None, interactive: bool = 
         else:
             write_config(config, private_key, certificate, target)
 
+
 def activate(args):
     activate_connection(get_uuid())
+
 
 def deactivate(_):
     deactivate_connection(get_uuid())

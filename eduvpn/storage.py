@@ -133,7 +133,7 @@ def get_profile() -> Optional[str]:
     return _get_setting("profile")
 
 
-def set_profile(profile: int):
+def set_profile(profile: str):
     """
     Write the eduVPN network manager active profile to disk.
     """
@@ -151,7 +151,11 @@ def write_config(config: str, private_key: str, certificate: str, target: PathLi
         f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
 
 
-def get_storage(check=False) -> Tuple[str, str, str, str, dict]:
+def get_storage(check=False) -> Tuple[str,
+                                      str,
+                                      str,
+                                      str,
+                                      Tuple[OAuth2Token, str, str]]:
     """
 
     Args:
@@ -176,8 +180,11 @@ def get_storage(check=False) -> Tuple[str, str, str, str, dict]:
     if not profile and check:
         raise Exception("no eduVPN profile stored (yet)")
 
-    token = get_token(auth_url)
-    if not token and check:
-        raise Exception(f"no eduVPN token for {auth_url} stored (yet)")
+    if auth_url:
+        token = get_token(auth_url)
+        if not token and check:
+            raise Exception(f"no eduVPN token for {auth_url} stored (yet)")
+    else:
+        token = None
 
-    return uuid, auth_url, api_url, profile, token
+    return uuid, auth_url, api_url, profile, token  # type: ignore
