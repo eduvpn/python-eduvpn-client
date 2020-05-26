@@ -74,7 +74,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'eduvpn-client = eduvpn.__main__:main',
+            'eduvpn-client = eduvpn.__main__:eduvpn',
             'letsconnect-client = eduvpn.__main__:letsconnect',
         ]
     }
