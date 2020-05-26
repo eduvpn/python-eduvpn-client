@@ -8,14 +8,13 @@
 VENV=$(CURDIR)/venv
 
 
-all: $(VENV)/bin/eduvpn-client
-	$(VENV)/bin/eduvpn-client
+all: run
 
 $(VENV)/bin/pip:
 	python3 -m venv venv
 
 
-$(VENV)/bin/eduvpn: $(VENV)/bin/pip
+$(VENV)/bin/eduvpn-client: $(VENV)/bin/pip
 	venv/bin/pip install -e .
 
 dockers:
@@ -59,7 +58,7 @@ test: $(VENV)/bin/pytest
 	$(VENV)/bin/pytest
 
 run: $(VENV)/bin/eduvpn-client
-	$(VENV)/bin/eduvpn-client
+	$(VENV)/bin/eduvpn-client interactive
 
 srpm:
 	docker build -t rpm_centos_8 -f docker/rpm_centos_8.docker .

@@ -4,11 +4,11 @@ from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 from typing import Optional, Tuple
-import gi
 
 logger = getLogger(__name__)
 
 try:
+    import gi
     gi.require_version('NM', '1.0')
     from gi.repository import NM, GLib  # type: ignore
 except (ImportError, ValueError) as e:
