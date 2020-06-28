@@ -14,10 +14,12 @@ install_requires = [
     'requests_oauthlib',
     'cryptography',
     'pynacl',
+    'pygobject',
+    'wheel'
 ]
 
 extras_require = {
-    'gui': ['pygobject'],
+    'client': ['pygobject'],
     'test': tests_require,
 }
 
@@ -76,6 +78,10 @@ setup(
         'console_scripts': [
             'eduvpn-client = eduvpn.__main__:eduvpn',
             'letsconnect-client = eduvpn.__main__:letsconnect',
+         ],
+        'gui_scripts': [
+            'eduvpngui = eduvpngui.__main__:main',
+            'letsconnectgui = eduvpngui.__main__:letsconnect',
         ]
     }
 )

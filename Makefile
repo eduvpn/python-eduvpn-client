@@ -5,7 +5,7 @@
 
 .PHONY: all dockers
 
-VENV=$(CURDIR)/venv
+VENV=./venv
 
 
 all: run
@@ -13,8 +13,13 @@ all: run
 $(VENV)/bin/pip:
 	python3 -m venv venv
 
+gui: $(VENV)/bin/eduvpngui
+	venv/bin/eduvpngui
 
 $(VENV)/bin/eduvpn-client: $(VENV)/bin/pip
+	venv/bin/pip install -e .
+
+$(VENV)/bin/eduvpngui: venv/bin/pip
 	venv/bin/pip install -e .
 
 dockers:
@@ -71,13 +76,13 @@ $(VENV)/bin/mypy: $(VENV)/bin/pip
 	$(VENV)/bin/pip install mypy
 
 mypy: $(VENV)/bin/mypy
-	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests
+	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests eduvpngui
 
 $(VENV)/bin/pycodestyle: $(VENV)/bin/pip
 	$(VENV)/bin/pip install pycodestyle
 
 pycodestyle: $(VENV)/bin/pycodestyle
-	$(VENV)/bin/pycodestyle eduvpn tests
+	$(VENV)/bin/pycodestyle eduvpn tests eduvpngui
 	
 $(VENV)/bin/jupyter-notebook: $(VENV)/bin/eduvpn-client
 	$(VENV)/bin/pip install -r notebooks/requirements.txt

@@ -83,7 +83,7 @@ def secure_internet_choice(secure_internets: List[dict]) -> Optional[str]:
         elif choice == 'y':
             print("\nplease choose a secure internet server:\n")
             for i, profile in enumerate(secure_internets):
-                print(f" * [{i}] {extract_translation(profile['display_name'])}")
+                print(f" * [{i}] {extract_translation(profile['country_code'])}")
             choice = input_int(max_=len(secure_internets))
             return secure_internets[int(choice)]['base_url']
         else:

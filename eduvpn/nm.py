@@ -118,7 +118,7 @@ def activate_connection(uuid: str):
     con = client.get_connection_by_uuid(uuid)
     main_loop = GLib.MainLoop()
 
-    def callback(*args, **kwargs):
+    def callback(source_object, result):
         main_loop.quit()
 
     client.activate_connection_async(connection=con, callback=callback)
@@ -127,12 +127,31 @@ def activate_connection(uuid: str):
 def deactivate_connection(uuid: str):
     client = NM.Client.new()
     con = client.get_primary_connection()
+
+    if con:
+        active_uuid = con.get_uuid()
+
+        if uuid == active_uuid:
+            main_loop = GLib.MainLoop()
+
+            def callback(*args, **kwargs):
+                main_loop.quit()
+
+            client.deactivate_connection_async(active=con, callback=callback)
+    else:
+        print("No active connection to deactivate")
+
+
+def connection_status(uuid: str):
+    client = NM.Client.new()
+    con = client.get_primary_connection()
     active_uuid = con.get_uuid()
 
     if uuid == active_uuid:
         main_loop = GLib.MainLoop()
 
-        def callback(*args, **kwargs):
+        def callback(source_object, result):
+            print(str(source_object.check_connectivity_finish(result)))
             main_loop.quit()
 
-        client.deactivate_connection_async(active=con, callback=callback)
+        client.check_connectivity_async(callback=callback)
