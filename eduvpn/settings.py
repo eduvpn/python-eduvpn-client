@@ -9,6 +9,7 @@ CONFIG_PREFIX = Path("~/.config/eduvpn/").expanduser().resolve()
 DISCO_URI = 'https://disco.eduvpn.org/'
 ORGANISATION_URI = DISCO_URI + "organization_list.json"
 SERVER_URI = DISCO_URI + "server_list.json"
+HELP_URL = 'https://www.eduvpn.org'
 
 CLIENT_ID = "org.eduvpn.app.linux"
 SCOPE = ["config"]
@@ -16,13 +17,16 @@ CODE_CHALLENGE_METHOD = "S256"
 LANGUAGE = 'nl'
 COUNTRY = "nl-NL"
 
+COUNTRY_MAP = Path(prefix + "/share/country_code_to_country_mapping.json")
+FLAG_PREFIX = prefix + "/share/images/flags/png/"
+IMAGE_PREFIX = prefix + "/share/images/"
+
 
 # format: base64(<signature_algorithm> || <key_id> || <public_key>)
 VERIFY_KEYS = [
     "RWSC3Lwn4f9mhG3XIwRUTEIqf7Ucu9+7/Rq+scUMxrjg5/kjskXKOJY/",
     "RWRtBSX1alxyGX+Xn3LuZnWUT0w//B6EmTJvgaAxBMYzlQeI+jdrO6KF",
 ]
-
 eduvpn_main_logo = prefix + "/share/icons/hicolor/128x128/apps/eduvpn-client.png"
 eduvpn_name = "eduVPN"
 lets_connect_main_logo = prefix + "/share/icons/hicolor/128x128/apps/lets-connect-client.png"
