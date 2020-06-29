@@ -50,7 +50,8 @@ debdev: deb
 		libcairo2-dev \
 		libpython3-dev \
 		gobject-introspection \
-		libgirepository1.0-dev
+		libgirepository1.0-dev \
+		network-manager-openvpn-gnome
 
 # install all required binary packages on a rpm based system
 dnf:
