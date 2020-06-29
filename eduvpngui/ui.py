@@ -123,7 +123,6 @@ class EduVpnGui:
         self.back_button.hide()
         self.add_other_server_top_row.hide()
 
-
     def run(self):
         # type: () -> None
         # self.show_open_browser()

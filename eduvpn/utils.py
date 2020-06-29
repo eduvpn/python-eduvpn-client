@@ -6,6 +6,7 @@ from functools import wraps as decorator
 from logging import getLogger
 from typing import Any
 
+
 def get_logger(name_space: str):
     return getLogger(name_space)
 

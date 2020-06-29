@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 
 _tokens_path = CONFIG_PREFIX / "tokens"
 
+
 def _read_tokens() -> dict:
     """
     Read the storage from disk, returns an empty dict in case of failure.
