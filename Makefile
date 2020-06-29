@@ -20,6 +20,7 @@ $(VENV)/bin/eduvpn-client: $(VENV)/bin/pip
 	venv/bin/pip install -e .
 
 $(VENV)/bin/eduvpngui: venv/bin/pip
+	venv/bin/pip install --upgrade pip wheel
 	venv/bin/pip install -e .
 
 dockers:
@@ -36,8 +37,20 @@ deb:
 		python3-cryptography \
 		python3-setuptools \
 		python3-nacl \
-		python3-pytest
+		python3-pytest \
+		python3-wheel
 
+# install all required binary packages on a debian based system
+debdev: deb
+	apt update
+	apt install -y \
+		git \
+		python3-venv \
+		pkg-config \
+		libcairo2-dev \
+		libpython3-dev \
+		gobject-introspection \
+		libgirepository1.0-dev
 
 # install all required binary packages on a rpm based system
 dnf:
