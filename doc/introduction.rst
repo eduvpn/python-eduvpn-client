@@ -69,7 +69,7 @@ More information is available at `fedora copr <https://copr.fedorainfracloud.org
 Centos
 ------
 
-You can install the latest release of the eduVPN client on Centos 7 by running these commands as root or using sudo:
+You can install the latest release of the eduVPN client on Centos 8 by running these commands as root or using sudo:
 
 .. code-block:: bash
 
@@ -79,9 +79,6 @@ You can install the latest release of the eduVPN client on Centos 7 by running t
 
 More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
 
-.. note::
-
-    Currently CentOS 7 ships with an outdated NetworkManager so some features might not work properly.
 
 Pip
 ---
@@ -132,12 +129,12 @@ enabling your VPN connection please also examine the `journalctl -u NetworkManag
 Source code
 -----------
 
-Development of this project takes place on `github <https://github.com/gijzelaerr/python-eduvpn-client>`_.  You
+Development of this project takes place on `github <https://github.com/eduvpn/python-eduvpn-client>`_.  You
 can find the source code and all releases there.
 
 Contributing
 ============
 
 Contributions are more than welcome! If you experience any problems let us know in the bug tracker. We accept patches
-in the form of github pull requests. Please make sure your code works with python 2 and python3, and is pep8 compatible.
-Also make sure the test suit actually passes all tests. 
+in the form of github pull requests. Please make sure your code works with python3 and is pep8 compatible.
+Also make sure the test suite actually passes all tests. 
