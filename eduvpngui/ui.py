@@ -161,7 +161,7 @@ class EduVpnGui:
                 if not name.lower().endswith('/'):
                     name = name + '/'
                 logger.debug("on_other_server_cursor_changed: {}".format(name))
-                self.start(name)
+                self.setup_connection(name)
 
     def on_cancel_browser_button_clicked(self, button):
         # type: (Any) -> None
@@ -189,7 +189,7 @@ class EduVpnGui:
             if 'support_contact' in self.data.institute_access[i]:
                 self.data.support_contact = self.data.institute_access[i]['support_contact']
             logger.debug("on_institute_cursor_changed: {} {}".format(self.data.server_name, base_url))
-            self.start(base_url, None, False)
+            self.setup_connection(base_url, None, False)
 
     def on_secure_internet_cursor_changed(self, element):
         # type: (Any) -> None
@@ -199,7 +199,7 @@ class EduVpnGui:
             i = model[iter][1]
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
             logger.debug("on_secure_internet_cursor_changed: {} {}".format(self.data.server_name, self.data.secure_internet_home))
-            self.start(self.data.secure_internet_home, self.data.secure_internet, True)
+            self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
 
     def on_connection_switch_state_set(self, switch, state):
         if state:
@@ -435,7 +435,7 @@ class EduVpnGui:
             logger.debug("on_location_cursor_changed: {} {}".format(display_name, base_url))
             thread_helper(lambda: handle_location_thread(base_url, self))
 
-    def start(self, auth_url, secure_internet: Optional[list] = None, interactive: bool = False):
+    def setup_connection(self, auth_url, secure_internet: Optional[list] = None, interactive: bool = False):
 
         self.data.auth_url = auth_url
         self.data.locations = secure_internet
@@ -535,7 +535,7 @@ def finalize_configuration_thread(profile_id, gui):
     target = Path('eduVPN.ovpn').resolve()
 
     if nm_available():
-        logger.debug("nm available:")
+        logger.info("nm available:")
         save_connection(config, private_key, certificate)
         GLib.idle_add(lambda: gui.connection_saved())
     else:
