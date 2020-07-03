@@ -11,7 +11,7 @@ try:
     import gi
 
     gi.require_version('NM', '1.0')
-    from gi.repository import NM, GLib  # type: ignore
+    from gi.repository import NM, GLib
 except (ImportError, ValueError) as e:
     logger.warning("Network Manager not available")
 
@@ -54,18 +54,15 @@ def import_ovpn(config: str, private_key: str, certificate: str) -> Optional['NM
     return connection
 
 
-def add_connection(client: 'NM.Client', connection: 'NM.Connection'):
+def add_callback(client, result):
+    new_con = client.add_connection_finish(result)
+    set_uuid(uuid=new_con.get_uuid())
+
+
+def add_connection(client2: 'NM.Client', connection: 'NM.Connection'):
     logger.info("Adding new connection")
 
-    def add_callback(client, result, data):
-        try:
-            new_con = client.add_connection_finish(result)
-            set_uuid(uuid=new_con.get_uuid())
-        except Exception as e:
-            logger.error("ERROR: failed to add connection: %s\n" % e)
-
-    client.add_connection_async(connection=connection, save_to_disk=True, cancellable=None,
-                                callback=add_callback, user_data=None)
+    client2.add_connection_async(connection=connection, save_to_disk=True, callback=add_callback)
 
 
 def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection'):

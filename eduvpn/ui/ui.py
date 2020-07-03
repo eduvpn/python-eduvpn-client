@@ -25,7 +25,7 @@ from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
-from eduvpngui.backend import BackendData, ConnectionStatus
+from eduvpn.ui.backend import BackendData, ConnectionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class EduVpnGui:
         self.prefix = get_prefix()
         self.builder = Gtk.Builder()
 
-        self.client = NM.Client()
+        self.client = NM.Client.new(None)
 
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/builder', b)
