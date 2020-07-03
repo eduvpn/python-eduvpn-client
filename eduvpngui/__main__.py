@@ -35,7 +35,7 @@ def signal_handler(sig, frame):
 def main(args=None):
     if args is None:
         args = sys.argv
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
     signal.signal(signal.SIGINT, signal_handler)
 
