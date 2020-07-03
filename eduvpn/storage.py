@@ -144,7 +144,7 @@ def write_config(config: str, private_key: str, certificate: str, target: PathLi
     """
     Write the configuration to target.
     """
-    print(f"Writing configuration to {target}")
+    logger.info(f"Writing configuration to {target}")
     with open(target, mode='w+t') as f:
         f.writelines(config)
         f.writelines(f"\n<key>\n{private_key}\n</key>\n")
