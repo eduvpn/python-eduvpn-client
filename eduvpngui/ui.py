@@ -130,27 +130,27 @@ class EduVpnGui:
 
     def on_settings_button_released(self, widget, event):
         # type: (Any, Any) -> None
-        print("on_settings_button_released")
+        logger.debug("on_settings_button_released")
         self.show_settings()
 
     def on_help_button_released(self, widget, event):
         # type: (Any, Any) -> None
-        print("on_help_button_released")
+        logger.debug("on_help_button_released")
         webbrowser.open(HELP_URL)
 
     def on_back_button_released(self, widget, event):
         # type: (Any, Any) -> None
-        print("on_back_button_released")
+        logger.debug("on_back_button_released")
         self.show_find_your_institute()
 
     def on_add_other_server_button_clicked(self, button):
         # type: (Any) -> None
-        print("on_add_other_server_button_clicked")
+        logger.debug("on_add_other_server_button_clicked")
         self.show_add_other_server()
 
     def on_other_server_cursor_changed(self, element):
         # type: (Any) -> None
-        print("on_other_server_cursor_changed")
+        logger.debug("on_other_server_cursor_changed")
         (model, iter) = element.get_selection().get_selected()
         if iter is not None:
             name = model[iter][0]
@@ -160,7 +160,7 @@ class EduVpnGui:
                     name = 'https://' + name
                 if not name.lower().endswith('/'):
                     name = name + '/'
-                print("on_other_server_cursor_changed: {}".format(name))
+                logger.debug("on_other_server_cursor_changed: {}".format(name))
                 self.start(name)
 
     def on_cancel_browser_button_clicked(self, button):
@@ -188,7 +188,7 @@ class EduVpnGui:
             base_url = str(self.data.institute_access[i]['base_url'])
             if 'support_contact' in self.data.institute_access[i]:
                 self.data.support_contact = self.data.institute_access[i]['support_contact']
-            print("on_institute_cursor_changed: {} {}".format(self.data.server_name, base_url))
+            logger.debug("on_institute_cursor_changed: {} {}".format(self.data.server_name, base_url))
             self.start(base_url, None, False)
 
     def on_secure_internet_cursor_changed(self, element):
@@ -198,7 +198,7 @@ class EduVpnGui:
             self.data.server_name = model[iter][0]
             i = model[iter][1]
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
-            print("on_secure_internet_cursor_changed: {} {}".format(self.data.server_name, self.data.secure_internet_home))
+            logger.debug("on_secure_internet_cursor_changed: {} {}".format(self.data.server_name, self.data.secure_internet_home))
             self.start(self.data.secure_internet_home, self.data.secure_internet, True)
 
     def on_connection_switch_state_set(self, switch, state):
@@ -209,11 +209,11 @@ class EduVpnGui:
 
     def connection_activated(self):
         self.update_connection(ConnectionStatus.CONNECTED)
-        print("connection_activated")
+        logger.debug("connection_activated")
 
     def connection_deactivated(self):
         self.update_connection(ConnectionStatus.NOT_CONNECTED)
-        print("connection_deactivated")
+        logger.debug("connection_deactivated")
 
     def init_search_list(self):
         text_cell = Gtk.CellRendererText()
@@ -259,7 +259,7 @@ class EduVpnGui:
         self.show_search_lists()
 
     def show_find_your_institute(self):
-        print("show_find_your_institute")
+        logger.debug("show_find_your_institute")
         self.find_your_institute_page.show()
         self.settings_page.hide()
         self.choose_profile_page.hide()
@@ -271,7 +271,7 @@ class EduVpnGui:
         self.show_search_lists()
 
     def show_add_other_server(self):
-        print("show_add_other_server")
+        logger.debug("show_add_other_server")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
         self.choose_profile_page.hide()
@@ -282,7 +282,7 @@ class EduVpnGui:
         self.add_other_server_top_row.hide()
 
     def show_settings(self):
-        print("show_settings")
+        logger.debug("show_settings")
         self.find_your_institute_page.hide()
         self.settings_page.show()
         self.choose_profile_page.hide()
@@ -293,7 +293,7 @@ class EduVpnGui:
         self.add_other_server_top_row.hide()
 
     def show_choose_profile(self) -> None:
-        print("show_choose_profile")
+        logger.debug("show_choose_profile")
         if len(self.data.profiles) > 1:
             self.find_your_institute_page.hide()
             self.settings_page.hide()
@@ -304,11 +304,11 @@ class EduVpnGui:
             self.back_button.show()
             self.add_other_server_top_row.hide()
         else:
-            print("ERROR: should only be called when there are profiles to choose from")
+            logger.debug("ERROR: should only be called when there are profiles to choose from")
             self.show_settings()
 
     def show_choose_location(self) -> None:
-        print("show_choose_location")
+        logger.debug("show_choose_location")
         if len(self.data.locations) > 1:
             self.find_your_institute_page.hide()
             self.settings_page.hide()
@@ -319,11 +319,11 @@ class EduVpnGui:
             self.back_button.show()
             self.add_other_server_top_row.hide()
         else:
-            print("ERROR: should only be called when there are profiles to choose from")
+            logger.debug("ERROR: should only be called when there are profiles to choose from")
             self.show_settings()
 
     def show_open_browser(self):
-        print("show_open_browser")
+        logger.debug("show_open_browser")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
         self.choose_profile_page.hide()
@@ -334,7 +334,7 @@ class EduVpnGui:
         self.add_other_server_top_row.hide()
 
     def show_connection(self):
-        print("show_connection")
+        logger.debug("show_connection")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
         self.choose_profile_page.hide()
@@ -351,7 +351,7 @@ class EduVpnGui:
         self.connection_info_bottom_row.hide()
         self.server_image.hide()
         self.server_label.set_text(self.data.server_name)
-        print(self.data.server_image)
+        logger.debug(self.data.server_image)
         if self.data.server_image is not None:
             self.server_image.set_from_file(self.data.server_image)
             self.server_image.show()
@@ -388,7 +388,7 @@ class EduVpnGui:
             display_name = model[iter][0]
             i = model[iter][1]
             profile_id = str(self.data.profiles[i]['profile_id'])
-            print("on_profile_cursor_changed: {} {}".format(display_name, profile_id))
+            logger.debug("on_profile_cursor_changed: {} {}".format(display_name, profile_id))
             self.finalize_configuration(profile_id)
 
     def show_search_lists(self):
@@ -426,20 +426,20 @@ class EduVpnGui:
             self.data.server_name = model[iter][0]
             display_name = model[iter][0]
             i = model[iter][2]
-            print(self.data.locations[i])
+            logger.debug(self.data.locations[i])
             base_url = str(self.data.locations[i]['base_url'])
             country_code = self.data.locations[i]['country_code']
             self.data.server_image = FLAG_PREFIX + country_code + "@1,5x.png"
             if 'support_contact' in self.data.locations[i]:
                 self.data.support_contact = self.data.locations[i]['support_contact']
-            print("on_location_cursor_changed: {} {}".format(display_name, base_url))
+            logger.debug("on_location_cursor_changed: {} {}".format(display_name, base_url))
             thread_helper(lambda: handle_location_thread(base_url, self))
 
     def start(self, auth_url, secure_internet: Optional[list] = None, interactive: bool = False):
 
         self.data.auth_url = auth_url
         self.data.locations = secure_internet
-        print(f"starting procedure with auth_url {self.data.auth_url}")
+        logger.debug(f"starting procedure with auth_url {self.data.auth_url}")
         exists = get_token(self.data.auth_url)
 
         if exists:
@@ -455,24 +455,24 @@ class EduVpnGui:
             self.handle_profiles()
 
     def handle_profiles(self):
-        print(f"using {self.data.api_url} as api_url")
+        logger.debug(f"using {self.data.api_url} as api_url")
         thread_helper(lambda: handle_profiles_thread(self))
 
     def finalize_configuration(self, profile_id):
-        print(f"finalize_configuration")
+        logger.debug(f"finalize_configuration")
         thread_helper(lambda: finalize_configuration_thread(profile_id, self))
 
     def connection_saved(self):
-        print(f"connection_saved")
+        logger.debug(f"connection_saved")
         self.show_connection()
 
     def connection_written(self):
-        print(f"connection_written")
+        logger.debug(f"connection_written")
         self.show_connection()
 
 
 def fetch_token_thread(gui):
-    print("fetching token")
+    logger.debug("fetching token")
     gui.data.api_url, gui.data.token_endpoint, auth_endpoint = get_info(gui.data.auth_url)
     gui.data.oauth = get_oauth(gui.data.token_endpoint, auth_endpoint)
     set_token(gui.data.auth_url, gui.data.oauth.token, gui.data.token_endpoint, auth_endpoint)
@@ -480,7 +480,7 @@ def fetch_token_thread(gui):
 
 
 def restoring_token_thread(exists, gui):
-    print("token exists, restoring")
+    logger.debug("token exists, restoring")
     token, gui.data.token_endpoint, authorization_endpoint = exists
     gui.data.oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=gui.data.token_endpoint)
     gui.data.api_url, _, _ = get_info(gui.data.auth_url)
@@ -488,7 +488,7 @@ def restoring_token_thread(exists, gui):
 
 
 def handle_location_thread(base_url, gui):
-    print("fetching location info")
+    logger.debug("fetching location info")
     gui.data.api_url, _, _ = get_info(base_url)
     GLib.idle_add(lambda: gui.handle_profiles())
 
@@ -535,7 +535,7 @@ def finalize_configuration_thread(profile_id, gui):
     target = Path('eduVPN.ovpn').resolve()
 
     if nm_available():
-        print("nm available:")
+        logger.debug("nm available:")
         save_connection(config, private_key, certificate)
         GLib.idle_add(lambda: gui.connection_saved())
     else:
@@ -544,7 +544,7 @@ def finalize_configuration_thread(profile_id, gui):
 
 
 def activate_connection_thread(gui):
-    print("Activating connection")
+    logger.debug("Activating connection")
     activate_connection(get_uuid())
     # connection_status(get_uuid())
 
@@ -552,7 +552,7 @@ def activate_connection_thread(gui):
 
 
 def deactivate_connection_thread(gui):
-    print("Deactivating connection")
+    logger.debug("Deactivating connection")
     deactivate_connection(get_uuid())
     # connection_status(get_uuid())
     GLib.idle_add(lambda: gui.connection_deactivated())
