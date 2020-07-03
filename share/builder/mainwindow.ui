@@ -1081,11 +1081,30 @@ have completed the authorization</property>
                               <placeholder/>
                             </child>
                             <child>
-                              <object class="GtkButton" id="renewSessionButton">
-                                <property name="label" translatable="yes">Renew Session</property>
+                              <object class="GtkBox">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="renewSessionButton">
+                                    <property name="label" translatable="yes">Renew Session</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">True</property>
+                                    <property name="halign">center</property>
+                                    <property name="image_position">top</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -1098,7 +1117,7 @@ have completed the authorization</property>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
+                            <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
