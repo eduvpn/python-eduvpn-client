@@ -7,7 +7,7 @@ from sys import exit, argv
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
 
 logger = logging.getLogger(__name__)
 log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
@@ -37,10 +37,12 @@ def main(args=None):
         exit(1)
 
     # import this later so the logging is properly configured
-    from eduvpngui.ui import EduVpnGui
+    from eduvpn.ui.ui import EduVpnGui
 
     edu_vpn_gui = EduVpnGui(lets_connect=False)
     edu_vpn_gui.run()
+
+    GLib.MainLoop()
 
     Gtk.main()
 
