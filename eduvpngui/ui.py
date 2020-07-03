@@ -6,20 +6,21 @@
 import logging
 import os
 import re
-import gi
 import webbrowser
-from typing import Dict, Optional, Tuple, List, Any, Iterable
 from pathlib import Path
+from typing import Optional, Any
 
+import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GObject, GLib, GdkPixbuf
+gi.require_version('NM', '1.0')
+from gi.repository import Gtk, GObject, GLib, GdkPixbuf, NM
 
 from requests_oauthlib import OAuth2Session
 
 from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
 from eduvpn.i18n import extract_translation, retrieve_country_name
-from eduvpn.nm import save_connection, nm_available, activate_connection, deactivate_connection, connection_status
+from eduvpn.nm import save_connection, nm_available, activate_connection, deactivate_connection
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL
@@ -28,17 +29,19 @@ from eduvpngui.backend import BackendData, ConnectionStatus
 
 logger = logging.getLogger(__name__)
 
-builder_files = ['mainwindow.ui']  # type: Iterable[str]
+builder_files = ['mainwindow.ui']
 
 
 class EduVpnGui:
 
-    def __init__(self,
-                 lets_connect):  # type: (bool) -> None
-        self.lets_connect = lets_connect  # type: bool
+    def __init__(self, lets_connect: bool) -> None:
+        self.lets_connect = lets_connect
 
-        self.prefix = get_prefix()  # type: Any
-        self.builder = Gtk.Builder()  # type: Any
+        self.prefix = get_prefix()
+        self.builder = Gtk.Builder()
+
+        self.client = NM.Client()
+
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/builder', b)
             if not os.access(p, os.R_OK):
@@ -63,53 +66,53 @@ class EduVpnGui:
         }
 
         self.builder.connect_signals(handlers)
-        self.window = self.builder.get_object('applicationWindow')  # type: Any
+        self.window = self.builder.get_object('applicationWindow')
 
-        self.back_button = self.builder.get_object('backButton')  # type: Any
+        self.back_button = self.builder.get_object('backButton')
 
-        self.find_your_institute_page = self.builder.get_object('findYourInstitutePage')  # type: Any
-        self.institute_tree_view = self.builder.get_object('instituteTreeView')  # type: Any
-        self.secure_internet_tree_view = self.builder.get_object('secureInternetTreeView')  # type: Any
-        self.other_servers_tree_view = self.builder.get_object('otherServersTreeView')  # type: Any
-        self.find_your_institute_spacer = self.builder.get_object('findYourInstituteSpacer')  # type: Any
-        self.find_your_institute_image = self.builder.get_object('findYourInstituteImage')  # type: Any
-        self.add_other_server_top_row = self.builder.get_object('addOtherServerTopRow')  # type: Any
-        self.institute_access_header = self.builder.get_object('instituteAccessHeader')  # type: Any
-        self.secure_internet_header = self.builder.get_object('secureInternetHeader')  # type: Any
-        self.other_servers_header = self.builder.get_object('otherServersHeader')  # type: Any
-        self.find_your_institute_search = self.builder.get_object('findYourInstituteSearch')  # type: Any
-        self.add_other_server_button = self.builder.get_object('addOtherServerButton')  # type: Any
+        self.find_your_institute_page = self.builder.get_object('findYourInstitutePage')
+        self.institute_tree_view = self.builder.get_object('instituteTreeView')
+        self.secure_internet_tree_view = self.builder.get_object('secureInternetTreeView')
+        self.other_servers_tree_view = self.builder.get_object('otherServersTreeView')
+        self.find_your_institute_spacer = self.builder.get_object('findYourInstituteSpacer')
+        self.find_your_institute_image = self.builder.get_object('findYourInstituteImage')
+        self.add_other_server_top_row = self.builder.get_object('addOtherServerTopRow')
+        self.institute_access_header = self.builder.get_object('instituteAccessHeader')
+        self.secure_internet_header = self.builder.get_object('secureInternetHeader')
+        self.other_servers_header = self.builder.get_object('otherServersHeader')
+        self.find_your_institute_search = self.builder.get_object('findYourInstituteSearch')
+        self.add_other_server_button = self.builder.get_object('addOtherServerButton')
 
-        self.choose_profile_page = self.builder.get_object('chooseProfilePage')  # type: Any
+        self.choose_profile_page = self.builder.get_object('chooseProfilePage')
         self.profile_tree_view = self.builder.get_object('profileTreeView')
 
-        self.choose_location_page = self.builder.get_object('chooseLocationPage')  # type: Any
+        self.choose_location_page = self.builder.get_object('chooseLocationPage')
         self.location_tree_view = self.builder.get_object('locationTreeView')
 
-        self.open_browser_page = self.builder.get_object('openBrowserPage')  # type: Any
+        self.open_browser_page = self.builder.get_object('openBrowserPage')
 
-        self.connection_page = self.builder.get_object('connectionPage')  # type: Any
-        self.server_label = self.builder.get_object('serverLabel')  # type: Any
-        self.server_image = self.builder.get_object('serverImage')  # type: Any
-        self.support_label = self.builder.get_object('supportLabel')  # type: Any
-        self.connection_status_image = self.builder.get_object('connectionStatusImage')  # type: Any
-        self.connection_status_label = self.builder.get_object('connectionStatusLabel')  # type: Any
-        self.connection_sub_status = self.builder.get_object('connectionSubStatus')  # type: Any
-        self.profiles_sub_page = self.builder.get_object('profilesSubPage')  # type: Any
-        self.current_connection_sub_page = self.builder.get_object('currentConnectionSubPage')  # type: Any
-        self.connection_sub_page = self.builder.get_object('connectionSubPage')  # type: Any
-        self.connection_info_top_row = self.builder.get_object('connectionInfoTopRow')  # type: Any
-        self.connection_info_grid = self.builder.get_object('connectionInfoGrid')  # type: Any
-        self.duration_value_label = self.builder.get_object('durationValueLabel')  # type: Any
-        self.downloaded_value_label = self.builder.get_object('downloadedValueLabel')  # type: Any
-        self.uploaded_value_label = self.builder.get_object('uploadedValueLabel')  # type: Any
-        self.ipv4_value_label = self.builder.get_object('ipv4ValueLabel')  # type: Any
-        self.ipv6_value_label = self.builder.get_object('ipv6ValueLabel')  # type: Any
-        self.connection_info_bottom_row = self.builder.get_object('connectionInfoBottomRow')  # type: Any
-        self.connection_switch = self.builder.get_object('connectionSwitch')  # type: Any
+        self.connection_page = self.builder.get_object('connectionPage')
+        self.server_label = self.builder.get_object('serverLabel')
+        self.server_image = self.builder.get_object('serverImage')
+        self.support_label = self.builder.get_object('supportLabel')
+        self.connection_status_image = self.builder.get_object('connectionStatusImage')
+        self.connection_status_label = self.builder.get_object('connectionStatusLabel')
+        self.connection_sub_status = self.builder.get_object('connectionSubStatus')
+        self.profiles_sub_page = self.builder.get_object('profilesSubPage')
+        self.current_connection_sub_page = self.builder.get_object('currentConnectionSubPage')
+        self.connection_sub_page = self.builder.get_object('connectionSubPage')
+        self.connection_info_top_row = self.builder.get_object('connectionInfoTopRow')
+        self.connection_info_grid = self.builder.get_object('connectionInfoGrid')
+        self.duration_value_label = self.builder.get_object('durationValueLabel')
+        self.downloaded_value_label = self.builder.get_object('downloadedValueLabel')
+        self.uploaded_value_label = self.builder.get_object('uploadedValueLabel')
+        self.ipv4_value_label = self.builder.get_object('ipv4ValueLabel')
+        self.ipv6_value_label = self.builder.get_object('ipv6ValueLabel')
+        self.connection_info_bottom_row = self.builder.get_object('connectionInfoBottomRow')
+        self.connection_switch = self.builder.get_object('connectionSwitch')
         # self.connection_switch.connect("notify::active", self.on_connection_switch_activated)
 
-        self.settings_page = self.builder.get_object('settingsPage')  # type: Any
+        self.settings_page = self.builder.get_object('settingsPage')
 
         self.data = BackendData()
 
@@ -123,33 +126,28 @@ class EduVpnGui:
         self.back_button.hide()
         self.add_other_server_top_row.hide()
 
-    def run(self):
-        # type: () -> None
+    def run(self) -> None:
+
         # self.show_open_browser()
         self.window.show()
 
-    def on_settings_button_released(self, widget, event):
-        # type: (Any, Any) -> None
+    def on_settings_button_released(self, widget, event) -> None:
         logger.debug("on_settings_button_released")
         self.show_settings()
 
-    def on_help_button_released(self, widget, event):
-        # type: (Any, Any) -> None
+    def on_help_button_released(self, widget, event) -> None:
         logger.debug("on_help_button_released")
         webbrowser.open(HELP_URL)
 
-    def on_back_button_released(self, widget, event):
-        # type: (Any, Any) -> None
+    def on_back_button_released(self, widget, event) -> None:
         logger.debug("on_back_button_released")
         self.show_find_your_institute()
 
-    def on_add_other_server_button_clicked(self, button):
-        # type: (Any) -> None
+    def on_add_other_server_button_clicked(self, button) -> None:
         logger.debug("on_add_other_server_button_clicked")
         self.show_add_other_server()
 
-    def on_other_server_cursor_changed(self, element):
-        # type: (Any) -> None
+    def on_other_server_cursor_changed(self, element) -> None:
         logger.debug("on_other_server_cursor_changed")
         (model, iter) = element.get_selection().get_selected()
         if iter is not None:
@@ -163,12 +161,10 @@ class EduVpnGui:
                 logger.debug("on_other_server_cursor_changed: {}".format(name))
                 self.setup_connection(name)
 
-    def on_cancel_browser_button_clicked(self, button):
-        # type: (Any) -> None
+    def on_cancel_browser_button_clicked(self, _) -> None:
         self.show_find_your_institute()
 
-    def on_search_changed(self, element=None):
-        # type: (Any) -> None
+    def on_search_changed(self, _=None) -> None:
         if len(self.find_your_institute_search.get_text()) > 0:
             self.find_your_institute_image.hide()
             self.find_your_institute_spacer.hide()
@@ -179,8 +175,7 @@ class EduVpnGui:
             self.add_other_server_top_row.hide()
         self.update_search_lists(self.find_your_institute_search.get_text())
 
-    def on_institute_cursor_changed(self, element):
-        # type: (Any) -> None
+    def on_institute_cursor_changed(self, element) -> None:
         (model, iter) = element.get_selection().get_selected()
         if iter is not None:
             self.data.server_name = model[iter][0]
@@ -191,14 +186,14 @@ class EduVpnGui:
             logger.debug("on_institute_cursor_changed: {} {}".format(self.data.server_name, base_url))
             self.setup_connection(base_url, None, False)
 
-    def on_secure_internet_cursor_changed(self, element):
-        # type: (Any) -> None
+    def on_secure_internet_cursor_changed(self, element) -> None:
         (model, iter) = element.get_selection().get_selected()
         if iter is not None:
             self.data.server_name = model[iter][0]
             i = model[iter][1]
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
-            logger.debug("on_secure_internet_cursor_changed: {} {}".format(self.data.server_name, self.data.secure_internet_home))
+            logger.debug("on_secure_internet_cursor_changed: {} {}".format(self.data.server_name,
+                                                                           self.data.secure_internet_home))
             self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
 
     def on_connection_switch_state_set(self, switch, state):
@@ -514,8 +509,7 @@ def handle_secur_internet_thread(gui):
             flag_location = FLAG_PREFIX + location['country_code'] + "@1,5x.png"
             if os.path.exists(flag_location):
                 flag_image = GdkPixbuf.Pixbuf.new_from_file(flag_location)
-
-            gui.locations_list_model.append([retrieve_country_name(location['country_code']), flag_image, i])
+                gui.locations_list_model.append([retrieve_country_name(location['country_code']), flag_image, i])
 
             # gui.locations_list_model.append([extract_translation(location['country_code']), FLAG_PREFIX + country_code + "@1,5x.png", i])
         GLib.idle_add(lambda: gui.show_choose_location())
@@ -524,7 +518,7 @@ def handle_secur_internet_thread(gui):
         GLib.idle_add(lambda: gui.finalize_configuration(base_url))
 
 
-def finalize_configuration_thread(profile_id, gui):
+def finalize_configuration_thread(profile_id, gui: EduVpnGui):
     config = get_config(gui.data.oauth, gui.data.api_url, profile_id)
     private_key, certificate = create_keypair(gui.data.oauth, gui.data.api_url)
 
@@ -536,23 +530,23 @@ def finalize_configuration_thread(profile_id, gui):
 
     if nm_available():
         logger.info("nm available:")
-        save_connection(config, private_key, certificate)
+        save_connection(gui.client, config, private_key, certificate)
         GLib.idle_add(lambda: gui.connection_saved())
     else:
         write_config(config, private_key, certificate, target)
         GLib.idle_add(lambda: gui.connection_written())
 
 
-def activate_connection_thread(gui):
+def activate_connection_thread(gui: EduVpnGui):
     logger.debug("Activating connection")
-    activate_connection(get_uuid())
+    activate_connection(gui.client, get_uuid())
     # connection_status(get_uuid())
 
     GLib.idle_add(lambda: gui.connection_activated())
 
 
-def deactivate_connection_thread(gui):
+def deactivate_connection_thread(gui: EduVpnGui):
     logger.debug("Deactivating connection")
-    deactivate_connection(get_uuid())
+    deactivate_connection(gui.client, get_uuid())
     # connection_status(get_uuid())
     GLib.idle_add(lambda: gui.connection_deactivated())
