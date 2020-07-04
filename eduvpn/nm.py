@@ -11,7 +11,7 @@ try:
     import gi
 
     gi.require_version('NM', '1.0')
-    from gi.repository import NM, GLib
+    from gi.repository import NM, GLib  # type: ignore
 except (ImportError, ValueError) as e:
     logger.warning("Network Manager not available")
 
@@ -19,6 +19,13 @@ from eduvpn.storage import set_uuid, get_uuid, write_config
 from eduvpn.utils import get_logger
 
 logger = get_logger(__file__)
+
+
+def get_client() -> NM.Client:
+    """
+    Create a new client object. We put this here so other modules don't need to import NM
+    """
+    return NM.Client.new(None)
 
 
 def nm_available() -> bool:
@@ -59,10 +66,9 @@ def add_callback(client, result):
     set_uuid(uuid=new_con.get_uuid())
 
 
-def add_connection(client2: 'NM.Client', connection: 'NM.Connection'):
+def add_connection(client: 'NM.Client', connection: 'NM.Connection'):
     logger.info("Adding new connection")
-
-    client2.add_connection_async(connection=connection, save_to_disk=True, callback=add_callback)
+    client.add_connection_async(connection=connection, save_to_disk=True, callback=add_callback)
 
 
 def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection'):
