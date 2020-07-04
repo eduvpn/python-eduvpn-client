@@ -5,16 +5,17 @@ from sys import exit
 from typing import Optional, Tuple, List
 
 from requests_oauthlib import OAuth2Session
-from eduvpn.nm import activate_connection, deactivate_connection
-from eduvpn.storage import get_uuid
+
 from eduvpn.i18n import extract_translation
 from eduvpn.menu import menu, secure_internet_choice, profile_choice, write_to_nm_choice
-from eduvpn.nm import get_cert_key, save_connection, nm_available
+from eduvpn.nm import activate_connection, deactivate_connection
+from eduvpn.nm import get_cert_key, save_connection, nm_available, get_client
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, check_certificate, create_keypair, get_config, list_servers, list_orgs, \
     list_profiles
 from eduvpn.settings import CLIENT_ID, SERVER_URI, ORGANISATION_URI
 from eduvpn.storage import get_storage, set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
+from eduvpn.storage import get_uuid
 
 
 def search(args: argparse.Namespace):
@@ -57,7 +58,7 @@ def configure(args: argparse.Namespace):
         elif len(institute_matches) == 0 and len(org_matches) == 1:
             index, org = org_matches[0]
             print(f"filter '{search_term}' matched with organisation '{org['display_name']}'")
-            ase_url = org['secure_internet_home']
+            base_url = org['secure_internet_home']
         else:
             matches = [i[1]['display_name'] for i in chain(institute_matches, org_matches)]
             print(
@@ -77,13 +78,14 @@ def refresh(_: argparse.Namespace):
     token = oauth.refresh_token(token_url=token_endpoint)
     set_token(auth_url, token, token_endpoint, authorization_endpoint)
 
-    cert, key = get_cert_key(uuid)
+    client = get_client()
+    cert, key = get_cert_key(client, uuid)
     api_base_uri, token_endpoint, auth_endpoint = get_info(auth_url)
 
     if not check_certificate(oauth, api_base_uri, cert):
         key, cert = create_keypair(oauth, api_base_uri)
         config = get_config(oauth, api_base_uri, profile)
-        save_connection(config, key, cert)
+        save_connection(client, config, key, cert)
 
 
 def interactive(args: argparse.Namespace):
@@ -183,21 +185,24 @@ def start(auth_url, secure_internet: Optional[list] = None, interactive: bool = 
     set_profile(profile_id)
 
     target = Path('eduVPN.ovpn').resolve()
+    client = get_client()
     if interactive and nm_available():
         if write_to_nm_choice():
-            save_connection(config, private_key, certificate)
+            save_connection(client, config, private_key, certificate)
         else:
             write_config(config, private_key, certificate, target)
     else:
         if nm_available():
-            save_connection(config, private_key, certificate)
+            save_connection(client, config, private_key, certificate)
         else:
             write_config(config, private_key, certificate, target)
 
 
-def activate(args):
-    activate_connection(get_uuid())
+def activate(_):
+    client = get_client()
+    activate_connection(client, get_uuid())
 
 
 def deactivate(_):
-    deactivate_connection(get_uuid())
+    client = get_client()
+    deactivate_connection(client, get_uuid())

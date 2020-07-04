@@ -3,7 +3,7 @@ from unittest import TestCase
 import gi
 
 gi.require_version('NM', '1.0')
-from gi.repository import NM, GLib
+from gi.repository import NM, GLib   # type: ignore
 
 from eduvpn.nm import (nm_available, add_connection,
                        import_ovpn)
@@ -17,7 +17,7 @@ class TestNm(TestCase):
         main_loop = GLib.MainLoop()
         client = NM.Client.new(None)
         add_connection(client, connection)
-        #main_loop.run()
+        # main_loop.run()
 
         """
         activate_connection(client, uuid)

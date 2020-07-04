@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional, Any
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 gi.require_version('NM', '1.0')
 from gi.repository import Gtk, GObject, GLib, GdkPixbuf, NM
@@ -539,14 +540,21 @@ def finalize_configuration_thread(profile_id, gui: EduVpnGui):
 
 def activate_connection_thread(gui: EduVpnGui):
     logger.debug("Activating connection")
-    activate_connection(gui.client, get_uuid())
-    # connection_status(get_uuid())
-
-    GLib.idle_add(lambda: gui.connection_activated())
+    uuid = get_uuid()
+    if uuid:
+        activate_connection(gui.client, uuid)
+        # connection_status(get_uuid())
+        GLib.idle_add(lambda: gui.connection_activated())
+    else:
+        raise Exception("No UUID configured, can't activate connection")
 
 
 def deactivate_connection_thread(gui: EduVpnGui):
     logger.debug("Deactivating connection")
-    deactivate_connection(gui.client, get_uuid())
-    # connection_status(get_uuid())
-    GLib.idle_add(lambda: gui.connection_deactivated())
+    uuid = get_uuid()
+    if uuid:
+        deactivate_connection(gui.client, uuid)
+        # connection_status(get_uuid())
+        GLib.idle_add(lambda: gui.connection_deactivated())
+    else:
+        raise Exception("No UUID configured, can't activate connection")
