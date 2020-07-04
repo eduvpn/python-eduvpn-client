@@ -10,7 +10,7 @@ VENV=./venv
 
 all: run
 
-$(VENV)/bin/pip:
+$(VENV)/:
 	python3 -m venv venv
 
 gui: $(VENV)/bin/eduvpngui
@@ -19,7 +19,7 @@ gui: $(VENV)/bin/eduvpngui
 $(VENV)/bin/eduvpn-client: $(VENV)/bin/pip
 	venv/bin/pip install -e .
 
-$(VENV)/bin/eduvpngui: venv/bin/pip
+$(VENV)/bin/eduvpngui: $(VENV)/
 	venv/bin/pip install --upgrade pip wheel
 	venv/bin/pip install -e .
 
@@ -66,7 +66,7 @@ dnf:
 
 
 
-doc:  $(VENV)/bin/pip
+doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt
 	$(VENV)/bin/python -msphinx doc doc/_build
 
@@ -86,13 +86,13 @@ srpm:
 	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_32 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 
-$(VENV)/bin/mypy: $(VENV)/bin/pip
+$(VENV)/bin/mypy: $(VENV)/
 	$(VENV)/bin/pip install mypy
 
 mypy: $(VENV)/bin/mypy
 	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests
 
-$(VENV)/bin/pycodestyle: $(VENV)/bin/pip
+$(VENV)/bin/pycodestyle: $(VENV)/
 	$(VENV)/bin/pip install pycodestyle
 
 pycodestyle: $(VENV)/bin/pycodestyle
