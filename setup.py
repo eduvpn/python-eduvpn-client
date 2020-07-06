@@ -1,3 +1,4 @@
+import os
 from setuptools import setup, find_packages
 
 __version__ = "1.9.0"
@@ -23,30 +24,20 @@ extras_require = {
     'test': tests_require,
 }
 
-data_files = [
-    ('share/applications', [
-        'share/applications/eduvpn-client.desktop',
-        'share/applications/lets-connect-client.desktop',
-    ]),
+def package_files(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
 
-    ('share/eduvpn', [
-        'share/eduvpn/eduvpn.png',
-    ]),
-    ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/eduvpn-client.png']),
-    ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/eduvpn-client.png']),
-    ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/eduvpn-client.png']),
-    ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/eduvpn-client.png']),
-    ('share/icons/hicolor/48x48/apps', ['share/icons/hicolor/48x48/apps/lets-connect-client.png']),
-    ('share/icons/hicolor/128x128/apps', ['share/icons/hicolor/128x128/apps/lets-connect-client.png']),
-    ('share/icons/hicolor/256x256/apps', ['share/icons/hicolor/256x256/apps/lets-connect-client.png']),
-    ('share/icons/hicolor/512x512/apps', ['share/icons/hicolor/512x512/apps/lets-connect-client.png']),
-]
+extra_files = package_files('share')
 
 setup(
     name="eduvpn_client",
     version=__version__,
     packages=find_packages(),
-    data_files=data_files,
+    package_data={'': extra_files},
     install_requires=install_requires,
     extras_require=extras_require,
     author="Gijs Molenaar",
