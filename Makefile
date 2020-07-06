@@ -1,4 +1,4 @@
- note: this file is intended for development only and not to actually
+# note: this file is intended for development only and not to actually
 #       install the client.
 #
 
