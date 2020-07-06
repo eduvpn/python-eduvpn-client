@@ -1,5 +1,4 @@
-#
-## note: this file is intended for development only and not to actually
+ note: this file is intended for development only and not to actually
 #       install the client.
 #
 
@@ -62,7 +61,10 @@ dnf:
 		python3-requests-oauthlib \
 		python3-gobject \
 		python3-pynacl \
-		python3-pytest
+		python3-pytest \
+		python3-cairo-devel \
+		gobject-introspection-devel \
+		cairo-gobject-devel
 
 
 

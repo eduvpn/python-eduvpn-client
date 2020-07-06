@@ -10,9 +10,17 @@ RUN docker-apt-install \
     python3-cryptography \
     python3-setuptools \
     python3-nacl \
-    python3-pytest
+    python3-pytest \
+    pkg-config \
+    libcairo2-dev \
+    build-essential \
+    libpython3-dev \
+    gobject-introspection \
+    libgirepository1.0-dev \
+    network-manager-openvpn-gnome
 
 ADD . /code
 WORKDIR /code
 RUN python3 setup.py install
+RUN apt list --installed
 RUN pytest-3
