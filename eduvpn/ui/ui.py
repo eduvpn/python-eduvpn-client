@@ -152,8 +152,7 @@ class EduVpnGui:
         logger.debug("on_other_server_cursor_changed")
         (model, iter) = element.get_selection().get_selected()
         if iter is not None:
-            name = model[iter][0]
-            i = model[iter][1]
+            self.data.server_name = name = model[iter][0]
             if name.count('.') > 1:
                 if not name.lower().startswith('https://'):
                     name = 'https://' + name
