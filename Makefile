@@ -13,13 +13,13 @@ all: run
 $(VENV)/:
 	python3 -m venv venv
 
-gui: $(VENV)/bin/eduvpngui
-	venv/bin/eduvpngui
+gui: $(VENV)/bin/eduvpn-gui
+	venv/bin/eduvpn-gui
 
 $(VENV)/bin/eduvpn-client: $(VENV)/bin/pip
 	venv/bin/pip install -e .
 
-$(VENV)/bin/eduvpngui: $(VENV)/
+$(VENV)/bin/eduvpn-gui: $(VENV)/
 	venv/bin/pip install --upgrade pip wheel
 	venv/bin/pip install -e .
 
