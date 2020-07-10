@@ -198,9 +198,29 @@ class EduVpnGui:
 
     def on_connection_switch_state_set(self, switch, state):
         if state:
-            thread_helper(lambda: activate_connection_thread(self))
+            self.activate_connection()
         else:
-            thread_helper(lambda: deactivate_connection_thread(self))
+            self.deactivate_connection()
+
+    def activate_connection(self):
+        logger.debug("Activating connection")
+        uuid = get_uuid()
+        if uuid:
+            GLib.idle_add(lambda: activate_connection(self.client, uuid))
+            # connection_status(get_uuid())
+            GLib.idle_add(lambda: self.connection_activated())
+        else:
+            raise Exception("No UUID configured, can't activate connection")
+
+    def deactivate_connection(self):
+        logger.debug("Deactivating connection")
+        uuid = get_uuid()
+        if uuid:
+            GLib.idle_add(lambda: deactivate_connection(self.client, uuid))
+            # connection_status(get_uuid())
+            GLib.idle_add(lambda: self.connection_deactivated())
+        else:
+            raise Exception("No UUID configured, can't deactivate connection")
 
     def connection_activated(self):
         self.update_connection(ConnectionStatus.CONNECTED)
@@ -457,6 +477,16 @@ class EduVpnGui:
         logger.debug(f"finalize_configuration")
         thread_helper(lambda: finalize_configuration_thread(profile_id, self))
 
+    def configuration_finalized(self, config, private_key, certificate):
+        if nm_available():
+            logger.info("nm available:")
+            save_connection(self.client, config, private_key, certificate)
+            GLib.idle_add(lambda: self.connection_saved())
+        else:
+            target = Path('eduVPN.ovpn').resolve()
+            write_config(config, private_key, certificate, target)
+            GLib.idle_add(lambda: self.connection_written())
+
     def connection_saved(self):
         logger.debug(f"connection_saved")
         self.show_connection()
@@ -519,41 +549,12 @@ def handle_secur_internet_thread(gui):
 
 
 def finalize_configuration_thread(profile_id, gui: EduVpnGui):
+    logger.debug("finalize_configuration_thread")
     config = get_config(gui.data.oauth, gui.data.api_url, profile_id)
     private_key, certificate = create_keypair(gui.data.oauth, gui.data.api_url)
 
     set_api_url(gui.data.api_url)
     set_auth_url(gui.data.auth_url)
     set_profile(profile_id)
+    GLib.idle_add(lambda: gui.configuration_finalized(config, private_key, certificate))
 
-    target = Path('eduVPN.ovpn').resolve()
-
-    if nm_available():
-        logger.info("nm available:")
-        save_connection(gui.client, config, private_key, certificate)
-        GLib.idle_add(lambda: gui.connection_saved())
-    else:
-        write_config(config, private_key, certificate, target)
-        GLib.idle_add(lambda: gui.connection_written())
-
-
-def activate_connection_thread(gui: EduVpnGui):
-    logger.debug("Activating connection")
-    uuid = get_uuid()
-    if uuid:
-        activate_connection(gui.client, uuid)
-        # connection_status(get_uuid())
-        GLib.idle_add(lambda: gui.connection_activated())
-    else:
-        raise Exception("No UUID configured, can't activate connection")
-
-
-def deactivate_connection_thread(gui: EduVpnGui):
-    logger.debug("Deactivating connection")
-    uuid = get_uuid()
-    if uuid:
-        deactivate_connection(gui.client, uuid)
-        # connection_status(get_uuid())
-        GLib.idle_add(lambda: gui.connection_deactivated())
-    else:
-        raise Exception("No UUID configured, can't activate connection")
