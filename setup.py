@@ -1,43 +1,49 @@
 import os
+
 from setuptools import setup, find_packages
 
 __version__ = "1.9.0"
 
 tests_require = [
-        'pytest',
-        'PyGObject-stubs',
-        'mypy',
-        'pycodestyle',
-],
+    'pytest',
+    'PyGObject-stubs',
+    'mypy',
+    'pycodestyle',
+]
 
 install_requires = [
     'requests',
     'requests_oauthlib',
     'cryptography',
     'pynacl',
-    'pygobject',
     'wheel'
 ]
 
 extras_require = {
-    'client': ['pygobject'],
+    'gui': ['pygobject'],
     'test': tests_require,
 }
 
-def package_files(directory):
-    paths = []
-    for (path, directories, filenames) in os.walk(directory):
-        for filename in filenames:
-            paths.append(os.path.join('..', path, filename))
-    return paths
 
-extra_files = package_files('share')
+def extra_files_line(dir: str):
+    return (dir, [os.path.join(dir, i) for i in os.listdir(dir) if os.path.isfile(os.path.join(dir, i))])
+
+
+data_files = [
+    extra_files_line('share/applications'),
+    extra_files_line('share/eduvpn'),
+    extra_files_line('share/eduvpn/builder'),
+    extra_files_line('share/icons/hicolor/48x48/apps'),
+    extra_files_line('share/icons/hicolor/128x128/apps'),
+    extra_files_line('share/icons/hicolor/256x256/apps'),
+    extra_files_line('share/icons/hicolor/512x512/apps'),
+]
 
 setup(
     name="eduvpn_client",
     version=__version__,
     packages=find_packages(),
-    package_data={'': extra_files},
+    data_files=data_files,
     install_requires=install_requires,
     extras_require=extras_require,
     author="Gijs Molenaar",
@@ -69,10 +75,10 @@ setup(
         'console_scripts': [
             'eduvpn-client = eduvpn.__main__:eduvpn',
             'letsconnect-client = eduvpn.__main__:letsconnect',
-         ],
+        ],
         'gui_scripts': [
             'eduvpn-gui = eduvpn.ui.__main__:main',
-            'letsconnectgui = eduvpn.ui.__main__:letsconnect',
+            'letsconnect-gui = eduvpn.ui.__main__:letsconnect',
         ]
     }
 )

@@ -16,5 +16,5 @@ RUN docker-apt-install \
 
 ADD . /code
 WORKDIR /code
-RUN pip3 install ".[test]"
+RUN pip3 install ".[gui,test]"
 RUN mypy --config-file=setup.cfg eduvpn tests

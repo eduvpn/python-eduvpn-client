@@ -84,9 +84,11 @@ Let's Connect! desktop client
 %license LICENSE
 %doc README.md
 %{_bindir}/eduvpn-client
+%{_bindir}/eduvpn-gui
 %{_datarootdir}/applications/eduvpn-client.desktop
 %{_datarootdir}/eduvpn/eduvpn.png
-#%{_datarootdir}/eduvpn/builder/*.ui  # TODO: add these once added to repo
+%{_datarootdir}/eduvpn/country_codes.json
+%{_datarootdir}/eduvpn/builder/mainwindow.ui
 %{_datarootdir}/icons/hicolor/128x128/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png
@@ -97,7 +99,10 @@ Let's Connect! desktop client
 %license LICENSE
 %doc README.md
 %{_bindir}/letsconnect-client
+%{_bindir}/letsconnect-gui
 %{_datarootdir}/applications/lets-connect-client.desktop
+%{_datarootdir}/eduvpn/builder/mainwindow.ui
+%{_datarootdir}/eduvpn/country_codes.json
 %{_datarootdir}/icons/hicolor/128x128/apps/lets-connect-client.png
 %{_datarootdir}/icons/hicolor/256x256/apps/lets-connect-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/lets-connect-client.png

@@ -14,8 +14,10 @@ class TestCli(TestCase):
     @mock.patch('eduvpn.cli.get_info')
     @mock.patch('eduvpn.cli.write_config')
     @mock.patch('eduvpn.cli.write_to_nm_choice')
+    @mock.patch('eduvpn.cli.get_client')
     def test_start(
             self,
+            get_client: mock.MagicMock,
             write_to_nm_choice: mock.MagicMock,
             write_config: mock.MagicMock,
             get_info: mock.MagicMock,

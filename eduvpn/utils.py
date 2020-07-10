@@ -5,17 +5,19 @@ from os import path
 from sys import prefix
 from typing import Callable
 
-import gi
+logger = getLogger(__file__)
 
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+try:
+    import gi
+
+    gi.require_version('Gtk', '3.0')
+    from gi.repository import Gtk
+except (ImportError, ValueError) as e:
+    logger.warning("GTK not available")
 
 
 def get_logger(name_space: str):
     return getLogger(name_space)
-
-
-logger = get_logger(__file__)
 
 
 @lru_cache(maxsize=1)
@@ -50,7 +52,7 @@ def thread_helper(func: Callable) -> threading.Thread:
 
 
 # ui thread
-def error_helper(parent: Gtk.GObject, msg_big: str, msg_small: str) -> None:
+def error_helper(parent: 'Gtk.GObject', msg_big: str, msg_small: str) -> None:  # type: ignore
     """
     Shows a GTK error message dialog.
     args:
@@ -59,7 +61,7 @@ def error_helper(parent: Gtk.GObject, msg_big: str, msg_small: str) -> None:
         msg_small (str): the small string
     """
     logger.error(u"{}: {}".format(msg_big, msg_small))
-    error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, str(msg_big))
-    error_dialog.format_secondary_text(str(msg_small))
-    error_dialog.run()
-    error_dialog.hide()
+    error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, str(msg_big))  # type: ignore
+    error_dialog.format_secondary_text(str(msg_small))  # type: ignore
+    error_dialog.run()  # type: ignore
+    error_dialog.hide()  # type: ignore

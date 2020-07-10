@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional, Tuple
+
 from eduvpn.i18n import extract_translation
-from eduvpn.nm import nm_available
 
 
 def input_int(max_: int):

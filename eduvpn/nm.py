@@ -14,6 +14,7 @@ try:
     from gi.repository import NM, GLib  # type: ignore
 except (ImportError, ValueError) as e:
     logger.warning("Network Manager not available")
+    NM = None
 
 from eduvpn.storage import set_uuid, get_uuid, write_config
 from eduvpn.utils import get_logger
@@ -21,11 +22,18 @@ from eduvpn.utils import get_logger
 logger = get_logger(__file__)
 
 
-def get_client() -> NM.Client:
+def get_client() -> 'NM.Client':
     """
     Create a new client object. We put this here so other modules don't need to import NM
     """
     return NM.Client.new(None)
+
+
+def get_mainloop():
+    """
+    Create a new client object. We put this here so other modules don't need to import Glib
+    """
+    return GLib.MainLoop()
 
 
 def nm_available() -> bool:

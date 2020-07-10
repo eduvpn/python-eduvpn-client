@@ -1,11 +1,11 @@
-import requests
 import logging
-from typing import Tuple, Optional
-from base64 import b64decode
+from typing import Tuple
+
+import requests
 from requests_oauthlib import OAuth2Session
+
 from eduvpn.crypto import common_name_from_cert
 from eduvpn.crypto import validate
-from nacl.signing import VerifyKey
 
 logger = logging.getLogger(__name__)
 
