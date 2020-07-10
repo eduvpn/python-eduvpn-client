@@ -44,7 +44,7 @@ class EduVpnGui:
         self.client = NM.Client.new(None)
 
         for b in builder_files:
-            p = os.path.join(self.prefix, 'share/builder', b)
+            p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
             if not os.access(p, os.R_OK):
                 logger.error(u"Can't find {}! That is quite an important file.".format(p))
                 raise Exception

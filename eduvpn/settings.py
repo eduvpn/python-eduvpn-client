@@ -17,7 +17,7 @@ CODE_CHALLENGE_METHOD = "S256"
 LANGUAGE = 'nl'
 COUNTRY = "nl-NL"
 
-COUNTRY_MAP = Path(prefix + "/share/country_code_to_country_mapping.json")
+COUNTRY_MAP = Path(prefix + "/share/eduvpn/country_codes.json")
 FLAG_PREFIX = prefix + "/share/images/flags/png/"
 IMAGE_PREFIX = prefix + "/share/images/"
 

@@ -22,7 +22,7 @@ def get_prefix() -> str:
     returns:
         path to Python installation prefix
     """
-    target = 'share/images/edu-vpn-logo.png'
+    target = 'share/eduvpn/builder/mainwindow.ui'
     local = path.dirname(path.dirname(path.abspath(__file__)))
     options = [local, path.expanduser('~/.local'), '/usr/local', prefix]
     for option in options:
