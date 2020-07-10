@@ -1,10 +1,14 @@
 import threading
 from functools import lru_cache
-from sys import prefix
-from os import path
-from functools import wraps as decorator
 from logging import getLogger
-from typing import Any
+from os import path
+from sys import prefix
+from typing import Callable
+
+import gi
+
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 
 def get_logger(name_space: str):
@@ -32,7 +36,7 @@ def get_prefix() -> str:
     raise Exception("Can't find eduVPN installation")
 
 
-def thread_helper(func):  # type: (Any) -> threading.Thread
+def thread_helper(func: Callable) -> threading.Thread:
     """
     Runs a function in a thread
 
@@ -43,3 +47,19 @@ def thread_helper(func):  # type: (Any) -> threading.Thread
     thread.daemon = True
     thread.start()
     return thread
+
+
+# ui thread
+def error_helper(parent: Gtk.GObject, msg_big: str, msg_small: str) -> None:
+    """
+    Shows a GTK error message dialog.
+    args:
+        parent (GObject): A GTK Window
+        msg_big (str): the big string
+        msg_small (str): the small string
+    """
+    logger.error(u"{}: {}".format(msg_big, msg_small))
+    error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, str(msg_big))
+    error_dialog.format_secondary_text(str(msg_small))
+    error_dialog.run()
+    error_dialog.hide()
