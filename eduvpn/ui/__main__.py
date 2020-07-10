@@ -26,7 +26,7 @@ def signal_handler(sig, frame):
 def main(args=None):
     if args is None:
         args = sys.argv
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, format=log_format)
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -41,8 +41,6 @@ def main(args=None):
 
     edu_vpn_gui = EduVpnGui(lets_connect=False)
     edu_vpn_gui.run()
-
-    GLib.MainLoop()
 
     Gtk.main()
 
