@@ -57,7 +57,6 @@ class EduVpnGui:
             "on_back_button_released": self.on_back_button_released,
             "on_search_changed": self.on_search_changed,
             "on_add_other_server_button_clicked": self.on_add_other_server_button_clicked,
-            "on_profile_cursor_changed": self.on_profile_cursor_changed,
             "on_cancel_browser_button_clicked": self.on_cancel_browser_button_clicked,
             "on_connection_switch_state_set": self.on_connection_switch_state_set
         }
@@ -120,6 +119,9 @@ class EduVpnGui:
 
         select = self.other_servers_tree_view.get_selection()
         select.connect("changed", self.on_other_server_selection_changed)
+
+        select = self.profile_tree_view.get_selection()
+        select.connect("changed", self.on_profile_selection_changed)
 
         self.settings_page = self.builder.get_object('settingsPage')
 
@@ -410,14 +412,14 @@ class EduVpnGui:
             self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-not-connected.png")
             self.current_connection_sub_page.show()
 
-    def on_profile_cursor_changed(self, element):
+    def on_profile_selection_changed(self, selection):
         # type: (Any) -> None
-        (model, iter) = element.get_selection().get_selected()
-        if iter is not None:
-            display_name = model[iter][0]
-            i = model[iter][1]
+        (model, tree_iter) = selection.get_selected()
+        if model is not None and tree_iter is not None:
+            display_name = model[tree_iter][0]
+            i = model[tree_iter][1]
             profile_id = str(self.data.profiles[i]['profile_id'])
-            logger.debug("on_profile_cursor_changed: {} {}".format(display_name, profile_id))
+            logger.debug("on_profile_selection_changed: {} {}".format(display_name, profile_id))
             self.finalize_configuration(profile_id)
 
     def show_search_lists(self):

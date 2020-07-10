@@ -569,7 +569,6 @@
                     <property name="enable_search">False</property>
                     <property name="search_column">0</property>
                     <property name="enable_grid_lines">horizontal</property>
-                    <signal name="cursor-changed" handler="on_profile_cursor_changed" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection"/>
                     </child>
