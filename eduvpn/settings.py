@@ -18,8 +18,8 @@ LANGUAGE = 'nl'
 COUNTRY = "nl-NL"
 
 COUNTRY_MAP = Path(prefix + "/share/eduvpn/country_codes.json")
-FLAG_PREFIX = prefix + "/share/images/flags/png/"
-IMAGE_PREFIX = prefix + "/share/images/"
+FLAG_PREFIX = prefix + "/share/eduvpn/images/flags/png/"
+IMAGE_PREFIX = prefix + "/share/eduvpn/images/"
 
 
 # format: base64(<signature_algorithm> || <key_id> || <public_key>)
