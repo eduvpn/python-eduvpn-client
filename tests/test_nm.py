@@ -1,7 +1,9 @@
 from unittest import TestCase, skip
 
 from eduvpn.nm import (nm_available, add_connection,
-                       import_ovpn, get_client, get_mainloop)
+                       import_ovpn, get_client, get_mainloop, activate_connection,
+                       get_cert_key, connection_status, deactivate_connection, save_connection)
+from eduvpn.storage import get_uuid
 from tests.mock_config import mock_config, mock_key, mock_cert
 
 
@@ -10,18 +12,15 @@ from tests.mock_config import mock_config, mock_key, mock_cert
 class TestNm(TestCase):
     def test_nm(self):
         nm_available()
-        connection = import_ovpn(mock_config, mock_key, mock_cert)
+        simple_connection = import_ovpn(mock_config, mock_key, mock_cert)
         main_loop = get_mainloop()
         client = get_client()
-        add_connection(client, connection)
+        add_connection(client, simple_connection)
         # main_loop.run()
-
-        """
+        uuid = get_uuid()
         activate_connection(client, uuid)
         get_cert_key(client, uuid)
-        nm_ovpn_import(target_path)
         connection_status(client, uuid)
         deactivate_connection(client, uuid)
         save_connection(client, mock_config, mock_key, mock_cert)
-        update_connection(old_con, new_con)
-        """
+        # update_connection(connection, connection)
