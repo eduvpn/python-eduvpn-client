@@ -56,7 +56,6 @@ class EduVpnGui:
             "on_help_button_released": self.on_help_button_released,
             "on_back_button_released": self.on_back_button_released,
             "on_search_changed": self.on_search_changed,
-            "on_other_server_cursor_changed": self.on_other_server_cursor_changed,
             "on_add_other_server_button_clicked": self.on_add_other_server_button_clicked,
             "on_profile_cursor_changed": self.on_profile_cursor_changed,
             "on_cancel_browser_button_clicked": self.on_cancel_browser_button_clicked,
@@ -119,6 +118,9 @@ class EduVpnGui:
         select = self.secure_internet_tree_view.get_selection()
         select.connect("changed", self.on_secure_internet_selection_changed)
 
+        select = self.other_servers_tree_view.get_selection()
+        select.connect("changed", self.on_other_server_selection_changed)
+
         self.settings_page = self.builder.get_object('settingsPage')
 
         self.data = BackendData()
@@ -154,17 +156,17 @@ class EduVpnGui:
         logger.debug("on_add_other_server_button_clicked")
         self.show_add_other_server()
 
-    def on_other_server_cursor_changed(self, element) -> None:
-        logger.debug("on_other_server_cursor_changed")
-        (model, iter) = element.get_selection().get_selected()
-        if iter is not None:
-            self.data.server_name = name = model[iter][0]
+    def on_other_server_selection_changed(self, selection) -> None:
+        logger.debug("on_other_server_selection_changed")
+        (model, tree_iter) = selection.get_selected()
+        if model is not None and tree_iter is not None:
+            self.data.server_name = name = model[tree_iter][0]
             if name.count('.') > 1:
                 if not name.lower().startswith('https://'):
                     name = 'https://' + name
                 if not name.lower().endswith('/'):
                     name = name + '/'
-                logger.debug("on_other_server_cursor_changed: {}".format(name))
+                logger.debug("on_other_server_selection_changed: {}".format(name))
                 self.setup_connection(name)
 
     def on_cancel_browser_button_clicked(self, _) -> None:
