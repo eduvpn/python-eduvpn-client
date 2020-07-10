@@ -62,7 +62,6 @@ class EduVpnGui:
             "on_add_other_server_button_clicked": self.on_add_other_server_button_clicked,
             "on_profile_cursor_changed": self.on_profile_cursor_changed,
             "on_cancel_browser_button_clicked": self.on_cancel_browser_button_clicked,
-            "on_location_cursor_changed": self.on_location_cursor_changed,
             "on_connection_switch_state_set": self.on_connection_switch_state_set
         }
 
@@ -112,6 +111,9 @@ class EduVpnGui:
         self.connection_info_bottom_row = self.builder.get_object('connectionInfoBottomRow')
         self.connection_switch = self.builder.get_object('connectionSwitch')
         # self.connection_switch.connect("notify::active", self.on_connection_switch_activated)
+
+        select = self.location_tree_view.get_selection()
+        select.connect("changed", self.on_location_selection_changed)
 
         self.settings_page = self.builder.get_object('settingsPage')
 
@@ -440,20 +442,20 @@ class EduVpnGui:
             self.other_servers_header.hide()
             self.other_servers_tree_view.hide()
 
-    def on_location_cursor_changed(self, element):
+    def on_location_selection_changed(self, selection):
         # type: (Any) -> None
-        (model, iter) = element.get_selection().get_selected()
-        if model is not None and iter is not None:
-            self.data.server_name = model[iter][0]
-            display_name = model[iter][0]
-            i = model[iter][2]
+        (model, tree_iter) = selection.get_selected()
+        if model is not None and tree_iter is not None:
+            self.data.server_name = model[tree_iter][0]
+            display_name = model[tree_iter][0]
+            i = model[tree_iter][2]
             logger.debug(self.data.locations[i])
             base_url = str(self.data.locations[i]['base_url'])
             country_code = self.data.locations[i]['country_code']
             self.data.server_image = FLAG_PREFIX + country_code + "@1,5x.png"
             if 'support_contact' in self.data.locations[i]:
                 self.data.support_contact = self.data.locations[i]['support_contact']
-            logger.debug("on_location_cursor_changed: {} {}".format(display_name, base_url))
+            logger.debug("on_location_selection_changed: {} {}".format(display_name, base_url))
             self.show_connection(ConnectionStatus.INITIALIZING)
             thread_helper(lambda: handle_location_thread(base_url, self))
 
