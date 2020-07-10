@@ -11,16 +11,13 @@ all: run
 
 $(VENV)/:
 	python3 -m venv venv
+	venv/bin/pip install --upgrade pip wheel
 
 gui: $(VENV)/bin/eduvpn-gui
 	venv/bin/eduvpn-gui
 
-$(VENV)/bin/eduvpn-client: $(VENV)/bin/pip
-	venv/bin/pip install -e .
-
 $(VENV)/bin/eduvpn-gui: $(VENV)/
-	venv/bin/pip install --upgrade pip wheel
-	venv/bin/pip install -e .
+	venv/bin/pip install -e ".[test,gui]"
 
 dockers:
 	for i in `ls docker/*.docker`; do echo "*** $$i"; docker build . -f $$i; done
@@ -78,7 +75,7 @@ $(VENV)/bin/pytest:
 test: $(VENV)/bin/pytest
 	$(VENV)/bin/pytest
 
-run: $(VENV)/bin/eduvpn-client
+run: $(VENV)/bin/eduvpn-gui
 	$(VENV)/bin/eduvpn-client interactive
 
 srpm:
@@ -100,7 +97,7 @@ $(VENV)/bin/pycodestyle: $(VENV)/
 pycodestyle: $(VENV)/bin/pycodestyle
 	$(VENV)/bin/pycodestyle eduvpn tests
 	
-$(VENV)/bin/jupyter-notebook: $(VENV)/bin/eduvpn-client
+$(VENV)/bin/jupyter-notebook: $(VENV)/bin/eduvpn-gui
 	$(VENV)/bin/pip install -r notebooks/requirements.txt
 
 notebook: $(VENV)/bin/jupyter-notebook
