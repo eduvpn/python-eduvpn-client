@@ -233,7 +233,6 @@ class EduVpnGui:
     def init_search_list(self):
         text_cell = Gtk.CellRendererText()
         text_cell.set_property("size-points", 14)
-        text_cell.set_property("background", "#f6f5f4")
         col = Gtk.TreeViewColumn(None, text_cell, text=0)
         # next_symbol_cell = Gtk.CellRendererPixBuf()
         # next_symbol_cell.set_property("icon-name", "go-next-symbolic")
