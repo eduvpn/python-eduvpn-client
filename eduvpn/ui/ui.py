@@ -56,7 +56,6 @@ class EduVpnGui:
             "on_help_button_released": self.on_help_button_released,
             "on_back_button_released": self.on_back_button_released,
             "on_search_changed": self.on_search_changed,
-            "on_secure_internet_cursor_changed": self.on_secure_internet_cursor_changed,
             "on_other_server_cursor_changed": self.on_other_server_cursor_changed,
             "on_add_other_server_button_clicked": self.on_add_other_server_button_clicked,
             "on_profile_cursor_changed": self.on_profile_cursor_changed,
@@ -116,6 +115,9 @@ class EduVpnGui:
 
         select = self.institute_tree_view.get_selection()
         select.connect("changed", self.on_institute_selection_changed)
+
+        select = self.secure_internet_tree_view.get_selection()
+        select.connect("changed", self.on_secure_internet_selection_changed)
 
         self.settings_page = self.builder.get_object('settingsPage')
 
@@ -190,14 +192,14 @@ class EduVpnGui:
             logger.debug("on_institute_selection_changed: {} {}".format(self.data.server_name, base_url))
             self.setup_connection(base_url, None, False)
 
-    def on_secure_internet_cursor_changed(self, element) -> None:
-        (model, iter) = element.get_selection().get_selected()
-        if iter is not None:
-            self.data.server_name = model[iter][0]
-            i = model[iter][1]
+    def on_secure_internet_selection_changed(self, selection) -> None:
+        (model, tree_iter) = selection.get_selected()
+        if model is not None and tree_iter is not None:
+            self.data.server_name = model[tree_iter][0]
+            i = model[tree_iter][1]
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
-            logger.debug("on_secure_internet_cursor_changed: {} {}".format(self.data.server_name,
-                                                                           self.data.secure_internet_home))
+            logger.debug("on_secure_internet_selection_changed: {} {}".format(self.data.server_name,
+                                                                              self.data.secure_internet_home))
             self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
 
     def on_connection_switch_state_set(self, switch, state):
