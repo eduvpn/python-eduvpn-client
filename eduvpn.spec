@@ -93,7 +93,8 @@ Let's Connect! desktop client
 %{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png
 %{_datarootdir}/icons/hicolor/512x512/apps/eduvpn-client.png
-
+%{_datarootdir}/eduvpn/images/*.svg
+%{_datarootdir}/eduvpn/images/*.png
 
 %files -n letsconnect-client
 %license LICENSE
@@ -107,7 +108,8 @@ Let's Connect! desktop client
 %{_datarootdir}/icons/hicolor/256x256/apps/lets-connect-client.png
 %{_datarootdir}/icons/hicolor/48x48/apps/lets-connect-client.png
 %{_datarootdir}/icons/hicolor/512x512/apps/lets-connect-client.png
-
+%{_datarootdir}/eduvpn/images/*.svg
+%{_datarootdir}/eduvpn/images/*.png
 
 
 %changelog

@@ -57,7 +57,7 @@ def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
     return conn
 
 
-def import_ovpn(config: str, private_key: str, certificate: str) -> NM.SimpleConnection:
+def import_ovpn(config: str, private_key: str, certificate: str) -> 'NM.SimpleConnection':
     """
     Import the OVPN string into Network Manager.
     """
