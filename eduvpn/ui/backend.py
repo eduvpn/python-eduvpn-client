@@ -5,6 +5,7 @@ from eduvpn.settings import CLIENT_ID, SERVER_URI, ORGANISATION_URI
 
 
 class ConnectionStatus(Flag):
+    INITIALIZING = auto()
     NOT_CONNECTED = auto()
     CONNECTING = auto()
     CONNECTED = auto()

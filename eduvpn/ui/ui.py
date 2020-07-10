@@ -347,7 +347,7 @@ class EduVpnGui:
         self.back_button.hide()
         self.add_other_server_top_row.hide()
 
-    def show_connection(self):
+    def show_connection(self, connection_status):
         logger.debug("show_connection")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
@@ -359,7 +359,6 @@ class EduVpnGui:
         self.add_other_server_top_row.hide()
         self.connection_info_top_row.hide()
         self.profiles_sub_page.hide()
-        self.current_connection_sub_page.show()
         self.connection_sub_page.hide()
         self.connection_info_grid.hide()
         self.connection_info_bottom_row.hide()
@@ -376,24 +375,32 @@ class EduVpnGui:
         if len(self.data.support_contact) > 0:
             support = "Support: " + self.data.support_contact[0]
         self.support_label.set_text(support)
-        self.update_connection(ConnectionStatus.NOT_CONNECTED)
+        self.update_connection(connection_status)
         # self.connection_switch.set_active(False)
 
     def update_connection(self, status):
         self.data.connection_status = status
 
-        if self.data.connection_status is ConnectionStatus.NOT_CONNECTED:
+        if self.data.connection_status is ConnectionStatus.INITIALIZING:
+            self.connection_status_label.set_text("Initializing")
+            self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-default.png")
+            self.current_connection_sub_page.hide()
+        elif self.data.connection_status is ConnectionStatus.NOT_CONNECTED:
             self.connection_status_label.set_text("Not connected")
             self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-default.png")
+            self.current_connection_sub_page.show()
         elif self.data.connection_status is ConnectionStatus.CONNECTING:
             self.connection_status_label.set_text("Connecting")
             self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-connecting.png")
+            self.current_connection_sub_page.show()
         elif self.data.connection_status is ConnectionStatus.CONNECTED:
             self.connection_status_label.set_text("Connected")
             self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-connected.png")
+            self.current_connection_sub_page.show()
         elif self.data.connection_status is ConnectionStatus.CONNECTION_ERROR:
             self.connection_status_label.set_text("Connection error")
             self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-not-connected.png")
+            self.current_connection_sub_page.show()
 
     def on_profile_cursor_changed(self, element):
         # type: (Any) -> None
@@ -447,6 +454,7 @@ class EduVpnGui:
             if 'support_contact' in self.data.locations[i]:
                 self.data.support_contact = self.data.locations[i]['support_contact']
             logger.debug("on_location_cursor_changed: {} {}".format(display_name, base_url))
+            self.show_connection(ConnectionStatus.INITIALIZING)
             thread_helper(lambda: handle_location_thread(base_url, self))
 
     def setup_connection(self, auth_url, secure_internet: Optional[list] = None, interactive: bool = False):
@@ -474,6 +482,7 @@ class EduVpnGui:
 
     def finalize_configuration(self, profile_id):
         logger.debug(f"finalize_configuration")
+        self.show_connection(ConnectionStatus.INITIALIZING)
         thread_helper(lambda: finalize_configuration_thread(profile_id, self))
 
     def configuration_finalized(self, config, private_key, certificate):
@@ -488,11 +497,11 @@ class EduVpnGui:
 
     def connection_saved(self):
         logger.debug(f"connection_saved")
-        self.show_connection()
+        self.show_connection(ConnectionStatus.NOT_CONNECTED)
 
     def connection_written(self):
         logger.debug(f"connection_written")
-        self.show_connection()
+        self.show_connection(ConnectionStatus.NOT_CONNECTED)
 
 
 def fetch_token_thread(gui):
