@@ -14,7 +14,7 @@ def request(uri: str, verify: bool = False) -> dict:
     """
     Do a request and check the signature using our public key verifier.
     """
-    logger.info(u"Requesting{}".format(uri))
+    logger.info(u"Requesting {}".format(uri))
     response = requests.get(uri)
     if response.status_code != 200:
         msg = "Got error code {} requesting {}".format(response.status_code, uri)
