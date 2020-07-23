@@ -3,32 +3,34 @@
 # Copyright: 2017-2020, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-import logging
 import os
 import re
 import webbrowser
+from logging import getLogger
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional
 
-import gi
+logger = getLogger(__name__)
 
-gi.require_version("Gtk", "3.0")
-gi.require_version('NM', '1.0')
-from gi.repository import Gtk, GObject, GLib, GdkPixbuf, NM
+try:
+    import gi
+
+    gi.require_version('Gtk', '3.0')
+    from gi.repository import Gtk, GObject, GLib, GdkPixbuf
+except (ImportError, ValueError) as e:
+    logger.warning("GTK not available")
 
 from requests_oauthlib import OAuth2Session
 
 from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
 from eduvpn.i18n import extract_translation, retrieve_country_name
-from eduvpn.nm import save_connection, nm_available, activate_connection, deactivate_connection
+from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
 from eduvpn.ui.backend import BackendData, ConnectionStatus
-
-logger = logging.getLogger(__name__)
 
 builder_files = ['mainwindow.ui']
 
@@ -41,7 +43,7 @@ class EduVpnGui:
         self.prefix = get_prefix()
         self.builder = Gtk.Builder()
 
-        self.client = NM.Client.new(None)
+        self.client = get_client()
 
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
@@ -108,21 +110,6 @@ class EduVpnGui:
         self.connection_switch = self.builder.get_object('connectionSwitch')
         # self.connection_switch.connect("notify::active", self.on_connection_switch_activated)
 
-        select = self.location_tree_view.get_selection()
-        select.connect("changed", self.on_location_selection_changed)
-
-        select = self.institute_tree_view.get_selection()
-        select.connect("changed", self.on_institute_selection_changed)
-
-        select = self.secure_internet_tree_view.get_selection()
-        select.connect("changed", self.on_secure_internet_selection_changed)
-
-        select = self.other_servers_tree_view.get_selection()
-        select.connect("changed", self.on_other_server_selection_changed)
-
-        select = self.profile_tree_view.get_selection()
-        select.connect("changed", self.on_profile_selection_changed)
-
         self.settings_page = self.builder.get_object('settingsPage')
 
         self.data = BackendData()
@@ -138,9 +125,8 @@ class EduVpnGui:
         self.add_other_server_top_row.hide()
 
     def run(self) -> None:
-
-        # self.show_open_browser()
         self.window.show()
+        self.show_find_your_institute()
 
     def on_settings_button_released(self, widget, event) -> None:
         logger.debug("on_settings_button_released")
@@ -160,8 +146,9 @@ class EduVpnGui:
 
     def on_other_server_selection_changed(self, selection) -> None:
         logger.debug("on_other_server_selection_changed")
+        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
         (model, tree_iter) = selection.get_selected()
-        if model is not None and tree_iter is not None:
+        if tree_iter is not None:
             self.data.server_name = name = model[tree_iter][0]
             if name.count('.') > 1:
                 if not name.lower().startswith('https://'):
@@ -169,90 +156,100 @@ class EduVpnGui:
                 if not name.lower().endswith('/'):
                     name = name + '/'
                 logger.debug("on_other_server_selection_changed: {}".format(name))
+                select = self.institute_tree_view.get_selection()
+                select.disconnect_by_func(self.on_institute_selection_changed)
+                select = self.secure_internet_tree_view.get_selection()
+                select.disconnect_by_func(self.on_secure_internet_selection_changed)
+                select = self.other_servers_tree_view.get_selection()
+                select.disconnect_by_func(self.on_other_server_selection_changed)
                 self.setup_connection(name)
+        selection.unselect_all()
 
     def on_cancel_browser_button_clicked(self, _) -> None:
         self.show_find_your_institute()
 
     def on_search_changed(self, _=None) -> None:
-        if len(self.find_your_institute_search.get_text()) > 0:
-            self.find_your_institute_image.hide()
-            self.find_your_institute_spacer.hide()
-            self.add_other_server_top_row.hide()
-        else:
-            self.find_your_institute_image.show()
-            self.find_your_institute_spacer.show()
-            self.add_other_server_top_row.hide()
+        logger.debug("on_search_changed: {}".format(self.find_your_institute_search.get_text()))
         self.update_search_lists(self.find_your_institute_search.get_text())
 
     def on_institute_selection_changed(self, selection) -> None:
+        logger.debug("on_institute_selection_changed")
+        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
         (model, tree_iter) = selection.get_selected()
-        if model is not None and tree_iter is not None:
+        if tree_iter is not None:
             self.data.server_name = model[tree_iter][0]
             i = model[tree_iter][1]
+            select = self.institute_tree_view.get_selection()
+            select.disconnect_by_func(self.on_institute_selection_changed)
+            select = self.secure_internet_tree_view.get_selection()
+            select.disconnect_by_func(self.on_secure_internet_selection_changed)
+            select = self.other_servers_tree_view.get_selection()
+            select.disconnect_by_func(self.on_other_server_selection_changed)
             base_url = str(self.data.institute_access[i]['base_url'])
             if 'support_contact' in self.data.institute_access[i]:
                 self.data.support_contact = self.data.institute_access[i]['support_contact']
             logger.debug("on_institute_selection_changed: {} {}".format(self.data.server_name, base_url))
             self.setup_connection(base_url, None, False)
+        selection.unselect_all()
 
     def on_secure_internet_selection_changed(self, selection) -> None:
+        logger.debug("on_secure_internet_selection_changed")
+        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
         (model, tree_iter) = selection.get_selected()
-        if model is not None and tree_iter is not None:
+        if tree_iter is not None:
             self.data.server_name = model[tree_iter][0]
             i = model[tree_iter][1]
+            select = self.institute_tree_view.get_selection()
+            select.disconnect_by_func(self.on_institute_selection_changed)
+            select = self.secure_internet_tree_view.get_selection()
+            select.disconnect_by_func(self.on_secure_internet_selection_changed)
+            select = self.other_servers_tree_view.get_selection()
+            select.disconnect_by_func(self.on_other_server_selection_changed)
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
-            logger.debug("on_secure_internet_selection_changed: {} {}".format(self.data.server_name,
-                                                                              self.data.secure_internet_home))
+            logger.debug("on_secure_internet_selection_changed: {} {}".format(self.data.server_name, self.data.secure_internet_home))
             self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
+        selection.unselect_all()
 
-    def on_connection_switch_state_set(self, switch, state):
+    def on_connection_switch_state_set(self, switch, state) -> None:
         if state:
             self.activate_connection()
         else:
             self.deactivate_connection()
 
-    def activate_connection(self):
+    def activate_connection(self) -> None:
         logger.debug("Activating connection")
         uuid = get_uuid()
         if uuid:
             GLib.idle_add(lambda: activate_connection(self.client, uuid))
-            # connection_status(get_uuid())
             GLib.idle_add(lambda: self.connection_activated())
         else:
             raise Exception("No UUID configured, can't activate connection")
 
-    def deactivate_connection(self):
+    def deactivate_connection(self) -> None:
         logger.debug("Deactivating connection")
         uuid = get_uuid()
         if uuid:
             GLib.idle_add(lambda: deactivate_connection(self.client, uuid))
-            # connection_status(get_uuid())
             GLib.idle_add(lambda: self.connection_deactivated())
         else:
             raise Exception("No UUID configured, can't deactivate connection")
 
-    def connection_activated(self):
+    def connection_activated(self) -> None:
         self.update_connection(ConnectionStatus.CONNECTED)
         logger.debug("connection_activated")
 
-    def connection_deactivated(self):
+    def connection_deactivated(self) -> None:
         self.update_connection(ConnectionStatus.NOT_CONNECTED)
         logger.debug("connection_deactivated")
 
-    def init_search_list(self):
+    def init_search_list(self) -> None:
         text_cell = Gtk.CellRendererText()
         text_cell.set_property("size-points", 14)
         col = Gtk.TreeViewColumn(None, text_cell, text=0)
-        # next_symbol_cell = Gtk.CellRendererPixBuf()
-        # next_symbol_cell.set_property("icon-name", "go-next-symbolic")
-
         self.institute_tree_view.append_column(col)
         self.institute_tree_view.set_model(self.institute_list_model)
         col = Gtk.TreeViewColumn(None, text_cell, text=0)
         self.secure_internet_tree_view.append_column(col)
-        # col = Gtk.TreeViewColumn(None, next_symbol_cell,)
-        # self.secure_internet_tree_view.append_column(col)
         self.secure_internet_tree_view.set_model(self.secure_internet_list_model)
         col = Gtk.TreeViewColumn(None, text_cell, text=0)
         self.other_servers_tree_view.append_column(col)
@@ -266,9 +263,20 @@ class EduVpnGui:
         col = Gtk.TreeViewColumn(None, text_cell, text=0)
         self.location_tree_view.append_column(col)
         self.location_tree_view.set_model(self.locations_list_model)
-        self.update_search_lists()
+        # self.update_search_lists()
 
-    def update_search_lists(self, search_string=""):
+    def update_search_lists(self, search_string="", disconnect=True) -> None:
+        logger.debug("update_search_lists: {}".format(search_string))
+
+        selection = self.institute_tree_view.get_selection()
+        if disconnect:
+            select = self.institute_tree_view.get_selection()
+            select.disconnect_by_func(self.on_institute_selection_changed)
+            select = self.secure_internet_tree_view.get_selection()
+            select.disconnect_by_func(self.on_secure_internet_selection_changed)
+            select = self.other_servers_tree_view.get_selection()
+            select.disconnect_by_func(self.on_other_server_selection_changed)
+
         self.institute_list_model.clear()
         self.secure_internet_list_model.clear()
         self.other_servers_list_model.clear()
@@ -281,10 +289,32 @@ class EduVpnGui:
             if re.search(search_string, display_name, re.IGNORECASE):
                 self.secure_internet_list_model.append([display_name, i])
         self.show_search_lists()
+        select = self.institute_tree_view.get_selection()
+        select.connect("changed", self.on_institute_selection_changed)
+        select = self.secure_internet_tree_view.get_selection()
+        select.connect("changed", self.on_secure_internet_selection_changed)
+        select = self.other_servers_tree_view.get_selection()
+        select.connect("changed", self.on_other_server_selection_changed)
 
-    def show_find_your_institute(self):
+    def show_find_your_institute(self) -> None:
         logger.debug("show_find_your_institute")
+        self.data.profiles = []
+        self.data.locations = []
+        self.data.secure_internet_home = None
+        self.data.oauth = None
+        self.data.api_url = None
+        self.data.auth_url = None
+        self.data.token_endpoint = None
+        self.data.connection_status = ConnectionStatus.INITIALIZING
+        self.data.server_name = None
+        self.data.server_image = None
+        self.data.support_contact = []
+
         self.find_your_institute_page.show()
+
+        self.find_your_institute_search.disconnect_by_func(self.on_search_changed)
+        self.find_your_institute_search.set_text("")
+
         self.settings_page.hide()
         self.choose_profile_page.hide()
         self.choose_location_page.hide()
@@ -292,9 +322,10 @@ class EduVpnGui:
         self.connection_page.hide()
         self.back_button.hide()
         self.add_other_server_top_row.hide()
-        self.show_search_lists()
+        self.find_your_institute_search.connect("search-changed", self.on_search_changed)
+        self.update_search_lists(disconnect=False)
 
-    def show_add_other_server(self):
+    def show_add_other_server(self) -> None:
         logger.debug("show_add_other_server")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
@@ -305,7 +336,7 @@ class EduVpnGui:
         self.back_button.show()
         self.add_other_server_top_row.hide()
 
-    def show_settings(self):
+    def show_settings(self) -> None:
         logger.debug("show_settings")
         self.find_your_institute_page.hide()
         self.settings_page.show()
@@ -327,6 +358,8 @@ class EduVpnGui:
             self.connection_page.hide()
             self.back_button.show()
             self.add_other_server_top_row.hide()
+            select = self.profile_tree_view.get_selection()
+            select.connect("changed", self.on_profile_selection_changed)
         else:
             logger.debug("ERROR: should only be called when there are profiles to choose from")
             self.show_settings()
@@ -342,11 +375,13 @@ class EduVpnGui:
             self.connection_page.hide()
             self.back_button.show()
             self.add_other_server_top_row.hide()
+            select = self.location_tree_view.get_selection()
+            select.connect("changed", self.on_location_selection_changed)
         else:
             logger.debug("ERROR: should only be called when there are profiles to choose from")
             self.show_settings()
 
-    def show_open_browser(self):
+    def show_open_browser(self) -> None:
         logger.debug("show_open_browser")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
@@ -357,7 +392,7 @@ class EduVpnGui:
         self.back_button.hide()
         self.add_other_server_top_row.hide()
 
-    def show_connection(self, connection_status):
+    def show_connection(self, connection_status) -> None:
         logger.debug("show_connection")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
@@ -386,9 +421,8 @@ class EduVpnGui:
             support = "Support: " + self.data.support_contact[0]
         self.support_label.set_text(support)
         self.update_connection(connection_status)
-        # self.connection_switch.set_active(False)
 
-    def update_connection(self, status):
+    def update_connection(self, status) -> None:
         self.data.connection_status = status
 
         if self.data.connection_status is ConnectionStatus.INITIALIZING:
@@ -412,24 +446,37 @@ class EduVpnGui:
             self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-not-connected.png")
             self.current_connection_sub_page.show()
 
-    def on_profile_selection_changed(self, selection):
-        # type: (Any) -> None
+    def on_profile_selection_changed(self, selection) -> None:
+        logger.debug("on_profile_selection_changed")
+        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
         (model, tree_iter) = selection.get_selected()
-        if model is not None and tree_iter is not None:
+        if tree_iter is not None:
             display_name = model[tree_iter][0]
             i = model[tree_iter][1]
+            selection.disconnect_by_func(self.on_profile_selection_changed)
             profile_id = str(self.data.profiles[i]['profile_id'])
             logger.debug("on_profile_selection_changed: {} {}".format(display_name, profile_id))
             self.finalize_configuration(profile_id)
+        selection.unselect_all()
 
-    def show_search_lists(self):
+    def show_search_lists(self) -> None:
         name = self.find_your_institute_search.get_text()
         search_term = len(name) > 0
         dot_count = name.count('.')
+        logger.debug("show_search_lists: name:{} len:{}".format(name, len(name)))
 
         if dot_count > 1:
             self.other_servers_list_model.clear()
             self.other_servers_list_model.append([name, 0])
+
+        if search_term:
+            self.find_your_institute_image.hide()
+            self.find_your_institute_spacer.hide()
+            self.add_other_server_top_row.hide()
+        else:
+            self.find_your_institute_image.show()
+            self.find_your_institute_spacer.show()
+            self.add_other_server_top_row.hide()
 
         if len(self.institute_list_model) > 0 and search_term:
             self.institute_access_header.show()
@@ -450,13 +497,15 @@ class EduVpnGui:
             self.other_servers_header.hide()
             self.other_servers_tree_view.hide()
 
-    def on_location_selection_changed(self, selection):
-        # type: (Any) -> None
+    def on_location_selection_changed(self, selection) -> None:
+        logger.debug("on_location_selection_changed")
+        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
         (model, tree_iter) = selection.get_selected()
-        if model is not None and tree_iter is not None:
+        if tree_iter is not None:
             self.data.server_name = model[tree_iter][0]
             display_name = model[tree_iter][0]
             i = model[tree_iter][2]
+            selection.disconnect_by_func(self.on_location_selection_changed)
             logger.debug(self.data.locations[i])
             base_url = str(self.data.locations[i]['base_url'])
             country_code = self.data.locations[i]['country_code']
@@ -466,8 +515,9 @@ class EduVpnGui:
             logger.debug("on_location_selection_changed: {} {}".format(display_name, base_url))
             self.show_connection(ConnectionStatus.INITIALIZING)
             thread_helper(lambda: handle_location_thread(base_url, self))
+        selection.unselect_all()
 
-    def setup_connection(self, auth_url, secure_internet: Optional[list] = None, interactive: bool = False):
+    def setup_connection(self, auth_url, secure_internet: Optional[list] = None, interactive: bool = False) -> None:
 
         self.data.auth_url = auth_url
         self.data.locations = secure_internet
@@ -480,22 +530,22 @@ class EduVpnGui:
             self.show_open_browser()
             thread_helper(lambda: fetch_token_thread(self))
 
-    def token_available(self):
+    def token_available(self) -> None:
         if self.data.locations:
-            thread_helper(lambda: handle_secur_internet_thread(self))
+            thread_helper(lambda: handle_secure_internet_thread(self))
         else:
             self.handle_profiles()
 
-    def handle_profiles(self):
+    def handle_profiles(self) -> None:
         logger.debug(f"using {self.data.api_url} as api_url")
         thread_helper(lambda: handle_profiles_thread(self))
 
-    def finalize_configuration(self, profile_id):
+    def finalize_configuration(self, profile_id) -> None:
         logger.debug(f"finalize_configuration")
         self.show_connection(ConnectionStatus.INITIALIZING)
         thread_helper(lambda: finalize_configuration_thread(profile_id, self))
 
-    def configuration_finalized(self, config, private_key, certificate):
+    def configuration_finalized(self, config, private_key, certificate) -> None:
         if nm_available():
             logger.info("nm available:")
             save_connection(self.client, config, private_key, certificate)
@@ -505,16 +555,16 @@ class EduVpnGui:
             write_config(config, private_key, certificate, target)
             GLib.idle_add(lambda: self.connection_written())
 
-    def connection_saved(self):
+    def connection_saved(self) -> None:
         logger.debug(f"connection_saved")
         self.show_connection(ConnectionStatus.NOT_CONNECTED)
 
-    def connection_written(self):
+    def connection_written(self) -> None:
         logger.debug(f"connection_written")
         self.show_connection(ConnectionStatus.NOT_CONNECTED)
 
 
-def fetch_token_thread(gui):
+def fetch_token_thread(gui) -> None:
     logger.debug("fetching token")
     gui.data.api_url, gui.data.token_endpoint, auth_endpoint = get_info(gui.data.auth_url)
     gui.data.oauth = get_oauth(gui.data.token_endpoint, auth_endpoint)
@@ -522,7 +572,7 @@ def fetch_token_thread(gui):
     GLib.idle_add(lambda: gui.token_available())
 
 
-def restoring_token_thread(exists, gui):
+def restoring_token_thread(exists, gui) -> None:
     logger.debug("token exists, restoring")
     token, gui.data.token_endpoint, authorization_endpoint = exists
     gui.data.oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=gui.data.token_endpoint)
@@ -530,13 +580,13 @@ def restoring_token_thread(exists, gui):
     GLib.idle_add(lambda: gui.token_available())
 
 
-def handle_location_thread(base_url, gui):
+def handle_location_thread(base_url, gui) -> None:
     logger.debug("fetching location info")
     gui.data.api_url, _, _ = get_info(base_url)
     GLib.idle_add(lambda: gui.handle_profiles())
 
 
-def handle_profiles_thread(gui):
+def handle_profiles_thread(gui) -> None:
     gui.data.oauth.refresh_token(token_url=gui.data.token_endpoint)
     gui.data.profiles = list_profiles(gui.data.oauth, gui.data.api_url)
     if len(gui.data.profiles) > 1:
@@ -549,24 +599,22 @@ def handle_profiles_thread(gui):
         GLib.idle_add(lambda: gui.finalize_configuration(profile_id))
 
 
-def handle_secur_internet_thread(gui):
+def handle_secure_internet_thread(gui) -> None:
     if len(gui.data.secure_internet) > 1:
         gui.locations_list_model.clear()
         for i, location in enumerate(gui.data.locations):
-            # gui.locations_list_model.append([location['country_code'], i])
             flag_location = FLAG_PREFIX + location['country_code'] + "@1,5x.png"
             if os.path.exists(flag_location):
                 flag_image = GdkPixbuf.Pixbuf.new_from_file(flag_location)
                 gui.locations_list_model.append([retrieve_country_name(location['country_code']), flag_image, i])
 
-            # gui.locations_list_model.append([extract_translation(location['country_code']), FLAG_PREFIX + country_code + "@1,5x.png", i])
         GLib.idle_add(lambda: gui.show_choose_location())
     else:
         base_url = str(gui.data.locations[0]['base_url'])
         GLib.idle_add(lambda: gui.finalize_configuration(base_url))
 
 
-def finalize_configuration_thread(profile_id, gui: EduVpnGui):
+def finalize_configuration_thread(profile_id, gui: EduVpnGui) -> None:
     logger.debug("finalize_configuration_thread")
     config = get_config(gui.data.oauth, gui.data.api_url, profile_id)
     private_key, certificate = create_keypair(gui.data.oauth, gui.data.api_url)
