@@ -6,6 +6,7 @@ from eduvpn.settings import CLIENT_ID, SERVER_URI, ORGANISATION_URI
 
 logger = getLogger(__name__)
 
+
 class ConnectionStatus(Flag):
     INITIALIZING = auto()
     NOT_CONNECTED = auto()
