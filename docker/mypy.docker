@@ -6,15 +6,14 @@ RUN docker-apt-install \
     gir1.2-notify-0.7 \
     libnotify4 \
     python3-gi \
-    python3-nacl \
+    python3-dbus \
     python3-requests-oauthlib \
     python3-pip \
-    python3-setuptools \
     python3-pytest \
     python3-cryptography \
     python3-pip
 
 ADD . /code
 WORKDIR /code
-RUN pip3 install ".[gui,test]"
+RUN pip3 install ".[test]"
 RUN mypy --config-file=setup.cfg eduvpn tests

@@ -1,3 +1,6 @@
+from enum import Flag
+import dbus  # type:ignore
+from dbus.mainloop.glib import DBusGMainLoop  # type:ignore
 from logging import getLogger
 from pathlib import Path
 from shutil import rmtree
@@ -18,6 +21,33 @@ except (ImportError, ValueError) as e:
 
 from eduvpn.storage import set_uuid, get_uuid, write_config
 from eduvpn.utils import get_logger
+
+
+class ConnectionState(Flag):
+    UNKNOWN = 0  # NM.VpnConnectionState.UNKNOWN
+    PREPARE = 1  # NM.VpnConnectionState.PREPARE
+    NEED_AUTH = 2  # NM.VpnConnectionState.NEED_AUTH
+    CONNECT = 3  # NM.VpnConnectionState.CONNECT
+    IP_CONFIG_GET = 4  # NM.VpnConnectionState.IP_CONFIG_GET
+    ACTIVATED = 5  # NM.VpnConnectionState.ACTIVATED
+    FAILED = 6  # NM.VpnConnectionState.FAILED
+    DISCONNECTED = 7  # NM.VpnConnectionState.DISCONNECTED
+
+
+class ConnectionStateReason(Flag):
+    UNKNOWN = 0  # NM.VpnConnectionStateReason.UNKNOWN
+    NONE = 1  # NM.VpnConnectionStateReason.NONE
+    USER_DISCONNECTED = 2  # NM.VpnConnectionStateReason.USER_DISCONNECTED
+    DEVICE_DISCONNECTED = 3  # NM.VpnConnectionStateReason.DEVICE_DISCONNECTED
+    SERVICE_STOPPED = 4  # NM.VpnConnectionStateReason.SERVICE_STOPPED
+    IP_CONFIG_INVALID = 5  # NM.VpnConnectionStateReason.IP_CONFIG_INVALID
+    CONNECT_TIMEOUT = 6  # NM.VpnConnectionStateReason.CONNECT_TIMEOUT
+    SERVICE_START_TIMEOUT = 7  # NM.VpnConnectionStateReason.SERVICE_START_TIMEOUT
+    SERVICE_START_FAILED = 8  # NM.VpnConnectionStateReason.SERVICE_START_FAILED
+    NO_SECRETS = 9  # NM.VpnConnectionStateReason.NO_SECRETS
+    LOGIN_FAILED = 10  # NM.VpnConnectionStateReason.LOGIN_FAILED
+    CONNECTION_REMOVED = 11  # NM.VpnConnectionStateReason.CONNECTION_REMOVED
+
 
 logger = get_logger(__file__)
 
@@ -138,3 +168,31 @@ def connection_status(client: 'NM.Client', uuid: str):
             logger.debug(source_object.check_connectivity_finish(result))
 
         client.check_connectivity_async(callback=callback)
+
+
+user_dbus_status_callback = None
+
+
+def register_status_callback(callback):
+    global user_dbus_status_callback
+    user_dbus_status_callback = callback
+
+
+def dbus_status_callback(state_code=None, reason_code=None):
+    global user_dbus_status_callback
+    if user_dbus_status_callback is not None:
+        user_dbus_status_callback(state_code, reason_code)
+
+
+def init_dbus_system_bus():
+    """
+    Create a new D-Bus system bus object. We put this here so other modules don't need to import D-Bus
+    """
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    bus = dbus.SystemBus()
+    _ = bus.add_signal_receiver(handler_function=dbus_status_callback,
+                                dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
+                                signal_name='VpnStateChanged')
+
+
+
