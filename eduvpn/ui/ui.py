@@ -25,7 +25,8 @@ from requests_oauthlib import OAuth2Session
 from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
 from eduvpn.i18n import extract_translation, retrieve_country_name
-from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection
+from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection, \
+    init_dbus_system_bus, register_status_callback, ConnectionState, ConnectionStateReason
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL
@@ -44,6 +45,8 @@ class EduVpnGui:
         self.builder = Gtk.Builder()
 
         self.client = get_client()
+
+        init_dbus_system_bus()
 
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
@@ -123,6 +126,19 @@ class EduVpnGui:
         self.init_search_list()
         self.back_button.hide()
         self.add_other_server_top_row.hide()
+        register_status_callback(self.nm_status_cb)
+
+    def nm_status_cb(self, state_code: ConnectionState = None, reason_code: ConnectionStateReason = None):
+        if state_code is not None:
+            state = str(ConnectionState(state_code))
+        else:
+            state = "None"
+        if reason_code is not None:
+            reason = str(ConnectionStateReason(reason_code))
+        else:
+            reason = "None"
+
+        logger.debug(f"nm_status_cb state: {state}, reason: {reason}")
 
     def run(self) -> None:
         self.window.show()

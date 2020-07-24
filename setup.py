@@ -8,7 +8,7 @@ tests_require = [
     'pytest',
     'PyGObject-stubs',
     'mypy',
-    'pycodestyle',
+    'pycodestyle'
 ]
 
 install_requires = [
@@ -20,7 +20,7 @@ install_requires = [
 ]
 
 extras_require = {
-    'gui': ['pygobject'],
+    'gui': ['dbus-python','pygobject'],
     'test': tests_require,
 }
 
