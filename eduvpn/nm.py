@@ -161,7 +161,7 @@ def activate_connection(client: 'NM.Client', uuid: str):
 
 def deactivate_connection(client: 'NM.Client', uuid: str):
     con = client.get_primary_connection()
-
+    logger.debug("deactivate_connection uuid: {} connection: {}".format(uuid, con))
     if con:
         active_uuid = con.get_uuid()
 
