@@ -185,6 +185,7 @@ class EduVpnGui:
                 select.disconnect_by_func(self.on_secure_internet_selection_changed)
                 select = self.other_servers_tree_view.get_selection()
                 select.disconnect_by_func(self.on_other_server_selection_changed)
+                self.show_empty()
                 self.setup_connection(name)
         selection.unselect_all()
 
@@ -212,6 +213,7 @@ class EduVpnGui:
             if 'support_contact' in self.data.institute_access[i]:
                 self.data.support_contact = self.data.institute_access[i]['support_contact']
             logger.debug("on_institute_selection_changed: {} {}".format(self.data.server_name, base_url))
+            self.show_empty()
             self.setup_connection(base_url, None, False)
         selection.unselect_all()
 
@@ -230,6 +232,7 @@ class EduVpnGui:
             select.disconnect_by_func(self.on_other_server_selection_changed)
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
             logger.debug("on_secure_internet_selection_changed: {} {}".format(self.data.server_name, self.data.secure_internet_home))
+            self.show_empty()
             self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
         selection.unselect_all()
 
@@ -448,6 +451,22 @@ class EduVpnGui:
             else:
                 self.activate_connection()
 
+    def show_empty(self) -> None:
+        logger.debug("show_empty")
+        self.find_your_institute_page.hide()
+        self.settings_page.hide()
+        self.choose_profile_page.hide()
+        self.choose_location_page.hide()
+        self.open_browser_page.hide()
+        self.connection_page.hide()
+        self.back_button.hide()
+        self.add_other_server_top_row.hide()
+        self.connection_info_top_row.hide()
+        self.profiles_sub_page.hide()
+        self.connection_sub_page.hide()
+        self.connection_info_grid.hide()
+        self.connection_info_bottom_row.hide()
+
     def update_connection_state(self, state: ConnectionState) -> None:
         self.data.connection_state = state
 
@@ -535,7 +554,7 @@ class EduVpnGui:
             if 'support_contact' in self.data.locations[i]:
                 self.data.support_contact = self.data.locations[i]['support_contact']
             logger.debug("on_location_selection_changed: {} {}".format(display_name, base_url))
-            self.show_connection(False)
+            self.show_empty()
             thread_helper(lambda: handle_location_thread(base_url, self))
         selection.unselect_all()
 
