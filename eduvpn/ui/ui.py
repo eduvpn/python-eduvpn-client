@@ -26,12 +26,12 @@ from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection, \
-    init_dbus_system_bus, register_status_callback, ConnectionState, ConnectionStateReason
+    init_dbus_system_bus, register_status_callback, ConnectionState, ConnectionStateReason, active_vpn_state
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
-from eduvpn.ui.backend import BackendData, ConnectionStatus
+from eduvpn.ui.backend import BackendData
 
 builder_files = ['mainwindow.ui']
 
@@ -45,6 +45,9 @@ class EduVpnGui:
         self.builder = Gtk.Builder()
 
         self.client = get_client()
+
+        self.auto_connect = False
+        self.act_on_switch = False
 
         init_dbus_system_bus()
 
@@ -111,7 +114,6 @@ class EduVpnGui:
         self.ipv6_value_label = self.builder.get_object('ipv6ValueLabel')
         self.connection_info_bottom_row = self.builder.get_object('connectionInfoBottomRow')
         self.connection_switch = self.builder.get_object('connectionSwitch')
-        # self.connection_switch.connect("notify::active", self.on_connection_switch_activated)
 
         self.settings_page = self.builder.get_object('settingsPage')
 
@@ -129,6 +131,7 @@ class EduVpnGui:
         register_status_callback(self.nm_status_cb)
 
     def nm_status_cb(self, state_code: ConnectionState = None, reason_code: ConnectionStateReason = None):
+        self.update_connection_state(state_code)
         if state_code is not None:
             state = str(ConnectionState(state_code))
         else:
@@ -139,6 +142,10 @@ class EduVpnGui:
             reason = "None"
 
         logger.debug(f"nm_status_cb state: {state}, reason: {reason}")
+        self.connection_switch.set_state(state_code is ConnectionState.ACTIVATED)
+        if self.auto_connect and state_code is ConnectionState.DISCONNECTED:
+            self.auto_connect = False
+            GLib.idle_add(lambda: self.activate_connection())
 
     def run(self) -> None:
         self.window.show()
@@ -227,17 +234,21 @@ class EduVpnGui:
         selection.unselect_all()
 
     def on_connection_switch_state_set(self, switch, state) -> None:
-        if state:
-            self.activate_connection()
+        logger.debug("on_connection_switch_state_set: {}".format(state))
+        if self.act_on_switch:
+            if state:
+                self.activate_connection()
+            else:
+                self.deactivate_connection()
         else:
-            self.deactivate_connection()
+            self.act_on_switch = True
+        return True
 
     def activate_connection(self) -> None:
         logger.debug("Activating connection")
         uuid = get_uuid()
         if uuid:
             GLib.idle_add(lambda: activate_connection(self.client, uuid))
-            GLib.idle_add(lambda: self.connection_activated())
         else:
             raise Exception("No UUID configured, can't activate connection")
 
@@ -246,17 +257,8 @@ class EduVpnGui:
         uuid = get_uuid()
         if uuid:
             GLib.idle_add(lambda: deactivate_connection(self.client, uuid))
-            GLib.idle_add(lambda: self.connection_deactivated())
         else:
             raise Exception("No UUID configured, can't deactivate connection")
-
-    def connection_activated(self) -> None:
-        self.update_connection(ConnectionStatus.CONNECTED)
-        logger.debug("connection_activated")
-
-    def connection_deactivated(self) -> None:
-        self.update_connection(ConnectionStatus.NOT_CONNECTED)
-        logger.debug("connection_deactivated")
 
     def init_search_list(self) -> None:
         text_cell = Gtk.CellRendererText()
@@ -321,10 +323,10 @@ class EduVpnGui:
         self.data.api_url = None
         self.data.auth_url = None
         self.data.token_endpoint = None
-        self.data.connection_status = ConnectionStatus.INITIALIZING
         self.data.server_name = None
         self.data.server_image = None
         self.data.support_contact = []
+        self.act_on_switch = False
 
         self.find_your_institute_page.show()
 
@@ -408,7 +410,7 @@ class EduVpnGui:
         self.back_button.hide()
         self.add_other_server_top_row.hide()
 
-    def show_connection(self, connection_status) -> None:
+    def show_connection(self, start_connection: bool = True) -> None:
         logger.debug("show_connection")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
@@ -425,7 +427,6 @@ class EduVpnGui:
         self.connection_info_bottom_row.hide()
         self.server_image.hide()
         self.server_label.set_text(self.data.server_name)
-        logger.debug(self.data.server_image)
         if self.data.server_image is not None:
             self.server_image.set_from_file(self.data.server_image)
             self.server_image.show()
@@ -436,30 +437,33 @@ class EduVpnGui:
         if len(self.data.support_contact) > 0:
             support = "Support: " + self.data.support_contact[0]
         self.support_label.set_text(support)
-        self.update_connection(connection_status)
+        if start_connection:
+            self.act_on_switch = True
+            logger.debug("active_vpn_state: {}".format(active_vpn_state()))
+            if active_vpn_state() is ConnectionState.ACTIVATED:
+                self.auto_connect = True
+                GLib.idle_add(lambda: self.deactivate_connection())
+            else:
+                self.activate_connection()
 
-    def update_connection(self, status) -> None:
-        self.data.connection_status = status
+    def update_connection_state(self, state: ConnectionState) -> None:
+        self.data.connection_state = state
 
-        if self.data.connection_status is ConnectionStatus.INITIALIZING:
-            self.connection_status_label.set_text("Initializing")
-            self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-default.png")
+        connection_state_mapping = {
+            ConnectionState.UNKNOWN: ["Connection state unknown", "desktop-default.png"],
+            ConnectionState.PREPARE: ["Preparing to connect", "desktop-connecting.png"],
+            ConnectionState.NEED_AUTH: ["Needs authorization credentials", "desktop-connecting.png"],
+            ConnectionState.CONNECT: ["Connection is being established", "desktop-connecting.png"],
+            ConnectionState.IP_CONFIG_GET: ["Getting an IP address", "desktop-connecting.png"],
+            ConnectionState.ACTIVATED: ["Connection active", "desktop-connected.png"],
+            ConnectionState.FAILED: ["Connection failed", "desktop-not-connected.png"],
+            ConnectionState.DISCONNECTED: ["Disconnected", "desktop-default.png"],
+        }
+        self.connection_status_label.set_text(connection_state_mapping[state][0])
+        self.connection_status_image.set_from_file(IMAGE_PREFIX + connection_state_mapping[state][1])
+        if state is ConnectionState.UNKNOWN:
             self.current_connection_sub_page.hide()
-        elif self.data.connection_status is ConnectionStatus.NOT_CONNECTED:
-            self.connection_status_label.set_text("Not connected")
-            self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-default.png")
-            self.current_connection_sub_page.show()
-        elif self.data.connection_status is ConnectionStatus.CONNECTING:
-            self.connection_status_label.set_text("Connecting")
-            self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-connecting.png")
-            self.current_connection_sub_page.show()
-        elif self.data.connection_status is ConnectionStatus.CONNECTED:
-            self.connection_status_label.set_text("Connected")
-            self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-connected.png")
-            self.current_connection_sub_page.show()
-        elif self.data.connection_status is ConnectionStatus.CONNECTION_ERROR:
-            self.connection_status_label.set_text("Connection error")
-            self.connection_status_image.set_from_file(IMAGE_PREFIX + "desktop-not-connected.png")
+        else:
             self.current_connection_sub_page.show()
 
     def on_profile_selection_changed(self, selection) -> None:
@@ -529,7 +533,7 @@ class EduVpnGui:
             if 'support_contact' in self.data.locations[i]:
                 self.data.support_contact = self.data.locations[i]['support_contact']
             logger.debug("on_location_selection_changed: {} {}".format(display_name, base_url))
-            self.show_connection(ConnectionStatus.INITIALIZING)
+            self.show_connection(False)
             thread_helper(lambda: handle_location_thread(base_url, self))
         selection.unselect_all()
 
@@ -558,26 +562,25 @@ class EduVpnGui:
 
     def finalize_configuration(self, profile_id) -> None:
         logger.debug(f"finalize_configuration")
-        self.show_connection(ConnectionStatus.INITIALIZING)
+        self.show_connection(False)
         thread_helper(lambda: finalize_configuration_thread(profile_id, self))
+
+    def configuration_finalized_cb(self, result):
+        logger.debug("configuration_finalized_cb: {}".format(result))
+        GLib.idle_add(lambda: self.show_connection())
 
     def configuration_finalized(self, config, private_key, certificate) -> None:
         if nm_available():
             logger.info("nm available:")
-            save_connection(self.client, config, private_key, certificate)
-            GLib.idle_add(lambda: self.connection_saved())
+            save_connection(self.client, config, private_key, certificate, self.configuration_finalized_cb)
         else:
             target = Path('eduVPN.ovpn').resolve()
             write_config(config, private_key, certificate, target)
             GLib.idle_add(lambda: self.connection_written())
 
-    def connection_saved(self) -> None:
-        logger.debug(f"connection_saved")
-        self.show_connection(ConnectionStatus.NOT_CONNECTED)
-
     def connection_written(self) -> None:
         logger.debug(f"connection_written")
-        self.show_connection(ConnectionStatus.NOT_CONNECTED)
+        self.show_connection()
 
 
 def fetch_token_thread(gui) -> None:

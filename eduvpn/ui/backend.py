@@ -3,16 +3,8 @@ from enum import Flag, auto
 from logging import getLogger
 from eduvpn.remote import list_orgs, list_servers
 from eduvpn.settings import CLIENT_ID, SERVER_URI, ORGANISATION_URI
-
+from eduvpn.nm import ConnectionState
 logger = getLogger(__name__)
-
-
-class ConnectionStatus(Flag):
-    INITIALIZING = auto()
-    NOT_CONNECTED = auto()
-    CONNECTING = auto()
-    CONNECTED = auto()
-    CONNECTION_ERROR = auto()
 
 
 class BackendData:
@@ -28,7 +20,7 @@ class BackendData:
         self.api_url = None
         self.auth_url = None
         self.token_endpoint = None
-        self.connection_status = ConnectionStatus.INITIALIZING
+        self.connection_state = ConnectionState.UNKNOWN
         self.server_name = None
         self.server_image = None
         self.support_contact = []
