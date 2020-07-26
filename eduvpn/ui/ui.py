@@ -377,6 +377,7 @@ class EduVpnGui:
             self.back_button.show()
             self.add_other_server_top_row.hide()
             select = self.profile_tree_view.get_selection()
+            select.unselect_all()
             select.connect("changed", self.on_profile_selection_changed)
         else:
             logger.debug("ERROR: should only be called when there are profiles to choose from")
@@ -394,6 +395,7 @@ class EduVpnGui:
             self.back_button.show()
             self.add_other_server_top_row.hide()
             select = self.location_tree_view.get_selection()
+            select.unselect_all()
             select.connect("changed", self.on_location_selection_changed)
         else:
             logger.debug("ERROR: should only be called when there are profiles to choose from")
