@@ -19,6 +19,7 @@ Or to install the Graphical User Interface and/or the Network manager integratio
 
 ```bash
 $ pip install "eduvpn[gui]"
+```
 
 For more detailed instruction you can find the full installation instructions [here](http://python-eduvpn-client.readthedocs.io/en/latest/introduction.html#installation).
 
@@ -30,7 +31,10 @@ You can find the documentation on [http://python-eduvpn-client.readthedocs.io](h
 Development
 ===========
 
-Until the new version is available on pypi you can use the following to start the GUI:
+Until the new version is available on pypi you can use the following to start the GUI when you have cloned the source:
+```bash
 make gui
+```
 
 [![Build Status](https://travis-ci.org/eduvpn/python-eduvpn-client.svg?branch=master)](https://travis-ci.org/eduvpn/python-eduvpn-client)
+
