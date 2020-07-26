@@ -34,7 +34,8 @@ deb:
 		python3-setuptools \
 		python3-nacl \
 		python3-pytest \
-		python3-wheel
+		python3-wheel \
+		python3-dbus
 
 # install all required binary packages on a debian based system
 debdev: deb
@@ -47,7 +48,8 @@ debdev: deb
 		libpython3-dev \
 		gobject-introspection \
 		libgirepository1.0-dev \
-		network-manager-openvpn-gnome
+		network-manager-openvpn-gnome \
+		libdbus-1-dev
 
 # install all required binary packages on a rpm based system
 dnf:
