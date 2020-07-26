@@ -30,4 +30,7 @@ You can find the documentation on [http://python-eduvpn-client.readthedocs.io](h
 Development
 ===========
 
+Until the new version is available on pypi you can use the following to start the GUI:
+make gui
+
 [![Build Status](https://travis-ci.org/eduvpn/python-eduvpn-client.svg?branch=master)](https://travis-ci.org/eduvpn/python-eduvpn-client)
