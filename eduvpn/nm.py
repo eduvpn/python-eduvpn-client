@@ -99,38 +99,46 @@ def import_ovpn(config: str, private_key: str, certificate: str) -> 'NM.SimpleCo
     return connection
 
 
-def add_callback(client, result):
+def add_callback(client, result, callback=None):
     new_con = client.add_connection_finish(result)
     set_uuid(uuid=new_con.get_uuid())
+    logger.debug("Connection added for uuid: {}".format(get_uuid()))
+    callback(new_con is not None)
 
 
-def add_connection(client: 'NM.Client', connection: 'NM.Connection'):
+def add_connection(client: 'NM.Client', connection: 'NM.Connection', callback=None):
     logger.info("Adding new connection")
-    client.add_connection_async(connection=connection, save_to_disk=True, callback=add_callback)
+    client.add_connection_async(connection=connection, save_to_disk=True, callback=callback)
 
 
-def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection'):
+def update_connection_callback(client, result, callback=None):
+    res = client.commit_changes_finish(result)
+    logger.debug("Connection updated for uuid: {}, result: {}".format(get_uuid(), res))
+    callback(res)
+
+
+def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callback=None):
     """
     Update an existing Network Manager connection with the settings from another Network Manager connection
     """
     logger.info("Updating existing connection with new configuration")
 
     old_con.replace_settings_from_connection(new_con)
-    old_con.commit_changes_async(save_to_disk=True, cancellable=None, user_data=None)
+    old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback, user_data=callback)
 
 
-def save_connection(client: 'NM.Client', config, private_key, certificate):
+def save_connection(client: 'NM.Client', config, private_key, certificate, callback=None):
     logger.info("writing configuration to Network Manager")
     new_con = import_ovpn(config, private_key, certificate)
     uuid = get_uuid()
     if uuid:
         old_con = client.get_connection_by_uuid(uuid)
         if old_con:
-            update_connection(old_con, new_con)
+            update_connection(old_con, new_con, callback)
         else:
-            add_connection(client=client, connection=new_con)
+            add_connection(client=client, connection=new_con, callback=callback)
     else:
-        add_connection(client=client, connection=new_con)
+        add_connection(client=client, connection=new_con, callback=callback)
 
 
 def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
@@ -144,6 +152,8 @@ def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
 
 def activate_connection(client: 'NM.Client', uuid: str):
     con = client.get_connection_by_uuid(uuid)
+    logger.debug("activate_connection uuid: {} connection: {}".format(uuid, con))
+
     client.activate_connection_async(connection=con)
 
 
@@ -171,17 +181,25 @@ def connection_status(client: 'NM.Client', uuid: str):
 
 
 user_dbus_status_callback = None
+vpn_state = ConnectionState.UNKNOWN
 
 
 def register_status_callback(callback):
     global user_dbus_status_callback
     user_dbus_status_callback = callback
+    global vpn_state
+    dbus_status_callback(vpn_state, ConnectionStateReason.UNKNOWN)
+
+
+def active_vpn_state() -> ConnectionState:
+    global vpn_state
+    return vpn_state
 
 
 def dbus_status_callback(state_code=None, reason_code=None):
     global user_dbus_status_callback
     if user_dbus_status_callback is not None:
-        user_dbus_status_callback(state_code, reason_code)
+        user_dbus_status_callback(ConnectionState(state_code), ConnectionStateReason(reason_code))
 
 
 def init_dbus_system_bus():
@@ -193,6 +211,21 @@ def init_dbus_system_bus():
     _ = bus.add_signal_receiver(handler_function=dbus_status_callback,
                                 dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
                                 signal_name='VpnStateChanged')
+    m_proxy = bus.get_object("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager")
+    mgr_props = dbus.Interface(m_proxy, "org.freedesktop.DBus.Properties")
+    active = mgr_props.Get("org.freedesktop.NetworkManager", "ActiveConnections")
+    for a in active:
+        a_proxy = bus.get_object("org.freedesktop.NetworkManager", a)
+        a_props = dbus.Interface(a_proxy, "org.freedesktop.DBus.Properties")
+        vpn_id = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Id")
+        vpn = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Vpn")
+        global vpn_state
+        if vpn:
+            vpn_state = ConnectionState(a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState"))
+            logger.debug('Id: {} VpnState: {}'.format(vpn_id, vpn_state))
+            return
+    vpn_state = ConnectionState.DISCONNECTED
+
 
 
 
