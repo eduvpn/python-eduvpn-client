@@ -86,9 +86,12 @@ def validate(signature: str, content: bytes) -> bytes:
     decoded = b64decode(signature)[10:]
     verifiers = make_verifiers()
 
+    logger.debug("Trying {} verifiers".format(len(verifiers)))
     for f in verifiers:
         try:
-            return f.verify(smessage=content, signature=decoded)
+            message = f.verify(smessage=content, signature=decoded)
+            logger.debug(f"Used signature {f}")
+            return message
         except BadSignatureError as e:
             logger.debug(f"Skipping signature {f}")
     raise BadSignatureError
