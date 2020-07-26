@@ -61,9 +61,8 @@ dnf:
 		python3-pytest \
 		python3-cairo-devel \
 		gobject-introspection-devel \
-		cairo-gobject-devel
-
-
+		cairo-gobject-devel \
+		dbus-python-devel
 
 doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt
