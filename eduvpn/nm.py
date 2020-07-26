@@ -103,18 +103,20 @@ def add_callback(client, result, callback=None):
     new_con = client.add_connection_finish(result)
     set_uuid(uuid=new_con.get_uuid())
     logger.debug("Connection added for uuid: {}".format(get_uuid()))
-    callback(new_con is not None)
+    if callback is not None:
+        callback(new_con is not None)
 
 
 def add_connection(client: 'NM.Client', connection: 'NM.Connection', callback=None):
     logger.info("Adding new connection")
-    client.add_connection_async(connection=connection, save_to_disk=True, callback=callback)
+    client.add_connection_async(connection=connection, save_to_disk=True, callback=add_callback, user_data=callback)
 
 
 def update_connection_callback(client, result, callback=None):
     res = client.commit_changes_finish(result)
     logger.debug("Connection updated for uuid: {}, result: {}".format(get_uuid(), res))
-    callback(res)
+    if callback is not None:
+        callback(res)
 
 
 def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callback=None):
