@@ -17,7 +17,8 @@ RUN yum install -y	\
     python3-dbus \
     python3-pytest-runner \
     python3-dateutil \
-    python3-cryptography
+    python3-cryptography \
+    NetworkManager-libnm
 
 RUN rpmdev-setuptree
 

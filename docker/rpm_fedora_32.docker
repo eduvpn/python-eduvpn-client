@@ -13,7 +13,8 @@ RUN dnf install -y	\
     python3-pynacl \
     python3-dbus \
     python3-dateutil \
-    python3-cryptography
+    python3-cryptography \
+    NetworkManager-libnm
 
 RUN rpmdev-setuptree
 

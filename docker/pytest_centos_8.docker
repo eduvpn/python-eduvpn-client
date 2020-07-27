@@ -12,7 +12,8 @@ RUN dnf install -y \
     python3-gobject \
     python3-pytest \
     python3-cryptography \
-    python3-dbus
+    python3-dbus \
+    NetworkManager-libnm
 
 
 ADD . /code
