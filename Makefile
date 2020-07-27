@@ -87,7 +87,7 @@ srpm:
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_32 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 
 $(VENV)/bin/mypy: $(VENV)/
-	$(VENV)/bin/pip install ".[test]" mypy
+	$(VENV)/bin/pip install ".[test]"
 
 mypy: $(VENV)/bin/mypy
 	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests
