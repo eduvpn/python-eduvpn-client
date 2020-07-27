@@ -8,7 +8,7 @@ tests_require = [
     'pytest',
     'PyGObject-stubs',
     'mypy',
-    'pycodestyle'
+    'pycodestyle',
 ]
 
 install_requires = [
@@ -16,7 +16,7 @@ install_requires = [
     'requests_oauthlib',
     'cryptography',
     'pynacl',
-    'wheel'
+    'wheel',
 ]
 
 extras_require = {
