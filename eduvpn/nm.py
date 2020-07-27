@@ -15,7 +15,7 @@ try:
 
     gi.require_version('NM', '1.0')
     from gi.repository import NM, GLib  # type: ignore
-except (ImportError, ValueError) as e:
+except (ImportError, ValueError):
     logger.warning("Network Manager not available")
     NM = None
 
