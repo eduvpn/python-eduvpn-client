@@ -24,29 +24,29 @@ from eduvpn.utils import get_logger
 
 
 class ConnectionState(Flag):
-    UNKNOWN = 0  # NM.VpnConnectionState.UNKNOWN
-    PREPARE = 1  # NM.VpnConnectionState.PREPARE
-    NEED_AUTH = 2  # NM.VpnConnectionState.NEED_AUTH
-    CONNECT = 3  # NM.VpnConnectionState.CONNECT
-    IP_CONFIG_GET = 4  # NM.VpnConnectionState.IP_CONFIG_GET
-    ACTIVATED = 5  # NM.VpnConnectionState.ACTIVATED
-    FAILED = 6  # NM.VpnConnectionState.FAILED
-    DISCONNECTED = 7  # NM.VpnConnectionState.DISCONNECTED
+    UNKNOWN = NM.VpnConnectionState.UNKNOWN
+    PREPARE = NM.VpnConnectionState.PREPARE
+    NEED_AUTH = NM.VpnConnectionState.NEED_AUTH
+    CONNECT = NM.VpnConnectionState.CONNECT
+    IP_CONFIG_GET = NM.VpnConnectionState.IP_CONFIG_GET
+    ACTIVATED = NM.VpnConnectionState.ACTIVATED
+    FAILED = NM.VpnConnectionState.FAILED
+    DISCONNECTED = NM.VpnConnectionState.DISCONNECTED
 
 
 class ConnectionStateReason(Flag):
-    UNKNOWN = 0  # NM.VpnConnectionStateReason.UNKNOWN
-    NONE = 1  # NM.VpnConnectionStateReason.NONE
-    USER_DISCONNECTED = 2  # NM.VpnConnectionStateReason.USER_DISCONNECTED
-    DEVICE_DISCONNECTED = 3  # NM.VpnConnectionStateReason.DEVICE_DISCONNECTED
-    SERVICE_STOPPED = 4  # NM.VpnConnectionStateReason.SERVICE_STOPPED
-    IP_CONFIG_INVALID = 5  # NM.VpnConnectionStateReason.IP_CONFIG_INVALID
-    CONNECT_TIMEOUT = 6  # NM.VpnConnectionStateReason.CONNECT_TIMEOUT
-    SERVICE_START_TIMEOUT = 7  # NM.VpnConnectionStateReason.SERVICE_START_TIMEOUT
-    SERVICE_START_FAILED = 8  # NM.VpnConnectionStateReason.SERVICE_START_FAILED
-    NO_SECRETS = 9  # NM.VpnConnectionStateReason.NO_SECRETS
-    LOGIN_FAILED = 10  # NM.VpnConnectionStateReason.LOGIN_FAILED
-    CONNECTION_REMOVED = 11  # NM.VpnConnectionStateReason.CONNECTION_REMOVED
+    UNKNOWN = NM.VpnConnectionStateReason.UNKNOWN
+    NONE = NM.VpnConnectionStateReason.NONE
+    USER_DISCONNECTED = NM.VpnConnectionStateReason.USER_DISCONNECTED
+    DEVICE_DISCONNECTED = NM.VpnConnectionStateReason.DEVICE_DISCONNECTED
+    SERVICE_STOPPED = NM.VpnConnectionStateReason.SERVICE_STOPPED
+    IP_CONFIG_INVALID = NM.VpnConnectionStateReason.IP_CONFIG_INVALID
+    CONNECT_TIMEOUT = NM.VpnConnectionStateReason.CONNECT_TIMEOUT
+    SERVICE_START_TIMEOUT = NM.VpnConnectionStateReason.SERVICE_START_TIMEOUT
+    SERVICE_START_FAILED = NM.VpnConnectionStateReason.SERVICE_START_FAILED
+    NO_SECRETS = NM.VpnConnectionStateReason.NO_SECRETS
+    LOGIN_FAILED = NM.VpnConnectionStateReason.LOGIN_FAILED
+    CONNECTION_REMOVED = NM.VpnConnectionStateReason.CONNECTION_REMOVED
 
 
 logger = get_logger(__file__)
