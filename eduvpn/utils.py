@@ -12,7 +12,7 @@ try:
 
     gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk
-except (ImportError, ValueError) as e:
+except (ImportError, ValueError):
     logger.warning("GTK not available")
 
 

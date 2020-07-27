@@ -17,7 +17,7 @@ try:
 
     gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk, GObject, GLib, GdkPixbuf
-except (ImportError, ValueError) as e:
+except (ImportError, ValueError):
     logger.warning("GTK not available")
 
 from requests_oauthlib import OAuth2Session
@@ -236,7 +236,7 @@ class EduVpnGui:
             self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
         selection.unselect_all()
 
-    def on_connection_switch_state_set(self, switch, state) -> None:
+    def on_connection_switch_state_set(self, switch, state):
         logger.debug("on_connection_switch_state_set: {}".format(state))
         if self.act_on_switch:
             if state:
