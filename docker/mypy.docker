@@ -6,6 +6,7 @@ RUN docker-apt-install \
     gir1.2-notify-0.7 \
     libnotify4 \
     python3-gi \
+    python3-nacl \
     python3-dbus \
     python3-requests-oauthlib \
     python3-pip \
