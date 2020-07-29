@@ -182,35 +182,13 @@ def connection_status(client: 'NM.Client', uuid: str):
         client.check_connectivity_async(callback=callback)
 
 
-user_dbus_status_callback = None
-vpn_state = ConnectionState.UNKNOWN
-
-
-def register_status_callback(callback):
-    global user_dbus_status_callback
-    user_dbus_status_callback = callback
-    global vpn_state
-    dbus_status_callback(vpn_state, ConnectionStateReason.UNKNOWN)
-
-
-def active_vpn_state() -> ConnectionState:
-    global vpn_state
-    return vpn_state
-
-
-def dbus_status_callback(state_code=None, reason_code=None):
-    global user_dbus_status_callback
-    if user_dbus_status_callback is not None:
-        user_dbus_status_callback(ConnectionState(state_code), ConnectionStateReason(reason_code))
-
-
-def init_dbus_system_bus():
+def init_dbus_system_bus(callback):
     """
     Create a new D-Bus system bus object. We put this here so other modules don't need to import D-Bus
     """
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus()
-    _ = bus.add_signal_receiver(handler_function=dbus_status_callback,
+    _ = bus.add_signal_receiver(handler_function=callback,
                                 dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
                                 signal_name='VpnStateChanged')
     m_proxy = bus.get_object("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager")
@@ -221,12 +199,12 @@ def init_dbus_system_bus():
         a_props = dbus.Interface(a_proxy, "org.freedesktop.DBus.Properties")
         vpn_id = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Id")
         vpn = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Vpn")
-        global vpn_state
         if vpn:
             vpn_state = ConnectionState(a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState"))
             logger.debug('Id: {} VpnState: {}'.format(vpn_id, vpn_state))
+            callback(vpn_state, ConnectionStateReason.NONE)
             return
-    vpn_state = ConnectionState.DISCONNECTED
+    callback(ConnectionState.DISCONNECTED, ConnectionStateReason.NONE)
 
 
 

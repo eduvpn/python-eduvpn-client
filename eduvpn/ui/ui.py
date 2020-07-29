@@ -26,7 +26,7 @@ from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection, \
-    init_dbus_system_bus, register_status_callback, ConnectionState, ConnectionStateReason, active_vpn_state
+    init_dbus_system_bus, ConnectionState, ConnectionStateReason
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL
@@ -48,8 +48,6 @@ class EduVpnGui:
 
         self.auto_connect = False
         self.act_on_switch = False
-
-        init_dbus_system_bus()
 
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
@@ -117,33 +115,36 @@ class EduVpnGui:
 
         self.settings_page = self.builder.get_object('settingsPage')
 
-        self.data = BackendData()
-
         self.institute_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.secure_internet_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.other_servers_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)
 
+        self.data = BackendData()
+
+        init_dbus_system_bus(self.nm_status_cb)
+
         self.init_search_list()
         self.back_button.hide()
         self.add_other_server_top_row.hide()
-        register_status_callback(self.nm_status_cb)
 
     def nm_status_cb(self, state_code: ConnectionState = None, reason_code: ConnectionStateReason = None):
-        self.update_connection_state(state_code)
-        if state_code is not None:
-            state = str(ConnectionState(state_code))
+        con_state_code = ConnectionState(state_code)
+        con_reason_code = ConnectionStateReason(reason_code)
+        self.update_connection_state(con_state_code)
+        if con_state_code is not None:
+            state = str(ConnectionState(con_state_code))
         else:
             state = "None"
-        if reason_code is not None:
-            reason = str(ConnectionStateReason(reason_code))
+        if con_reason_code is not None:
+            reason = str(ConnectionStateReason(con_reason_code))
         else:
             reason = "None"
 
         logger.debug(f"nm_status_cb state: {state}, reason: {reason}")
-        self.connection_switch.set_state(state_code is ConnectionState.ACTIVATED)
-        if self.auto_connect and state_code is ConnectionState.DISCONNECTED:
+        self.connection_switch.set_state(con_state_code is ConnectionState.ACTIVATED)
+        if self.auto_connect and con_state_code is ConnectionState.DISCONNECTED:
             self.auto_connect = False
             GLib.idle_add(lambda: self.activate_connection())
 
@@ -444,8 +445,8 @@ class EduVpnGui:
         self.support_label.set_text(support)
         if start_connection:
             self.act_on_switch = True
-            logger.debug("active_vpn_state: {}".format(active_vpn_state()))
-            if active_vpn_state() is ConnectionState.ACTIVATED:
+            logger.debug("vpn_state: {}".format(self.data.connection_state))
+            if self.data.connection_state is ConnectionState.ACTIVATED:
                 self.auto_connect = True
                 GLib.idle_add(lambda: self.deactivate_connection())
             else:
