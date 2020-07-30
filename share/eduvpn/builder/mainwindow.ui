@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkApplicationWindow" id="applicationWindow">
@@ -35,7 +35,7 @@
                 <property name="can_focus">False</property>
                 <property name="spacing">10</property>
                 <child>
-                  <object class="GtkEventBox">
+                  <object class="GtkEventBox" id="backButtonEventBox">
                     <property name="width_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>

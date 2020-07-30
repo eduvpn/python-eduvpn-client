@@ -71,6 +71,7 @@ class EduVpnGui:
         self.window = self.builder.get_object('applicationWindow')
 
         self.back_button = self.builder.get_object('backButton')
+        self.back_button_event_box = self.builder.get_object('backButtonEventBox')
 
         self.find_your_institute_page = self.builder.get_object('findYourInstitutePage')
         self.institute_tree_view = self.builder.get_object('instituteTreeView')
@@ -126,7 +127,7 @@ class EduVpnGui:
         init_dbus_system_bus(self.nm_status_cb)
 
         self.init_search_list()
-        self.back_button.hide()
+        self.show_back_button(False)
         self.add_other_server_top_row.hide()
 
     def nm_status_cb(self, state_code: ConnectionState = None, reason_code: ConnectionStateReason = None):
@@ -342,7 +343,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
-        self.back_button.hide()
+        self.show_back_button(False)
         self.add_other_server_top_row.hide()
         self.find_your_institute_search.connect("search-changed", self.on_search_changed)
         self.update_search_lists(disconnect=False)
@@ -355,7 +356,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
-        self.back_button.show()
+        self.show_back_button()
         self.add_other_server_top_row.hide()
 
     def show_settings(self) -> None:
@@ -366,7 +367,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
-        self.back_button.show()
+        self.show_back_button()
         self.add_other_server_top_row.hide()
 
     def show_choose_profile(self) -> None:
@@ -378,7 +379,7 @@ class EduVpnGui:
             self.choose_location_page.hide()
             self.open_browser_page.hide()
             self.connection_page.hide()
-            self.back_button.show()
+            self.show_back_button()
             self.add_other_server_top_row.hide()
             select = self.profile_tree_view.get_selection()
             select.unselect_all()
@@ -396,7 +397,7 @@ class EduVpnGui:
             self.choose_location_page.show()
             self.open_browser_page.hide()
             self.connection_page.hide()
-            self.back_button.show()
+            self.show_back_button()
             self.add_other_server_top_row.hide()
             select = self.location_tree_view.get_selection()
             select.unselect_all()
@@ -413,7 +414,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.show()
         self.connection_page.hide()
-        self.back_button.hide()
+        self.show_back_button(False)
         self.add_other_server_top_row.hide()
 
     def show_connection(self, start_connection: bool = True) -> None:
@@ -424,7 +425,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.show()
-        self.back_button.show()
+        self.show_back_button()
         self.add_other_server_top_row.hide()
         self.connection_info_top_row.hide()
         self.profiles_sub_page.hide()
@@ -444,6 +445,7 @@ class EduVpnGui:
             support = "Support: " + self.data.support_contact[0]
         self.support_label.set_text(support)
         if start_connection:
+            self.show_back_button()
             self.act_on_switch = True
             logger.debug("vpn_state: {}".format(self.data.connection_state))
             if self.data.connection_state is ConnectionState.ACTIVATED:
@@ -451,6 +453,8 @@ class EduVpnGui:
                 GLib.idle_add(lambda: self.deactivate_connection())
             else:
                 self.activate_connection()
+        else:
+            self.show_back_button(True, False)
 
     def show_empty(self) -> None:
         logger.debug("show_empty")
@@ -460,7 +464,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
-        self.back_button.hide()
+        self.show_back_button(True, False)
         self.add_other_server_top_row.hide()
         self.connection_info_top_row.hide()
         self.profiles_sub_page.hide()
@@ -603,6 +607,13 @@ class EduVpnGui:
     def connection_written(self) -> None:
         logger.debug(f"connection_written")
         self.show_connection()
+
+    def show_back_button(self, show: bool = True, enabled: bool = True):
+        if show:
+            self.back_button.show()
+        else:
+            self.back_button.hide()
+        self.back_button_event_box.set_sensitive(enabled)
 
 
 def fetch_token_thread(gui) -> None:
