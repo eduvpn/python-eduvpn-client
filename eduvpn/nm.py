@@ -1,14 +1,15 @@
+import logging
 from enum import Flag
 import dbus  # type:ignore
 from dbus.mainloop.glib import DBusGMainLoop  # type:ignore
-from logging import getLogger
 from pathlib import Path
 from shutil import rmtree
 from sys import modules
 from tempfile import mkdtemp
 from typing import Optional, Tuple
+from eduvpn.storage import set_uuid, get_uuid, write_config
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 try:
     import gi
@@ -18,9 +19,6 @@ try:
 except (ImportError, ValueError):
     logger.warning("Network Manager not available")
     NM = None
-
-from eduvpn.storage import set_uuid, get_uuid, write_config
-from eduvpn.utils import get_logger
 
 
 class ConnectionState(Flag):
@@ -47,9 +45,6 @@ class ConnectionStateReason(Flag):
     NO_SECRETS = NM.VpnConnectionStateReason.NO_SECRETS
     LOGIN_FAILED = NM.VpnConnectionStateReason.LOGIN_FAILED
     CONNECTION_REMOVED = NM.VpnConnectionStateReason.CONNECTION_REMOVED
-
-
-logger = get_logger(__file__)
 
 
 def get_client() -> 'NM.Client':
@@ -156,7 +151,11 @@ def activate_connection(client: 'NM.Client', uuid: str):
     con = client.get_connection_by_uuid(uuid)
     logger.debug(f"activate_connection uuid: {uuid} connection: {con}")
 
-    client.activate_connection_async(connection=con)
+    def on_activate_connection(a_client, res):
+        result = a_client.activate_connection_finish(res)
+        logger.debug(F"activate_connection_async result: {result}")
+
+    client.activate_connection_async(connection=con, callback=on_activate_connection)
 
 
 def deactivate_connection(client: 'NM.Client', uuid: str):
@@ -166,7 +165,11 @@ def deactivate_connection(client: 'NM.Client', uuid: str):
         active_uuid = con.get_uuid()
 
         if uuid == active_uuid:
-            client.deactivate_connection_async(active=con)
+            def on_deactivate_connection(a_client, res):
+                result = a_client.deactivate_connection_finish(res)
+                logger.debug(F"deactivate_connection_async result: {result}")
+
+            client.deactivate_connection_async(active=con, callback=on_deactivate_connection)
     else:
         logger.info("No active connection to deactivate")
 
