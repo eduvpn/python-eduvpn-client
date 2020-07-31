@@ -10,7 +10,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 
 logger = logging.getLogger(__name__)
-log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s'
 
 
 # def parse_args(args: List[str]) -> Optional[str]:
