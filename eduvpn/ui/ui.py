@@ -151,6 +151,11 @@ class EduVpnGui:
             elif con_state_code is ConnectionState.ACTIVATED:
                 self.auto_connect = False
                 self.act_on_switch = True
+                self.data.server_name = self.data.new_server_name
+                self.data.server_image = self.data.new_server_image
+                self.data.support_contact = self.data.new_support_contact
+                self.show_connection(False)
+                self.show_back_button()
 
     def run(self) -> None:
         self.window.show()
@@ -177,7 +182,7 @@ class EduVpnGui:
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.data.server_name = name = model[tree_iter][0]
+            self.data.new_server_name = name = model[tree_iter][0]
             if name.count('.') > 1:
                 if not name.lower().startswith('https://'):
                     name = 'https://' + name
@@ -206,7 +211,7 @@ class EduVpnGui:
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.data.server_name = model[tree_iter][0]
+            self.data.new_server_name = model[tree_iter][0]
             i = model[tree_iter][1]
             select = self.institute_tree_view.get_selection()
             select.disconnect_by_func(self.on_institute_selection_changed)
@@ -216,7 +221,7 @@ class EduVpnGui:
             select.disconnect_by_func(self.on_other_server_selection_changed)
             base_url = str(self.data.institute_access[i]['base_url'])
             if 'support_contact' in self.data.institute_access[i]:
-                self.data.support_contact = self.data.institute_access[i]['support_contact']
+                self.data.new_support_contact = self.data.institute_access[i]['support_contact']
             logger.debug(f"on_institute_selection_changed: {self.data.server_name} {base_url}")
             self.show_empty()
             self.setup_connection(base_url, None, False)
@@ -227,7 +232,7 @@ class EduVpnGui:
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.data.server_name = model[tree_iter][0]
+            self.data.new_server_name = model[tree_iter][0]
             i = model[tree_iter][1]
             select = self.institute_tree_view.get_selection()
             select.disconnect_by_func(self.on_institute_selection_changed)
@@ -236,7 +241,7 @@ class EduVpnGui:
             select = self.other_servers_tree_view.get_selection()
             select.disconnect_by_func(self.on_other_server_selection_changed)
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
-            logger.debug(f"on_secure_internet_selection_changed: {self.data.server_name} {self.data.secure_internet_home}")
+            logger.debug(f"on_secure_internet_selection_changed: {self.data.new_server_name} {self.data.secure_internet_home}")
             self.show_empty()
             self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
         selection.unselect_all()
@@ -329,9 +334,9 @@ class EduVpnGui:
         self.data.api_url = None
         self.data.auth_url = None
         self.data.token_endpoint = None
-        self.data.server_name = None
-        self.data.server_image = None
-        self.data.support_contact = []
+        self.data.new_server_name = None
+        self.data.new_server_image = None
+        self.data.new_support_contact = []
         self.act_on_switch = False
 
         self.find_your_institute_page.show()
@@ -549,16 +554,16 @@ class EduVpnGui:
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.data.server_name = model[tree_iter][0]
+            self.data.new_server_name = model[tree_iter][0]
             display_name = model[tree_iter][0]
             i = model[tree_iter][2]
             selection.disconnect_by_func(self.on_location_selection_changed)
             logger.debug(self.data.locations[i])
             base_url = str(self.data.locations[i]['base_url'])
             country_code = self.data.locations[i]['country_code']
-            self.data.server_image = FLAG_PREFIX + country_code + "@1,5x.png"
+            self.data.new_server_image = FLAG_PREFIX + country_code + "@1,5x.png"
             if 'support_contact' in self.data.locations[i]:
-                self.data.support_contact = self.data.locations[i]['support_contact']
+                self.data.new_support_contact = self.data.locations[i]['support_contact']
             logger.debug(f"on_location_selection_changed: {display_name} {base_url}")
             self.show_empty()
             thread_helper(lambda: handle_location_thread(base_url, self))
