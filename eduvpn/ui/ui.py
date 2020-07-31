@@ -145,9 +145,12 @@ class EduVpnGui:
 
         logger.debug(f"nm_status_cb state: {state}, reason: {reason}")
         self.connection_switch.set_state(con_state_code is ConnectionState.ACTIVATED)
-        if self.auto_connect and con_state_code is ConnectionState.DISCONNECTED:
-            self.auto_connect = False
-            GLib.idle_add(lambda: self.activate_connection())
+        if self.auto_connect:
+            if con_state_code is ConnectionState.DISCONNECTED:
+                self.activate_connection()
+            elif con_state_code is ConnectionState.ACTIVATED:
+                self.auto_connect = False
+                self.act_on_switch = True
 
     def run(self) -> None:
         self.window.show()
@@ -245,8 +248,6 @@ class EduVpnGui:
                 self.activate_connection()
             else:
                 self.deactivate_connection()
-        else:
-            self.act_on_switch = True
         return True
 
     def activate_connection(self) -> None:
@@ -446,10 +447,10 @@ class EduVpnGui:
         self.support_label.set_text(support)
         if start_connection:
             self.show_back_button()
-            self.act_on_switch = True
+            self.act_on_switch = False
             logger.debug(f"vpn_state: {self.data.connection_state}")
+            self.auto_connect = True
             if self.data.connection_state is ConnectionState.ACTIVATED:
-                self.auto_connect = True
                 GLib.idle_add(lambda: self.deactivate_connection())
             else:
                 self.activate_connection()

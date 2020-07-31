@@ -1,4 +1,5 @@
 import logging
+import time
 from enum import Flag
 import dbus  # type:ignore
 from dbus.mainloop.glib import DBusGMainLoop  # type:ignore
@@ -107,9 +108,9 @@ def add_connection(client: 'NM.Client', connection: 'NM.Connection', callback=No
     client.add_connection_async(connection=connection, save_to_disk=True, callback=add_callback, user_data=callback)
 
 
-def update_connection_callback(client, result, callback=None):
-    res = client.commit_changes_finish(result)
-    logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}")
+def update_connection_callback(remote_connection, result, callback=None):
+    res = remote_connection.commit_changes_finish(result)
+    logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}, remote_con: {remote_connection}")
     if callback is not None:
         callback(res)
 
@@ -150,6 +151,13 @@ def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
 def activate_connection(client: 'NM.Client', uuid: str):
     con = client.get_connection_by_uuid(uuid)
     logger.debug(f"activate_connection uuid: {uuid} connection: {con}")
+    if con is None:
+        # Temporary workaround, connection is sometimes created too
+        # late while according to the logging the connection is already
+        # created. Need to find the correct event to sync on.
+        time.sleep(.1)
+        GLib.idle_add(lambda: activate_connection(client, uuid))
+        return
 
     def on_activate_connection(a_client, res):
         result = a_client.activate_connection_finish(res)
