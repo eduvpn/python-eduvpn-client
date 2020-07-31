@@ -32,7 +32,7 @@ def get_prefix() -> str:
     local = path.dirname(path.dirname(path.abspath(__file__)))
     options = [local, path.expanduser('~/.local'), '/usr/local', prefix]
     for option in options:
-        logger.debug(u"looking for '{}' in '{}'".format(target, option))
+        logger.debug(f"looking for '{target}' in '{option}'")
         if path.isfile(path.join(option, target)):
             return option
     raise Exception("Can't find eduVPN installation")
@@ -60,7 +60,7 @@ def error_helper(parent: 'Gtk.GObject', msg_big: str, msg_small: str) -> None:  
         msg_big (str): the big string
         msg_small (str): the small string
     """
-    logger.error(u"{}: {}".format(msg_big, msg_small))
+    logger.error(f"{msg_big}: {msg_small}")
     error_dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, str(msg_big))  # type: ignore
     error_dialog.format_secondary_text(str(msg_small))  # type: ignore
     error_dialog.run()  # type: ignore

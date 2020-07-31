@@ -14,23 +14,23 @@ def request(uri: str, verify: bool = False) -> dict:
     """
     Do a request and check the signature using our public key verifier.
     """
-    logger.info(u"Requesting {}".format(uri))
+    logger.info(f"Requesting {uri}")
     response = requests.get(uri)
     if response.status_code != 200:
-        msg = "Got error code {} requesting {}".format(response.status_code, uri)
+        msg = f"Got error code {response.status_code} requesting {uri}"
         logger.error(msg)
         raise IOError(msg)
 
     if verify:
         sig_uri = uri + '.minisig'
-        logger.info(u"Retrieving signature {}".format(sig_uri))
+        logger.info(f"Retrieving signature {sig_uri}")
         sig_response = requests.get(sig_uri)
         if sig_response.status_code != 200:
-            msg = "Can't retrieve signature, requesting {} gave error code {}".format(sig_uri, sig_response.status_code)
+            msg = f"Can't retrieve signature, requesting {sig_uri} gave error code {sig_response.status_code}"
             logger.error(msg)
             raise IOError(msg)
 
-        logger.info(u"verifying signature of {}".format(uri))
+        logger.info(f"verifying signature of {uri}")
         signature = sig_response.content.decode('utf-8').split("\n")[1]
         _ = validate(content=response.content, signature=signature)
     return response.json()
@@ -43,7 +43,7 @@ def oauth_request(oauth: OAuth2Session, uri: str, method: str = 'get'):
     call = getattr(oauth, method)
     response = call(uri)
     if response.status_code != 200:
-        msg = "Got error code {} requesting {}".format(response.status_code, uri)
+        msg = f"Got error code {response.status_code} requesting {uri}"
         logger.error(msg)
         raise IOError(msg)
     return response

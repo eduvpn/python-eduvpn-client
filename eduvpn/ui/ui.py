@@ -52,7 +52,7 @@ class EduVpnGui:
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
             if not os.access(p, os.R_OK):
-                logger.error(u"Can't find {}! That is quite an important file.".format(p))
+                logger.error(f"Can't find {p}! That is quite an important file.")
                 raise Exception
             self.builder.add_from_file(p)
 
@@ -171,7 +171,7 @@ class EduVpnGui:
 
     def on_other_server_selection_changed(self, selection) -> None:
         logger.debug("on_other_server_selection_changed")
-        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
+        logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
             self.data.server_name = name = model[tree_iter][0]
@@ -180,7 +180,7 @@ class EduVpnGui:
                     name = 'https://' + name
                 if not name.lower().endswith('/'):
                     name = name + '/'
-                logger.debug("on_other_server_selection_changed: {}".format(name))
+                logger.debug(f"on_other_server_selection_changed: {name}")
                 select = self.institute_tree_view.get_selection()
                 select.disconnect_by_func(self.on_institute_selection_changed)
                 select = self.secure_internet_tree_view.get_selection()
@@ -195,12 +195,12 @@ class EduVpnGui:
         self.show_find_your_institute()
 
     def on_search_changed(self, _=None) -> None:
-        logger.debug("on_search_changed: {}".format(self.find_your_institute_search.get_text()))
+        logger.debug(f"on_search_changed: {self.find_your_institute_search.get_text()}")
         self.update_search_lists(self.find_your_institute_search.get_text())
 
     def on_institute_selection_changed(self, selection) -> None:
         logger.debug("on_institute_selection_changed")
-        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
+        logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
             self.data.server_name = model[tree_iter][0]
@@ -214,14 +214,14 @@ class EduVpnGui:
             base_url = str(self.data.institute_access[i]['base_url'])
             if 'support_contact' in self.data.institute_access[i]:
                 self.data.support_contact = self.data.institute_access[i]['support_contact']
-            logger.debug("on_institute_selection_changed: {} {}".format(self.data.server_name, base_url))
+            logger.debug(f"on_institute_selection_changed: {self.data.server_name} {base_url}")
             self.show_empty()
             self.setup_connection(base_url, None, False)
         selection.unselect_all()
 
     def on_secure_internet_selection_changed(self, selection) -> None:
         logger.debug("on_secure_internet_selection_changed")
-        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
+        logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
             self.data.server_name = model[tree_iter][0]
@@ -233,13 +233,13 @@ class EduVpnGui:
             select = self.other_servers_tree_view.get_selection()
             select.disconnect_by_func(self.on_other_server_selection_changed)
             self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
-            logger.debug("on_secure_internet_selection_changed: {} {}".format(self.data.server_name, self.data.secure_internet_home))
+            logger.debug(f"on_secure_internet_selection_changed: {self.data.server_name} {self.data.secure_internet_home}")
             self.show_empty()
             self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
         selection.unselect_all()
 
     def on_connection_switch_state_set(self, switch, state):
-        logger.debug("on_connection_switch_state_set: {}".format(state))
+        logger.debug(f"on_connection_switch_state_set: {state}")
         if self.act_on_switch:
             if state:
                 self.activate_connection()
@@ -289,7 +289,7 @@ class EduVpnGui:
         # self.update_search_lists()
 
     def update_search_lists(self, search_string="", disconnect=True) -> None:
-        logger.debug("update_search_lists: {}".format(search_string))
+        logger.debug(f"update_search_lists: {search_string}")
 
         selection = self.institute_tree_view.get_selection()
         if disconnect:
@@ -385,7 +385,7 @@ class EduVpnGui:
             select.unselect_all()
             select.connect("changed", self.on_profile_selection_changed)
         else:
-            logger.debug("ERROR: should only be called when there are profiles to choose from")
+            logger.warning("ERROR: should only be called when there are profiles to choose from")
             self.show_settings()
 
     def show_choose_location(self) -> None:
@@ -403,7 +403,7 @@ class EduVpnGui:
             select.unselect_all()
             select.connect("changed", self.on_location_selection_changed)
         else:
-            logger.debug("ERROR: should only be called when there are profiles to choose from")
+            logger.warning("ERROR: should only be called when there are profiles to choose from")
             self.show_settings()
 
     def show_open_browser(self) -> None:
@@ -447,7 +447,7 @@ class EduVpnGui:
         if start_connection:
             self.show_back_button()
             self.act_on_switch = True
-            logger.debug("vpn_state: {}".format(self.data.connection_state))
+            logger.debug(f"vpn_state: {self.data.connection_state}")
             if self.data.connection_state is ConnectionState.ACTIVATED:
                 self.auto_connect = True
                 GLib.idle_add(lambda: self.deactivate_connection())
@@ -494,14 +494,14 @@ class EduVpnGui:
 
     def on_profile_selection_changed(self, selection) -> None:
         logger.debug("on_profile_selection_changed")
-        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
+        logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
             display_name = model[tree_iter][0]
             i = model[tree_iter][1]
             selection.disconnect_by_func(self.on_profile_selection_changed)
             profile_id = str(self.data.profiles[i]['profile_id'])
-            logger.debug("on_profile_selection_changed: {} {}".format(display_name, profile_id))
+            logger.debug(f"on_profile_selection_changed: {display_name} {profile_id}")
             self.finalize_configuration(profile_id)
         selection.unselect_all()
 
@@ -509,7 +509,7 @@ class EduVpnGui:
         name = self.find_your_institute_search.get_text()
         search_term = len(name) > 0
         dot_count = name.count('.')
-        logger.debug("show_search_lists: name:{} len:{}".format(name, len(name)))
+        logger.debug(f"show_search_lists: name: {name} len: {len(name)}")
 
         if dot_count > 1:
             self.other_servers_list_model.clear()
@@ -545,7 +545,7 @@ class EduVpnGui:
 
     def on_location_selection_changed(self, selection) -> None:
         logger.debug("on_location_selection_changed")
-        logger.debug("# selected rows:" + str(selection.count_selected_rows()))
+        logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
             self.data.server_name = model[tree_iter][0]
@@ -558,7 +558,7 @@ class EduVpnGui:
             self.data.server_image = FLAG_PREFIX + country_code + "@1,5x.png"
             if 'support_contact' in self.data.locations[i]:
                 self.data.support_contact = self.data.locations[i]['support_contact']
-            logger.debug("on_location_selection_changed: {} {}".format(display_name, base_url))
+            logger.debug(f"on_location_selection_changed: {display_name} {base_url}")
             self.show_empty()
             thread_helper(lambda: handle_location_thread(base_url, self))
         selection.unselect_all()
@@ -567,7 +567,7 @@ class EduVpnGui:
 
         self.data.auth_url = auth_url
         self.data.locations = secure_internet
-        logger.debug(f"starting procedure with auth_url {self.data.auth_url}")
+        logger.debug(f"starting procedure with auth_url: {self.data.auth_url}")
         exists = get_token(self.data.auth_url)
 
         if exists:
@@ -583,16 +583,16 @@ class EduVpnGui:
             self.handle_profiles()
 
     def handle_profiles(self) -> None:
-        logger.debug(f"using {self.data.api_url} as api_url")
+        logger.debug(f"using api_url: {self.data.api_url}")
         thread_helper(lambda: handle_profiles_thread(self))
 
     def finalize_configuration(self, profile_id) -> None:
-        logger.debug(f"finalize_configuration")
+        logger.debug("finalize_configuration")
         self.show_connection(False)
         thread_helper(lambda: finalize_configuration_thread(profile_id, self))
 
     def configuration_finalized_cb(self, result):
-        logger.debug("configuration_finalized_cb: {}".format(result))
+        logger.debug(f"configuration_finalized_cb: {result}")
         GLib.idle_add(lambda: self.show_connection())
 
     def configuration_finalized(self, config, private_key, certificate) -> None:
@@ -605,7 +605,7 @@ class EduVpnGui:
             GLib.idle_add(lambda: self.connection_written())
 
     def connection_written(self) -> None:
-        logger.debug(f"connection_written")
+        logger.debug("connection_written")
         self.show_connection()
 
     def show_back_button(self, show: bool = True, enabled: bool = True):
@@ -675,4 +675,3 @@ def finalize_configuration_thread(profile_id, gui: EduVpnGui) -> None:
     set_auth_url(gui.data.auth_url)
     set_profile(profile_id)
     GLib.idle_add(lambda: gui.configuration_finalized(config, private_key, certificate))
-
