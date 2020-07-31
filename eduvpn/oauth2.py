@@ -74,7 +74,7 @@ def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None) ->
     returns:
         str: the request
     """
-    logger.info(u"listening for a request on port {}...".format(port))
+    logger.info(f"listening for a request on port {port}...")
 
     class RequestHandler(BaseHTTPRequestHandler):
         def do_GET(self):
@@ -98,7 +98,7 @@ def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None) ->
         raise Exception("Invalid response received")
 
     parsed = urlparse(httpd.path)  # type: ignore
-    logger.info(u"received a request {}".format(httpd.path))  # type: ignore
+    logger.info(f"received a request {httpd.path}")  # type: ignore
     return parse_qs(parsed.query)
 
 

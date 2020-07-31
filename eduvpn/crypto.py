@@ -86,7 +86,7 @@ def validate(signature: str, content: bytes) -> bytes:
     decoded = b64decode(signature)[10:]
     verifiers = make_verifiers()
 
-    logger.debug("Trying {} verifiers".format(len(verifiers)))
+    logger.debug(f"Trying {len(verifiers)} verifiers")
     for f in verifiers:
         try:
             message = f.verify(smessage=content, signature=decoded)

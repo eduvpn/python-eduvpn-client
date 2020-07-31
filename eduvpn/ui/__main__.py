@@ -33,7 +33,7 @@ def main(args=None):
     # parse_args(args)
 
     if geteuid() == 0:
-        logger.error(u"Running eduVPN client as root is not supported (yet)")
+        logger.error("Running eduVPN client as root is not supported (yet)")
         exit(1)
 
     # import this later so the logging is properly configured

@@ -102,7 +102,7 @@ def import_ovpn(config: str, private_key: str, certificate: str) -> 'NM.SimpleCo
 def add_callback(client, result, callback=None):
     new_con = client.add_connection_finish(result)
     set_uuid(uuid=new_con.get_uuid())
-    logger.debug("Connection added for uuid: {}".format(get_uuid()))
+    logger.debug(f"Connection added for uuid: {get_uuid()}")
     if callback is not None:
         callback(new_con is not None)
 
@@ -114,7 +114,7 @@ def add_connection(client: 'NM.Client', connection: 'NM.Connection', callback=No
 
 def update_connection_callback(client, result, callback=None):
     res = client.commit_changes_finish(result)
-    logger.debug("Connection updated for uuid: {}, result: {}".format(get_uuid(), res))
+    logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}")
     if callback is not None:
         callback(res)
 
@@ -154,14 +154,14 @@ def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
 
 def activate_connection(client: 'NM.Client', uuid: str):
     con = client.get_connection_by_uuid(uuid)
-    logger.debug("activate_connection uuid: {} connection: {}".format(uuid, con))
+    logger.debug(f"activate_connection uuid: {uuid} connection: {con}")
 
     client.activate_connection_async(connection=con)
 
 
 def deactivate_connection(client: 'NM.Client', uuid: str):
     con = client.get_primary_connection()
-    logger.debug("deactivate_connection uuid: {} connection: {}".format(uuid, con))
+    logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
         active_uuid = con.get_uuid()
 
@@ -201,7 +201,7 @@ def init_dbus_system_bus(callback):
         vpn = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Vpn")
         if vpn:
             vpn_state = ConnectionState(a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState"))
-            logger.debug('Id: {} VpnState: {}'.format(vpn_id, vpn_state))
+            logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
             callback(vpn_state, ConnectionStateReason.NONE)
             return
     callback(ConnectionState.DISCONNECTED, ConnectionStateReason.NONE)
