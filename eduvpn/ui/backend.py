@@ -19,6 +19,9 @@ class BackendData:
         self.auth_url = None
         self.token_endpoint = None
         self.connection_state = ConnectionState.UNKNOWN
-        self.server_name = None
+        self.server_name = ""
+        self.new_server_name = ""
         self.server_image = None
+        self.new_server_image = None
         self.support_contact = []
+        self.new_support_contact = []
