@@ -29,7 +29,8 @@ from eduvpn.nm import get_client, save_connection, nm_available, activate_connec
     init_dbus_system_bus, ConnectionState, ConnectionStateReason
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
-from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL
+from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
+    LETS_CONNECT_ICON, SERVER_ILLUSTRATION
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
 from eduvpn.ui.backend import BackendData
 
@@ -69,6 +70,7 @@ class EduVpnGui:
 
         self.builder.connect_signals(handlers)
         self.window = self.builder.get_object('applicationWindow')
+        self.logo_image = self.builder.get_object('logoImage')
 
         self.back_button = self.builder.get_object('backButton')
         self.back_button_event_box = self.builder.get_object('backButtonEventBox')
@@ -79,7 +81,12 @@ class EduVpnGui:
         self.other_servers_tree_view = self.builder.get_object('otherServersTreeView')
         self.find_your_institute_spacer = self.builder.get_object('findYourInstituteSpacer')
         self.find_your_institute_image = self.builder.get_object('findYourInstituteImage')
-        self.add_other_server_top_row = self.builder.get_object('addOtherServerTopRow')
+        self.find_your_institute_label = self.builder.get_object('findYourInstituteLabel')
+
+        self.add_other_server_row = self.builder.get_object('addOtherServerRow')
+        self.add_other_server_button = self.builder.get_object('addOtherServerButton')
+        self.find_your_institute_window = self.builder.get_object('findYourInstituteScrolledWindow')
+
         self.institute_access_header = self.builder.get_object('instituteAccessHeader')
         self.secure_internet_header = self.builder.get_object('secureInternetHeader')
         self.other_servers_header = self.builder.get_object('otherServersHeader')
@@ -128,7 +135,17 @@ class EduVpnGui:
 
         self.init_search_list()
         self.show_back_button(False)
-        self.add_other_server_top_row.hide()
+
+        if self.lets_connect:
+            self.logo_image.set_from_file(LETS_CONNECT_LOGO)
+            self.find_your_institute_image.set_from_file(SERVER_ILLUSTRATION)
+            self.find_your_institute_label.set_text("Server address")
+            self.add_other_server_button.set_label("Add server")
+            self.add_other_server_row.show()
+            self.window.set_title(LETS_CONNECT_NAME)
+            self.window.set_icon_from_file(LETS_CONNECT_ICON)
+        else:
+            self.add_other_server_row.hide()
 
     def nm_status_cb(self, state_code: ConnectionState = None, reason_code: ConnectionStateReason = None):
         con_state_code = ConnectionState(state_code)
@@ -175,7 +192,18 @@ class EduVpnGui:
 
     def on_add_other_server_button_clicked(self, button) -> None:
         logger.debug("on_add_other_server_button_clicked")
-        self.show_add_other_server()
+        if self.lets_connect and len(self.institute_list_model) == 0:
+            self.data.new_server_name = name = self.find_your_institute_search.get_text()
+            if name.count('.') > 1:
+                if not name.lower().startswith('https://'):
+                    name = 'https://' + name
+                if not name.lower().endswith('/'):
+                    name = name + '/'
+                logger.debug(f"on_add_other_server_button_clicked: {name}")
+                self.show_empty()
+                self.setup_connection(name)
+        else:
+            self.show_add_other_server()
 
     def on_other_server_selection_changed(self, selection) -> None:
         logger.debug("on_other_server_selection_changed")
@@ -188,7 +216,7 @@ class EduVpnGui:
                     name = 'https://' + name
                 if not name.lower().endswith('/'):
                     name = name + '/'
-                logger.debug(f"on_other_server_selection_changed: {name}")
+                logger.debug(f"on_add_other_server_button_clicked: {name}")
                 select = self.institute_tree_view.get_selection()
                 select.disconnect_by_func(self.on_institute_selection_changed)
                 select = self.secure_internet_tree_view.get_selection()
@@ -297,6 +325,16 @@ class EduVpnGui:
     def update_search_lists(self, search_string="", disconnect=True) -> None:
         logger.debug(f"update_search_lists: {search_string}")
 
+        if self.lets_connect and len(self.institute_list_model) == 0:
+            self.find_your_institute_window.hide()
+            self.update_lc_first_search_list(search_string, disconnect)
+        else:
+            self.find_your_institute_window.show()
+            self.update_all_search_lists(search_string, disconnect)
+
+    def update_all_search_lists(self, search_string="", disconnect=True) -> None:
+        logger.debug(f"update_all_search_lists: {search_string}")
+
         selection = self.institute_tree_view.get_selection()
         if disconnect:
             select = self.institute_tree_view.get_selection()
@@ -325,6 +363,9 @@ class EduVpnGui:
         select = self.other_servers_tree_view.get_selection()
         select.connect("changed", self.on_other_server_selection_changed)
 
+    def update_lc_first_search_list(self, search_string="", disconnect=True) -> None:
+        logger.debug(f"update_lc_first_search_list: {search_string}")
+
     def show_find_your_institute(self) -> None:
         logger.debug("show_find_your_institute")
         self.data.profiles = []
@@ -350,7 +391,10 @@ class EduVpnGui:
         self.open_browser_page.hide()
         self.connection_page.hide()
         self.show_back_button(False)
-        self.add_other_server_top_row.hide()
+        if self.lets_connect:
+            self.add_other_server_row.show()
+        else:
+            self.add_other_server_row.hide()
         self.find_your_institute_search.connect("search-changed", self.on_search_changed)
         self.update_search_lists(disconnect=False)
 
@@ -363,7 +407,7 @@ class EduVpnGui:
         self.open_browser_page.hide()
         self.connection_page.hide()
         self.show_back_button()
-        self.add_other_server_top_row.hide()
+        self.add_other_server_row.hide()
 
     def show_settings(self) -> None:
         logger.debug("show_settings")
@@ -374,7 +418,7 @@ class EduVpnGui:
         self.open_browser_page.hide()
         self.connection_page.hide()
         self.show_back_button()
-        self.add_other_server_top_row.hide()
+        self.add_other_server_row.hide()
 
     def show_choose_profile(self) -> None:
         logger.debug("show_choose_profile")
@@ -386,7 +430,7 @@ class EduVpnGui:
             self.open_browser_page.hide()
             self.connection_page.hide()
             self.show_back_button()
-            self.add_other_server_top_row.hide()
+            self.add_other_server_row.hide()
             select = self.profile_tree_view.get_selection()
             select.unselect_all()
             select.connect("changed", self.on_profile_selection_changed)
@@ -404,7 +448,7 @@ class EduVpnGui:
             self.open_browser_page.hide()
             self.connection_page.hide()
             self.show_back_button()
-            self.add_other_server_top_row.hide()
+            self.add_other_server_row.hide()
             select = self.location_tree_view.get_selection()
             select.unselect_all()
             select.connect("changed", self.on_location_selection_changed)
@@ -421,7 +465,7 @@ class EduVpnGui:
         self.open_browser_page.show()
         self.connection_page.hide()
         self.show_back_button(False)
-        self.add_other_server_top_row.hide()
+        self.add_other_server_row.hide()
 
     def show_connection(self, start_connection: bool = True) -> None:
         logger.debug("show_connection")
@@ -432,7 +476,7 @@ class EduVpnGui:
         self.open_browser_page.hide()
         self.connection_page.show()
         self.show_back_button()
-        self.add_other_server_top_row.hide()
+        self.add_other_server_row.hide()
         self.connection_info_top_row.hide()
         self.profiles_sub_page.hide()
         self.connection_sub_page.hide()
@@ -471,7 +515,7 @@ class EduVpnGui:
         self.open_browser_page.hide()
         self.connection_page.hide()
         self.show_back_button(True, False)
-        self.add_other_server_top_row.hide()
+        self.add_other_server_row.hide()
         self.connection_info_top_row.hide()
         self.profiles_sub_page.hide()
         self.connection_sub_page.hide()
@@ -524,11 +568,11 @@ class EduVpnGui:
         if search_term:
             self.find_your_institute_image.hide()
             self.find_your_institute_spacer.hide()
-            self.add_other_server_top_row.hide()
+            self.add_other_server_row.hide()
         else:
             self.find_your_institute_image.show()
             self.find_your_institute_spacer.show()
-            self.add_other_server_top_row.hide()
+            self.add_other_server_row.hide()
 
         if len(self.institute_list_model) > 0 and search_term:
             self.institute_access_header.show()

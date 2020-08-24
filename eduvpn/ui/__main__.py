@@ -22,8 +22,7 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-# def main(args: List[str]):
-def main(args=None):
+def main_loop(args=None, lets_connect=False):
     if args is None:
         args = sys.argv
     logging.basicConfig(level=logging.DEBUG, format=log_format)
@@ -33,20 +32,25 @@ def main(args=None):
     # parse_args(args)
 
     if geteuid() == 0:
-        logger.error("Running eduVPN client as root is not supported (yet)")
+        logger.error(f"Running client as root is not supported (yet)")
         exit(1)
 
     # import this later so the logging is properly configured
     from eduvpn.ui.ui import EduVpnGui
 
-    edu_vpn_gui = EduVpnGui(lets_connect=False)
+    edu_vpn_gui = EduVpnGui(lets_connect)
     edu_vpn_gui.run()
 
     Gtk.main()
 
 
-def letsconnect():
-    raise NotImplementedError("todo :)")
+# def main(args: List[str]):
+def main(args=None):
+    main_loop(args)
+
+
+def letsconnect(args=None):
+    main_loop(args, lets_connect=True)
 
 
 if __name__ == '__main__':

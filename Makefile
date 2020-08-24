@@ -16,6 +16,9 @@ $(VENV)/:
 gui: $(VENV)/bin/eduvpn-gui
 	venv/bin/eduvpn-gui
 
+lc: $(VENV)/bin/eduvpn-gui
+	venv/bin/letsconnect-gui
+
 $(VENV)/bin/eduvpn-gui: $(VENV)/
 	venv/bin/pip install -e ".[test,gui]"
 

@@ -7,7 +7,7 @@
     <property name="title" translatable="yes">eduVPN</property>
     <property name="default_width">440</property>
     <property name="default_height">597</property>
-    <property name="icon">../images/app-icon-circle.svg</property>
+    <property name="icon">../../icons/hicolor/128x128/apps/eduvpn-client.png</property>
     <property name="has_resize_grip">True</property>
     <property name="show_menubar">False</property>
     <signal name="delete-event" handler="delete_window" swapped="no"/>
@@ -81,7 +81,7 @@
                   <placeholder/>
                 </child>
                 <child>
-                  <object class="GtkImage">
+                  <object class="GtkImage" id="logoImage">
                     <property name="width_request">120</property>
                     <property name="height_request">36</property>
                     <property name="visible">True</property>
@@ -243,12 +243,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="addOtherServerTopRow">
+                  <object class="GtkBox" id="addOtherServerRow">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkButton" id="addOtherServerTopButton">
+                      <object class="GtkButton" id="addOtherServerButton">
                         <property name="label" translatable="yes">Add Other Server</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>

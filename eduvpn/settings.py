@@ -20,6 +20,7 @@ COUNTRY = "nl-NL"
 COUNTRY_MAP = Path(prefix + "/share/eduvpn/country_codes.json")
 FLAG_PREFIX = prefix + "/share/eduvpn/images/flags/png/"
 IMAGE_PREFIX = prefix + "/share/eduvpn/images/"
+LC_IMAGE_PREFIX = prefix + "/share/letsconnect/images/"
 
 
 # format: base64(<signature_algorithm> || <key_id> || <public_key>)
@@ -27,10 +28,12 @@ VERIFY_KEYS = [
     "RWSC3Lwn4f9mhG3XIwRUTEIqf7Ucu9+7/Rq+scUMxrjg5/kjskXKOJY/",
     "RWRtBSX1alxyGX+Xn3LuZnWUT0w//B6EmTJvgaAxBMYzlQeI+jdrO6KF",
 ]
-eduvpn_main_logo = prefix + "/share/icons/hicolor/128x128/apps/eduvpn-client.png"
-eduvpn_name = "eduVPN"
-lets_connect_main_logo = prefix + "/share/icons/hicolor/128x128/apps/lets-connect-client.png"
-lets_connect_name = "Let's Connect!"
+EDUVPN_ICON = prefix + "/share/icons/hicolor/128x128/apps/eduvpn-client.png"
+EDUVPN_NAME = "eduVPN"
+LETS_CONNECT_LOGO = LC_IMAGE_PREFIX + "letsconnect.png"
+SERVER_ILLUSTRATION = LC_IMAGE_PREFIX + "server-illustration.png"
+LETS_CONNECT_ICON = prefix + "/share/icons/hicolor/128x128/apps/lets-connect-client.png"
+LETS_CONNECT_NAME = "Let's Connect!"
 
 
 def get_brand(lets_connect: bool) -> Tuple[str, str]:
@@ -41,6 +44,6 @@ def get_brand(lets_connect: bool) -> Tuple[str, str]:
         logo, name
     """
     if lets_connect:
-        return lets_connect_main_logo, lets_connect_name
+        return LETS_CONNECT_ICON, LETS_CONNECT_NAME
     else:
-        return eduvpn_main_logo, eduvpn_name
+        return EDUVPN_ICON, EDUVPN_NAME
