@@ -68,8 +68,32 @@ You can install the latest release of the eduVPN client on Centos 8 by running t
 More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
 
 
+Install the dependencies
+------------------------
+
+This is needed for the sections Pip and Development below. It will install all needed packages.
+
+.. code-block:: bash
+
+    $ git clone https://github.com/eduvpn/python-eduvpn-client.git
+    $ cd python-eduvpn-client
+
+For Debian or Ubuntu:
+
+.. code-block:: bash
+
+    $ sudo make debdev
+
+
+For fedora:
+.. code-block:: bash
+
+    $ sudo make dnf
+
 Pip
 ---
+
+Please follow the instructions in section 'Install the dependencies' first.
 
 You can install the client API from pypi:
 
@@ -90,50 +114,17 @@ You can install the dependencies for the user interface:
 
     $ pip install -e ".[gui]"
 
-If you use eduVPN this way you need to make sure all non-Python dependies are installed. For Debian or Ubuntu:
-
-.. code-block:: bash
-
-   $ sudo apt install gir1.2-gtk-3.0 gir1.2-notify-0.7 python3-gi python3-requests-oauthlib \
-        python3-cryptography python3-setuptools python3-nacl python3-pytest python3-wheel \
-        python3-dbus git python3-venv pkg-config libcairo2-dev libpython3-dev \
-        gobject-introspection libgirepository1.0-dev network-manager-openvpn-gnome libdbus-1-dev
-
-For fedora:
-
-.. code-block:: bash
-
-    $ sudo dnf install -y libnotify gtk3 python3-dbus python3-requests-oauthlib \
-         python3-gobject python3-pynacl python3-pytest python3-cairo-devel \
-         gobject-introspection-devel cairo-gobject-devel dbus-python-devel
 
 Development version
 --
 
-.. code-block:: bash
-
-    $ git clone https://github.com/eduvpn/python-eduvpn-client.git
-    $ cd python-eduvpn-client
+Please follow the instructions in section 'Install the dependencies' first.
 
 Optionally change to another branch, e.g.
 
 .. code-block:: bash
 
     $ git checkout 2.0.x
-
-Install the dependencies.
-
-For Debian or Ubuntu:
-
-.. code-block:: bash
-
-    $ sudo make debdev
-
-
-For fedora:
-.. code-block:: bash
-
-    $ sudo make dnf
 
 Start eduVPN GUI:
 
