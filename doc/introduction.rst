@@ -111,12 +111,14 @@ Development version
 --
 
 .. code-block:: bash
+
     $ git clone https://github.com/eduvpn/python-eduvpn-client.git
     $ cd python-eduvpn-client
 
 Optionally change to another branch, e.g.
 
 .. code-block:: bash
+
     $ git checkout 2.0.x
 
 Install the dependencies.
@@ -124,20 +126,25 @@ Install the dependencies.
 For Debian or Ubuntu:
 
 .. code-block:: bash
+
     $ sudo make debdev
+
 
 For fedora:
 .. code-block:: bash
+
     $ sudo make dnf
 
 Start eduVPN GUI:
 
 .. code-block:: bash
+
     $ sudo make gui
 
 Start Let's Connect GUI:
 
 .. code-block:: bash
+
     $ sudo make lc
 
 Issues
