@@ -150,13 +150,13 @@ Start eduVPN GUI:
 
 .. code-block:: bash
 
-    $ sudo make gui
+    $ make gui
 
 Start Let's Connect GUI:
 
 .. code-block:: bash
 
-    $ sudo make lc
+    $ make lc
 
 Issues
 ======
