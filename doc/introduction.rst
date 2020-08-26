@@ -39,18 +39,6 @@ as root or using sudo:
     $ apt update
     $ apt install eduvpn-client
 
-.. note::
-
-    For Debian Stretch you need to enable the backports repository and manually update network manager.
-    `network-manager-openvpn` >= 1.2.10 is required for `tls-crypt` support. To enable the backports repository add
-    this line to your `/etc/apt/sources.list`::
-
-        deb http://deb.debian.org/debian stretch-backports main contrib non-free
-
-    And then update network-manager::
-
-        $ sudo apt-get update
-        $ sudo apt-get -t stretch-backports install network-manager-openvpn-gnome
 
 Fedora
 ------
@@ -94,7 +82,7 @@ Or if you want to try out the bleading edge development version:
 
 .. code-block:: bash
 
-    $ pip install git+https://github.com/eduvpn/python-eduvpn.git
+    $ pip install git+https://github.com/eduvpn/python-eduvpn-client.git
 
 You can install the dependencies for the user interface:
 
@@ -106,17 +94,51 @@ If you use eduVPN this way you need to make sure all non-Python dependies are in
 
 .. code-block:: bash
 
-    $ apt install gir1.2-gtk-3.0 gir1.2-notify-0.7 libdbus-1-dev libnotify4 python3-dateutil \
-        python3-dbus python3-nacl python3-requests-oauthlib python3-gi network-manager-openvpn \
-        python3-pip git
+   $ sudo apt install gir1.2-gtk-3.0 gir1.2-notify-0.7 python3-gi python3-requests-oauthlib \
+        python3-cryptography python3-setuptools python3-nacl python3-pytest python3-wheel \
+        python3-dbus git python3-venv pkg-config libcairo2-dev libpython3-dev \
+        gobject-introspection libgirepository1.0-dev network-manager-openvpn-gnome libdbus-1-dev
 
 For fedora:
 
 .. code-block:: bash
 
-    $ dnf install -y gtk3 libnotify python3-dateutil python3-networkmanager python3-pydbus \
-        python3-pynacl python3-requests-oauthlib python3-gobject python3-pip \
-        python3-future git NetworkManager-openvpn NetworkManager-openvpn-gnome
+    $ sudo dnf install -y libnotify gtk3 python3-dbus python3-requests-oauthlib \
+         python3-gobject python3-pynacl python3-pytest python3-cairo-devel \
+         gobject-introspection-devel cairo-gobject-devel dbus-python-devel
+
+Development version
+--
+
+.. code-block:: bash
+    $ git clone https://github.com/eduvpn/python-eduvpn-client.git
+    $ cd python-eduvpn-client
+
+Optionally change to another branch, e.g.
+
+.. code-block:: bash
+    $ git checkout 2.0.x
+
+Install the dependencies.
+
+For Debian or Ubuntu:
+
+.. code-block:: bash
+    $ sudo make debdev
+
+For fedora:
+.. code-block:: bash
+    $ sudo make dnf
+
+Start eduVPN GUI:
+
+.. code-block:: bash
+    $ sudo make gui
+
+Start Let's Connect GUI:
+
+.. code-block:: bash
+    $ sudo make lc
 
 Issues
 ======
