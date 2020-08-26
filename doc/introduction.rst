@@ -73,17 +73,34 @@ Install the dependencies
 
 This is needed for the sections Pip and Development below. It will install all needed packages.
 
+For Debian or Ubuntu:
+
+.. code-block:: bash
+
+    $ sudo apt install build-essential git
+
+For fedora:
+
+.. code-block:: bash
+
+    $ sudo dnf install git make
+
 .. code-block:: bash
 
     $ git clone https://github.com/eduvpn/python-eduvpn-client.git
     $ cd python-eduvpn-client
+
+Optionally change to another branch, e.g.
+
+.. code-block:: bash
+
+    $ git checkout 2.0.x
 
 For Debian or Ubuntu:
 
 .. code-block:: bash
 
     $ sudo make debdev
-
 
 For fedora:
 
