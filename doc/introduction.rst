@@ -85,6 +85,8 @@ For fedora:
 
     $ sudo dnf install git make
 
+Retrieve the code:
+
 .. code-block:: bash
 
     $ git clone https://github.com/eduvpn/python-eduvpn-client.git
