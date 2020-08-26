@@ -86,6 +86,7 @@ For Debian or Ubuntu:
 
 
 For fedora:
+
 .. code-block:: bash
 
     $ sudo make dnf
@@ -116,7 +117,7 @@ You can install the dependencies for the user interface:
 
 
 Development version
---
+-------------------
 
 Please follow the instructions in section 'Install the dependencies' first.
 
