@@ -110,6 +110,7 @@ Let's Connect! desktop client
 %{_datarootdir}/icons/hicolor/512x512/apps/lets-connect-client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
-
+%{_datarootdir}/letsconnect/images/*.png
+%{_datarootdir}/letsconnect/images/*.svg
 
 %changelog

@@ -5,6 +5,7 @@ include share/applications/*
 include share/eduvpn/*
 include share/eduvpn/builder/*
 include share/eduvpn/images/*
+include share/eduvpn/letsconnect/*
 include share/eduvpn/images/flags/png/*
 include doc/*
 

@@ -35,6 +35,7 @@ data_files = [
     extra_files_line('share/eduvpn/builder'),
     extra_files_line('share/eduvpn/images'),
     extra_files_line('share/eduvpn/images/flags'),
+    extra_files_line('share/letsconnect/images'),
     extra_files_line('share/icons/hicolor/48x48/apps'),
     extra_files_line('share/icons/hicolor/128x128/apps'),
     extra_files_line('share/icons/hicolor/256x256/apps'),
