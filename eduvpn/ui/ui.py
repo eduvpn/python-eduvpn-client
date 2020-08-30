@@ -406,6 +406,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
+        self.message_page.hide()
         self.show_back_button(False)
         if self.lets_connect:
             self.add_other_server_row.show()
@@ -422,6 +423,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
+        self.message_page.hide()
         self.show_back_button()
         self.add_other_server_row.hide()
 
@@ -433,6 +435,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
+        self.message_page.hide()
         self.show_back_button()
         self.add_other_server_row.hide()
 
@@ -445,6 +448,7 @@ class EduVpnGui:
             self.choose_location_page.hide()
             self.open_browser_page.hide()
             self.connection_page.hide()
+            self.message_page.hide()
             self.show_back_button()
             self.add_other_server_row.hide()
             select = self.profile_tree_view.get_selection()
@@ -463,6 +467,7 @@ class EduVpnGui:
             self.choose_location_page.show()
             self.open_browser_page.hide()
             self.connection_page.hide()
+            self.message_page.hide()
             self.show_back_button()
             self.add_other_server_row.hide()
             select = self.location_tree_view.get_selection()
@@ -480,6 +485,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.show()
         self.connection_page.hide()
+        self.message_page.hide()
         self.show_back_button(False)
         self.add_other_server_row.hide()
 
@@ -491,6 +497,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.show()
+        self.message_page.hide()
         self.show_back_button()
         self.add_other_server_row.hide()
         self.connection_info_top_row.hide()
@@ -530,6 +537,7 @@ class EduVpnGui:
         self.choose_location_page.hide()
         self.open_browser_page.hide()
         self.connection_page.hide()
+        self.message_page.hide()
         self.show_back_button(True, False)
         self.add_other_server_row.hide()
         self.connection_info_top_row.hide()
