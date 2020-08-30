@@ -123,29 +123,39 @@ class EduVpnGui:
 
         self.settings_page = self.builder.get_object('settingsPage')
 
+        self.message_page = self.builder.get_object('messagePage')
+        self.message_label = self.builder.get_object('messageLabel')
+        self.message_text = self.builder.get_object('messageText')
+        self.message_button = self.builder.get_object('messageButton')
+
         self.institute_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.secure_internet_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.other_servers_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
         self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)
 
-        self.data = BackendData()
-
-        init_dbus_system_bus(self.nm_status_cb)
-
-        self.init_search_list()
-        self.show_back_button(False)
-
-        if self.lets_connect:
-            self.logo_image.set_from_file(LETS_CONNECT_LOGO)
-            self.find_your_institute_image.set_from_file(SERVER_ILLUSTRATION)
-            self.find_your_institute_label.set_text("Server address")
-            self.add_other_server_button.set_label("Add server")
-            self.add_other_server_row.show()
-            self.window.set_title(LETS_CONNECT_NAME)
-            self.window.set_icon_from_file(LETS_CONNECT_ICON)
+        try:
+            self.data = BackendData()
+        except Exception as e:
+            msg = f"Got exception {e} initializing backend data"
+            logger.error(msg)
+            self.data = None
         else:
-            self.add_other_server_row.hide()
+            init_dbus_system_bus(self.nm_status_cb)
+
+            self.init_search_list()
+            self.show_back_button(False)
+
+            if self.lets_connect:
+                self.logo_image.set_from_file(LETS_CONNECT_LOGO)
+                self.find_your_institute_image.set_from_file(SERVER_ILLUSTRATION)
+                self.find_your_institute_label.set_text("Server address")
+                self.add_other_server_button.set_label("Add server")
+                self.add_other_server_row.show()
+                self.window.set_title(LETS_CONNECT_NAME)
+                self.window.set_icon_from_file(LETS_CONNECT_ICON)
+            else:
+                self.add_other_server_row.hide()
 
     def nm_status_cb(self, state_code: ConnectionState = None, reason_code: ConnectionStateReason = None):
         con_state_code = ConnectionState(state_code)
@@ -176,7 +186,10 @@ class EduVpnGui:
 
     def run(self) -> None:
         self.window.show()
-        self.show_find_your_institute()
+        if self.data is not None:
+            self.show_find_your_institute()
+        else:
+            self.show_fatal("Can't reach the server, please quit")
 
     def on_settings_button_released(self, widget, event) -> None:
         logger.debug("on_settings_button_released")
@@ -366,7 +379,7 @@ class EduVpnGui:
     def update_lc_first_search_list(self, search_string="", disconnect=True) -> None:
         logger.debug(f"update_lc_first_search_list: {search_string}")
 
-    def show_find_your_institute(self) -> None:
+    def show_find_your_institute(self, clear_text=True) -> None:
         logger.debug("show_find_your_institute")
         self.data.profiles = []
         self.data.locations = []
@@ -383,7 +396,10 @@ class EduVpnGui:
         self.find_your_institute_page.show()
 
         self.find_your_institute_search.disconnect_by_func(self.on_search_changed)
-        self.find_your_institute_search.set_text("")
+        if clear_text:
+            self.find_your_institute_search.set_text("")
+        else:
+            self.find_your_institute_search.grab_focus()
 
         self.settings_page.hide()
         self.choose_profile_page.hide()
@@ -521,6 +537,30 @@ class EduVpnGui:
         self.connection_sub_page.hide()
         self.connection_info_grid.hide()
         self.connection_info_bottom_row.hide()
+
+    def show_message(self, label, text, callback) -> None:
+        logger.debug(f"show_message: {label} {text}")
+        self.find_your_institute_page.hide()
+        self.settings_page.hide()
+        self.choose_profile_page.hide()
+        self.choose_location_page.hide()
+        self.open_browser_page.hide()
+        self.connection_page.hide()
+        self.show_back_button(True, False)
+        self.add_other_server_row.hide()
+        self.connection_info_top_row.hide()
+        self.profiles_sub_page.hide()
+        self.connection_sub_page.hide()
+        self.connection_info_grid.hide()
+        self.connection_info_bottom_row.hide()
+        self.message_page.show()
+        self.message_label.set_text(label)
+        self.message_text.set_text(text)
+        self.message_button.connect("clicked", callback)
+
+    def show_fatal(self, text) -> None:
+        logger.debug(f"show_fatal: {text}")
+        self.show_message("Fatal error", text, Gtk.main_quit)
 
     def update_connection_state(self, state: ConnectionState) -> None:
         self.data.connection_state = state
@@ -668,10 +708,15 @@ class EduVpnGui:
 
 def fetch_token_thread(gui) -> None:
     logger.debug("fetching token")
-    gui.data.api_url, gui.data.token_endpoint, auth_endpoint = get_info(gui.data.auth_url)
-    gui.data.oauth = get_oauth(gui.data.token_endpoint, auth_endpoint)
-    set_token(gui.data.auth_url, gui.data.oauth.token, gui.data.token_endpoint, auth_endpoint)
-    GLib.idle_add(lambda: gui.token_available())
+    try:
+        gui.data.api_url, gui.data.token_endpoint, auth_endpoint = get_info(gui.data.auth_url)
+        gui.data.oauth = get_oauth(gui.data.token_endpoint, auth_endpoint)
+        set_token(gui.data.auth_url, gui.data.oauth.token, gui.data.token_endpoint, auth_endpoint)
+        GLib.idle_add(lambda: gui.token_available())
+    except Exception as e:
+        msg = f"Got exception {e} requesting {gui.data.auth_url}"
+        logger.debug(msg)
+        GLib.idle_add(lambda: gui.show_find_your_institute(clear_text=False))
 
 
 def restoring_token_thread(exists, gui) -> None:
