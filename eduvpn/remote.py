@@ -15,7 +15,12 @@ def request(uri: str, verify: bool = False) -> dict:
     Do a request and check the signature using our public key verifier.
     """
     logger.info(f"Requesting {uri}")
-    response = requests.get(uri)
+    try:
+        response = requests.get(uri)
+    except Exception as e:
+        msg = f"Got exception {e} requesting {uri}"
+        logger.debug(msg)
+        raise IOError(msg)
     if response.status_code != 200:
         msg = f"Got error code {response.status_code} requesting {uri}"
         logger.error(msg)
@@ -50,7 +55,13 @@ def oauth_request(oauth: OAuth2Session, uri: str, method: str = 'get'):
 
 
 def list_orgs(uri: str):
-    return request(uri, verify=True)['organization_list']
+    try:
+        result = request(uri, verify=True)['organization_list']
+    except Exception as e:
+        msg = f"Got exception {e} requesting {uri} for organization_list"
+        logger.error(msg)
+        raise IOError(msg)
+    return result
 
 
 def list_servers(uri: str):
