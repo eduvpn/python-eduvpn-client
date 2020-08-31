@@ -1,4 +1,5 @@
 import logging
+import traceback
 import signal
 import sys
 from os import geteuid
@@ -35,11 +36,22 @@ def main_loop(args=None, lets_connect=False):
         logger.error(f"Running client as root is not supported (yet)")
         exit(1)
 
-    # import this later so the logging is properly configured
-    from eduvpn.ui.ui import EduVpnGui
+    try:
+        # import this later so the logging is properly configured
+        from eduvpn.ui.ui import EduVpnGui
 
-    edu_vpn_gui = EduVpnGui(lets_connect)
-    edu_vpn_gui.run()
+        edu_vpn_gui = EduVpnGui(lets_connect)
+        edu_vpn_gui.run()
+    except Exception as e:
+        fatal_reason = f"Caught exception: {e}"
+        logger.error(fatal_reason)
+        logging.error(traceback.format_exc())
+        dialog = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,
+                                   type=Gtk.MessageType.ERROR,
+                                   buttons=Gtk.ButtonsType.OK,
+                                   message_format=fatal_reason)
+        dialog.connect("response", Gtk.main_quit)
+        dialog.show()
 
     Gtk.main()
 
