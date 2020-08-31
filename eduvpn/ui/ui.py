@@ -142,6 +142,14 @@ class EduVpnGui:
             self.data = None
         else:
             init_dbus_system_bus(self.nm_status_cb)
+        try:
+            self.data = BackendData(lets_connect)
+        except Exception as e:
+            msg = f"Got exception {e} initializing backend data"
+            logger.error(msg)
+            self.data = None
+        else:
+            init_dbus_system_bus(self.nm_status_cb)
 
             self.init_search_list()
             self.show_back_button(False)
@@ -665,16 +673,21 @@ class EduVpnGui:
 
         self.data.auth_url = auth_url
         self.data.locations = secure_internet
+
         logger.debug(f"starting procedure with auth_url: {self.data.auth_url}")
         exists = get_token(self.data.auth_url)
 
         if exists:
-            thread_helper(lambda: restoring_token_thread(exists, self))
+            token, self.data.token_endpoint, self.data.authorization_endpoint = exists
+            thread_helper(lambda: restoring_token_thread(token, self.data.token_endpoint, self))
         else:
             self.show_open_browser()
             thread_helper(lambda: fetch_token_thread(self))
 
     def token_available(self) -> None:
+        """
+        Called when the token is available
+        """
         if self.data.locations:
             thread_helper(lambda: handle_secure_internet_thread(self))
         else:
@@ -727,10 +740,10 @@ def fetch_token_thread(gui) -> None:
         GLib.idle_add(lambda: gui.show_find_your_institute(clear_text=False))
 
 
-def restoring_token_thread(exists, gui) -> None:
+def restoring_token_thread(token, token_endpoint, gui) -> None:
     logger.debug("token exists, restoring")
-    token, gui.data.token_endpoint, authorization_endpoint = exists
-    gui.data.oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=gui.data.token_endpoint)
+    gui.data.oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
+    gui.data.oauth.refresh_token(token_url=gui.data.token_endpoint)
     gui.data.api_url, _, _ = get_info(gui.data.auth_url)
     GLib.idle_add(lambda: gui.token_available())
 

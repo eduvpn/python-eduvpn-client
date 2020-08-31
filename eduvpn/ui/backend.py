@@ -6,11 +6,19 @@ logger = getLogger(__name__)
 
 
 class BackendData:
-    def __init__(self):
-        self.servers = list_servers(SERVER_URI)
+    def __init__(self,lets_connect: bool = False):
+        if lets_connect:
+            self.servers = []
+        else:
+            self.servers = list_servers(SERVER_URI)
         self.secure_internet = [s for s in self.servers if s['server_type'] == 'secure_internet']
         self.institute_access = [s for s in self.servers if s['server_type'] == 'institute_access']
-        self.orgs = list_orgs(ORGANISATION_URI)
+
+        if lets_connect:
+            self.orgs = []
+        else:
+            self.orgs = list_orgs(ORGANISATION_URI)
+
         self.profiles = []
         self.locations = []
         self.secure_internet_home = None
