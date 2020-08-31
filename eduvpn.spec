@@ -83,7 +83,7 @@ Let's Connect! desktop client
 %files -n eduvpn-client
 %license LICENSE
 %doc README.md
-%{_bindir}/eduvpn-client
+%{_bindir}/eduvpn-cli
 %{_bindir}/eduvpn-gui
 %{_datarootdir}/applications/eduvpn-client.desktop
 %{_datarootdir}/eduvpn/eduvpn.png
@@ -99,7 +99,7 @@ Let's Connect! desktop client
 %files -n letsconnect-client
 %license LICENSE
 %doc README.md
-%{_bindir}/letsconnect-client
+%{_bindir}/letsconnect-cli
 %{_bindir}/letsconnect-gui
 %{_datarootdir}/applications/letsconnect-client.desktop
 %{_datarootdir}/eduvpn/builder/mainwindow.ui
