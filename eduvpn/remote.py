@@ -20,7 +20,7 @@ def request(uri: str, verify: bool = False) -> dict:
     except Exception as e:
         msg = f"Got exception {e} requesting {uri}"
         logger.debug(msg)
-        raise IOError(msg)
+        raise
     if response.status_code != 200:
         msg = f"Got error code {response.status_code} requesting {uri}"
         logger.error(msg)
@@ -58,14 +58,18 @@ def list_orgs(uri: str):
     try:
         result = request(uri, verify=True)['organization_list']
     except Exception as e:
-        msg = f"Got exception {e} requesting {uri} for organization_list"
-        logger.error(msg)
-        raise IOError(msg)
+        logger.error(f"Got exception {e} requesting {uri} for organization_list")
+        raise
     return result
 
 
 def list_servers(uri: str):
-    return request(uri, verify=True)['server_list']
+    try:
+        result = request(uri, verify=True)['server_list']
+    except Exception as e:
+        logger.error(f"Got exception {e} requesting {uri} for server_list")
+        raise
+    return result
 
 
 def get_info(base_uri: str):
