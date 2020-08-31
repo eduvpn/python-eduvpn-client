@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        1.9.0
+Version:        1.9.1
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -35,7 +35,7 @@ Requires: python3-pynacl
 Requires: python3-requests-oauthlib
 Requires: python3-dateutil
 Requires: python3-cryptography
-Conflicts: python3-lets-connect-client
+Conflicts: python3-letsconnect-client
 
 %description -n python3-eduvpn-client
 eduVPN client API for Python3
@@ -45,7 +45,7 @@ Summary: %{sum}
 Requires: gtk3
 Requires: libnotify
 Requires:  python3-eduvpn-client
-Conflicts: lets-connect-client
+Conflicts: letsconnect-client
 
 %description -n eduvpn-client
 eduVPN desktop client
@@ -101,13 +101,13 @@ Let's Connect! desktop client
 %doc README.md
 %{_bindir}/letsconnect-client
 %{_bindir}/letsconnect-gui
-%{_datarootdir}/applications/lets-connect-client.desktop
+%{_datarootdir}/applications/letsconnect-client.desktop
 %{_datarootdir}/eduvpn/builder/mainwindow.ui
 %{_datarootdir}/eduvpn/country_codes.json
-%{_datarootdir}/icons/hicolor/128x128/apps/lets-connect-client.png
-%{_datarootdir}/icons/hicolor/256x256/apps/lets-connect-client.png
-%{_datarootdir}/icons/hicolor/48x48/apps/lets-connect-client.png
-%{_datarootdir}/icons/hicolor/512x512/apps/lets-connect-client.png
+%{_datarootdir}/icons/hicolor/128x128/apps/letsconnect-client.png
+%{_datarootdir}/icons/hicolor/256x256/apps/letsconnect-client.png
+%{_datarootdir}/icons/hicolor/48x48/apps/letsconnect-client.png
+%{_datarootdir}/icons/hicolor/512x512/apps/letsconnect-client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
 %{_datarootdir}/letsconnect/images/*.png

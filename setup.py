@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-__version__ = "1.9.0"
+__version__ = "1.9.1"
 
 tests_require = [
     'pytest',
@@ -76,8 +76,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'eduvpn-client = eduvpn.__main__:eduvpn',
-            'letsconnect-client = eduvpn.__main__:letsconnect',
+            'eduvpn-cli = eduvpn.__main__:eduvpn',
+            'letsconnect-cli = eduvpn.__main__:letsconnect',
         ],
         'gui_scripts': [
             'eduvpn-gui = eduvpn.ui.__main__:main',

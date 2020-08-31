@@ -13,10 +13,10 @@ $(VENV)/:
 	python3 -m venv venv
 	venv/bin/pip install --upgrade pip wheel
 
-gui: $(VENV)/bin/eduvpn-gui
+eduvpn-gui: $(VENV)/bin/eduvpn-gui
 	venv/bin/eduvpn-gui
 
-lc: $(VENV)/bin/eduvpn-gui
+letsconnect-gui: $(VENV)/bin/eduvpn-gui
 	venv/bin/letsconnect-gui
 
 $(VENV)/bin/eduvpn-gui: $(VENV)/
@@ -38,21 +38,8 @@ deb:
 		python3-nacl \
 		python3-pytest \
 		python3-wheel \
-		python3-dbus
-
-# install all required binary packages on a debian based system
-debdev: deb
-	apt update
-	apt install -y \
-		git \
-		python3-venv \
-		pkg-config \
-		libcairo2-dev \
-		libpython3-dev \
-		gobject-introspection \
-		libgirepository1.0-dev \
-		network-manager-openvpn-gnome \
-		libdbus-1-dev
+		python3-dbus \
+		network-manager-openvpn-gnome
 
 # install all required binary packages on a rpm based system
 dnf:

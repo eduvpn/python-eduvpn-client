@@ -6,7 +6,7 @@ logger = getLogger(__name__)
 
 
 class BackendData:
-    def __init__(self,lets_connect: bool = False):
+    def __init__(self, lets_connect: bool = False):
         if lets_connect:
             self.servers = []
         else:
