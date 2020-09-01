@@ -63,6 +63,7 @@ class EduVpnGui:
             "on_help_button_released": self.on_help_button_released,
             "on_back_button_released": self.on_back_button_released,
             "on_search_changed": self.on_search_changed,
+            "on_activate_changed": self.on_activate_changed,
             "on_add_other_server_button_clicked": self.on_add_other_server_button_clicked,
             "on_cancel_browser_button_clicked": self.on_cancel_browser_button_clicked,
             "on_connection_switch_state_set": self.on_connection_switch_state_set
@@ -214,17 +215,20 @@ class EduVpnGui:
     def on_add_other_server_button_clicked(self, button) -> None:
         logger.debug("on_add_other_server_button_clicked")
         if self.lets_connect and len(self.institute_list_model) == 0:
-            self.data.new_server_name = name = self.find_your_institute_search.get_text()
-            if name.count('.') > 1:
-                if not name.lower().startswith('https://'):
-                    name = 'https://' + name
-                if not name.lower().endswith('/'):
-                    name = name + '/'
-                logger.debug(f"on_add_other_server_button_clicked: {name}")
-                self.show_empty()
-                self.setup_connection(name)
+            self.handle_add_lets_connect_server()
         else:
             self.show_add_other_server()
+
+    def handle_add_lets_connect_server(self) -> None:
+        self.data.new_server_name = name = self.find_your_institute_search.get_text()
+        if name.count('.') > 1:
+            if not name.lower().startswith('https://'):
+                name = 'https://' + name
+            if not name.lower().endswith('/'):
+                name = name + '/'
+            logger.debug(f"on_add_other_server_button_clicked: {name}")
+            self.show_empty()
+            self.setup_connection(name)
 
     def on_other_server_selection_changed(self, selection) -> None:
         logger.debug("on_other_server_selection_changed")
@@ -254,6 +258,11 @@ class EduVpnGui:
     def on_search_changed(self, _=None) -> None:
         logger.debug(f"on_search_changed: {self.find_your_institute_search.get_text()}")
         self.update_search_lists(self.find_your_institute_search.get_text())
+
+    def on_activate_changed(self, _=None) -> None:
+        logger.debug(f"on_activate_changed: {self.find_your_institute_search.get_text()}")
+        if self.lets_connect and len(self.institute_list_model) == 0:
+            self.handle_add_lets_connect_server()
 
     def on_institute_selection_changed(self, selection) -> None:
         logger.debug("on_institute_selection_changed")

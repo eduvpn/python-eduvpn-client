@@ -227,6 +227,7 @@
                         <property name="primary_icon_activatable">False</property>
                         <property name="primary_icon_sensitive">False</property>
                         <property name="placeholder_text" translatable="yes">Search for your institute...</property>
+                        <signal name="activate" handler="on_activate_changed" swapped="no"/>
                         <signal name="search-changed" handler="on_search_changed" swapped="no"/>
                       </object>
                       <packing>
