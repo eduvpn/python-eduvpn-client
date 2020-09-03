@@ -136,15 +136,7 @@ class EduVpnGui:
         self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)
 
         try:
-            self.data = BackendData()
-        except Exception as e:
-            msg = f"Got exception {e} initializing backend data"
-            logger.error(msg)
-            self.data = None
-        else:
-            init_dbus_system_bus(self.nm_status_cb)
-        try:
-            self.data = BackendData(lets_connect)
+            self.data = BackendData(lets_connect=lets_connect)
         except Exception as e:
             msg = f"Got exception {e} initializing backend data"
             logger.error(msg)
@@ -215,41 +207,36 @@ class EduVpnGui:
     def on_add_other_server_button_clicked(self, button) -> None:
         logger.debug("on_add_other_server_button_clicked")
         if self.lets_connect and len(self.institute_list_model) == 0:
-            self.handle_add_lets_connect_server()
+            self.handle_add_other_server(self.find_your_institute_search.get_text())
         else:
             self.show_add_other_server()
 
-    def handle_add_lets_connect_server(self) -> None:
-        self.data.new_server_name = name = self.find_your_institute_search.get_text()
+    def handle_add_other_server(self, name: str) -> bool:
+        self.data.new_server_name = name
         if name.count('.') > 1:
             if not name.lower().startswith('https://'):
                 name = 'https://' + name
             if not name.lower().endswith('/'):
                 name = name + '/'
-            logger.debug(f"on_add_other_server_button_clicked: {name}")
-            self.show_empty()
-            self.setup_connection(name)
-
-    def on_other_server_selection_changed(self, selection) -> None:
-        logger.debug("on_other_server_selection_changed")
-        logger.debug(f"# selected rows: {selection.count_selected_rows()}")
-        (model, tree_iter) = selection.get_selected()
-        if tree_iter is not None:
-            self.data.new_server_name = name = model[tree_iter][0]
-            if name.count('.') > 1:
-                if not name.lower().startswith('https://'):
-                    name = 'https://' + name
-                if not name.lower().endswith('/'):
-                    name = name + '/'
-                logger.debug(f"on_add_other_server_button_clicked: {name}")
+            logger.debug(f"handle_add_other_server: {name}")
+            if not self.lets_connect:
                 select = self.institute_tree_view.get_selection()
                 select.disconnect_by_func(self.on_institute_selection_changed)
                 select = self.secure_internet_tree_view.get_selection()
                 select.disconnect_by_func(self.on_secure_internet_selection_changed)
                 select = self.other_servers_tree_view.get_selection()
                 select.disconnect_by_func(self.on_other_server_selection_changed)
-                self.show_empty()
-                self.setup_connection(name)
+            self.show_empty()
+            self.setup_connection(name)
+        if not self.lets_connect:
+            self.other_servers_tree_view.get_selection().unselect_all()
+
+    def on_other_server_selection_changed(self, selection) -> None:
+        logger.debug("on_other_server_selection_changed")
+        logger.debug(f"# selected rows: {selection.count_selected_rows()}")
+        (model, tree_iter) = selection.get_selected()
+        if tree_iter is not None:
+            self.handle_add_other_server(model[tree_iter][0])
         selection.unselect_all()
 
     def on_cancel_browser_button_clicked(self, _) -> None:
@@ -260,48 +247,70 @@ class EduVpnGui:
         self.update_search_lists(self.find_your_institute_search.get_text())
 
     def on_activate_changed(self, _=None) -> None:
-        logger.debug(f"on_activate_changed: {self.find_your_institute_search.get_text()}")
+        name = self.find_your_institute_search.get_text()
+        logger.debug(f"on_activate_changed: {name}")
         if self.lets_connect and len(self.institute_list_model) == 0:
-            self.handle_add_lets_connect_server()
+            self.handle_add_other_server(name)
+        else:
+            if len(name) == 0:
+                return
+            one_institute_available = len(self.institute_list_model) == 1
+            no_institute_available = len(self.institute_list_model) == 0
+            one_secure_internet_available = len(self.secure_internet_list_model) == 1
+            no_secure_internet_available = len(self.secure_internet_list_model) == 0
+            one_other_server_available = len(self.other_servers_list_model) == 1
+            no_other_server_available = len(self.other_servers_list_model) == 0
+
+            if one_institute_available and no_secure_internet_available and no_other_server_available:
+                self.handle_add_institute(self.institute_list_model[0][0], self.institute_list_model[0][1])
+            if no_institute_available and one_secure_internet_available and no_other_server_available:
+                self.handle_add_institute(self.secure_internet_list_model[0][0], self.secure_internet_list_model[0][1])
+            if no_institute_available and no_secure_internet_available and one_other_server_available:
+                self.handle_add_other_server(self.other_servers_list_model[0][0])
+
+    def handle_add_institute(self, name: str, index: int) -> bool:
+        self.data.new_server_name = name
+        select = self.institute_tree_view.get_selection()
+        select.disconnect_by_func(self.on_institute_selection_changed)
+        select = self.secure_internet_tree_view.get_selection()
+        select.disconnect_by_func(self.on_secure_internet_selection_changed)
+        select = self.other_servers_tree_view.get_selection()
+        select.disconnect_by_func(self.on_other_server_selection_changed)
+        base_url = str(self.data.institute_access[index]['base_url'])
+        if 'support_contact' in self.data.institute_access[index]:
+            self.data.new_support_contact = self.data.institute_access[index]['support_contact']
+        logger.debug(f"handle_add_institute: {self.data.server_name} {base_url}")
+        self.show_empty()
+        self.setup_connection(base_url, None, False)
 
     def on_institute_selection_changed(self, selection) -> None:
         logger.debug("on_institute_selection_changed")
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.data.new_server_name = model[tree_iter][0]
-            i = model[tree_iter][1]
-            select = self.institute_tree_view.get_selection()
-            select.disconnect_by_func(self.on_institute_selection_changed)
-            select = self.secure_internet_tree_view.get_selection()
-            select.disconnect_by_func(self.on_secure_internet_selection_changed)
-            select = self.other_servers_tree_view.get_selection()
-            select.disconnect_by_func(self.on_other_server_selection_changed)
-            base_url = str(self.data.institute_access[i]['base_url'])
-            if 'support_contact' in self.data.institute_access[i]:
-                self.data.new_support_contact = self.data.institute_access[i]['support_contact']
-            logger.debug(f"on_institute_selection_changed: {self.data.server_name} {base_url}")
-            self.show_empty()
-            self.setup_connection(base_url, None, False)
+            self.handle_add_institute(model[tree_iter][0], model[tree_iter][1])
         selection.unselect_all()
+
+    def handle_add_institute(self, name: str, index: int) -> bool:
+        self.data.new_server_name = name
+        select = self.institute_tree_view.get_selection()
+        select.disconnect_by_func(self.on_institute_selection_changed)
+        select = self.secure_internet_tree_view.get_selection()
+        select.disconnect_by_func(self.on_secure_internet_selection_changed)
+        select = self.other_servers_tree_view.get_selection()
+        select.disconnect_by_func(self.on_other_server_selection_changed)
+        self.data.secure_internet_home = self.data.orgs[index]['secure_internet_home']
+        logger.debug(
+            f"handle_add_institute: {self.data.new_server_name} {self.data.secure_internet_home}")
+        self.show_empty()
+        self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
 
     def on_secure_internet_selection_changed(self, selection) -> None:
         logger.debug("on_secure_internet_selection_changed")
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.data.new_server_name = model[tree_iter][0]
-            i = model[tree_iter][1]
-            select = self.institute_tree_view.get_selection()
-            select.disconnect_by_func(self.on_institute_selection_changed)
-            select = self.secure_internet_tree_view.get_selection()
-            select.disconnect_by_func(self.on_secure_internet_selection_changed)
-            select = self.other_servers_tree_view.get_selection()
-            select.disconnect_by_func(self.on_other_server_selection_changed)
-            self.data.secure_internet_home = self.data.orgs[i]['secure_internet_home']
-            logger.debug(f"on_secure_internet_selection_changed: {self.data.new_server_name} {self.data.secure_internet_home}")
-            self.show_empty()
-            self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
+            self.handle_add_institute(model[tree_iter][0], model[tree_iter][1])
         selection.unselect_all()
 
     def on_connection_switch_state_set(self, switch, state):
@@ -353,8 +362,6 @@ class EduVpnGui:
         # self.update_search_lists()
 
     def update_search_lists(self, search_string="", disconnect=True) -> None:
-        logger.debug(f"update_search_lists: {search_string}")
-
         if self.lets_connect and len(self.institute_list_model) == 0:
             self.find_your_institute_window.hide()
             self.update_lc_first_search_list(search_string, disconnect)
@@ -363,8 +370,6 @@ class EduVpnGui:
             self.update_all_search_lists(search_string, disconnect)
 
     def update_all_search_lists(self, search_string="", disconnect=True) -> None:
-        logger.debug(f"update_all_search_lists: {search_string}")
-
         selection = self.institute_tree_view.get_selection()
         if disconnect:
             select = self.institute_tree_view.get_selection()
@@ -624,7 +629,6 @@ class EduVpnGui:
         name = self.find_your_institute_search.get_text()
         search_term = len(name) > 0
         dot_count = name.count('.')
-        logger.debug(f"show_search_lists: name: {name} len: {len(name)}")
 
         if dot_count > 1:
             self.other_servers_list_model.clear()
