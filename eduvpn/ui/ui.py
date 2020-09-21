@@ -264,7 +264,7 @@ class EduVpnGui:
             if one_institute_available and no_secure_internet_available and no_other_server_available:
                 self.handle_add_institute(self.institute_list_model[0][0], self.institute_list_model[0][1])
             if no_institute_available and one_secure_internet_available and no_other_server_available:
-                self.handle_add_institute(self.secure_internet_list_model[0][0], self.secure_internet_list_model[0][1])
+                self.handle_add_secure_internet(self.secure_internet_list_model[0][0], self.secure_internet_list_model[0][1])
             if no_institute_available and no_secure_internet_available and one_other_server_available:
                 self.handle_add_other_server(self.other_servers_list_model[0][0])
 
@@ -291,7 +291,7 @@ class EduVpnGui:
             self.handle_add_institute(model[tree_iter][0], model[tree_iter][1])
         selection.unselect_all()
 
-    def handle_add_institute(self, name: str, index: int) -> bool:
+    def handle_add_secure_internet(self, name: str, index: int) -> bool:
         self.data.new_server_name = name
         select = self.institute_tree_view.get_selection()
         select.disconnect_by_func(self.on_institute_selection_changed)
@@ -301,7 +301,7 @@ class EduVpnGui:
         select.disconnect_by_func(self.on_other_server_selection_changed)
         self.data.secure_internet_home = self.data.orgs[index]['secure_internet_home']
         logger.debug(
-            f"handle_add_institute: {self.data.new_server_name} {self.data.secure_internet_home}")
+            f"handle_add_secure_internet: {self.data.new_server_name} {self.data.secure_internet_home}")
         self.show_empty()
         self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
 
@@ -310,7 +310,7 @@ class EduVpnGui:
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.handle_add_institute(model[tree_iter][0], model[tree_iter][1])
+            self.handle_add_secure_internet(model[tree_iter][0], model[tree_iter][1])
         selection.unselect_all()
 
     def on_connection_switch_state_set(self, switch, state):
