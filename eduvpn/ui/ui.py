@@ -8,7 +8,7 @@ import re
 import webbrowser
 from logging import getLogger
 from pathlib import Path
-from typing import Optional
+from typing import Any, List, Optional
 
 logger = getLogger(__name__)
 
@@ -34,21 +34,21 @@ from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
 from eduvpn.ui.backend import BackendData
 
-builder_files = ['mainwindow.ui']
+builder_files: List[str] = ['mainwindow.ui']
 
 
 class EduVpnGui:
 
     def __init__(self, lets_connect: bool) -> None:
-        self.lets_connect = lets_connect
+        self.lets_connect: bool = lets_connect
 
-        self.prefix = get_prefix()
-        self.builder = Gtk.Builder()
+        self.prefix: str = get_prefix()
+        self.builder: Any = Gtk.Builder()
 
-        self.client = get_client()
+        self.client: Any = get_client()
 
-        self.auto_connect = False
-        self.act_on_switch = False
+        self.auto_connect: bool = False
+        self.act_on_switch: bool = False
 
         for b in builder_files:
             p = os.path.join(self.prefix, 'share/eduvpn/builder', b)
@@ -129,18 +129,17 @@ class EduVpnGui:
         self.message_text = self.builder.get_object('messageText')
         self.message_button = self.builder.get_object('messageButton')
 
-        self.institute_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
-        self.secure_internet_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
-        self.other_servers_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
-        self.profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
-        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)
+        self.institute_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
+        self.secure_internet_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
+        self.other_servers_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
+        self.profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
+        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)  # type: ignore
 
         try:
             self.data = BackendData(lets_connect=lets_connect)
         except Exception as e:
             msg = f"Got exception {e} initializing backend data"
             logger.error(msg)
-            self.data = None
         else:
             init_dbus_system_bus(self.nm_status_cb)
 
@@ -187,10 +186,11 @@ class EduVpnGui:
 
     def run(self) -> None:
         self.window.show()
-        if self.data is not None:
+        try:
+            self.data
             self.show_find_your_institute()
-        else:
-            self.show_fatal("Can't reach the server, please quit")
+        except Exception as e:
+            self.show_fatal("Got exception {e} can't reach the server, please quit")
 
     def on_settings_button_released(self, widget, event) -> None:
         logger.debug("on_settings_button_released")
@@ -206,12 +206,12 @@ class EduVpnGui:
 
     def on_add_other_server_button_clicked(self, button) -> None:
         logger.debug("on_add_other_server_button_clicked")
-        if self.lets_connect and len(self.institute_list_model) == 0:
+        if self.lets_connect and len(self.institute_list_model) == 0:  # type: ignore
             self.handle_add_other_server(self.find_your_institute_search.get_text())
         else:
             self.show_add_other_server()
 
-    def handle_add_other_server(self, name: str) -> bool:
+    def handle_add_other_server(self, name: str) -> None:
         self.data.new_server_name = name
         if name.count('.') > 1:
             if not name.lower().startswith('https://'):
@@ -249,26 +249,26 @@ class EduVpnGui:
     def on_activate_changed(self, _=None) -> None:
         name = self.find_your_institute_search.get_text()
         logger.debug(f"on_activate_changed: {name}")
-        if self.lets_connect and len(self.institute_list_model) == 0:
+        if self.lets_connect and len(self.institute_list_model) == 0:  # type: ignore
             self.handle_add_other_server(name)
         else:
             if len(name) == 0:
                 return
-            one_institute_available = len(self.institute_list_model) == 1
-            no_institute_available = len(self.institute_list_model) == 0
-            one_secure_internet_available = len(self.secure_internet_list_model) == 1
-            no_secure_internet_available = len(self.secure_internet_list_model) == 0
-            one_other_server_available = len(self.other_servers_list_model) == 1
-            no_other_server_available = len(self.other_servers_list_model) == 0
+            one_institute_available = len(self.institute_list_model) == 1  # type: ignore
+            no_institute_available = len(self.institute_list_model) == 0  # type: ignore
+            one_secure_internet_available = len(self.secure_internet_list_model) == 1  # type: ignore
+            no_secure_internet_available = len(self.secure_internet_list_model) == 0  # type: ignore
+            one_other_server_available = len(self.other_servers_list_model) == 1  # type: ignore
+            no_other_server_available = len(self.other_servers_list_model) == 0  # type: ignore
 
             if one_institute_available and no_secure_internet_available and no_other_server_available:
-                self.handle_add_institute(self.institute_list_model[0][0], self.institute_list_model[0][1])
+                self.handle_add_institute(self.institute_list_model[0][0], self.institute_list_model[0][1])  # type: ignore
             if no_institute_available and one_secure_internet_available and no_other_server_available:
-                self.handle_add_secure_internet(self.secure_internet_list_model[0][0], self.secure_internet_list_model[0][1])
+                self.handle_add_secure_internet(self.secure_internet_list_model[0][0], self.secure_internet_list_model[0][1])  # type: ignore
             if no_institute_available and no_secure_internet_available and one_other_server_available:
-                self.handle_add_other_server(self.other_servers_list_model[0][0])
+                self.handle_add_other_server(self.other_servers_list_model[0][0])  # type: ignore
 
-    def handle_add_institute(self, name: str, index: int) -> bool:
+    def handle_add_institute(self, name: str, index: int) -> None:
         self.data.new_server_name = name
         select = self.institute_tree_view.get_selection()
         select.disconnect_by_func(self.on_institute_selection_changed)
@@ -281,7 +281,7 @@ class EduVpnGui:
             self.data.new_support_contact = self.data.institute_access[index]['support_contact']
         logger.debug(f"handle_add_institute: {self.data.server_name} {base_url}")
         self.show_empty()
-        self.setup_connection(base_url, None, False)
+        self.setup_connection(base_url, [], False)
 
     def on_institute_selection_changed(self, selection) -> None:
         logger.debug("on_institute_selection_changed")
@@ -291,7 +291,7 @@ class EduVpnGui:
             self.handle_add_institute(model[tree_iter][0], model[tree_iter][1])
         selection.unselect_all()
 
-    def handle_add_secure_internet(self, name: str, index: int) -> bool:
+    def handle_add_secure_internet(self, name: str, index: int) -> None:
         self.data.new_server_name = name
         select = self.institute_tree_view.get_selection()
         select.disconnect_by_func(self.on_institute_selection_changed)
@@ -340,29 +340,29 @@ class EduVpnGui:
 
     def init_search_list(self) -> None:
         text_cell = Gtk.CellRendererText()
-        text_cell.set_property("size-points", 14)
-        col = Gtk.TreeViewColumn(None, text_cell, text=0)
+        text_cell.set_property("size-points", 14)  # type: ignore
+        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
         self.institute_tree_view.append_column(col)
         self.institute_tree_view.set_model(self.institute_list_model)
-        col = Gtk.TreeViewColumn(None, text_cell, text=0)
+        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
         self.secure_internet_tree_view.append_column(col)
         self.secure_internet_tree_view.set_model(self.secure_internet_list_model)
-        col = Gtk.TreeViewColumn(None, text_cell, text=0)
+        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
         self.other_servers_tree_view.append_column(col)
         self.other_servers_tree_view.set_model(self.other_servers_list_model)
-        col = Gtk.TreeViewColumn(None, text_cell, text=0)
+        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
         self.profile_tree_view.append_column(col)
         self.profile_tree_view.set_model(self.profiles_list_model)
         renderer_pixbuf = Gtk.CellRendererPixbuf()
-        column_pixbuf = Gtk.TreeViewColumn("Image", renderer_pixbuf, pixbuf=1)
+        column_pixbuf = Gtk.TreeViewColumn("Image", renderer_pixbuf, pixbuf=1)  # type: ignore
         self.location_tree_view.append_column(column_pixbuf)
-        col = Gtk.TreeViewColumn(None, text_cell, text=0)
+        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
         self.location_tree_view.append_column(col)
         self.location_tree_view.set_model(self.locations_list_model)
         # self.update_search_lists()
 
     def update_search_lists(self, search_string="", disconnect=True) -> None:
-        if self.lets_connect and len(self.institute_list_model) == 0:
+        if self.lets_connect and len(self.institute_list_model) == 0:  # type: ignore
             self.find_your_institute_window.hide()
             self.update_lc_first_search_list(search_string, disconnect)
         else:
@@ -379,17 +379,17 @@ class EduVpnGui:
             select = self.other_servers_tree_view.get_selection()
             select.disconnect_by_func(self.on_other_server_selection_changed)
 
-        self.institute_list_model.clear()
-        self.secure_internet_list_model.clear()
-        self.other_servers_list_model.clear()
+        self.institute_list_model.clear()  # type: ignore
+        self.secure_internet_list_model.clear()  # type: ignore
+        self.other_servers_list_model.clear()  # type: ignore
         for i, row in enumerate(self.data.institute_access):
             display_name = extract_translation(row['display_name'])
             if re.search(search_string, display_name, re.IGNORECASE):
-                self.institute_list_model.append([display_name, i])
+                self.institute_list_model.append([display_name, i])  # type: ignore
         for i, row in enumerate(self.data.orgs):
             display_name = extract_translation(row['display_name'])
             if re.search(search_string, display_name, re.IGNORECASE):
-                self.secure_internet_list_model.append([display_name, i])
+                self.secure_internet_list_model.append([display_name, i])  # type: ignore
         self.show_search_lists()
         select = self.institute_tree_view.get_selection()
         select.connect("changed", self.on_institute_selection_changed)
@@ -403,14 +403,14 @@ class EduVpnGui:
 
     def show_find_your_institute(self, clear_text=True) -> None:
         logger.debug("show_find_your_institute")
-        self.data.profiles = []
+        self.data.profiles = {}
         self.data.locations = []
-        self.data.secure_internet_home = None
+        self.data.secure_internet_home = ""
         self.data.oauth = None
-        self.data.api_url = None
-        self.data.auth_url = None
-        self.data.token_endpoint = None
-        self.data.new_server_name = None
+        self.data.api_url = ""
+        self.data.auth_url = ""
+        self.data.token_endpoint = ""
+        self.data.new_server_name = ""
         self.data.new_server_image = None
         self.data.new_support_contact = []
         self.act_on_switch = False
@@ -631,8 +631,8 @@ class EduVpnGui:
         dot_count = name.count('.')
 
         if dot_count > 1:
-            self.other_servers_list_model.clear()
-            self.other_servers_list_model.append([name, 0])
+            self.other_servers_list_model.clear()  # type: ignore
+            self.other_servers_list_model.append([name, 0])  # type: ignore
 
         if search_term:
             self.find_your_institute_image.hide()
@@ -643,19 +643,19 @@ class EduVpnGui:
             self.find_your_institute_spacer.show()
             self.add_other_server_row.hide()
 
-        if len(self.institute_list_model) > 0 and search_term:
+        if len(self.institute_list_model) > 0 and search_term:  # type: ignore
             self.institute_access_header.show()
             self.institute_tree_view.show()
         else:
             self.institute_access_header.hide()
             self.institute_tree_view.hide()
-        if len(self.secure_internet_list_model) > 0 and search_term:
+        if len(self.secure_internet_list_model) > 0 and search_term:  # type: ignore
             self.secure_internet_header.show()
             self.secure_internet_tree_view.show()
         else:
             self.secure_internet_header.hide()
             self.secure_internet_tree_view.hide()
-        if len(self.other_servers_list_model) > 0 and search_term:
+        if len(self.other_servers_list_model) > 0 and search_term:  # type: ignore
             self.other_servers_header.show()
             self.other_servers_tree_view.show()
         else:
@@ -682,7 +682,7 @@ class EduVpnGui:
             thread_helper(lambda: handle_location_thread(base_url, self))
         selection.unselect_all()
 
-    def setup_connection(self, auth_url, secure_internet: Optional[list] = None, interactive: bool = False) -> None:
+    def setup_connection(self, auth_url, secure_internet: list = [], interactive: bool = False) -> None:
 
         self.data.auth_url = auth_url
         self.data.locations = secure_internet
@@ -740,7 +740,7 @@ class EduVpnGui:
         self.back_button_event_box.set_sensitive(enabled)
 
 
-def fetch_token_thread(gui) -> None:
+def fetch_token_thread(gui: EduVpnGui) -> None:
     logger.debug("fetching token")
     try:
         gui.data.api_url, gui.data.token_endpoint, auth_endpoint = get_info(gui.data.auth_url)
@@ -753,7 +753,7 @@ def fetch_token_thread(gui) -> None:
         GLib.idle_add(lambda: gui.show_find_your_institute(clear_text=False))
 
 
-def restoring_token_thread(token, token_endpoint, gui) -> None:
+def restoring_token_thread(token, token_endpoint, gui: EduVpnGui) -> None:
     logger.debug("token exists, restoring")
     gui.data.oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
     gui.data.oauth.refresh_token(token_url=gui.data.token_endpoint)
@@ -761,33 +761,33 @@ def restoring_token_thread(token, token_endpoint, gui) -> None:
     GLib.idle_add(lambda: gui.token_available())
 
 
-def handle_location_thread(base_url, gui) -> None:
+def handle_location_thread(base_url: str, gui: EduVpnGui) -> None:
     logger.debug("fetching location info")
     gui.data.api_url, _, _ = get_info(base_url)
     GLib.idle_add(lambda: gui.handle_profiles())
 
 
-def handle_profiles_thread(gui) -> None:
+def handle_profiles_thread(gui: EduVpnGui) -> None:
     gui.data.oauth.refresh_token(token_url=gui.data.token_endpoint)
     gui.data.profiles = list_profiles(gui.data.oauth, gui.data.api_url)
     if len(gui.data.profiles) > 1:
-        gui.profiles_list_model.clear()
+        gui.profiles_list_model.clear()  # type: ignore
         for i, profile in enumerate(gui.data.profiles):
-            gui.profiles_list_model.append([profile['display_name'], i])
+            gui.profiles_list_model.append([profile['display_name'], i])  # type: ignore
         GLib.idle_add(lambda: gui.show_choose_profile())
     else:
         profile_id = str(gui.data.profiles[0]['profile_id'])
         GLib.idle_add(lambda: gui.finalize_configuration(profile_id))
 
 
-def handle_secure_internet_thread(gui) -> None:
+def handle_secure_internet_thread(gui: EduVpnGui) -> None:
     if len(gui.data.secure_internet) > 1:
-        gui.locations_list_model.clear()
+        gui.locations_list_model.clear()  # type: ignore
         for i, location in enumerate(gui.data.locations):
             flag_location = FLAG_PREFIX + location['country_code'] + "@1,5x.png"
             if os.path.exists(flag_location):
-                flag_image = GdkPixbuf.Pixbuf.new_from_file(flag_location)
-                gui.locations_list_model.append([retrieve_country_name(location['country_code']), flag_image, i])
+                flag_image = GdkPixbuf.Pixbuf.new_from_file(flag_location)  # type: ignore
+                gui.locations_list_model.append([retrieve_country_name(location['country_code']), flag_image, i])  # type: ignore
 
         GLib.idle_add(lambda: gui.show_choose_location())
     else:
@@ -795,7 +795,7 @@ def handle_secure_internet_thread(gui) -> None:
         GLib.idle_add(lambda: gui.finalize_configuration(base_url))
 
 
-def finalize_configuration_thread(profile_id, gui: EduVpnGui) -> None:
+def finalize_configuration_thread(profile_id: str, gui: EduVpnGui) -> None:
     logger.debug("finalize_configuration_thread")
     config = get_config(gui.data.oauth, gui.data.api_url, profile_id)
     private_key, certificate = create_keypair(gui.data.oauth, gui.data.api_url)

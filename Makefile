@@ -88,6 +88,8 @@ $(VENV)/bin/pycodestyle: $(VENV)/
 pycodestyle: $(VENV)/bin/pycodestyle
 	$(VENV)/bin/pycodestyle eduvpn tests
 	
+checks: mypy pycodestyle
+
 $(VENV)/bin/jupyter-notebook: $(VENV)/bin/eduvpn-gui
 	$(VENV)/bin/pip install -r notebooks/requirements.txt
 
