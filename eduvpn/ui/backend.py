@@ -1,4 +1,6 @@
 from logging import getLogger
+from typing import List
+from requests_oauthlib import OAuth2Session
 from eduvpn.remote import list_orgs, list_servers
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI
 from eduvpn.nm import ConnectionState
@@ -15,21 +17,22 @@ class BackendData:
         self.institute_access = [s for s in self.servers if s['server_type'] == 'institute_access']
 
         if lets_connect:
-            self.orgs = []
+            self.orgs: dict = {}
         else:
             self.orgs = list_orgs(ORGANISATION_URI)
 
-        self.profiles = []
-        self.locations = []
-        self.secure_internet_home = None
-        self.oauth = None
-        self.api_url = None
-        self.auth_url = None
-        self.token_endpoint = None
+        self.profiles: dict = {}
+        self.locations: list = []
+        self.secure_internet_home: str = ""
+        self.oauth: OAuth2Session
+        self.api_url: str = ""
+        self.auth_url: str = ""
+        self.token_endpoint: str = ""
+        self.authorization_endpoint: str = ""
         self.connection_state = ConnectionState.UNKNOWN
-        self.server_name = ""
-        self.new_server_name = ""
+        self.server_name: str = ""
+        self.new_server_name: str = ""
         self.server_image = None
         self.new_server_image = None
-        self.support_contact = []
-        self.new_support_contact = []
+        self.support_contact: List[str] = []
+        self.new_support_contact: List[str] = []
