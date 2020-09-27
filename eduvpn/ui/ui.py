@@ -188,7 +188,12 @@ class EduVpnGui:
         self.window.show()
         try:
             self.data
-            self.show_find_your_institute()
+            if self.data.connection_state is ConnectionState.ACTIVATED:
+                self.act_on_switch = True
+                self.show_connection(False)
+                self.show_back_button()
+            else:
+                self.show_find_your_institute()
         except Exception as e:
             self.show_fatal("Got exception {e} can't reach the server, please quit")
 
