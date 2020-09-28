@@ -216,7 +216,3 @@ def init_dbus_system_bus(callback):
             callback(vpn_state, ConnectionStateReason.NONE)
             return
     callback(ConnectionState.DISCONNECTED, ConnectionStateReason.NONE)
-
-
-
-
