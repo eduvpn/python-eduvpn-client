@@ -93,7 +93,7 @@ You can install the client API from pypi:
     $ pip install eduvpn-client
 
 
-Or if you want to try out the bleading edge development version:
+Or if you want to try out the bleeding edge development version:
 
 .. code-block:: bash
 
