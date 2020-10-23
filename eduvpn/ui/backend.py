@@ -1,9 +1,12 @@
 from logging import getLogger
 from typing import List
 from requests_oauthlib import OAuth2Session
+import gi
+gi.require_version('NM', '1.0')
+from gi.repository import NM  # type: ignore
+
 from eduvpn.remote import list_orgs, list_servers
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI
-from eduvpn.nm import ConnectionState
 logger = getLogger(__name__)
 
 
@@ -29,7 +32,7 @@ class BackendData:
         self.auth_url: str = ""
         self.token_endpoint: str = ""
         self.authorization_endpoint: str = ""
-        self.connection_state = ConnectionState.UNKNOWN
+        self.connection_state = NM.VpnConnectionState.UNKNOWN
         self.server_name: str = ""
         self.new_server_name: str = ""
         self.server_image = None

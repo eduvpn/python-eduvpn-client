@@ -20,13 +20,13 @@ install_requires = [
 ]
 
 extras_require = {
-    'gui': ['dbus-python','pygobject'],
+    'gui': ['dbus-python', 'pygobject'],
     'test': tests_require,
 }
 
 
-def extra_files_line(dir: str):
-    return (dir, [os.path.join(dir, i) for i in os.listdir(dir) if os.path.isfile(os.path.join(dir, i))])
+def extra_files_line(dir_: str):
+    return dir_, [os.path.join(dir_, i) for i in os.listdir(dir_) if os.path.isfile(os.path.join(dir_, i))]
 
 
 data_files = [

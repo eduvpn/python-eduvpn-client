@@ -1,8 +1,6 @@
 import logging
 import time
 from enum import Flag
-import dbus  # type:ignore
-from dbus.mainloop.glib import DBusGMainLoop  # type:ignore
 from pathlib import Path
 from shutil import rmtree
 from sys import modules
@@ -21,31 +19,12 @@ except (ImportError, ValueError):
     logger.warning("Network Manager not available")
     NM = None
 
-
-class ConnectionState(Flag):
-    UNKNOWN = NM.VpnConnectionState.UNKNOWN
-    PREPARE = NM.VpnConnectionState.PREPARE
-    NEED_AUTH = NM.VpnConnectionState.NEED_AUTH
-    CONNECT = NM.VpnConnectionState.CONNECT
-    IP_CONFIG_GET = NM.VpnConnectionState.IP_CONFIG_GET
-    ACTIVATED = NM.VpnConnectionState.ACTIVATED
-    FAILED = NM.VpnConnectionState.FAILED
-    DISCONNECTED = NM.VpnConnectionState.DISCONNECTED
-
-
-class ConnectionStateReason(Flag):
-    UNKNOWN = NM.VpnConnectionStateReason.UNKNOWN
-    NONE = NM.VpnConnectionStateReason.NONE
-    USER_DISCONNECTED = NM.VpnConnectionStateReason.USER_DISCONNECTED
-    DEVICE_DISCONNECTED = NM.VpnConnectionStateReason.DEVICE_DISCONNECTED
-    SERVICE_STOPPED = NM.VpnConnectionStateReason.SERVICE_STOPPED
-    IP_CONFIG_INVALID = NM.VpnConnectionStateReason.IP_CONFIG_INVALID
-    CONNECT_TIMEOUT = NM.VpnConnectionStateReason.CONNECT_TIMEOUT
-    SERVICE_START_TIMEOUT = NM.VpnConnectionStateReason.SERVICE_START_TIMEOUT
-    SERVICE_START_FAILED = NM.VpnConnectionStateReason.SERVICE_START_FAILED
-    NO_SECRETS = NM.VpnConnectionStateReason.NO_SECRETS
-    LOGIN_FAILED = NM.VpnConnectionStateReason.LOGIN_FAILED
-    CONNECTION_REMOVED = NM.VpnConnectionStateReason.CONNECTION_REMOVED
+try:
+    import dbus  # type:ignore
+    from dbus.mainloop.glib import DBusGMainLoop  # type:ignore
+except (ImportError, ValueError):
+    logger.warning("Dbus not available")
+    dbus = None
 
 
 def get_client() -> 'NM.Client':
@@ -122,7 +101,8 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callba
     logger.info("Updating existing connection with new configuration")
 
     old_con.replace_settings_from_connection(new_con)
-    old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback, user_data=callback)
+    old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback,
+                                 user_data=callback)
 
 
 def save_connection(client: 'NM.Client', config, private_key, certificate, callback=None):

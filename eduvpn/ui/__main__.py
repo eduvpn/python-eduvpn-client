@@ -3,7 +3,7 @@ import traceback
 import signal
 import sys
 from os import geteuid
-from sys import exit, argv
+from sys import exit
 
 import gi
 
@@ -14,23 +14,14 @@ logger = logging.getLogger(__name__)
 log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s'
 
 
-# def parse_args(args: List[str]) -> Optional[str]:
-#     parser = ArgumentParser(description='The eduVPN gui client')
-#     args = parser.parse_args(args)
-#     return args.search
-
 def signal_handler(sig, frame):
     sys.exit(0)
 
 
-def main_loop(args=None, lets_connect=False):
-    if args is None:
-        args = sys.argv
+def main_loop(lets_connect=False):
     logging.basicConfig(level=logging.DEBUG, format=log_format)
 
     signal.signal(signal.SIGINT, signal_handler)
-
-    # parse_args(args)
 
     if geteuid() == 0:
         logger.error(f"Running client as root is not supported (yet)")
@@ -56,14 +47,13 @@ def main_loop(args=None, lets_connect=False):
     Gtk.main()
 
 
-# def main(args: List[str]):
-def main(args=None):
-    main_loop(args)
+def eduvpn():
+    main_loop()
 
 
-def letsconnect(args=None):
-    main_loop(args, lets_connect=True)
+def letsconnect():
+    main_loop(lets_connect=True)
 
 
 if __name__ == '__main__':
-    main(args=argv)
+    eduvpn()

@@ -12,13 +12,11 @@ from typing import Any, List, Optional
 
 logger = getLogger(__name__)
 
-try:
-    import gi
-
-    gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, GObject, GLib, GdkPixbuf
-except (ImportError, ValueError):
-    logger.warning("GTK not available")
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('NM', '1.0')
+from gi.repository import Gtk, GObject, GLib, GdkPixbuf
+from gi.repository import NM, GLib  # type: ignore
 
 from requests_oauthlib import OAuth2Session
 
@@ -26,7 +24,7 @@ from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection, \
-    init_dbus_system_bus, ConnectionState, ConnectionStateReason
+    init_dbus_system_bus
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
@@ -157,25 +155,25 @@ class EduVpnGui:
             else:
                 self.add_other_server_row.hide()
 
-    def nm_status_cb(self, state_code: ConnectionState = None, reason_code: ConnectionStateReason = None):
-        con_state_code = ConnectionState(state_code)
-        con_reason_code = ConnectionStateReason(reason_code)
+    def nm_status_cb(self, state_code: 'NM.VpnConnectionState' = None, reason_code: 'NM.VpnConnectionStateReason' = None):
+        con_state_code = NM.VpnConnectionState(state_code)
+        con_reason_code = NM.VpnConnectionStateReason(reason_code)
         self.update_connection_state(con_state_code)
         if con_state_code is not None:
-            state = str(ConnectionState(con_state_code))
+            state = str(NM.VpnConnectionState(con_state_code))
         else:
             state = "None"
         if con_reason_code is not None:
-            reason = str(ConnectionStateReason(con_reason_code))
+            reason = str(NM.VpnConnectionStateReason(con_reason_code))
         else:
             reason = "None"
 
         logger.debug(f"nm_status_cb state: {state}, reason: {reason}")
-        self.connection_switch.set_state(con_state_code is ConnectionState.ACTIVATED)
+        self.connection_switch.set_state(con_state_code is NM.VpnConnectionState.ACTIVATED)
         if self.auto_connect:
-            if con_state_code is ConnectionState.DISCONNECTED:
+            if con_state_code is NM.VpnConnectionState.DISCONNECTED:
                 self.activate_connection()
-            elif con_state_code is ConnectionState.ACTIVATED:
+            elif con_state_code is NM.VpnConnectionState.ACTIVATED:
                 self.auto_connect = False
                 self.act_on_switch = True
                 self.data.server_name = self.data.new_server_name
@@ -188,7 +186,7 @@ class EduVpnGui:
         self.window.show()
         try:
             self.data
-            if self.data.connection_state is ConnectionState.ACTIVATED:
+            if self.data.connection_state is NM.VpnConnectionState.ACTIVATED:
                 self.act_on_switch = True
                 self.show_connection(False)
                 self.show_back_button()
@@ -549,7 +547,7 @@ class EduVpnGui:
             self.act_on_switch = False
             logger.debug(f"vpn_state: {self.data.connection_state}")
             self.auto_connect = True
-            if self.data.connection_state is ConnectionState.ACTIVATED:
+            if self.data.connection_state is NM.VpnConnectionState.ACTIVATED:
                 GLib.idle_add(lambda: self.deactivate_connection())
             else:
                 self.activate_connection()
@@ -597,22 +595,22 @@ class EduVpnGui:
         logger.debug(f"show_fatal: {text}")
         self.show_message("Fatal error", text, Gtk.main_quit)
 
-    def update_connection_state(self, state: ConnectionState) -> None:
+    def update_connection_state(self, state: NM.VpnConnectionState) -> None:
         self.data.connection_state = state
 
         connection_state_mapping = {
-            ConnectionState.UNKNOWN: ["Connection state unknown", "desktop-default.png"],
-            ConnectionState.PREPARE: ["Preparing to connect", "desktop-connecting.png"],
-            ConnectionState.NEED_AUTH: ["Needs authorization credentials", "desktop-connecting.png"],
-            ConnectionState.CONNECT: ["Connection is being established", "desktop-connecting.png"],
-            ConnectionState.IP_CONFIG_GET: ["Getting an IP address", "desktop-connecting.png"],
-            ConnectionState.ACTIVATED: ["Connection active", "desktop-connected.png"],
-            ConnectionState.FAILED: ["Connection failed", "desktop-not-connected.png"],
-            ConnectionState.DISCONNECTED: ["Disconnected", "desktop-default.png"],
+            NM.VpnConnectionState.UNKNOWN: ["Connection state unknown", "desktop-default.png"],
+            NM.VpnConnectionState.PREPARE: ["Preparing to connect", "desktop-connecting.png"],
+            NM.VpnConnectionState.NEED_AUTH: ["Needs authorization credentials", "desktop-connecting.png"],
+            NM.VpnConnectionState.CONNECT: ["Connection is being established", "desktop-connecting.png"],
+            NM.VpnConnectionState.IP_CONFIG_GET: ["Getting an IP address", "desktop-connecting.png"],
+            NM.VpnConnectionState.ACTIVATED: ["Connection active", "desktop-connected.png"],
+            NM.VpnConnectionState.FAILED: ["Connection failed", "desktop-not-connected.png"],
+            NM.VpnConnectionState.DISCONNECTED: ["Disconnected", "desktop-default.png"],
         }
         self.connection_status_label.set_text(connection_state_mapping[state][0])
         self.connection_status_image.set_from_file(IMAGE_PREFIX + connection_state_mapping[state][1])
-        if state is ConnectionState.UNKNOWN:
+        if state is NM.VpnConnectionState.UNKNOWN:
             self.current_connection_sub_page.hide()
         else:
             self.current_connection_sub_page.show()
