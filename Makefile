@@ -11,7 +11,7 @@ all: eduvpn-cli
 
 $(VENV)/:
 	python3 -m venv venv --system-site-packages
-	venv/bin/pip install --upgrade pip wheel
+	venv/bin/pip install --upgrade pip wheel pytest
 
 $(VENV)/bin/eduvpn-cli: $(VENV)/
 	venv/bin/pip install -e ".[test]"

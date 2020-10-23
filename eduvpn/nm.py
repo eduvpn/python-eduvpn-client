@@ -195,4 +195,4 @@ def init_dbus_system_bus(callback):
             logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
             callback(vpn_state, ConnectionStateReason.NONE)
             return
-    callback(ConnectionState.DISCONNECTED, ConnectionStateReason.NONE)
+    callback(NM.VpnConnectionState.DISCONNECTED, NM.VpnConnectionStateReason.NONE)

@@ -80,7 +80,7 @@ setup(
             'letsconnect-cli = eduvpn.__main__:letsconnect',
         ],
         'gui_scripts': [
-            'eduvpn-gui = eduvpn.ui.__main__:main',
+            'eduvpn-gui = eduvpn.ui.__main__:eduvpn',
             'letsconnect-gui = eduvpn.ui.__main__:letsconnect',
         ]
     }
