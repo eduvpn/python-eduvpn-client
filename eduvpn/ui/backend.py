@@ -7,6 +7,7 @@ from gi.repository import NM  # type: ignore
 
 from eduvpn.remote import list_orgs, list_servers
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI
+from eduvpn.storage import get_storage
 logger = getLogger(__name__)
 
 
@@ -28,8 +29,6 @@ class BackendData:
         self.locations: list = []
         self.secure_internet_home: str = ""
         self.oauth: OAuth2Session
-        self.api_url: str = ""
-        self.auth_url: str = ""
         self.token_endpoint: str = ""
         self.authorization_endpoint: str = ""
         self.connection_state = NM.VpnConnectionState.UNKNOWN
@@ -39,3 +38,5 @@ class BackendData:
         self.new_server_image = None
         self.support_contact: List[str] = []
         self.new_support_contact: List[str] = []
+
+        self.uuid, self.auth_url, self.api_url, self.profile, self.token_full = get_storage(check=True)

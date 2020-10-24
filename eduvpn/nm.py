@@ -1,6 +1,5 @@
 import logging
 import time
-from enum import Flag
 from pathlib import Path
 from shutil import rmtree
 from sys import modules
@@ -12,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 try:
     import gi
-
     gi.require_version('NM', '1.0')
     from gi.repository import NM, GLib  # type: ignore
 except (ImportError, ValueError):
@@ -27,11 +25,14 @@ except (ImportError, ValueError):
     dbus = None
 
 
-def get_client() -> 'NM.Client':
+def get_client() -> Optional['NM.Client']:
     """
     Create a new client object. We put this here so other modules don't need to import NM
     """
-    return NM.Client.new(None)
+    if NM:
+        return NM.Client.new(None)
+    else:
+        return None
 
 
 def get_mainloop():
@@ -191,8 +192,8 @@ def init_dbus_system_bus(callback):
         vpn_id = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Id")
         vpn = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Vpn")
         if vpn:
-            vpn_state = ConnectionState(a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState"))
+            vpn_state = NM.VpnConnectionState(a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState"))
             logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
-            callback(vpn_state, ConnectionStateReason.NONE)
+            callback(vpn_state, NM.VpnConnectionStateReason.NONE)
             return
     callback(NM.VpnConnectionState.DISCONNECTED, NM.VpnConnectionStateReason.NONE)

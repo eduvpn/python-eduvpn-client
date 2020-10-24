@@ -9,16 +9,20 @@ import webbrowser
 from logging import getLogger
 from pathlib import Path
 from typing import Any, List, Optional
+from requests_oauthlib import OAuth2Session
 
 logger = getLogger(__name__)
 
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('NM', '1.0')
-from gi.repository import Gtk, GObject, GLib, GdkPixbuf
-from gi.repository import NM, GLib  # type: ignore
 
-from requests_oauthlib import OAuth2Session
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GLib, GdkPixbuf, GObject
+
+try:
+    gi.require_version('NM', '1.0')
+    from gi.repository import NM  # type: ignore
+except ValueError as e:
+    logger.warning(f"can't access network manager library: {e}")
 
 from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
@@ -31,6 +35,11 @@ from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS
     LETS_CONNECT_ICON, SERVER_ILLUSTRATION
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
 from eduvpn.ui.backend import BackendData
+from eduvpn.storage import get_storage
+from eduvpn.remote import list_orgs, list_servers
+from eduvpn.settings import SERVER_URI, ORGANISATION_URI
+
+logger = getLogger(__name__)
 
 builder_files: List[str] = ['mainwindow.ui']
 
@@ -43,7 +52,9 @@ class EduVpnGui:
         self.prefix: str = get_prefix()
         self.builder: Any = Gtk.Builder()
 
-        self.client: Any = get_client()
+        self.client: Optional['NM.Client'] = get_client()
+        self.data = BackendData(lets_connect=lets_connect)
+        init_dbus_system_bus(self.nm_status_cb)
 
         self.auto_connect: bool = False
         self.act_on_switch: bool = False
@@ -131,31 +142,27 @@ class EduVpnGui:
         self.secure_internet_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
         self.other_servers_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
         self.profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
-        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)  # type: ignore
+        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf,
+                                                  GObject.TYPE_INT)  # type: ignore
 
-        try:
-            self.data = BackendData(lets_connect=lets_connect)
-        except Exception as e:
-            msg = f"Got exception {e} initializing backend data"
-            logger.error(msg)
+        self.init_search_list()
+        self.show_back_button(False)
+
+        if self.lets_connect:
+            self.logo_image.set_from_file(LETS_CONNECT_LOGO)
+            self.find_your_institute_image.set_from_file(SERVER_ILLUSTRATION)
+            self.find_your_institute_label.set_text("Server address")
+            self.add_other_server_button.set_label("Add server")
+            self.add_other_server_row.show()
+            self.window.set_title(LETS_CONNECT_NAME)
+            self.window.set_icon_from_file(LETS_CONNECT_ICON)
         else:
-            init_dbus_system_bus(self.nm_status_cb)
+            self.add_other_server_row.hide()
 
-            self.init_search_list()
-            self.show_back_button(False)
+        self.show_connection()
 
-            if self.lets_connect:
-                self.logo_image.set_from_file(LETS_CONNECT_LOGO)
-                self.find_your_institute_image.set_from_file(SERVER_ILLUSTRATION)
-                self.find_your_institute_label.set_text("Server address")
-                self.add_other_server_button.set_label("Add server")
-                self.add_other_server_row.show()
-                self.window.set_title(LETS_CONNECT_NAME)
-                self.window.set_icon_from_file(LETS_CONNECT_ICON)
-            else:
-                self.add_other_server_row.hide()
-
-    def nm_status_cb(self, state_code: 'NM.VpnConnectionState' = None, reason_code: 'NM.VpnConnectionStateReason' = None):
+    def nm_status_cb(self, state_code: 'NM.VpnConnectionState' = None,
+                     reason_code: 'NM.VpnConnectionStateReason' = None):
         con_state_code = NM.VpnConnectionState(state_code)
         con_reason_code = NM.VpnConnectionStateReason(reason_code)
         self.update_connection_state(con_state_code)
@@ -595,7 +602,7 @@ class EduVpnGui:
         logger.debug(f"show_fatal: {text}")
         self.show_message("Fatal error", text, Gtk.main_quit)
 
-    def update_connection_state(self, state: NM.VpnConnectionState) -> None:
+    def update_connection_state(self, state: 'NM.VpnConnectionState') -> None:
         self.data.connection_state = state
 
         connection_state_mapping = {
