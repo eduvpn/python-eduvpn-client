@@ -54,7 +54,7 @@ def oauth_request(oauth: OAuth2Session, uri: str, method: str = 'get'):
     return response
 
 
-def list_orgs(uri: str):
+def list_organisations(uri: str):
     try:
         result = request(uri, verify=True)['organization_list']
     except Exception as e:
