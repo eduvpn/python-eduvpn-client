@@ -135,6 +135,7 @@ class EduVpnGui:
         self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)  # type: ignore
 
         self.connections: List[VpnConnection] = []
+        self.select_existing_connection = False
 
         try:
             self.data = BackendData(lets_connect=lets_connect)
@@ -247,12 +248,21 @@ class EduVpnGui:
         if not self.lets_connect:
             self.other_servers_tree_view.get_selection().unselect_all()
 
+    def activate_other_server(self, name: str, index: int) -> None:
+        logger.debug("activate_other_server")
+        self.disconnect_selection_handlers()
+        self.data.vpn_connection = self.connections[index]
+        print(self.data.vpn_connection)
+
     def on_other_server_selection_changed(self, selection) -> None:
         logger.debug("on_other_server_selection_changed")
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.handle_add_other_server(model[tree_iter][0])
+            if self.select_existing_connection:
+                self.activate_other_server(model[tree_iter][0], model[tree_iter][1])
+            else:
+                self.handle_add_other_server(model[tree_iter][0])
         selection.unselect_all()
 
     def on_cancel_browser_button_clicked(self, _) -> None:
@@ -295,17 +305,26 @@ class EduVpnGui:
         self.show_empty()
         self.setup_connection(base_url, [], False)
 
+    def activate_institute(self, name: str, index: int) -> None:
+        logger.debug("activate_institute")
+        self.disconnect_selection_handlers()
+        self.data.vpn_connection = self.connections[index]
+        print(self.data.vpn_connection)
+
     def on_institute_selection_changed(self, selection) -> None:
         logger.debug("on_institute_selection_changed")
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.handle_add_institute(model[tree_iter][0], model[tree_iter][1])
+            if self.select_existing_connection:
+                self.activate_institute(model[tree_iter][0], model[tree_iter][1])
+            else:
+                self.handle_add_institute(model[tree_iter][0], model[tree_iter][1])
         selection.unselect_all()
 
     def handle_add_secure_internet(self, name: str, index: int) -> None:
-        self.data.new_server_name = name
         self.disconnect_selection_handlers()
+        self.data.new_server_name = name
         self.data.secure_internet_home = self.data.organisations[index]['secure_internet_home']
         self.data.vpn_connection.type = VpnConnection.ConnectionType.SECURE
         self.connect_selection_handlers()
@@ -315,12 +334,21 @@ class EduVpnGui:
         self.show_empty()
         self.setup_connection(self.data.secure_internet_home, self.data.secure_internet, True)
 
+    def activate_secure_internet(self, name: str, index: int) -> None:
+        logger.debug("activate_secure_internet")
+        self.disconnect_selection_handlers()
+        self.data.vpn_connection = self.connections[index]
+        print(self.data.vpn_connection)
+
     def on_secure_internet_selection_changed(self, selection) -> None:
         logger.debug("on_secure_internet_selection_changed")
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()
         if tree_iter is not None:
-            self.handle_add_secure_internet(model[tree_iter][0], model[tree_iter][1])
+            if self.select_existing_connection:
+                self.activate_secure_internet(model[tree_iter][0], model[tree_iter][1])
+            else:
+                self.handle_add_secure_internet(model[tree_iter][0], model[tree_iter][1])
         selection.unselect_all()
 
     def on_connection_switch_state_set(self, switch, state):
@@ -401,6 +429,7 @@ class EduVpnGui:
 
     def show_find_your_institute(self, clear_text=True) -> None:
         logger.debug("show_find_your_institute")
+        self.select_existing_connection = False
         self.data.profiles = {}
         self.data.locations = []
         self.data.secure_internet_home = ""
@@ -441,6 +470,7 @@ class EduVpnGui:
 
     def show_connections(self) -> None:
         logger.debug("show_connections")
+        self.select_existing_connection = True
         self.disconnect_selection_handlers()
 
         self.institute_list_model.clear()  # type: ignore
