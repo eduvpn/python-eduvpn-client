@@ -24,17 +24,10 @@ def parse_eduvpn(args: List[str]):
     configure_parser.add_argument('secure_internet', nargs='?')
     configure_parser.set_defaults(func=configure)
 
-    refresh_parser = subparsers.add_parser('refresh')
-    refresh_parser.set_defaults(func=refresh)
-
-    refresh_parser = subparsers.add_parser('list')
-    refresh_parser.set_defaults(func=list_)
-
-    refresh_parser = subparsers.add_parser('activate')
-    refresh_parser.set_defaults(func=activate)
-
-    refresh_parser = subparsers.add_parser('deactivate')
-    refresh_parser.set_defaults(func=deactivate)
+    subparsers.add_parser('refresh').set_defaults(func=refresh)
+    subparsers.add_parser('list').set_defaults(func=list_)
+    subparsers.add_parser('activate').set_defaults(func=activate)
+    subparsers.add_parser('deactivate').set_defaults(func=deactivate)
 
     parsed = parser.parse_args(args)
     if hasattr(parsed, 'func'):
@@ -57,14 +50,9 @@ def parse_letsconnect(args: List[str]):
     configure_parser.add_argument('url')
     configure_parser.set_defaults(func=letsconnect_start)
 
-    refresh_parser = subparsers.add_parser('refresh')
-    refresh_parser.set_defaults(func=refresh)
-
-    refresh_parser = subparsers.add_parser('activate')
-    refresh_parser.set_defaults(func=activate)
-
-    refresh_parser = subparsers.add_parser('deactivate')
-    refresh_parser.set_defaults(func=deactivate)
+    subparsers.add_parser('refresh').set_defaults(func=refresh)
+    subparsers.add_parser('activate').set_defaults(func=activate)
+    subparsers.add_parser('deactivate').set_defaults(func=deactivate)
 
     parsed = parser.parse_args(args)
     if hasattr(parsed, 'func'):
