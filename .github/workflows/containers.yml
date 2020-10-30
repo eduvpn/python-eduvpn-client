@@ -1,0 +1,30 @@
+name: Containers
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  containers:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        dist:
+          - mypy
+          - doc
+          - pep8
+          - pytest_centos_8
+          - pytest_debian_buster
+          - pytest_fedora_31
+          - pytest_fedora_32
+          - pytest_ubuntu_bionic
+          - pytest_ubuntu_focal
+          - rpm_centos_8
+          - rpm_fedora_32
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build container
+        run: docker build . -t ${{ dist }}. -f docker/${{ dist }}.docker

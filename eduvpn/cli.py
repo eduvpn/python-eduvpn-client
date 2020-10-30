@@ -10,7 +10,7 @@ from eduvpn.i18n import extract_translation
 from eduvpn.menu import menu, secure_internet_choice, profile_choice, write_to_nm_choice
 from eduvpn.nm import activate_connection, deactivate_connection, get_cert_key, save_connection, nm_available, get_client
 from eduvpn.oauth2 import get_oauth
-from eduvpn.remote import get_info, check_certificate, create_keypair, get_config, list_servers, list_orgs, \
+from eduvpn.remote import get_info, check_certificate, create_keypair, get_config, list_servers, list_organisations, \
     list_profiles
 from eduvpn.settings import CLIENT_ID, SERVER_URI, ORGANISATION_URI
 from eduvpn.storage import get_storage, set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
@@ -98,7 +98,7 @@ def interactive(args: argparse.Namespace):
         servers = list_servers(SERVER_URI)
         secure_internets = [s for s in servers if s['server_type'] == 'secure_internet']
         institute_access = [s for s in servers if s['server_type'] == 'institute_access']
-        orgs = list_orgs(ORGANISATION_URI)
+        orgs = list_organisations(ORGANISATION_URI)
         choice = menu(institutes=institute_access, orgs=orgs, search_term=search_term)
 
         if not choice:
@@ -113,7 +113,7 @@ def interactive(args: argparse.Namespace):
 
 def fetch_servers_orgs():
     servers = list_servers(SERVER_URI)
-    orgs = list_orgs(ORGANISATION_URI)
+    orgs = list_organisations(ORGANISATION_URI)
     return servers, orgs
 
 
