@@ -20,7 +20,7 @@ class BackendData:
         self.institute_access = [s for s in self.servers if s['server_type'] == 'institute_access']
 
         if lets_connect:
-            self.organisations: dict = {}
+            self.organisations = []
         else:
             self.organisations = list_organisations(ORGANISATION_URI)
 

@@ -147,7 +147,7 @@ def configure(args: Namespace) -> str:
             exit(1)
 
 
-def interactive(args: Namespace) -> Tuple[str, str]:
+def interactive(args: Namespace) -> Tuple[str, Optional[List[Dict[str, Any]]]]:
     search_term = args.match
 
     if isinstance(search_term, str) and search_term.lower().startswith('https://'):

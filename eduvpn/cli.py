@@ -1,10 +1,15 @@
 import logging
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from sys import argv
 from typing import List
 
-from eduvpn.actions import refresh, list_, activate, deactivate, start, status
+from eduvpn import actions
 from eduvpn import menu
+
+
+def list_(args: Namespace):
+    args.match = None
+    menu.search(args)
 
 
 def search(args):
@@ -13,12 +18,28 @@ def search(args):
 
 def configure(args):
     url = menu.configure(args)
-    start(url)
+    actions.start(url)
+
+
+def refresh(_):
+    actions.refresh()
+
+
+def activate(_):
+    actions.activate()
+
+
+def deactivate(_):
+    actions.deactivate()
+
+
+def status(_):
+    actions.status()
 
 
 def interactive(args):
     auth_url, secure_internet = menu.interactive(args)
-    start(auth_url=auth_url, secure_internet=secure_internet, interactive=True)
+    actions.start(auth_url=auth_url, secure_internet=secure_internet, interactive=True)
 
 
 def parse_eduvpn(args: List[str]):
@@ -54,7 +75,7 @@ def parse_eduvpn(args: List[str]):
 
 
 def letsconnect_start(args):
-    start(args.url)
+    actions.start(args.url)
 
 
 def parse_letsconnect(args: List[str]):
