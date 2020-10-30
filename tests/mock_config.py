@@ -180,3 +180,17 @@ mock_config_dict = {
     'tls-version-min': '1.2',
     'verb': '3'
 }
+
+mock_server = {
+    'server_type': 'secure_internet',
+    'base_url': 'https://eduvpn.bogus/',
+    'public_key_list': ['Xv3l24gbMX8NtTnFQbWO2fGKPwKuc6EbjQDv8qwXXXX'],
+    'country_code': 'NL',
+    'support_contact': ['mailto:bogus@bogus.nl']
+}
+
+mock_org = {
+    'display_name': {'nl': 'bogus', 'en': 'bogus'},
+    'org_id': 'http://idp.mock.bogus/adfs/services/trust',
+    'secure_internet_home': 'https://idp.mock.bogus/'
+}

@@ -76,8 +76,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'eduvpn-cli = eduvpn.__main__:eduvpn',
-            'letsconnect-cli = eduvpn.__main__:letsconnect',
+            'eduvpn-cli = eduvpn.cli:eduvpn',
+            'letsconnect-cli = eduvpn.cli:letsconnect',
         ],
         'gui_scripts': [
             'eduvpn-gui = eduvpn.ui.__main__:eduvpn',

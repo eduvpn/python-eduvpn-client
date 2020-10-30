@@ -1,14 +1,13 @@
-from unittest import TestCase, skip
+from unittest import TestCase, skipIf
 
 from eduvpn.nm import (nm_available, add_connection,
                        import_ovpn, get_client, get_mainloop, activate_connection,
-                       get_cert_key, connection_status, deactivate_connection, save_connection)
+                       get_cert_key, connection_status, deactivate_connection, save_connection, update_connection)
 from eduvpn.storage import get_uuid
 from tests.mock_config import mock_config, mock_key, mock_cert
 
 
-# @skipIf(not nm_available(), "Network manager not available")
-@skip("skip this test for now until it is matured")
+@skipIf(not nm_available(), "Network manager not available")
 class TestNm(TestCase):
     def test_nm(self):
         nm_available()
