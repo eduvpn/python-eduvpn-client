@@ -27,8 +27,7 @@ except ValueError as e:
 from eduvpn.utils import get_prefix, thread_helper
 from eduvpn.storage import get_uuid
 from eduvpn.i18n import extract_translation, retrieve_country_name
-from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection, \
-    init_dbus_system_bus
+from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
@@ -54,7 +53,6 @@ class EduVpnGui:
 
         self.client: Optional['NM.Client'] = get_client()
         self.data = BackendData(lets_connect=lets_connect)
-        init_dbus_system_bus(self.nm_status_cb)
 
         self.auto_connect: bool = False
         self.act_on_switch: bool = False
@@ -622,7 +620,7 @@ class EduVpnGui:
         else:
             self.current_connection_sub_page.show()
 
-    def on_profile_selection_changed(self, selection) -> None:
+    def on_profile_selection_cfhanged(self, selection) -> None:
         logger.debug("on_profile_selection_changed")
         logger.debug(f"# selected rows: {selection.count_selected_rows()}")
         (model, tree_iter) = selection.get_selected()

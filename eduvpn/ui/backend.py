@@ -39,4 +39,4 @@ class BackendData:
         self.support_contact: List[str] = []
         self.new_support_contact: List[str] = []
 
-        self.uuid, self.auth_url, self.api_url, self.profile, self.token_full = get_storage(check=True)
+        self.uuid, self.auth_url, self.api_url, self.profile, self.token_full = get_storage(check=False)
