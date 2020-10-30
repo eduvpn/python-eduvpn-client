@@ -75,8 +75,7 @@ def main_loop(args=None, lets_connect=False):
     Gtk.main()
 
 
-# def main(args: List[str]):
-def main(args=None):
+def eduvpn(args=None):
     main_loop(args)
 
 
@@ -85,4 +84,4 @@ def letsconnect(args=None):
 
 
 if __name__ == '__main__':
-    main()
+    eduvpn()
