@@ -1,36 +1,54 @@
+from typing import Sequence, Optional
 import logging
 import traceback
 import signal
-import sys
+from argparse import ArgumentParser
 from os import geteuid
 from sys import exit, argv
-
 import gi
-
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk
+from eduvpn import __version__
+from eduvpn.nm import init_dbus_system_bus
 
 logger = logging.getLogger(__name__)
 log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s'
 
 
-# def parse_args(args: List[str]) -> Optional[str]:
-#     parser = ArgumentParser(description='The eduVPN gui client')
-#     args = parser.parse_args(args)
-#     return args.search
+def parse_args(args: Optional[Sequence[str]]) -> int:
+    """
+    Parses command line arguments:
+    returns:
+        logging_level
+    """
+    parser = ArgumentParser()
+    parser.add_argument('-d', '--debug', action='store_true', help="enable debug logging")
+    parser.add_argument('-v', '--version', action='store_true', help="print version and exit")
+    parsed = parser.parse_args(args=args)
 
-def signal_handler(sig, frame):
-    sys.exit(0)
+    if parsed.version:
+        print("eduVPN Linux client version {}".format(__version__))
+        exit(0)
+
+    if parsed.debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    return level
+
+
+def signal_handler(*_, **__):
+    exit(0)
 
 
 def main_loop(args=None, lets_connect=False):
     if args is None:
-        args = sys.argv
-    logging.basicConfig(level=logging.DEBUG, format=log_format)
+        args = argv[1:]
+    loglevel = parse_args(args)
+    logging.basicConfig(level=loglevel, format=log_format)
 
     signal.signal(signal.SIGINT, signal_handler)
-
-    # parse_args(args)
 
     if geteuid() == 0:
         logger.error(f"Running client as root is not supported (yet)")
@@ -41,6 +59,7 @@ def main_loop(args=None, lets_connect=False):
         from eduvpn.ui.ui import EduVpnGui
 
         edu_vpn_gui = EduVpnGui(lets_connect)
+        init_dbus_system_bus(edu_vpn_gui.nm_status_cb)
         edu_vpn_gui.run()
     except Exception as e:
         fatal_reason = f"Caught exception: {e}"
@@ -66,4 +85,4 @@ def letsconnect(args=None):
 
 
 if __name__ == '__main__':
-    main(args=argv)
+    main()
