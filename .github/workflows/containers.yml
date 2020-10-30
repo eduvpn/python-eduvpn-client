@@ -27,4 +27,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build container
-        run: docker build . -t ${{ dist }}. -f docker/${{ dist }}.docker
+        run: docker build . -t ${{ matrix.dist }} -f docker/${{ matrix.dist }}.docker
