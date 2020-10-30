@@ -3,7 +3,22 @@ from argparse import ArgumentParser
 from sys import argv
 from typing import List
 
-from eduvpn.actions import interactive, search, configure, refresh, list_, activate, deactivate, start, status
+from eduvpn.actions import refresh, list_, activate, deactivate, start, status
+from eduvpn import menu
+
+
+def search(args):
+    menu.search(args)
+
+
+def configure(args):
+    url = menu.configure(args)
+    start(url)
+
+
+def interactive(args):
+    auth_url, secure_internet = menu.interactive(args)
+    start(auth_url=auth_url, secure_internet=secure_internet, interactive=True)
 
 
 def parse_eduvpn(args: List[str]):
@@ -65,10 +80,10 @@ def parse_letsconnect(args: List[str]):
 
 
 def eduvpn():
-    logging.basicConfig(level=logging.WARNING)
+    logging.basicConfig(level=logging.INFO)
     parse_eduvpn(argv[1:])
 
 
 def letsconnect():
-    logging.basicConfig(level=logging.WARNING)
+    logging.basicConfig(level=logging.INFO)
     parse_letsconnect(argv[1:])
