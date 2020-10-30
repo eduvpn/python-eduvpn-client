@@ -1,6 +1,17 @@
-from typing import List, Dict, Optional, Tuple
+from argparse import Namespace
+from itertools import chain
+from sys import exit
+from typing import List, Dict, Optional, Tuple, Any
 
 from eduvpn.i18n import extract_translation
+from eduvpn.remote import list_servers, list_organisations
+from eduvpn.settings import SERVER_URI, ORGANISATION_URI
+
+
+def fetch_servers_orgs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    servers = list_servers(SERVER_URI)
+    orgs = list_organisations(ORGANISATION_URI)
+    return servers, orgs
 
 
 def input_int(max_: int):
@@ -88,3 +99,110 @@ def secure_internet_choice(secure_internets: List[dict]) -> Optional[str]:
             return secure_internets[int(choice)]['base_url']
         else:
             print("error: invalid choice, please enter y, n or just leave empty")
+
+
+def search(args: Namespace):
+    search_term = args.match
+    servers, orgs = fetch_servers_orgs()
+    institute_matches, org_matches = match_term(servers, orgs, search_term)
+    print(f"Your search term '{search_term}'  matched with the following institutes/organisations:\n")
+
+    if len(institute_matches):
+        print("Institute access:")
+        for i, row in institute_matches:
+            print(f"[{i}] {extract_translation(row['display_name'])}")
+
+    if len(org_matches):
+        print("\nSecure internet: \n")
+        for i, row in org_matches:
+            print(f"[{i}] {extract_translation(row['display_name'])}")
+
+
+def configure(args: Namespace) -> str:
+    search_term = args.match
+    servers, orgs = fetch_servers_orgs()
+    institute_matches, org_matches = match_term(servers, orgs, search_term, exact=True)
+
+    if isinstance(search_term, str) and search_term.lower().startswith('https://'):
+        return search_term
+    else:
+        if len(institute_matches) == 0 and len(org_matches) == 0:
+            print(f"The filter '{search_term}' had no matches")
+            exit(1)
+        elif len(institute_matches) == 1 and len(org_matches) == 0:
+            index, institute = institute_matches[0]
+            print(f"filter '{search_term}' matched with institute '{institute['display_name']}'")
+            return institute['base_url']
+        elif len(institute_matches) == 0 and len(org_matches) == 1:
+            index, org = org_matches[0]
+            print(f"filter '{search_term}' matched with organisation '{org['display_name']}'")
+            return org['secure_internet_home']
+        else:
+            matches = [i[1]['display_name'] for i in chain(institute_matches, org_matches)]
+            print(
+                f"filter '{search_term}' matched with {len(matches)} institutes and organisations, please be more specific.")
+            print("Matches:")
+            for m in matches:
+                print(f" - {extract_translation(m)}")
+            exit(1)
+
+
+def interactive(args: Namespace) -> Tuple[str, str]:
+    search_term = args.match
+
+    if isinstance(search_term, str) and search_term.lower().startswith('https://'):
+        auth_url = search_term
+        secure_internets = None
+
+    else:
+        servers = list_servers(SERVER_URI)
+        secure_internets = [s for s in servers if s['server_type'] == 'secure_internet']
+        institute_access = [s for s in servers if s['server_type'] == 'institute_access']
+        orgs = list_organisations(ORGANISATION_URI)
+        choice = menu(institutes=institute_access, orgs=orgs, search_term=search_term)
+
+        if not choice:
+            exit(1)
+
+        auth_url, secure_internet = choice
+        if not secure_internet:
+            secure_internets = None
+
+    return auth_url, secure_internets
+
+
+def match_term(
+        servers: List[Dict[str, Any]],
+        orgs: List[Dict[str, Any]],
+        search_term: Optional[str], exact=False
+) -> Tuple[List[Tuple[int, Dict[str, Any]]], List[Tuple[int, Dict[str, Any]]]]:
+    """
+    Search the list of institutes and organisations for a string match.
+
+    returns:
+        None or (type ('base_url' or 'secure_internet_home'), url)
+    """
+    institute_access = [s for s in servers if s['server_type'] == 'institute_access']
+
+    if not search_term:
+        return list(enumerate(institute_access)), list(enumerate(orgs, len(institute_access)))
+
+    institute_matches: List[Tuple[int, Dict[str, Any]]] = []
+    for x, i in enumerate(institute_access):
+        if not exact:
+            if search_term.lower() in extract_translation(i['display_name']).lower():
+                institute_matches.append((x, i))
+        if exact:
+            if search_term.lower() == extract_translation(i['display_name']).lower():
+                institute_matches.append((x, i))
+
+    org_matches: List[Tuple[int, Dict[str, Any]]] = []
+    for x, i in enumerate(orgs, len(institute_access)):
+        if not exact:
+            if search_term.lower() in extract_translation(i['display_name']).lower() \
+                    or 'keyword_list' in i and search_term in i['keyword_list']:
+                org_matches.append((x, i))
+        if exact:
+            if search_term.lower() == extract_translation(i['display_name']).lower():
+                org_matches.append((x, i))
+    return institute_matches, org_matches

@@ -1,10 +1,10 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from argparse import Namespace
-from eduvpn.actions import interactive, start, refresh, activate, configure, deactivate, match_term, search, \
-    fetch_servers_orgs
+from eduvpn.actions import start, refresh, activate, deactivate
 from tests.mock_config import mock_server, mock_org
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
+
 
 class TestCli(TestCase):
     @patch('eduvpn.actions.save_connection')
@@ -43,12 +43,6 @@ class TestCli(TestCase):
         args = MagicMock()
         args.match = "https://test"
         start(args)
-
-    @patch('eduvpn.actions.start')
-    def test_main_with_url(self, start: MagicMock):
-        args = MagicMock()
-        args.match = "https://test"
-        interactive(args)
 
     @patch('eduvpn.actions.OAuth2Session')
     @patch('eduvpn.actions.get_storage')
@@ -94,7 +88,7 @@ class TestCli(TestCase):
             get_storage: MagicMock, oauth: MagicMock
     ):
         oauth.refresh_token = MagicMock(side_effect=InvalidGrantError("invalid signature")
-)
+                                        )
         create_keypair.return_value = "key", "cert"
         check_certificate.return_value = False
         get_cert_key.return_value = "cert", "key"
@@ -103,28 +97,10 @@ class TestCli(TestCase):
         refresh(Namespace())
 
     @patch('eduvpn.actions.refresh')
-    def test_activate(self, _):
+    @patch('eduvpn.actions.activate_connection')
+    def test_activate(self, _, __):
         activate(Namespace())
-
-    @patch('eduvpn.actions.fetch_servers_orgs')
-    @patch('eduvpn.actions.start')
-    def test_configure(self, _: MagicMock, fetch_servers_orgs_: MagicMock):
-        fetch_servers_orgs_.return_value = [mock_server], [mock_org]
-        configure(Namespace(match='bogus'))
-        configure(Namespace(match=''))
 
     def test_deactivate(self):
         deactivate(Namespace())
 
-    def test_match_term(self):
-        match_term(servers=[], orgs=[], search_term="search")
-
-    @patch('eduvpn.actions.fetch_servers_orgs')
-    def test_search(self, fetch_servers_orgs_: MagicMock):
-        fetch_servers_orgs_.return_value = [mock_server], [mock_org]
-        search(Namespace(match='bogus'))
-
-    @patch('eduvpn.actions.list_servers')
-    @patch('eduvpn.actions.list_organisations')
-    def test_fetch_servers_orgs(self, list_organisations, list_servers):
-        fetch_servers_orgs()
