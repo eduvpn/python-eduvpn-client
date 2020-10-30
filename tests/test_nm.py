@@ -29,8 +29,8 @@ class TestNm(TestCase):
     def test_activate_connection(self):
         client = get_client()
         uuid = get_uuid()
-        #activate_connection(client, uuid)
-        #get_cert_key(client, uuid)
-        #connection_status(client, uuid)
-        #deactivate_connection(client, uuid)
-        #save_connection(client, mock_config, mock_key, mock_cert)
+        # activate_connection(client, uuid)
+        # get_cert_key(client, uuid)
+        # connection_status(client, uuid)
+        # deactivate_connection(client, uuid)
+        # save_connection(client, mock_config, mock_key, mock_cert)

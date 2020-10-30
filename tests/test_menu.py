@@ -46,7 +46,7 @@ class TestMenu(TestCase):
         fetch_servers_orgs_.return_value = [mock_server], [mock_org]
         search(Namespace(match='bogus'))
 
-    @patch('eduvpn.actions.list_servers')
+    @patch('eduvpn.menu.list_servers')
     @patch('eduvpn.menu.list_organisations')
     def test_fetch_servers_orgs(self, list_organisations, list_servers):
         fetch_servers_orgs()

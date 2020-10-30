@@ -67,7 +67,7 @@ class TestCli(TestCase):
         get_cert_key.return_value = "cert", "key"
         get_storage.return_value = "uuid", "auth_url", "api_url", "profile", ({}, "", "")
         get_info.return_value = "api_base_uri", "token_endpoint", "auth_endpoint"
-        refresh(Namespace())
+        refresh()
 
     @patch('eduvpn.actions.OAuth2Session')
     @patch('eduvpn.actions.get_storage')
@@ -87,20 +87,19 @@ class TestCli(TestCase):
             get_cert_key: MagicMock,
             get_storage: MagicMock, oauth: MagicMock
     ):
-        oauth.refresh_token = MagicMock(side_effect=InvalidGrantError("invalid signature")
-                                        )
+        oauth.refresh_token = MagicMock(side_effect=InvalidGrantError("invalid signature"))
+
         create_keypair.return_value = "key", "cert"
         check_certificate.return_value = False
         get_cert_key.return_value = "cert", "key"
         get_storage.return_value = "uuid", "auth_url", "api_url", "profile", ({}, "", "")
         get_info.return_value = "api_base_uri", "token_endpoint", "auth_endpoint"
-        refresh(Namespace())
+        refresh()
 
     @patch('eduvpn.actions.refresh')
     @patch('eduvpn.actions.activate_connection')
     def test_activate(self, _, __):
-        activate(Namespace())
+        activate()
 
     def test_deactivate(self):
-        deactivate(Namespace())
-
+        deactivate()
