@@ -23,7 +23,7 @@ def _read_tokens() -> dict:
             with open(_tokens_path, 'r') as f:
                 return json.load(f)
         except Exception as e:
-            logger.error(f"Error reading tokens: {e}")
+            logger.error(f"Error reading tokens {_tokens_path}: {e}")
     return {}
 
 
@@ -32,9 +32,10 @@ def _write_tokens(storage: dict) -> None:
     Write the storage to disk.
     """
     try:
+        dump = json.dumps(storage)
         _tokens_path.parent.mkdir(parents=True, exist_ok=True)
         with open(_tokens_path, 'w') as f:
-            return json.dump(storage, fp=f)
+            f.write(dump)
     except Exception as e:
         logger.error(f"Error writing tokens: {e}")
 

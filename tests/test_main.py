@@ -1,5 +1,5 @@
 from unittest import TestCase
-from eduvpn.__main__ import parse_eduvpn
+from eduvpn.cli import parse_eduvpn
 
 
 class TestMain(TestCase):

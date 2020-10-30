@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple
+from typing import Tuple, List, Dict, Any
 
 import requests
 from requests_oauthlib import OAuth2Session
@@ -54,7 +54,7 @@ def oauth_request(oauth: OAuth2Session, uri: str, method: str = 'get'):
     return response
 
 
-def list_organisations(uri: str):
+def list_organisations(uri: str) -> List[Dict[str, Any]]:
     try:
         result = request(uri, verify=True)['organization_list']
     except Exception as e:
@@ -63,7 +63,7 @@ def list_organisations(uri: str):
     return result
 
 
-def list_servers(uri: str):
+def list_servers(uri: str) -> List[Dict[str, Any]]:
     try:
         result = request(uri, verify=True)['server_list']
     except Exception as e:
