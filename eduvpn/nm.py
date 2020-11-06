@@ -1,7 +1,7 @@
 import logging
 import time
 from enum import Flag
-import dbus  # type:ignore
+import dbus
 import dbus.mainloop.glib
 from pathlib import Path
 from shutil import rmtree
