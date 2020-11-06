@@ -7,14 +7,6 @@ from typing import Callable
 
 logger = getLogger(__file__)
 
-try:
-    import gi
-
-    gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk
-except (ImportError, ValueError):
-    logger.warning("GTK not available")
-
 
 def get_logger(name_space: str):
     return getLogger(name_space)

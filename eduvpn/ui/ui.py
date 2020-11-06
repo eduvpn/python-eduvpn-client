@@ -8,17 +8,13 @@ import re
 import webbrowser
 from logging import getLogger
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List
 
 logger = getLogger(__name__)
 
-try:
-    import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GObject, GLib, GdkPixbuf
 
-    gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, GObject, GLib, GdkPixbuf
-except (ImportError, ValueError):
-    logger.warning("GTK not available")
 
 from requests_oauthlib import OAuth2Session
 
@@ -30,7 +26,7 @@ from eduvpn.nm import get_client, save_connection, nm_available, activate_connec
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
-    LETS_CONNECT_ICON, SERVER_ILLUSTRATION, CONFIG_PREFIX
+    LETS_CONNECT_ICON, SERVER_ILLUSTRATION
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
 from eduvpn.ui.backend import BackendData
 from eduvpn.ui.vpn_connection import VpnConnection
