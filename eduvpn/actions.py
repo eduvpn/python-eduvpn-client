@@ -1,17 +1,15 @@
 from logging import getLogger
-from pathlib import Path
 from typing import Optional
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
-from eduvpn.menu import secure_internet_choice, profile_choice, write_to_nm_choice, search
-from eduvpn.nm import activate_connection, deactivate_connection, get_cert_key, save_connection, nm_available, \
-    get_client
+from eduvpn.menu import secure_internet_choice, profile_choice
+from eduvpn.nm import activate_connection, deactivate_connection, get_cert_key, save_connection, get_client
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, check_certificate, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID
-from eduvpn.storage import get_storage, set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
+from eduvpn.storage import get_storage, set_token, get_token, set_api_url, set_auth_url, set_profile
 from eduvpn.storage import get_uuid
 
 _logger = getLogger(__file__)
@@ -46,7 +44,10 @@ def refresh():
 
 def start(auth_url: str, secure_internet: Optional[list] = None, interactive: bool = False):
     """
-    Starts the full enrollmen procedure.
+    Starts the full enrollment procedure.
+
+    Once completed, will store api_url, auth_url and profile in storage. Returns config, private key and certifcate,
+    which you should use to compose a valid VPN configuration and store in NM or in a ovpn file.
     """
     # make sure our URL ends with a /
     if auth_url[-1] != '/':
@@ -89,19 +90,7 @@ def start(auth_url: str, secure_internet: Optional[list] = None, interactive: bo
     set_auth_url(auth_url)
     set_profile(profile_id)
 
-    target = Path('eduVPN.ovpn').resolve()
-    if interactive and nm_available():
-        if write_to_nm_choice():
-            client = get_client()
-            save_connection(client, config, private_key, certificate)
-        else:
-            write_config(config, private_key, certificate, target)
-    else:
-        if nm_available():
-            client = get_client()
-            save_connection(client, config, private_key, certificate)
-        else:
-            write_config(config, private_key, certificate, target)
+    return config, private_key, certificate
 
 
 def status():

@@ -2,9 +2,14 @@ import logging
 from argparse import ArgumentParser, Namespace
 from sys import argv
 from typing import List
+from logging import getLogger
 
 from eduvpn import actions
 from eduvpn import menu
+
+from eduvpn.menu import store_configuration
+
+_logger = getLogger(__file__)
 
 
 def list_(args: Namespace):
@@ -18,7 +23,8 @@ def search(args):
 
 def configure(args):
     url = menu.configure(args)
-    actions.start(url)
+    config, private_key, certificate = actions.start(url)
+    store_configuration(config, private_key, certificate, interactive=False)
 
 
 def refresh(_):
@@ -39,7 +45,9 @@ def status(_):
 
 def interactive(args):
     auth_url, secure_internet = menu.interactive(args)
-    actions.start(auth_url=auth_url, secure_internet=secure_internet, interactive=True)
+    config, private_key, certificate = actions.start(auth_url=auth_url, secure_internet=secure_internet,
+                                                     interactive=True)
+    store_configuration(config, private_key, certificate, interactive=True)
 
 
 def parse_eduvpn(args: List[str]):
