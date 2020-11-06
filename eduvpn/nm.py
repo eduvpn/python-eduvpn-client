@@ -66,7 +66,13 @@ def nm_available() -> bool:
     """
     check if Network Manager is available
     """
-    return bool('gi.repository.NM' in modules)
+    if bool('gi.repository.NM' in modules):
+        try:
+            get_client()
+            return True
+        except Exception:
+            ...
+    return False
 
 
 def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
