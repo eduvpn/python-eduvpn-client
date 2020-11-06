@@ -52,8 +52,10 @@ class TestCli(TestCase):
     @patch('eduvpn.actions.create_keypair')
     @patch('eduvpn.actions.get_config')
     @patch('eduvpn.actions.save_connection')
+    @patch('eduvpn.actions.get_client')
     def test_refresh(
             self,
+            get_client: MagicMock,
             save_connection: MagicMock,
             get_config: MagicMock,
             create_keypair: MagicMock,
@@ -77,8 +79,10 @@ class TestCli(TestCase):
     @patch('eduvpn.actions.create_keypair')
     @patch('eduvpn.actions.get_config')
     @patch('eduvpn.actions.save_connection')
+    @patch('eduvpn.actions.get_client')
     def test_refresh_invalid_signature(
             self,
+            get_client: MagicMock,
             save_connection: MagicMock,
             get_config: MagicMock,
             create_keypair: MagicMock,
@@ -98,8 +102,10 @@ class TestCli(TestCase):
 
     @patch('eduvpn.actions.refresh')
     @patch('eduvpn.actions.activate_connection')
-    def test_activate(self, _, __):
+    @patch('eduvpn.actions.get_client')
+    def test_activate(self, get_client, activate_connection, refresh):
         activate()
 
-    def test_deactivate(self):
+    @patch('eduvpn.actions.get_client')
+    def test_deactivate(self, get_client):
         deactivate()
