@@ -16,14 +16,10 @@ class TestCli(TestCase):
     @patch('eduvpn.actions.list_profiles')
     @patch('eduvpn.actions.get_oauth')
     @patch('eduvpn.actions.get_info')
-    @patch('eduvpn.actions.write_config')
-    @patch('eduvpn.actions.write_to_nm_choice')
     @patch('eduvpn.actions.get_client')
     def test_start(
             self,
             get_client: MagicMock,
-            write_to_nm_choice: MagicMock,
-            write_config: MagicMock,
             get_info: MagicMock,
             get_oauth: MagicMock,
             list_profiles: MagicMock,
@@ -34,7 +30,6 @@ class TestCli(TestCase):
             set_api_url: MagicMock,
             save_connection: MagicMock,
     ):
-        write_to_nm_choice.return_value = False
         create_keypair.return_value = ["cert", "key"]
         get_info.return_value = {"api_base_uri", "token_endpoint", "auth_endpoint"}
         list_profiles.return_value = [{'profile_id': 'internet'}]
