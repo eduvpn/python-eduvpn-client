@@ -252,7 +252,8 @@ class EduVpnGui:
         logger.debug("activate_other_server")
         self.disconnect_selection_handlers()
         self.data.vpn_connection = self.connections[index]
-        print(self.data.vpn_connection)
+        self.show_empty()
+        self.setup_connection(self.data.vpn_connection.auth_url)
 
     def on_other_server_selection_changed(self, selection) -> None:
         logger.debug("on_other_server_selection_changed")
@@ -309,7 +310,8 @@ class EduVpnGui:
         logger.debug("activate_institute")
         self.disconnect_selection_handlers()
         self.data.vpn_connection = self.connections[index]
-        print(self.data.vpn_connection)
+        self.show_empty()
+        self.setup_connection(self.data.vpn_connection.auth_url, [], False)
 
     def on_institute_selection_changed(self, selection) -> None:
         logger.debug("on_institute_selection_changed")
@@ -338,7 +340,8 @@ class EduVpnGui:
         logger.debug("activate_secure_internet")
         self.disconnect_selection_handlers()
         self.data.vpn_connection = self.connections[index]
-        print(self.data.vpn_connection)
+        self.show_empty()
+        self.setup_connection(self.data.vpn_connection.auth_url, self.data.secure_internet, True)
 
     def on_secure_internet_selection_changed(self, selection) -> None:
         logger.debug("on_secure_internet_selection_changed")
@@ -770,6 +773,7 @@ class EduVpnGui:
         selection.unselect_all()
 
     def setup_connection(self, auth_url, secure_internet: list = [], interactive: bool = False) -> None:
+        logger.debug(f"setup_connection auth_url:{auth_url} secure_internet:{secure_internet} interactive:{interactive}")
 
         self.data.vpn_connection.auth_url = auth_url
         self.data.locations = secure_internet
