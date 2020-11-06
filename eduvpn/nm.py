@@ -2,7 +2,7 @@ import logging
 import time
 from enum import Flag
 import dbus  # type:ignore
-from dbus.mainloop.glib import DBusGMainLoop  # type:ignore
+import dbus.mainloop.glib
 from pathlib import Path
 from shutil import rmtree
 from sys import modules
@@ -104,7 +104,7 @@ def import_ovpn(config: str, private_key: str, certificate: str) -> 'NM.SimpleCo
 def add_callback(client, result, callback=None):
     new_con = client.add_connection_finish(result)
     set_uuid(uuid=new_con.get_uuid())
-    logger.debug(f"Connection added for uuid: {get_uuid()}")
+    logger.info(f"Connection added for uuid: {get_uuid()}")
     if callback is not None:
         callback(new_con is not None)
 
@@ -139,10 +139,8 @@ def save_connection(client: 'NM.Client', config, private_key, certificate, callb
         old_con = client.get_connection_by_uuid(uuid)
         if old_con:
             update_connection(old_con, new_con, callback)
-        else:
-            add_connection(client=client, connection=new_con, callback=callback)
-    else:
-        add_connection(client=client, connection=new_con, callback=callback)
+            return
+    add_connection(client=client, connection=new_con, callback=callback)
 
 
 def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:

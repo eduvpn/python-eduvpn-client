@@ -10,12 +10,9 @@ from logging import getLogger
 from pathlib import Path
 from typing import Any, List
 
-logger = getLogger(__name__)
-
+import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, GLib, GdkPixbuf
-
-
 from requests_oauthlib import OAuth2Session
 
 from eduvpn.utils import get_prefix, thread_helper
@@ -30,6 +27,8 @@ from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS
 from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
 from eduvpn.ui.backend import BackendData
 from eduvpn.ui.vpn_connection import VpnConnection
+
+logger = getLogger(__name__)
 
 builder_files: List[str] = ['mainwindow.ui']
 

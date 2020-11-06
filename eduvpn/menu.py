@@ -1,11 +1,17 @@
+from logging import getLogger
 from argparse import Namespace
 from itertools import chain
+from pathlib import Path
 from sys import exit
 from typing import List, Dict, Optional, Tuple, Any
 
 from eduvpn.i18n import extract_translation
+from eduvpn.nm import get_client, get_mainloop, save_connection, nm_available
 from eduvpn.remote import list_servers, list_organisations
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI
+from eduvpn.storage import write_config
+
+_logger = getLogger()
 
 
 def fetch_servers_orgs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -206,3 +212,31 @@ def match_term(
             if search_term.lower() == extract_translation(i['display_name']).lower():
                 org_matches.append((x, i))
     return institute_matches, org_matches
+
+
+def save_connection_with_mainloop(config, private_key, certificate):
+    _logger.info("saving connection with CLI mainloop")
+
+    client = get_client()
+    main_loop = get_mainloop()
+
+    def save_connection_callback(*args, **kwargs):
+        _logger.info("Quiting main loop, thanks!")
+        main_loop.quit()
+
+    save_connection(client, config, private_key, certificate, callback=save_connection_callback)
+    main_loop.run()
+
+
+def store_configuration(config, private_key, certificate, interactive=False):
+    target = Path('eduVPN.ovpn').resolve()
+    if interactive and nm_available():
+        if write_to_nm_choice():
+            save_connection_with_mainloop(config, private_key, certificate)
+        else:
+            write_config(config, private_key, certificate, target)
+    else:
+        if nm_available():
+            save_connection_with_mainloop(config, private_key, certificate)
+        else:
+            write_config(config, private_key, certificate, target)
