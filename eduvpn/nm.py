@@ -1,6 +1,6 @@
 import logging
 import time
-from enum import Flag
+from functools import lru_cache
 import dbus
 import dbus.mainloop.glib
 from pathlib import Path
@@ -22,39 +22,14 @@ except (ImportError, ValueError):
     NM = None
 
 
-class ConnectionState(Flag):
-    UNKNOWN = NM.VpnConnectionState.UNKNOWN
-    PREPARE = NM.VpnConnectionState.PREPARE
-    NEED_AUTH = NM.VpnConnectionState.NEED_AUTH
-    CONNECT = NM.VpnConnectionState.CONNECT
-    IP_CONFIG_GET = NM.VpnConnectionState.IP_CONFIG_GET
-    ACTIVATED = NM.VpnConnectionState.ACTIVATED
-    FAILED = NM.VpnConnectionState.FAILED
-    DISCONNECTED = NM.VpnConnectionState.DISCONNECTED
-
-
-class ConnectionStateReason(Flag):
-    UNKNOWN = NM.VpnConnectionStateReason.UNKNOWN
-    NONE = NM.VpnConnectionStateReason.NONE
-    USER_DISCONNECTED = NM.VpnConnectionStateReason.USER_DISCONNECTED
-    DEVICE_DISCONNECTED = NM.VpnConnectionStateReason.DEVICE_DISCONNECTED
-    SERVICE_STOPPED = NM.VpnConnectionStateReason.SERVICE_STOPPED
-    IP_CONFIG_INVALID = NM.VpnConnectionStateReason.IP_CONFIG_INVALID
-    CONNECT_TIMEOUT = NM.VpnConnectionStateReason.CONNECT_TIMEOUT
-    SERVICE_START_TIMEOUT = NM.VpnConnectionStateReason.SERVICE_START_TIMEOUT
-    SERVICE_START_FAILED = NM.VpnConnectionStateReason.SERVICE_START_FAILED
-    NO_SECRETS = NM.VpnConnectionStateReason.NO_SECRETS
-    LOGIN_FAILED = NM.VpnConnectionStateReason.LOGIN_FAILED
-    CONNECTION_REMOVED = NM.VpnConnectionStateReason.CONNECTION_REMOVED
-
-
+@lru_cache
 def get_client() -> 'NM.Client':
     """
     Create a new client object. We put this here so other modules don't need to import NM
     """
     return NM.Client.new(None)
 
-
+@lru_cache
 def get_mainloop():
     """
     Create a new client object. We put this here so other modules don't need to import Glib
@@ -215,8 +190,19 @@ def init_dbus_system_bus(callback):
         vpn_id = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Id")
         vpn = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Vpn")
         if vpn:
-            vpn_state = ConnectionState(a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState"))
+            vpn_state = a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState")
             logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
-            callback(vpn_state, ConnectionStateReason.NONE)
+            callback(vpn_state, NM.VpnConnectionStateReason.NONE)
             return
-    callback(ConnectionState.DISCONNECTED, ConnectionStateReason.NONE)
+    callback(NM.VpnConnectionState.DISCONNECTED, NM.VpnConnectionStateReason.NONE)
+
+
+def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.VpnConnectionStateReason']:
+    vpns = [a for a in NM.Client.new(None).get_active_connections() if type(a) == NM.VpnConnection]
+    if len(vpns) > 1:
+        logger.warning("more than one VPN connection active")
+        return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
+    elif len(vpns) == 0:
+        return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
+    else:
+        return vpns[0].get_state(), vpns[0].get_state_reason()
