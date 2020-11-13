@@ -68,9 +68,9 @@ def start(auth_url: str, secure_internet: Optional[list] = None, interactive: bo
         set_token(auth_url, oauth.token, token_endpoint, auth_endpoint)
 
     if secure_internet and interactive:
-        choice = secure_internet_choice(secure_internet)
-        if choice:
-            api_url, _, _ = get_info(choice)
+        base_uri = secure_internet_choice(secure_internet)
+        if base_uri:
+            api_url, _, _ = get_info(base_uri)
 
     _logger.info(f"using {api_url} as api_url")
 
