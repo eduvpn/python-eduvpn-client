@@ -198,7 +198,7 @@ class EduVpnGui:
         self.window.show()
         try:
             self.data
-            if self.data.connection_state is NM.VpnConnectionState.ACTIVATED:
+            if self.data.connection_state == NM.VpnConnectionState.ACTIVATED:
                 self.act_on_switch = True
                 self.show_connection(False)
                 self.show_back_button()
@@ -637,7 +637,7 @@ class EduVpnGui:
             self.act_on_switch = False
             logger.debug(f"vpn_state: {self.data.connection_state}")
             self.auto_connect = True
-            if self.data.connection_state is NM.VpnConnectionState.ACTIVATED:
+            if self.data.connection_state == NM.VpnConnectionState.ACTIVATED:
                 GLib.idle_add(lambda: self.deactivate_connection())
             else:
                 self.activate_connection()
@@ -700,7 +700,7 @@ class EduVpnGui:
         }
         self.connection_status_label.set_text(connection_state_mapping[state][0])
         self.connection_status_image.set_from_file(IMAGE_PREFIX + connection_state_mapping[state][1])
-        if state is NM.VpnConnectionState.UNKNOWN:
+        if state == NM.VpnConnectionState.UNKNOWN:
             self.current_connection_sub_page.hide()
         else:
             self.current_connection_sub_page.show()
