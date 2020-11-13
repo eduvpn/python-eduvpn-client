@@ -192,7 +192,8 @@ def init_dbus_system_bus(callback):
         vpn_id = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Id")
         vpn = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Vpn")
         if vpn:
-            vpn_state = a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState")
+            vpn_state_raw = a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState")
+            vpn_state = NM.VpnConnectionStateReason(vpn_state_raw)
             logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
             callback(vpn_state, NM.VpnConnectionStateReason.NONE)
             return
