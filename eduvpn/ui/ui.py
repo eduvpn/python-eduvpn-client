@@ -27,7 +27,7 @@ from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
     LETS_CONNECT_ICON, SERVER_ILLUSTRATION
-from eduvpn.storage import set_token, get_token, set_api_url, set_auth_url, set_profile, write_config
+from eduvpn.storage import set_metadata, get_current_metadata, set_auth_url, write_config
 from eduvpn.ui.backend import BackendData
 from eduvpn.ui.vpn_connection import VpnConnection
 
@@ -132,7 +132,8 @@ class EduVpnGui:
         self.secure_internet_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
         self.other_servers_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
         self.profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
-        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_INT)  # type: ignore
+        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf,
+                                                  GObject.TYPE_INT)  # type: ignore
 
         self.connections: List[VpnConnection] = []
         self.select_existing_connection = False
@@ -289,9 +290,11 @@ class EduVpnGui:
             no_other_server_available = len(self.other_servers_list_model) == 0  # type: ignore
 
             if one_institute_available and no_secure_internet_available and no_other_server_available:
-                self.handle_add_institute(self.institute_list_model[0][0], self.institute_list_model[0][1])  # type: ignore
+                self.handle_add_institute(self.institute_list_model[0][0],  # type: ignore
+                                          self.institute_list_model[0][1])  # type: ignore
             if no_institute_available and one_secure_internet_available and no_other_server_available:
-                self.handle_add_secure_internet(self.secure_internet_list_model[0][0], self.secure_internet_list_model[0][1])  # type: ignore
+                self.handle_add_secure_internet(self.secure_internet_list_model[0][0],  # type: ignore
+                                                self.secure_internet_list_model[0][1])  # type: ignore
             if no_institute_available and no_secure_internet_available and one_other_server_available:
                 self.handle_add_other_server(self.other_servers_list_model[0][0])  # type: ignore
 
@@ -481,14 +484,15 @@ class EduVpnGui:
         self.other_servers_list_model.clear()  # type: ignore
 
         for i, connection in enumerate(self.connections):
+            formatted = f"{connection.server_name} {connection.profile_name}"
             if not self.lets_connect:
                 if connection.type == VpnConnection.ConnectionType.INSTITUTE:
-                    self.institute_list_model.append([connection.server_name + " " + connection.profile_name, i])  # type: ignore
+                    self.institute_list_model.append([formatted, i])  # type: ignore
                 elif connection.type == VpnConnection.ConnectionType.SECURE:
-                    self.secure_internet_list_model.append([connection.server_name + " " + connection.profile_name, i])  # type: ignore
+                    self.secure_internet_list_model.append([formatted, i])  # type: ignore
             if connection.type == VpnConnection.ConnectionType.OTHER:
                 print(f"{connection.server_name}")
-                self.other_servers_list_model.append([connection.server_name + " " + connection.profile_name, i])  # type: ignore
+                self.other_servers_list_model.append([formatted, i])  # type: ignore
 
         self.find_your_institute_page.show()
         self.find_your_institute_image.hide()
@@ -779,10 +783,11 @@ class EduVpnGui:
         self.data.locations = secure_internet
 
         logger.debug(f"starting procedure with auth_url: {self.data.vpn_connection.auth_url}")
-        exists = get_token(self.data.vpn_connection.auth_url)
+        exists = get_current_metadata(self.data.vpn_connection.auth_url)
 
         if exists:
-            token, self.data.vpn_connection.token_endpoint, self.data.vpn_connection.authorization_endpoint = exists
+            token, self.data.vpn_connection.token_endpoint, self.data.vpn_connection.authorization_endpoint, api_url, \
+                display_name, support_contact, profile_id = exists
             thread_helper(lambda: restoring_token_thread(token, self.data.vpn_connection.token_endpoint, self))
         else:
             self.show_open_browser()
@@ -857,8 +862,17 @@ def fetch_token_thread(gui: EduVpnGui) -> None:
         gui.data.vpn_connection.api_url, gui.data.vpn_connection.token_endpoint, auth_endpoint = get_info(
             gui.data.vpn_connection.auth_url)
         gui.data.oauth = get_oauth(gui.data.vpn_connection.token_endpoint, auth_endpoint)
-        set_token(gui.data.vpn_connection.auth_url, gui.data.oauth.token, gui.data.vpn_connection.token_endpoint,
-                  auth_endpoint)
+        set_metadata(
+            auth_url=gui.data.vpn_connection.auth_url,
+            token=gui.data.oauth.token,
+            token_endpoint=gui.data.vpn_connection.token_endpoint,
+            authorization_endpoint=auth_endpoint,
+            api_url=gui.data.vpn_connection.api_url,
+            display_name="TODO",
+            support_contact="TODO",
+            profile_id="TODO",
+        )
+
         GLib.idle_add(lambda: gui.token_available())
     except Exception as e:
         msg = f"Got exception {e} requesting {gui.data.vpn_connection.auth_url}"
@@ -900,7 +914,8 @@ def handle_secure_internet_thread(gui: EduVpnGui) -> None:
             flag_location = FLAG_PREFIX + location['country_code'] + "@1,5x.png"
             if os.path.exists(flag_location):
                 flag_image = GdkPixbuf.Pixbuf.new_from_file(flag_location)  # type: ignore
-                gui.locations_list_model.append([retrieve_country_name(location['country_code']), flag_image, i])  # type: ignore
+                country_name = retrieve_country_name(location['country_code'])
+                gui.locations_list_model.append([country_name, flag_image, i])  # type: ignore
 
         GLib.idle_add(lambda: gui.show_choose_location())
     else:
@@ -913,7 +928,6 @@ def finalize_configuration_thread(profile_id: str, gui: EduVpnGui) -> None:
     config = get_config(gui.data.oauth, gui.data.vpn_connection.api_url, profile_id)
     private_key, certificate = create_keypair(gui.data.oauth, gui.data.vpn_connection.api_url)
 
-    set_api_url(gui.data.vpn_connection.api_url)
     set_auth_url(gui.data.vpn_connection.auth_url)
-    set_profile(profile_id)
+    # set_profile(profile_id) TODO ASCHWIN
     GLib.idle_add(lambda: gui.configuration_finalized(config, private_key, certificate))

@@ -7,10 +7,11 @@ from pathlib import Path
 from shutil import rmtree
 from sys import modules
 from tempfile import mkdtemp
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Callable
+
 from eduvpn.storage import set_uuid, get_uuid, write_config
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 try:
     import gi
@@ -18,7 +19,7 @@ try:
     gi.require_version('NM', '1.0')
     from gi.repository import NM, GLib  # type: ignore
 except (ImportError, ValueError):
-    logger.warning("Network Manager not available")
+    _logger.warning("Network Manager not available")
     NM = None
 
 
@@ -77,31 +78,32 @@ def import_ovpn(config: str, private_key: str, certificate: str) -> 'NM.SimpleCo
     return connection
 
 
-def add_callback(client, result, callback=None):
+def add_connection_callback(client, result, callback=None):
     new_con = client.add_connection_finish(result)
     set_uuid(uuid=new_con.get_uuid())
-    logger.info(f"Connection added for uuid: {get_uuid()}")
+    _logger.info(f"Connection added for uuid: {get_uuid()}")
     if callback is not None:
         callback(new_con is not None)
 
 
 def add_connection(client: 'NM.Client', connection: 'NM.Connection', callback=None):
-    logger.info("Adding new connection")
-    client.add_connection_async(connection=connection, save_to_disk=True, callback=add_callback, user_data=callback)
+    _logger.info("Adding new connection")
+    client.add_connection_async(connection=connection, save_to_disk=True, callback=add_connection_callback,
+                                user_data=callback)
 
 
 def update_connection_callback(remote_connection, result, callback=None):
     res = remote_connection.commit_changes_finish(result)
-    logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}, remote_con: {remote_connection}")
+    _logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}, remote_con: {remote_connection}")
     if callback is not None:
-        callback(res)
+        callback()
 
 
 def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callback=None):
     """
     Update an existing Network Manager connection with the settings from another Network Manager connection
     """
-    logger.info("Updating existing connection with new configuration")
+    _logger.info("Updating existing connection with new configuration")
 
     old_con.replace_settings_from_connection(new_con)
     old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback,
@@ -109,7 +111,7 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callba
 
 
 def save_connection(client: 'NM.Client', config, private_key, certificate, callback=None):
-    logger.info("writing configuration to Network Manager")
+    _logger.info("writing configuration to Network Manager")
     new_con = import_ovpn(config, private_key, certificate)
     uuid = get_uuid()
     if uuid:
@@ -121,17 +123,22 @@ def save_connection(client: 'NM.Client', config, private_key, certificate, callb
 
 
 def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
-    connection = client.get_connection_by_uuid(uuid)
-    cert_path = connection.get_setting_vpn().get_data_item('cert')
+    try:
+        connection = client.get_connection_by_uuid(uuid)
+        cert_path = connection.get_setting_vpn().get_data_item('cert')
+    except Exception as e:
+        _logger.error(f"Can't fetch stored VPN connecton with uuid {uuid}")
+        raise IOError("Can't fetch eduVPN profile")
+
     key_path = connection.get_setting_vpn().get_data_item('key')
     cert = open(cert_path).read()
     key = open(key_path).read()
     return cert, key
 
 
-def activate_connection(client: 'NM.Client', uuid: str):
+def activate_connection(client: 'NM.Client', uuid: str, callback=None):
     con = client.get_connection_by_uuid(uuid)
-    logger.debug(f"activate_connection uuid: {uuid} connection: {con}")
+    _logger.info(f"activate_connection uuid: {uuid} connection: {con}")
     if con is None:
         # Temporary workaround, connection is sometimes created too
         # late while according to the logging the connection is already
@@ -140,38 +147,50 @@ def activate_connection(client: 'NM.Client', uuid: str):
         GLib.idle_add(lambda: activate_connection(client, uuid))
         return
 
-    def on_activate_connection(a_client, res):
-        result = a_client.activate_connection_finish(res)
-        logger.debug(F"activate_connection_async result: {result}")
+    def activate_connection_callback(a_client, res, callback=None):
+        try:
+            result = a_client.activate_connection_finish(res)
+        except Exception as e:
+            _logger.error(e)
+        else:
+            _logger.info(F"activate_connection_async result: {result}")
+        finally:
+            if callback:
+                callback()
 
-    client.activate_connection_async(connection=con, callback=on_activate_connection)
+    client.activate_connection_async(connection=con, callback=activate_connection_callback, user_data=callback)
 
 
-def deactivate_connection(client: 'NM.Client', uuid: str):
+def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
     con = client.get_primary_connection()
-    logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
+    _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
         active_uuid = con.get_uuid()
 
         if uuid == active_uuid:
-            def on_deactivate_connection(a_client, res):
-                result = a_client.deactivate_connection_finish(res)
-                logger.debug(F"deactivate_connection_async result: {result}")
+            def on_deactivate_connection(a_client, res, callback=None):
+                try:
+                    result = a_client.deactivate_connection_finish(res)
+                except Exception as e:
+                    _logger.error(e)
+                else:
+                    _logger.info(F"deactivate_connection_async result: {result}")
+                finally:
+                    if callback:
+                        callback()
 
-            client.deactivate_connection_async(active=con, callback=on_deactivate_connection)
+            client.deactivate_connection_async(active=con, callback=on_deactivate_connection, user_data=callback)
     else:
-        logger.info("No active connection to deactivate")
+        _logger.info("No active connection to deactivate")
 
 
-def connection_status(client: 'NM.Client', uuid: str):
+def connection_status(client: 'NM.Client') -> Tuple[Optional[str], Optional['NM.ActiveConnectionState']]:
     con = client.get_primary_connection()
-    active_uuid = con.get_uuid()
-
-    if uuid == active_uuid:
-        def callback(source_object, result):
-            logger.debug(source_object.check_connectivity_finish(result))
-
-        client.check_connectivity_async(callback=callback)
+    if type(con) != NM.VpnConnection:
+        return None, None
+    uuid = con.get_uuid()
+    status = con.get_state()
+    return uuid, status
 
 
 def init_dbus_system_bus(callback):
@@ -194,7 +213,7 @@ def init_dbus_system_bus(callback):
         if vpn:
             vpn_state_raw = a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState")
             vpn_state = NM.VpnConnectionStateReason(vpn_state_raw)
-            logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
+            _logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
             callback(vpn_state, NM.VpnConnectionStateReason.NONE)
             return
     callback(NM.VpnConnectionState.DISCONNECTED, NM.VpnConnectionStateReason.NONE)
@@ -203,9 +222,34 @@ def init_dbus_system_bus(callback):
 def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.VpnConnectionStateReason']:
     vpns = [a for a in NM.Client.new(None).get_active_connections() if type(a) == NM.VpnConnection]
     if len(vpns) > 1:
-        logger.warning("more than one VPN connection active")
+        _logger.warning("more than one VPN connection active")
         return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
     elif len(vpns) == 0:
         return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
     else:
         return vpns[0].get_state(), vpns[0].get_state_reason()
+
+
+def action_with_mainloop(action: Callable):
+    _logger.info("calling action with CLI mainloop")
+    main_loop = get_mainloop()
+
+    def quit_loop():
+        _logger.info("Quiting main loop, thanks!")
+        main_loop.quit()
+
+    action(callback=quit_loop)
+    main_loop.run()
+
+
+def save_connection_with_mainloop(config, private_key, certificate):
+    action_with_mainloop(
+        action=lambda callback: save_connection(get_client(), config, private_key, certificate, callback))
+
+
+def activate_connection_with_mainloop(uuid):
+    action_with_mainloop(action=lambda callback: activate_connection(get_client(), uuid, callback))
+
+
+def deactivate_connection_with_mainloop(uuid):
+    action_with_mainloop(action=lambda callback: deactivate_connection(get_client(), uuid, callback))

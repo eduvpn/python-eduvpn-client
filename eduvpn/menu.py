@@ -6,15 +6,17 @@ from sys import exit
 from typing import List, Dict, Optional, Tuple, Any
 
 from eduvpn.i18n import extract_translation
-from eduvpn.nm import get_client, get_mainloop, save_connection, nm_available
+from eduvpn.nm import nm_available, save_connection_with_mainloop
 from eduvpn.remote import list_servers, list_organisations
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI
 from eduvpn.storage import write_config
 
 _logger = getLogger()
 
+ServerListType = List[Dict[str, Any]]
 
-def fetch_servers_orgs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+
+def fetch_servers_orgs() -> Tuple[ServerListType, ServerListType]:
     servers = list_servers(SERVER_URI)
     orgs = list_organisations(ORGANISATION_URI)
     return servers, orgs
@@ -33,12 +35,12 @@ def input_int(max_: int):
     return int(choice)
 
 
-def provider_choice(institutes: List[dict], orgs: List[dict]) -> Tuple[str, bool]:
+def provider_choice(institutes: List[dict], orgs: List[dict]) -> Tuple[str, str, Optional[str], bool]:
     """
     Ask the user to make a choice from a list of institute and secure internet providers.
 
     returns:
-        url, bool. Bool indicates if it is secure_internet or not.
+        url, display_name, contact, bool. Bool indicates if it is secure_internet or not.
     """
     print("\nPlease choose server:\n")
     print("Institute access:")
@@ -52,13 +54,19 @@ def provider_choice(institutes: List[dict], orgs: List[dict]) -> Tuple[str, bool
     choice = input_int(max_=len(institutes) + len(orgs))
 
     if choice < len(institutes):
-        return institutes[choice]['base_url'], False
+        institute = institutes[choice]
+        return institute['base_url'], extract_translation(institute['display_name']), institute[
+            'support_contact'], False
     else:
         org = orgs[choice - len(institutes)]
-        return org['secure_internet_home'], True
+        return org['secure_internet_home'], extract_translation(org['display_name']), None, True
 
 
-def menu(institutes: List[dict], orgs: List[dict], search_term: Optional[str] = None) -> Optional[Tuple[str, bool]]:
+def menu(
+        institutes: List[dict],
+        orgs: List[dict],
+        search_term: Optional[str] = None
+) -> Tuple[str, str, Optional[str], bool]:
     """
     returns:
         url, bool. Bool indicates if it is secure_internet or not.
@@ -124,13 +132,14 @@ def search(args: Namespace):
             print(f"[{i}] {extract_translation(row['display_name'])}")
 
 
-def configure(args: Namespace) -> str:
+def configure(args: Namespace) -> Tuple[str, str, Optional[str], Optional[ServerListType]]:
     search_term = args.match
     servers, orgs = fetch_servers_orgs()
+    secure_internets = [s for s in servers if s['server_type'] == 'secure_internet']
     institute_matches, org_matches = match_term(servers, orgs, search_term, exact=True)
 
     if isinstance(search_term, str) and search_term.lower().startswith('https://'):
-        return search_term
+        return search_term, search_term, None, None
     else:
         if len(institute_matches) == 0 and len(org_matches) == 0:
             print(f"The filter '{search_term}' had no matches")
@@ -138,11 +147,12 @@ def configure(args: Namespace) -> str:
         elif len(institute_matches) == 1 and len(org_matches) == 0:
             index, institute = institute_matches[0]
             print(f"filter '{search_term}' matched with institute '{institute['display_name']}'")
-            return institute['base_url']
+            return institute['base_url'], extract_translation(institute['display_name']), institute[
+                'support_contact'], None
         elif len(institute_matches) == 0 and len(org_matches) == 1:
             index, org = org_matches[0]
             print(f"filter '{search_term}' matched with organisation '{org['display_name']}'")
-            return org['secure_internet_home']
+            return org['secure_internet_home'], extract_translation(org['display_name']), None, secure_internets
         else:
             matches = [i[1]['display_name'] for i in chain(institute_matches, org_matches)]
             print(
@@ -153,33 +163,35 @@ def configure(args: Namespace) -> str:
             exit(1)
 
 
-def interactive(args: Namespace) -> Tuple[str, Optional[List[Dict[str, Any]]]]:
+def interactive(args: Namespace) -> Tuple[str, str, Optional[str], Optional[ServerListType]]:
+    """
+    returns:
+        auth_url, display_name, support_contact, secure_internets
+    """
     search_term = args.match
 
     if isinstance(search_term, str) and search_term.lower().startswith('https://'):
-        auth_url = search_term
-        secure_internets = None
+        return search_term, search_term, None, None
 
-    else:
-        servers = list_servers(SERVER_URI)
-        secure_internets = [s for s in servers if s['server_type'] == 'secure_internet']
-        institute_access = [s for s in servers if s['server_type'] == 'institute_access']
-        orgs = list_organisations(ORGANISATION_URI)
-        choice = menu(institutes=institute_access, orgs=orgs, search_term=search_term)
+    servers = list_servers(SERVER_URI)
+    secure_internets = [s for s in servers if s['server_type'] == 'secure_internet']
+    institute_access = [s for s in servers if s['server_type'] == 'institute_access']
+    orgs = list_organisations(ORGANISATION_URI)
+    choice = menu(institutes=institute_access, orgs=orgs, search_term=search_term)
 
-        if not choice:
-            exit(1)
+    if not choice:
+        exit(1)
 
-        auth_url, secure_internet = choice
-        if not secure_internet:
-            secure_internets = None
+    auth_url, display_name, support_contact, secure_internet = choice
+    if not secure_internet:
+        return auth_url, display_name, support_contact, None
 
-    return auth_url, secure_internets
+    return auth_url, display_name, support_contact, secure_internets
 
 
 def match_term(
-        servers: List[Dict[str, Any]],
-        orgs: List[Dict[str, Any]],
+        servers: ServerListType,
+        orgs: ServerListType,
         search_term: Optional[str], exact=False
 ) -> Tuple[List[Tuple[int, Dict[str, Any]]], List[Tuple[int, Dict[str, Any]]]]:
     """
@@ -212,20 +224,6 @@ def match_term(
             if search_term.lower() == extract_translation(i['display_name']).lower():
                 org_matches.append((x, i))
     return institute_matches, org_matches
-
-
-def save_connection_with_mainloop(config, private_key, certificate):
-    _logger.info("saving connection with CLI mainloop")
-
-    client = get_client()
-    main_loop = get_mainloop()
-
-    def save_connection_callback(*args, **kwargs):
-        _logger.info("Quiting main loop, thanks!")
-        main_loop.quit()
-
-    save_connection(client, config, private_key, certificate, callback=save_connection_callback)
-    main_loop.run()
 
 
 def store_configuration(config, private_key, certificate, interactive=False):
