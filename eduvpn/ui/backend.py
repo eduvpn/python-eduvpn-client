@@ -3,6 +3,7 @@ from requests_oauthlib import OAuth2Session
 from typing import List, Optional
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('NM', '1.0')
 from gi.repository import NM  # type: ignore
