@@ -7,7 +7,7 @@ from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
 
 class TestCli(TestCase):
-    @patch('eduvpn.actions.save_connection')
+    @patch('eduvpn.actions.save_connection_with_mainloop')
     @patch('eduvpn.actions.create_keypair')
     @patch('eduvpn.actions.get_config')
     @patch('eduvpn.actions.list_profiles')
@@ -40,7 +40,7 @@ class TestCli(TestCase):
     @patch('eduvpn.actions.check_certificate')
     @patch('eduvpn.actions.create_keypair')
     @patch('eduvpn.actions.get_config')
-    @patch('eduvpn.actions.save_connection')
+    @patch('eduvpn.actions.save_connection_with_mainloop')
     @patch('eduvpn.actions.get_client')
     def test_refresh(
             self,
@@ -67,7 +67,7 @@ class TestCli(TestCase):
     @patch('eduvpn.actions.check_certificate')
     @patch('eduvpn.actions.create_keypair')
     @patch('eduvpn.actions.get_config')
-    @patch('eduvpn.actions.save_connection')
+    @patch('eduvpn.actions.save_connection_with_mainloop')
     @patch('eduvpn.actions.get_client')
     def test_refresh_invalid_signature(
             self,
@@ -90,11 +90,12 @@ class TestCli(TestCase):
         refresh()
 
     @patch('eduvpn.actions.refresh')
-    @patch('eduvpn.actions.activate_connection')
+    @patch('eduvpn.actions.activate_connection_with_mainloop')
     @patch('eduvpn.actions.get_client')
     def test_activate(self, get_client, activate_connection, refresh):
         activate()
 
     @patch('eduvpn.actions.get_client')
-    def test_deactivate(self, get_client):
+    @patch('eduvpn.actions.deactivate_connection_with_mainloop')
+    def test_deactivate(self, get_client, deactivate_connection_with_mainloop):
         deactivate()

@@ -5,7 +5,8 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
 from eduvpn.menu import profile_choice
-from eduvpn.nm import activate_connection, deactivate_connection, get_cert_key, save_connection, get_client
+from eduvpn.nm import activate_connection_with_mainloop, get_cert_key, get_client,\
+    nm_available, connection_status, save_connection_with_mainloop, deactivate_connection_with_mainloop
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, check_certificate, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID
@@ -29,14 +30,18 @@ def refresh():
         _logger.warning(f"token invalid: {e}")
         oauth = get_oauth(token_endpoint, auth_endpoint)
 
-    client = get_client()
-    cert, key = get_cert_key(client, uuid)
     api_base_uri, token_endpoint, auth_endpoint = get_info(auth_url)
+    client = get_client()
+    try:
+        cert, key = get_cert_key(client, uuid)
+    except IOError:
+        # probably the NM connection was deleted
+        cert = None
 
-    if not check_certificate(oauth, api_base_uri, cert):
+    if not cert or not check_certificate(oauth, api_base_uri, cert):
         key, cert = create_keypair(oauth, api_base_uri)
         config = get_config(oauth, api_base_uri, profile_id)
-        save_connection(client, config, key, cert)
+        save_connection_with_mainloop(client, config, key, cert)
 
     update_token(token)
 
@@ -83,9 +88,6 @@ def get_profile(oauth: OAuth2Session, api_url: str, interactive: bool = False):
 
 
 def get_config_and_keycert(oauth: OAuth2Session, api_url: str, profile_id: str) -> Tuple[str, str, str]:
-    """
-
-    """
     config = get_config(oauth, api_url, profile_id)
     private_key, certificate = create_keypair(oauth, api_url)
     return config, private_key, certificate
@@ -97,6 +99,12 @@ def status():
     print("\n\n# Global configuration\n")
     print(f"uuid: {uuid}")
     print(f"auth_url: {current_auth_url}")
+
+    if nm_available():
+        active_uuid, status = connection_status(get_client())
+        print(f"VPN connection active: {bool(active_uuid)}")
+        print(f"VPN NM status is: {status}")
+        print(f"Active VPN connection is EduVPN: {bool(uuid == active_uuid)}")
 
     print("\n\n## Previous connection properties\n")
 
@@ -117,14 +125,12 @@ def activate():
     """
     Activates an existing configuration
     """
-    client = get_client()
     refresh()
-    activate_connection(client, get_uuid())
+    activate_connection_with_mainloop(get_uuid())
 
 
 def deactivate():
     """
     Deactivates an existing configuration
     """
-    client = get_client()
-    deactivate_connection(client, get_uuid())
+    deactivate_connection_with_mainloop(get_uuid())

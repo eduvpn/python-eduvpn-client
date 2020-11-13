@@ -185,7 +185,8 @@ def update_token(token: OAuth2Token):
     In case of a token refresh only the new token needs to be written to storage.
     """
     auth_url = get_auth_url()
+    logger.info(f"updating token for {auth_url}")
     metadatas = get_all_metadatas()
     if 'auth_url' in metadatas:
-        metadatas[auth_url]['token' ] = token
+        metadatas[auth_url]['token'] = token
         _write_metadatas(metadatas)

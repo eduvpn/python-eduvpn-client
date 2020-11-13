@@ -49,7 +49,8 @@ def enroll(auth_url, display_name, support_contact, secure_internets, interactiv
     _logger.info(f"using {api_url} as api_url")
     profile_id = actions.get_profile(oauth, api_url, interactive=interactive)
     config, private_key, certificate = actions.get_config_and_keycert(oauth, api_url, profile_id)
-    set_metadata(auth_url, oauth.token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id)
+    set_metadata(auth_url, oauth.token, token_endpoint, auth_endpoint, api_url, display_name, support_contact,
+                 profile_id)
     set_auth_url(auth_url)
     store_configuration(config, private_key, certificate, interactive=interactive)
 
@@ -100,12 +101,8 @@ def parse_eduvpn(args: List[str]):
 
 
 def letsconnect_start(args):
-    result = actions.fetch_token(args.url)
-    config, private_key, certificate, api_url, auth_url, profile_id = result
-    set_api_url(api_url)
-    set_auth_url(auth_url)
-    set_profile(profile_id)
-    store_configuration(config, private_key, certificate, interactive=True)
+    auth_url = args.url
+    enroll(auth_url, display_name=None, support_contact=None, secure_internets=None, interactive=False)
 
 
 def parse_letsconnect(args: List[str]):
