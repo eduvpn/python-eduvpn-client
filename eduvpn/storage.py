@@ -186,5 +186,6 @@ def update_token(token: OAuth2Token):
     """
     auth_url = get_auth_url()
     metadatas = get_all_metadatas()
-    metadatas[auth_url]['token'] = token
-    _write_metadatas(metadatas)
+    if 'auth_url' in metadatas:
+        metadatas[auth_url]['token' ] = token
+        _write_metadatas(metadatas)
