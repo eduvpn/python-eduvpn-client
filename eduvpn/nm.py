@@ -96,7 +96,7 @@ def update_connection_callback(remote_connection, result, callback=None):
     res = remote_connection.commit_changes_finish(result)
     _logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}, remote_con: {remote_connection}")
     if callback is not None:
-        callback()
+        callback(result)
 
 
 def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callback=None):
