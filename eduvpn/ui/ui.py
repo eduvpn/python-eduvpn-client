@@ -169,6 +169,11 @@ class EduVpnGui:
         """
         This method is called when a DBUS VPN state change event is received.
         """
+        if type(state_code) != NM.VpnConnectionState:
+            state_code = NM.VpnConnectionState(state_code)
+
+        if type(reason_code) != NM.VpnConnectionStateReason:
+            reason_code = NM.VpnConnectionStateReason(state_code)
 
         self.update_connection_state(state_code)
         logger.debug(f"nm_status_cb state: {state_code.value_name}, reason: {reason_code.value_name}")
@@ -833,6 +838,7 @@ def fetch_token_thread(gui: EduVpnGui) -> None:
             support_contact="TODO",
             profile_id="TODO",
         )
+
         GLib.idle_add(lambda: gui.token_available())
     except Exception as e:
         msg = f"Got exception {e} requesting {gui.data.vpn_connection.auth_url}"
