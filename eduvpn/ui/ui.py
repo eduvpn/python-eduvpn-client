@@ -132,7 +132,7 @@ class EduVpnGui:
         self.secure_internet_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
         self.other_servers_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
         self.profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)  # type: ignore
-        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf,
+        self.locations_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf,  # type: ignore
                                                   GObject.TYPE_INT)  # type: ignore
 
         self.connections: List[VpnConnection] = []
