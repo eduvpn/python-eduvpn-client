@@ -9,7 +9,7 @@ from eduvpn.menu import search, configure, interactive, match_term, fetch_server
 class TestMenu(TestCase):
     def test_menu(self):
         with mock.patch('builtins.input', lambda _: '0'):
-            menu(institutes=[{'display_name': 'test', 'base_url': 'no url'}], orgs=[], search_term="test")
+            menu(institutes=[{'display_name': 'test', 'base_url': 'no url', 'support_contact': 'rutte@gov.nl'}], orgs=[], search_term="test")
 
     def test_input_int(self):
         with mock.patch('builtins.input', lambda _: '1'):
@@ -21,9 +21,9 @@ class TestMenu(TestCase):
 
     def test_provider_choice(self):
         base_uri = 'bla'
-        institutes = [{'display_name': 'test', 'base_url': base_uri}]
+        institutes = [{'display_name': 'test', 'base_url': base_uri, 'support_contact': 'trump@whitehouse.gov'}]
         with mock.patch('builtins.input', lambda _: '0'):
-            url, secure_internet = provider_choice(institutes=institutes, orgs=[])
+            url, display_name, contact, secure_internet = provider_choice(institutes=institutes, orgs=[])
         self.assertEqual(secure_internet, False)
         self.assertEqual(base_uri, url)
 
@@ -32,7 +32,7 @@ class TestMenu(TestCase):
             write_to_nm_choice()
 
     @patch('eduvpn.menu.fetch_servers_orgs')
-    @patch('eduvpn.actions.start')
+    @patch('eduvpn.actions.fetch_token')
     def test_configure(self, _: MagicMock, fetch_servers_orgs_: MagicMock):
         fetch_servers_orgs_.return_value = [mock_server], [mock_org]
         configure(Namespace(match='bogus'))

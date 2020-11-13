@@ -3,7 +3,8 @@ from argparse import ArgumentParser, Namespace
 from sys import argv
 from typing import List
 from logging import getLogger
-
+from eduvpn.storage import set_auth_url, set_metadata
+from eduvpn.remote import get_info
 from eduvpn import actions
 from eduvpn import menu
 
@@ -19,12 +20,6 @@ def list_(args: Namespace):
 
 def search(args):
     menu.search(args)
-
-
-def configure(args):
-    url = menu.configure(args)
-    config, private_key, certificate = actions.start(url)
-    store_configuration(config, private_key, certificate, interactive=False)
 
 
 def refresh(_):
@@ -43,11 +38,33 @@ def status(_):
     actions.status()
 
 
+def enroll(auth_url, display_name, support_contact, secure_internets, interactive: bool):
+    api_url, oauth, token_endpoint, auth_endpoint = actions.fetch_token(auth_url)
+
+    if secure_internets and interactive:
+        choice = menu.secure_internet_choice(secure_internets)
+        if choice:
+            api_url, _, _ = get_info(choice)
+
+    _logger.info(f"using {api_url} as api_url")
+    profile_id = actions.get_profile(oauth, api_url, interactive=interactive)
+    config, private_key, certificate = actions.get_config_and_keycert(oauth, api_url, profile_id)
+    set_metadata(auth_url, oauth.token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id)
+    set_auth_url(auth_url)
+    store_configuration(config, private_key, certificate, interactive=interactive)
+
+
 def interactive(args):
-    auth_url, secure_internet = menu.interactive(args)
-    config, private_key, certificate = actions.start(auth_url=auth_url, secure_internet=secure_internet,
-                                                     interactive=True)
-    store_configuration(config, private_key, certificate, interactive=True)
+    auth_url, display_name, support_contact, secure_internets = menu.interactive(args)
+    enroll(auth_url, display_name, support_contact, secure_internets, interactive=True)
+
+
+def configure(args):
+    """
+    Configure in a non-interactive way based on supplied arguments
+    """
+    auth_url, display_name, support_contact, secure_internets = menu.configure(args)
+    enroll(auth_url, display_name, support_contact, secure_internets, interactive=False)
 
 
 def parse_eduvpn(args: List[str]):
@@ -83,7 +100,12 @@ def parse_eduvpn(args: List[str]):
 
 
 def letsconnect_start(args):
-    actions.start(args.url)
+    result = actions.fetch_token(args.url)
+    config, private_key, certificate, api_url, auth_url, profile_id = result
+    set_api_url(api_url)
+    set_auth_url(auth_url)
+    set_profile(profile_id)
+    store_configuration(config, private_key, certificate, interactive=True)
 
 
 def parse_letsconnect(args: List[str]):
