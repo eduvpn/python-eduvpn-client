@@ -22,14 +22,15 @@ except (ImportError, ValueError):
     NM = None
 
 
-@lru_cache
+@lru_cache()
 def get_client() -> 'NM.Client':
     """
     Create a new client object. We put this here so other modules don't need to import NM
     """
     return NM.Client.new(None)
 
-@lru_cache
+
+@lru_cache()
 def get_mainloop():
     """
     Create a new client object. We put this here so other modules don't need to import Glib
@@ -103,7 +104,8 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callba
     logger.info("Updating existing connection with new configuration")
 
     old_con.replace_settings_from_connection(new_con)
-    old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback, user_data=callback)
+    old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback,
+                                 user_data=callback)
 
 
 def save_connection(client: 'NM.Client', config, private_key, certificate, callback=None):
