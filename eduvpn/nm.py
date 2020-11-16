@@ -234,7 +234,7 @@ def action_with_mainloop(action: Callable):
     _logger.info("calling action with CLI mainloop")
     main_loop = get_mainloop()
 
-    def quit_loop():
+    def quit_loop(*args, **kwargs):
         _logger.info("Quiting main loop, thanks!")
         main_loop.quit()
 

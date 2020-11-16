@@ -41,7 +41,7 @@ def refresh():
     if not cert or not check_certificate(oauth, api_base_uri, cert):
         key, cert = create_keypair(oauth, api_base_uri)
         config = get_config(oauth, api_base_uri, profile_id)
-        save_connection_with_mainloop(client, config, key, cert)
+        save_connection_with_mainloop(config, key, cert)
 
     update_token(token)
 
