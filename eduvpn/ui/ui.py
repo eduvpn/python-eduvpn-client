@@ -491,7 +491,6 @@ class EduVpnGui:
                 elif connection.type == VpnConnection.ConnectionType.SECURE:
                     self.secure_internet_list_model.append([formatted, i])  # type: ignore
             if connection.type == VpnConnection.ConnectionType.OTHER:
-                print(f"{connection.server_name}")
                 self.other_servers_list_model.append([formatted, i])  # type: ignore
 
         self.find_your_institute_page.show()
