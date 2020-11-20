@@ -28,16 +28,15 @@ The eduVPN client has been tested with:
 Debian and Ubuntu
 -----------------
 
-You can install the latest release on Debian or Ubuntu using the eduVPN packaging repository by running these commands
-as root or using sudo:
+You can install the latest release on Debian or Ubuntu using the eduVPN packaging repository by running these commands:
 
 .. code-block:: bash
 
-    $ apt install apt-transport-https curl
-    $ curl -L https://repo.eduvpn.org/debian/eduvpn.key | apt-key add -
-    $ echo "deb https://repo.eduvpn.org/debian/ stretch main" > /etc/apt/sources.list.d/eduvpn.list
-    $ apt update
-    $ apt install eduvpn-client
+    $ sudo apt install apt-transport-https curl
+    $ curl -L https://repo.eduvpn.org/debian/eduvpn.key | sudo apt-key add -
+    $ echo "deb https://repo.eduvpn.org/debian/ stretch main" | sudo tee -a /etc/apt/sources.list.d/eduvpn.list
+    $ sudo apt update
+    $ sudo apt install eduvpn-client
 
 .. note::
 
