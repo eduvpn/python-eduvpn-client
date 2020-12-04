@@ -17,9 +17,10 @@ gi.require_version('NM', '1.0')
 from gi.repository import NM  # type: ignore
 from gi.repository import Gtk, GObject, GLib, GdkPixbuf
 from requests_oauthlib import OAuth2Session
+from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 
 from eduvpn.utils import get_prefix, thread_helper
-from eduvpn.storage import get_uuid
+from eduvpn.storage import get_uuid, get_all_metadatas
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.nm import get_client, save_connection, nm_available, activate_connection, deactivate_connection, \
     init_dbus_system_bus
@@ -27,7 +28,7 @@ from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
     LETS_CONNECT_ICON, SERVER_ILLUSTRATION
-from eduvpn.storage import set_metadata, get_current_metadata, set_auth_url, write_config
+from eduvpn.storage import set_metadata, get_current_metadata, set_auth_url, write_config, get_auth_url
 from eduvpn.ui.backend import BackendData
 from eduvpn.ui.vpn_connection import VpnConnection
 
@@ -39,6 +40,9 @@ builder_files: List[str] = ['mainwindow.ui']
 class EduVpnGui:
 
     def __init__(self, lets_connect: bool) -> None:
+        """
+        Initialize all data structures needed in the GUI
+        """
         self.lets_connect: bool = lets_connect
 
         self.prefix: str = get_prefix()
@@ -161,14 +165,32 @@ class EduVpnGui:
                 self.add_other_server_row.hide()
 
     def read_connections(self):
+        """
+        Read all vpn connections from storage
+        """
         logger.debug("read_connections")
-        self.connections = VpnConnection.read_all()
+        self.connections = []
+        for auth_url, props in get_all_metadatas().items():
+            vpn_connection = VpnConnection()
+            vpn_connection.auth_url = auth_url
+            vpn_connection.api_url = props['api_url']
+            vpn_connection.server_name = props['display_name']
+            vpn_connection.support_contact = [props['support_contact']]
+            vpn_connection.profile_id = props['profile_id']
+            vpn_connection.token_endpoint = props['token_endpoint']
+            vpn_connection.authorization_endpoint = props['authorization_endpoint']
+            vpn_connection.token = OAuth2Token(props['token'])
+            vpn_connection.type = props['con_type']
+            vpn_connection.server_image = props['country_id']
+            self.connections.append(vpn_connection)
 
     def nm_status_cb(self,
                      state_code: NM.VpnConnectionState = NM.VpnConnectionState.UNKNOWN,
                      reason_code: NM.VpnConnectionStateReason = NM.VpnConnectionStateReason.UNKNOWN):
         """
         This method is called when a DBUS VPN state change event is received.
+
+        Handles auto connect when that is enabled.
         """
         if type(state_code) != NM.VpnConnectionState:
             state_code = NM.VpnConnectionState(state_code)
@@ -191,14 +213,26 @@ class EduVpnGui:
                 self.show_connection(False)
                 self.show_back_button()
                 self.data.uuid = get_uuid()
-                self.data.vpn_connection.write()
                 self.read_connections()
 
     def run(self) -> None:
+        """
+        Shows the main window and if there is already an active vpn connection shows the connection screen,
+        otherwise the screen to select a previous connection or the initial screen when no previous selection was made.
+        """
         self.window.show()
         try:
             self.data
             if self.data.connection_state == NM.VpnConnectionState.ACTIVATED:
+                vc = self.data.vpn_connection
+                auth_url = get_auth_url()
+                if auth_url:
+                    exists = get_current_metadata(auth_url)
+                    if exists:
+                        vc.auth_url = auth_url
+                        vc.token, vc.token_endpoint, vc.authorization_endpoint, vc.api_url, vc.server_name, \
+                            support_contact, vc.profile_id, vc.type, vc.server_image = exists
+                        vc.support_contact = [support_contact]
                 self.act_on_switch = True
                 self.show_connection(False)
                 self.show_back_button()
@@ -210,14 +244,23 @@ class EduVpnGui:
             self.show_fatal(f"Got exception {e} can't reach the server, please quit")
 
     def on_settings_button_released(self, widget, event) -> None:
+        """
+        The settings button has been pressed, shows the settings screen.
+        """
         logger.debug("on_settings_button_released")
         self.show_settings()
 
     def on_help_button_released(self, widget, event) -> None:
+        """
+        The help button has been pressed, open the web browser with information.
+        """
         logger.debug("on_help_button_released")
         webbrowser.open(HELP_URL)
 
     def on_back_button_released(self, widget, event) -> None:
+        """
+        The back button has been pressed, act accordingly.
+        """
         logger.debug("on_back_button_released")
         if self.connections_available():
             self.show_connections()
@@ -225,6 +268,9 @@ class EduVpnGui:
             self.show_find_your_institute()
 
     def on_add_other_server_button_clicked(self, button) -> None:
+        """
+        The add server button has been clicked, handle this differently for eduVPN and Let's Connect.
+        """
         logger.debug("on_add_other_server_button_clicked")
         if self.lets_connect and len(self.find_your_institute_search.get_text()) > 0:
             logger.debug("on_add_other_server_button_clicked 1")
@@ -484,7 +530,7 @@ class EduVpnGui:
         self.other_servers_list_model.clear()  # type: ignore
 
         for i, connection in enumerate(self.connections):
-            formatted = f"{connection.server_name} {connection.profile_name}"
+            formatted = f"{connection.server_name} {connection.profile_id}"
             if not self.lets_connect:
                 if connection.type == VpnConnection.ConnectionType.INSTITUTE:
                     self.institute_list_model.append([formatted, i])  # type: ignore
@@ -592,6 +638,9 @@ class EduVpnGui:
             self.show_settings()
 
     def show_open_browser(self) -> None:
+        """
+        Show the open browser screen
+        """
         logger.debug("show_open_browser")
         self.find_your_institute_page.hide()
         self.settings_page.hide()
@@ -711,11 +760,11 @@ class EduVpnGui:
         if tree_iter is not None:
             display_name = model[tree_iter][0]
             i = model[tree_iter][1]
-            self.data.vpn_connection.profile_name = display_name
+            # self.data.vpn_connection.profile_name = display_name
             selection.disconnect_by_func(self.on_profile_selection_changed)
-            profile_id = str(self.data.profiles[i]['profile_id'])
-            logger.debug(f"on_profile_selection_changed: {display_name} {profile_id}")
-            self.finalize_configuration(profile_id)
+            self.data.vpn_connection.profile_id = str(self.data.profiles[i]['profile_id'])
+            logger.debug(f"on_profile_selection_changed: {display_name} {self.data.vpn_connection.profile_id}")
+            self.finalize_configuration(self.data.vpn_connection.profile_id)
         selection.unselect_all()
 
     def show_search_lists(self) -> None:
@@ -786,7 +835,7 @@ class EduVpnGui:
 
         if exists:
             token, self.data.vpn_connection.token_endpoint, self.data.vpn_connection.authorization_endpoint, api_url, \
-                display_name, support_contact, profile_id = exists
+                display_name, support_contact, self.data.vpn_connection.profile_id, self.data.vpn_connection.type, self.data.vpn_connection.server_image = exists
             thread_helper(lambda: restoring_token_thread(token, self.data.vpn_connection.token_endpoint, self))
         else:
             self.show_open_browser()
@@ -815,6 +864,23 @@ class EduVpnGui:
         GLib.idle_add(lambda: self.show_connection())
 
     def configuration_finalized(self, config, private_key, certificate) -> None:
+        if self.data.new_support_contact:
+            support_contact = self.data.new_support_contact[0]
+        else:
+            support_contact = ""
+
+        set_metadata(
+            auth_url=self.data.vpn_connection.auth_url,
+            token=self.data.oauth.token,
+            token_endpoint=self.data.vpn_connection.token_endpoint,
+            authorization_endpoint=self.data.vpn_connection.authorization_endpoint,
+            api_url=self.data.vpn_connection.api_url,
+            display_name=self.data.new_server_name,
+            support_contact=support_contact,  # TODO List of strings?
+            profile_id=self.data.vpn_connection.profile_id,
+            con_type=self.data.vpn_connection.type,
+            country_id=self.data.vpn_connection.server_image  # TODO Needs to change in only country code
+        )
         if nm_available():
             logger.info("nm available:")
             save_connection(self.client, config, private_key, certificate, self.configuration_finalized_cb)
@@ -858,20 +924,9 @@ class EduVpnGui:
 def fetch_token_thread(gui: EduVpnGui) -> None:
     logger.debug("fetching token")
     try:
-        gui.data.vpn_connection.api_url, gui.data.vpn_connection.token_endpoint, auth_endpoint = get_info(
+        gui.data.vpn_connection.api_url, gui.data.vpn_connection.token_endpoint, gui.data.vpn_connection.authorization_endpoint = get_info(
             gui.data.vpn_connection.auth_url)
-        gui.data.oauth = get_oauth(gui.data.vpn_connection.token_endpoint, auth_endpoint)
-        set_metadata(
-            auth_url=gui.data.vpn_connection.auth_url,
-            token=gui.data.oauth.token,
-            token_endpoint=gui.data.vpn_connection.token_endpoint,
-            authorization_endpoint=auth_endpoint,
-            api_url=gui.data.vpn_connection.api_url,
-            display_name="TODO",
-            support_contact="TODO",
-            profile_id="TODO",
-        )
-
+        gui.data.oauth = get_oauth(gui.data.vpn_connection.token_endpoint, gui.data.vpn_connection.authorization_endpoint)
         GLib.idle_add(lambda: gui.token_available())
     except Exception as e:
         msg = f"Got exception {e} requesting {gui.data.vpn_connection.auth_url}"
@@ -896,14 +951,15 @@ def handle_location_thread(base_url: str, gui: EduVpnGui) -> None:
 def handle_profiles_thread(gui: EduVpnGui) -> None:
     gui.data.oauth.refresh_token(token_url=gui.data.vpn_connection.token_endpoint)
     gui.data.profiles = list_profiles(gui.data.oauth, gui.data.vpn_connection.api_url)
+    print(gui.data.profiles)
     if len(gui.data.profiles) > 1:
         gui.profiles_list_model.clear()  # type: ignore
         for i, profile in enumerate(gui.data.profiles):
             gui.profiles_list_model.append([profile['display_name'], i])  # type: ignore
         GLib.idle_add(lambda: gui.show_choose_profile())
     else:
-        profile_id = str(gui.data.profiles[0]['profile_id'])
-        GLib.idle_add(lambda: gui.finalize_configuration(profile_id))
+        gui.data.vpn_connection.profile_id = str(gui.data.profiles[0]['profile_id'])
+        GLib.idle_add(lambda: gui.finalize_configuration(gui.data.vpn_connection.profile_id))
 
 
 def handle_secure_internet_thread(gui: EduVpnGui) -> None:
@@ -928,5 +984,4 @@ def finalize_configuration_thread(profile_id: str, gui: EduVpnGui) -> None:
     private_key, certificate = create_keypair(gui.data.oauth, gui.data.vpn_connection.api_url)
 
     set_auth_url(gui.data.vpn_connection.auth_url)
-    # set_profile(profile_id) TODO ASCHWIN
     GLib.idle_add(lambda: gui.configuration_finalized(config, private_key, certificate))

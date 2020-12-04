@@ -2,6 +2,7 @@
 This module contains code to maintain a simple metadata storage in ~/.config/eduvpn/
 """
 from typing import Optional, Tuple
+from enum import Enum
 from os import PathLike
 import json
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
@@ -11,6 +12,12 @@ from eduvpn.utils import get_logger
 logger = get_logger(__name__)
 
 _metadata_path = CONFIG_PREFIX / "metadata.json"
+
+
+class ConnectionType(str, Enum):
+    INSTITUTE = "INSTITUTE",
+    SECURE = "SECURE",
+    OTHER = "OTHER"
 
 
 def get_all_metadatas() -> dict:
@@ -53,7 +60,7 @@ def _set_setting(what: str, value: str):
         f.write(value)
 
 
-Metadata = Tuple[OAuth2Token, str, str, str, str, str, str]
+Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str]
 
 
 def get_current_metadata(auth_url: str) -> Optional[Metadata]:
@@ -71,6 +78,8 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
             v['display_name'],
             v['support_contact'],
             v['profile_id'],
+            v['con_type'],
+            v['country_id']
         )
     else:
         return None
@@ -85,6 +94,9 @@ def set_metadata(
         display_name: str,
         support_contact: str,
         profile_id: str,
+        con_type: str,
+        country_id: str
+
 ) -> None:
     """
     Set a configuration profile in storage
@@ -99,7 +111,8 @@ def set_metadata(
         'display_name': display_name,
         'support_contact': support_contact,
         'profile_id': profile_id,
-
+        'con_type': con_type,
+        'country_id': country_id
     }
     _write_metadatas(storage)
 

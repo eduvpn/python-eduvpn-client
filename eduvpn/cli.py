@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from sys import argv
 from typing import List
 from logging import getLogger
-from eduvpn.storage import set_auth_url, set_metadata
+from eduvpn.storage import set_auth_url, set_metadata, ConnectionType
 from eduvpn.remote import get_info
 from eduvpn import actions
 from eduvpn import menu
@@ -50,7 +50,7 @@ def enroll(auth_url, display_name, support_contact, secure_internets, interactiv
     profile_id = actions.get_profile(oauth, api_url, interactive=interactive)
     config, private_key, certificate = actions.get_config_and_keycert(oauth, api_url, profile_id)
     set_metadata(auth_url, oauth.token, token_endpoint, auth_endpoint, api_url, display_name, support_contact,
-                 profile_id)
+                 profile_id, ConnectionType.OTHER, "")   # TODO con_type, country_id
     set_auth_url(auth_url)
     store_configuration(config, private_key, certificate, interactive=interactive)
 
