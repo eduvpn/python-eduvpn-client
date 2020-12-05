@@ -99,7 +99,7 @@ def write_to_nm_choice() -> bool:
     return bool(input_int(max_=2))
 
 
-def secure_internet_choice(secure_internets: List[dict]) -> Optional[str]:
+def secure_internet_choice(secure_internets: List[dict]) -> Optional[Tuple[str, str]]:
     print("Do you want to select a secure internet location? If not we use the default.")
     while True:
         choice = input("\n[N/y] > ").strip().lower()
@@ -110,7 +110,9 @@ def secure_internet_choice(secure_internets: List[dict]) -> Optional[str]:
             for i, profile in enumerate(secure_internets):
                 print(f" * [{i}] {extract_translation(profile['country_code'])}")
             choice = input_int(max_=len(secure_internets))
-            return secure_internets[int(choice)]['base_url']
+            base_url = secure_internets[int(choice)]['base_url']
+            country_code = secure_internets[int(choice)]['country_code']
+            return base_url, country_code
         else:
             print("error: invalid choice, please enter y, n or just leave empty")
 

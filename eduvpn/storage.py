@@ -1,7 +1,7 @@
 """
 This module contains code to maintain a simple metadata storage in ~/.config/eduvpn/
 """
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from enum import Enum
 from os import PathLike
 import json
@@ -56,6 +56,7 @@ def _get_setting(what: str) -> Optional[str]:
 
 def _set_setting(what: str, value: str):
     p = (CONFIG_PREFIX / what).expanduser()
+    p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, 'w') as f:
         f.write(value)
 
@@ -92,11 +93,10 @@ def set_metadata(
         authorization_endpoint: str,
         api_url: str,
         display_name: str,
-        support_contact: str,
+        support_contact: List[str],
         profile_id: str,
         con_type: str,
-        country_id: str
-
+        country_id: Optional[str]
 ) -> None:
     """
     Set a configuration profile in storage

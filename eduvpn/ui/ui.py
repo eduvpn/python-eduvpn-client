@@ -175,7 +175,7 @@ class EduVpnGui:
             vpn_connection.auth_url = auth_url
             vpn_connection.api_url = props['api_url']
             vpn_connection.server_name = props['display_name']
-            vpn_connection.support_contact = [props['support_contact']]
+            vpn_connection.support_contact = props['support_contact']
             vpn_connection.profile_id = props['profile_id']
             vpn_connection.token_endpoint = props['token_endpoint']
             vpn_connection.authorization_endpoint = props['authorization_endpoint']
@@ -232,7 +232,6 @@ class EduVpnGui:
                         vc.auth_url = auth_url
                         vc.token, vc.token_endpoint, vc.authorization_endpoint, vc.api_url, vc.server_name, \
                             support_contact, vc.profile_id, vc.type, vc.server_image = exists
-                        vc.support_contact = [support_contact]
                 self.act_on_switch = True
                 self.show_connection(False)
                 self.show_back_button()
@@ -349,8 +348,11 @@ class EduVpnGui:
         self.data.vpn_connection.type = VpnConnection.ConnectionType.INSTITUTE
         self.disconnect_selection_handlers()
         base_url = str(self.data.institute_access[index]['base_url'])
-        if 'support_contact' in self.data.institute_access[index]:
-            self.data.new_support_contact = self.data.institute_access[index]['support_contact']
+
+        self.data.new_support_contact = self.data.institute_access[index].get('support_contact', None)
+        if not self.data.new_support_contact:
+            self.data.new_support_contact = []
+
         logger.debug(f"handle_add_institute: {self.data.vpn_connection.server_name} {base_url}")
         self.show_empty()
         self.setup_connection(base_url, [], False)
@@ -678,7 +680,7 @@ class EduVpnGui:
 
         support = ""
         if len(self.data.vpn_connection.support_contact) > 0:
-            support = "Support: " + self.data.vpn_connection.support_contact[0]
+            support = "Support: " + ", ".join(self.data.vpn_connection.support_contact)
         self.support_label.set_text(support)
         if start_connection:
             self.show_back_button()
@@ -864,10 +866,6 @@ class EduVpnGui:
         GLib.idle_add(lambda: self.show_connection())
 
     def configuration_finalized(self, config, private_key, certificate) -> None:
-        if self.data.new_support_contact:
-            support_contact = self.data.new_support_contact[0]
-        else:
-            support_contact = ""
 
         set_metadata(
             auth_url=self.data.vpn_connection.auth_url,
@@ -876,7 +874,7 @@ class EduVpnGui:
             authorization_endpoint=self.data.vpn_connection.authorization_endpoint,
             api_url=self.data.vpn_connection.api_url,
             display_name=self.data.new_server_name,
-            support_contact=support_contact,  # TODO List of strings?
+            support_contact=self.data.new_support_contact,
             profile_id=self.data.vpn_connection.profile_id,
             con_type=self.data.vpn_connection.type,
             country_id=self.data.vpn_connection.server_image  # TODO Needs to change in only country code

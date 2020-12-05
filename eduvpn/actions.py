@@ -21,7 +21,7 @@ def refresh():
     is invalid.
     """
     uuid, auth_url, metadata = get_storage(check=True)
-    token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id = metadata
+    token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id, con_type, country_id = metadata
     oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
 
     try:
@@ -62,7 +62,7 @@ def fetch_token(auth_url: str) -> Tuple[str, OAuth2Session, str, str]:
 
     if exists:
         _logger.info("token exists, restoring")
-        token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id, con_type, country_id = exists  # TODO con_type, country_id
+        token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id, con_type, country_id = exists
         oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
         api_url, token_endpoint, auth_endpoint = get_info(auth_url)
     else:
@@ -113,7 +113,7 @@ def status():
             print(" ** CURRENT ACTIVE CONFIGURATION **")
         print(f"auth_url {auth_url}")
         for t in ['api_url', 'display_name', 'support_contact', 'profile_id',
-                  'token_endpoint', 'authorization_endpoint']:
+                  'token_endpoint', 'authorization_endpoint', 'con_type', 'country_id']:
             print(f"{t}: {props[t]}")
         print(f"token.token_type: {props['token']['token_type']}")
         print(f"token.expires_in: {props['token']['expires_in']}")

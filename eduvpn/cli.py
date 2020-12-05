@@ -41,16 +41,23 @@ def status(_):
 def enroll(auth_url, display_name, support_contact, secure_internets, interactive: bool):
     api_url, oauth, token_endpoint, auth_endpoint = actions.fetch_token(auth_url)
 
+    country_code = None
     if secure_internets and interactive:
         choice = menu.secure_internet_choice(secure_internets)
         if choice:
-            api_url, _, _ = get_info(choice)
+            base_url, country_code = choice
+            api_url, _, _ = get_info(base_url)
+
+    if secure_internets:
+        con_type = ConnectionType.SECURE
+    else:
+        con_type = ConnectionType.INSTITUTE
 
     _logger.info(f"using {api_url} as api_url")
     profile_id = actions.get_profile(oauth, api_url, interactive=interactive)
     config, private_key, certificate = actions.get_config_and_keycert(oauth, api_url, profile_id)
     set_metadata(auth_url, oauth.token, token_endpoint, auth_endpoint, api_url, display_name, support_contact,
-                 profile_id, ConnectionType.OTHER, "")   # TODO con_type, country_id
+                 profile_id, con_type, country_code)
     set_auth_url(auth_url)
     store_configuration(config, private_key, certificate, interactive=interactive)
 
