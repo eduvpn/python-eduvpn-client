@@ -34,8 +34,6 @@ class BackendData:
         self.locations: list = []
         self.secure_internet_home: str = ""
         self.oauth: OAuth2Session
-        self.new_server_name: str = ""
-        self.new_server_image = None
-        self.new_support_contact: List[str] = []
         self.connection_state = NM.VpnConnectionState.UNKNOWN
         self.vpn_connection: VpnConnection = VpnConnection()
+        self.new_vpn_connection: VpnConnection = VpnConnection()
