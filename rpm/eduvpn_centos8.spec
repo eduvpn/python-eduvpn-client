@@ -48,6 +48,7 @@ eduVPN client API for Python3
 Summary: %[sum}
 Requires: gtk3
 Requires: libnotify
+Requires: NetworkManager-openvpn
 Requires:  python3-eduvpn-client
 Conflicts: lets-connect-client
 
