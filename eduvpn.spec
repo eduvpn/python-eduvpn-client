@@ -35,6 +35,7 @@ Requires: python3-pynacl
 Requires: python3-requests-oauthlib
 Requires: python3-dateutil
 Requires: python3-cryptography
+Requires: NetworkManager-openvpn
 Conflicts: python3-letsconnect-client
 
 %description -n python3-eduvpn-client
