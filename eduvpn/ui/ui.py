@@ -938,9 +938,8 @@ class EduVpnGui:
 def fetch_token_thread(gui: EduVpnGui) -> None:
     logger.debug("fetching token")
     try:
-        gui.data.new_vpn_connection.api_url, gui.data.new_vpn_connection.token_endpoint, gui.data.new_vpn_connection.authorization_endpoint = get_info(
-            gui.data.new_vpn_connection.auth_url)
-        gui.data.oauth = get_oauth(gui.data.new_vpn_connection.token_endpoint, gui.data.new_vpn_connection.authorization_endpoint)
+        gui.data.new_vpn_connection.api_url, gui.data.oauth, gui.data.new_vpn_connection.token_endpoint, \
+            gui.data.new_vpn_connection.authorization_endpoint = actions.fetch_token(gui.data.new_vpn_connection.auth_url)
         GLib.idle_add(lambda: gui.token_available())
     except Exception as e:
         msg = f"Got exception {e} requesting {gui.data.new_vpn_connection.auth_url}"
@@ -963,20 +962,29 @@ def handle_location_thread(base_url: str, gui: EduVpnGui) -> None:
 
 
 def handle_profiles_thread(gui: EduVpnGui) -> None:
+    logger.debug("handle_profiles_thread")
     gui.data.oauth.refresh_token(token_url=gui.data.new_vpn_connection.token_endpoint)
     gui.data.profiles = list_profiles(gui.data.oauth, gui.data.new_vpn_connection.api_url)
-    print(gui.data.profiles)
+    if gui.select_existing_connection:
+        # if we already have a profile and it still exists use that one
+        for profile in gui.data.profiles:
+            if gui.data.new_vpn_connection.profile_id == profile['profile_id']:
+                GLib.idle_add(lambda: gui.finalize_configuration(gui.data.new_vpn_connection.profile_id))
+                return
     if len(gui.data.profiles) > 1:
+        # if there are profiles to choose from ask the user
         gui.profiles_list_model.clear()  # type: ignore
         for i, profile in enumerate(gui.data.profiles):
             gui.profiles_list_model.append([profile['display_name'], i])  # type: ignore
         GLib.idle_add(lambda: gui.show_choose_profile())
     else:
+        # there is only one profile, use that
         gui.data.new_vpn_connection.profile_id = str(gui.data.profiles[0]['profile_id'])
         GLib.idle_add(lambda: gui.finalize_configuration(gui.data.new_vpn_connection.profile_id))
 
 
 def handle_secure_internet_thread(gui: EduVpnGui) -> None:
+    logger.debug("handle_secure_internet_thread")
     if len(gui.data.secure_internet) > 1:
         gui.locations_list_model.clear()  # type: ignore
         for i, location in enumerate(gui.data.locations):
