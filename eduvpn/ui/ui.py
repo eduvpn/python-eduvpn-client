@@ -26,11 +26,12 @@ from eduvpn.nm import get_client, save_connection, nm_available, activate_connec
     init_dbus_system_bus
 from eduvpn.oauth2 import get_oauth
 from eduvpn.remote import get_info, create_keypair, get_config, list_profiles
-from eduvpn.settings import CLIENT_ID, FLAG_PREFIX, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
+from eduvpn.settings import CLIENT_ID, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO, LETS_CONNECT_NAME, \
     LETS_CONNECT_ICON, SERVER_ILLUSTRATION
 from eduvpn.storage import set_metadata, get_current_metadata, set_auth_url, write_config, get_auth_url
 from eduvpn.ui.backend import BackendData
 from eduvpn.ui.vpn_connection import VpnConnection
+from eduvpn.ui.utils import get_flag_image_file
 from eduvpn import actions
 
 logger = getLogger(__name__)
@@ -182,7 +183,7 @@ class EduVpnGui:
             vpn_connection.authorization_endpoint = props['authorization_endpoint']
             vpn_connection.token = OAuth2Token(props['token'])
             vpn_connection.type = props['con_type']
-            vpn_connection.server_image = props['country_id']
+            vpn_connection.country_id = props['country_id']
             self.connections.append(vpn_connection)
 
     def nm_status_cb(self,
@@ -231,7 +232,7 @@ class EduVpnGui:
                     if exists:
                         vc.auth_url = auth_url
                         vc.token, vc.token_endpoint, vc.authorization_endpoint, vc.api_url, vc.server_name, \
-                            support_contact, vc.profile_id, vc.type, vc.server_image = exists
+                            support_contact, vc.profile_id, vc.type, vc.country_code = exists
                 self.act_on_switch = True
                 self.show_connection(False)
                 self.show_back_button()
@@ -674,8 +675,9 @@ class EduVpnGui:
         self.connection_info_bottom_row.hide()
         self.server_image.hide()
         self.server_label.set_text(self.data.vpn_connection.server_name)
-        if self.data.vpn_connection.server_image is not None:
-            self.server_image.set_from_file(self.data.vpn_connection.server_image)
+        flag_image_file = get_flag_image_file(self.data.vpn_connection.country_code)
+        if flag_image_file:
+            self.server_image.set_from_file(flag_image_file)
             self.server_image.show()
         else:
             self.server_image.hide()
@@ -823,14 +825,18 @@ class EduVpnGui:
             selection.disconnect_by_func(self.on_location_selection_changed)
             logger.debug(self.data.locations[i])
             base_url = str(self.data.locations[i]['base_url'])
-            country_code = self.data.locations[i]['country_code']
-            self.data.new_vpn_connection.server_image = FLAG_PREFIX + country_code + "@1,5x.png"
+            self.data.new_vpn_connection.country_code = self.data.locations[i]['country_code']
             if 'support_contact' in self.data.locations[i]:
                 self.data.new_vpn_connection.support_contact = self.data.locations[i]['support_contact']
             logger.debug(f"on_location_selection_changed: {display_name} {base_url}")
             self.show_empty()
             thread_helper(lambda: handle_location_thread(base_url, self))
         selection.unselect_all()
+
+
+    def location_selected(self, base_url):
+        self.show_empty()
+        thread_helper(lambda: handle_location_thread(base_url, self))
 
     def setup_connection(self, auth_url, secure_internet: list = [], interactive: bool = False) -> None:
         logger.debug(f"setup_connection auth_url:{auth_url} secure_internet:{secure_internet} interactive:{interactive}")
@@ -843,7 +849,7 @@ class EduVpnGui:
 
         if exists:
             token, self.data.new_vpn_connection.token_endpoint, self.data.new_vpn_connection.authorization_endpoint, api_url, \
-                display_name, support_contact, self.data.new_vpn_connection.profile_id, self.data.new_vpn_connection.type, self.data.new_vpn_connection.server_image = exists
+                display_name, support_contact, self.data.new_vpn_connection.profile_id, self.data.new_vpn_connection.type, self.data.new_vpn_connection.country_code = exists
             thread_helper(lambda: restoring_token_thread(token, self.data.new_vpn_connection.token_endpoint, self))
         else:
             self.show_open_browser()
@@ -885,7 +891,7 @@ class EduVpnGui:
             support_contact=self.data.new_vpn_connection.support_contact,
             profile_id=self.data.new_vpn_connection.profile_id,
             con_type=self.data.new_vpn_connection.type,
-            country_id=self.data.new_vpn_connection.server_image  # TODO Needs to change in only country code
+            country_id=self.data.new_vpn_connection.country_code
         )
         if nm_available():
             logger.info("nm available:")
@@ -908,7 +914,6 @@ class EduVpnGui:
         self.back_button_event_box.set_sensitive(enabled)
 
     def connect_selection_handlers(self):
-        logger.debug(f"connect_selection_handlers: >{self.selection_handlers_connected}")
         if not self.selection_handlers_connected:
             select = self.institute_tree_view.get_selection()
             select.unselect_all()
@@ -920,10 +925,8 @@ class EduVpnGui:
             select.unselect_all()
             select.connect("changed", self.on_other_server_selection_changed)
             self.selection_handlers_connected = True
-        logger.debug(f"connect_selection_handlers: <{self.selection_handlers_connected}")
 
     def disconnect_selection_handlers(self):
-        logger.debug(f"disconnect_selection_handlers: >{self.selection_handlers_connected}")
         if self.selection_handlers_connected:
             select = self.institute_tree_view.get_selection()
             select.disconnect_by_func(self.on_institute_selection_changed)
@@ -932,7 +935,6 @@ class EduVpnGui:
             select = self.other_servers_tree_view.get_selection()
             select.disconnect_by_func(self.on_other_server_selection_changed)
             self.selection_handlers_connected = False
-        logger.debug(f"disconnect_selection_handlers: <{self.selection_handlers_connected}")
 
 
 def fetch_token_thread(gui: EduVpnGui) -> None:
@@ -985,12 +987,19 @@ def handle_profiles_thread(gui: EduVpnGui) -> None:
 
 def handle_secure_internet_thread(gui: EduVpnGui) -> None:
     logger.debug("handle_secure_internet_thread")
+    if gui.select_existing_connection:
+        # if we already have a country code and it still exists use that one
+        for location in gui.data.locations:
+            if gui.data.new_vpn_connection.country_code == location['country_code']:
+                base_url = str(location['base_url'])
+                GLib.idle_add(lambda: gui.location_selected(base_url))
+                return
     if len(gui.data.secure_internet) > 1:
         gui.locations_list_model.clear()  # type: ignore
         for i, location in enumerate(gui.data.locations):
-            flag_location = FLAG_PREFIX + location['country_code'] + "@1,5x.png"
-            if os.path.exists(flag_location):
-                flag_image = GdkPixbuf.Pixbuf.new_from_file(flag_location)  # type: ignore
+            flag_image_file = get_flag_image_file(location['country_code'])
+            if flag_image_file:
+                flag_image = GdkPixbuf.Pixbuf.new_from_file(flag_image_file)  # type: ignore
                 country_name = retrieve_country_name(location['country_code'])
                 gui.locations_list_model.append([country_name, flag_image, i])  # type: ignore
 
