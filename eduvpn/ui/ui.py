@@ -833,7 +833,6 @@ class EduVpnGui:
             thread_helper(lambda: handle_location_thread(base_url, self))
         selection.unselect_all()
 
-
     def location_selected(self, base_url):
         self.show_empty()
         thread_helper(lambda: handle_location_thread(base_url, self))
