@@ -937,7 +937,10 @@ class EduVpnGui:
 
     def handle_error(self, msg: str):
         error_helper(self.window, msg, msg)
-        self.show_find_your_institute(clear_text=True)
+        if self.connections_available():
+            self.show_connections()
+        else:
+            self.show_find_your_institute()
 
 
 def fetch_token_thread(gui: EduVpnGui) -> None:
@@ -954,10 +957,15 @@ def fetch_token_thread(gui: EduVpnGui) -> None:
 
 def restoring_token_thread(token, token_endpoint, gui: EduVpnGui) -> None:
     logger.debug("token exists, restoring")
-    gui.data.oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
-    gui.data.oauth.refresh_token(token_url=gui.data.new_vpn_connection.token_endpoint)
-    gui.data.new_vpn_connection.api_url, _, _ = get_info(gui.data.new_vpn_connection.auth_url)
-    GLib.idle_add(lambda: gui.token_available())
+    try:
+        gui.data.oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
+        gui.data.oauth.refresh_token(token_url=gui.data.new_vpn_connection.token_endpoint)
+        gui.data.new_vpn_connection.api_url, _, _ = get_info(gui.data.new_vpn_connection.auth_url)
+        GLib.idle_add(lambda: gui.token_available())
+    except Exception as e:
+        msg = f"Got exception {e} requesting {gui.data.new_vpn_connection.auth_url}"
+        logger.debug(msg)
+        GLib.idle_add(lambda: gui.handle_error(msg))
 
 
 def handle_location_thread(base_url: str, gui: EduVpnGui) -> None:
