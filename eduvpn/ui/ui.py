@@ -31,7 +31,7 @@ from eduvpn.settings import CLIENT_ID, IMAGE_PREFIX, HELP_URL, LETS_CONNECT_LOGO
 from eduvpn.storage import set_metadata, get_current_metadata, set_auth_url, write_config, get_auth_url
 from eduvpn.ui.backend import BackendData
 from eduvpn.ui.vpn_connection import VpnConnection
-from eduvpn.ui.utils import get_flag_image_file
+from eduvpn.ui.utils import get_flag_image_file, error_helper
 from eduvpn import actions
 
 logger = getLogger(__name__)
@@ -935,6 +935,10 @@ class EduVpnGui:
             select.disconnect_by_func(self.on_other_server_selection_changed)
             self.selection_handlers_connected = False
 
+    def handle_error(self, msg: str):
+        error_helper(self.window, msg, msg)
+        self.show_find_your_institute(clear_text=True)
+
 
 def fetch_token_thread(gui: EduVpnGui) -> None:
     logger.debug("fetching token")
@@ -945,7 +949,7 @@ def fetch_token_thread(gui: EduVpnGui) -> None:
     except Exception as e:
         msg = f"Got exception {e} requesting {gui.data.new_vpn_connection.auth_url}"
         logger.debug(msg)
-        GLib.idle_add(lambda: gui.show_find_your_institute(clear_text=False))
+        GLib.idle_add(lambda: gui.handle_error(msg))
 
 
 def restoring_token_thread(token, token_endpoint, gui: EduVpnGui) -> None:
