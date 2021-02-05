@@ -19,7 +19,7 @@ class VpnConnection:
         self.token_endpoint: str = ""
         self.authorization_endpoint: str = ""
         self.server_name: str = ""
-        self.country_code: str = ""
+        self.server_image = None
         self.profile_id: str = ""
         self.support_contact: List[str] = []
         self.token: OAuth2Token
