@@ -1,5 +1,5 @@
 import threading
-from functools import lru_cache
+from functools import lru_cache, partial, wraps
 from logging import getLogger
 from os import path
 from sys import prefix
@@ -41,3 +41,28 @@ def thread_helper(func: Callable) -> threading.Thread:
     thread.daemon = True
     thread.start()
     return thread
+
+def run_in_background_thread(func):
+    """
+    Decorator for functions that must always run
+    in a background thread.
+    """
+
+    @wraps(func)
+    def background_func(*args, **kwargs):
+        thread_helper(partial(func, *args, **kwargs))
+
+    return background_func
+
+def run_in_main_gtk_thread(func):
+    """
+    Decorator for functions that must always run
+    in the main GTK thread.
+    """
+    from gi.repository import GLib
+
+    @wraps(func)
+    def main_gtk_thread_func(*args, **kwargs):
+        GLib.idle_add(partial(func, *args, **kwargs))
+
+    return main_gtk_thread_func
