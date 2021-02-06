@@ -9,7 +9,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from eduvpn import __version__
-from eduvpn.nm import init_dbus_system_bus
 
 logger = logging.getLogger(__name__)
 log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s'
@@ -59,7 +58,6 @@ def main_loop(args=None, lets_connect=False):
         from eduvpn.ui.ui import EduVpnGui
 
         edu_vpn_gui = EduVpnGui(lets_connect)
-        init_dbus_system_bus(edu_vpn_gui.nm_status_cb)
         edu_vpn_gui.run()
     except Exception as e:
         fatal_reason = f"Caught exception: {e}"

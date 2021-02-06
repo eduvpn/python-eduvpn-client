@@ -18,3 +18,13 @@ def error_helper(parent: GObject, msg_big: str, msg_small: str) -> None:  # type
     error_dialog.format_secondary_text(str(msg_small))  # type: ignore
     error_dialog.run()  # type: ignore
     error_dialog.hide()  # type: ignore
+
+def show_ui_component(builder, component: str, show: bool):
+    """
+    Set the visibility of a UI component.
+    """
+    component = builder.get_object(component)
+    if show:
+        component.show()
+    else:
+        component.hide()
