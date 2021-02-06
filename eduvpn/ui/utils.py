@@ -1,11 +1,11 @@
 from eduvpn.utils import logger
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 
 
 # ui thread
-def error_helper(parent: Gtk.GObject, msg_big: str, msg_small: str) -> None:  # type: ignore
+def error_helper(parent: GObject, msg_big: str, msg_small: str) -> None:  # type: ignore
     """
     Shows a GTK error message dialog.
     args:
