@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Let's Connect!
+Comment=a configuration tool to connect to Let's Connect! VPN servers
+Exec=letsconnect-gui
+Icon=letsconnect-client
+Terminal=false
+

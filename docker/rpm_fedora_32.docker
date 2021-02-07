@@ -1,0 +1,29 @@
+FROM fedora:32
+
+RUN dnf install -y	\
+    fedora-packager \
+    fedora-review \
+    gtk3 \
+    libnotify \
+    python3-devel \
+	python3-gobject  \
+	python3-requests-oauthlib \
+	python3-pytest \
+    python3-pytest-runner \
+    python3-pynacl \
+    python3-dbus \
+    python3-dateutil \
+    python3-cryptography \
+    NetworkManager-libnm
+
+RUN rpmdev-setuptree
+
+ADD . /code
+WORKDIR /code
+
+RUN python3 setup.py sdist
+RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
+RUN rpmbuild -bs eduvpn.spec
+RUN rpmbuild -bb eduvpn.spec
+
+

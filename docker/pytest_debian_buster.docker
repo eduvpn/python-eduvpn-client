@@ -1,0 +1,28 @@
+FROM debian:buster
+
+ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
+
+RUN docker-apt-install \
+    gir1.2-gtk-3.0 \
+    gir1.2-notify-0.7 \
+    gir1.2-nm-1.0 \
+    python3-gi \
+    python3-requests-oauthlib \
+    python3-cryptography \
+    python3-setuptools \
+    python3-nacl \
+    python3-pytest \
+    python3-dbus \
+    pkg-config \
+    libcairo2-dev \
+    build-essential \
+    libpython3-dev \
+    gobject-introspection \
+    libgirepository1.0-dev \
+    network-manager-openvpn-gnome
+
+ADD . /code
+WORKDIR /code
+RUN python3 setup.py install
+RUN apt list --installed
+RUN pytest-3

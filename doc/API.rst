@@ -31,52 +31,19 @@ Crypto
     :show-inheritance:
 
 
-eduVPN IO
+eduVPN Storage
+==============
+
+.. automodule:: eduvpn.storage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Utilities
 =========
 
-.. automodule:: eduvpn.io
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-.. Network Manager wrapping
-.. ========================
-..
-..
-.. .. automodule:: eduvpn.manager
-..     :members:
-..     :undoc-members:
-..     :show-inheritance:
-
-OpenVPN
-=======
-
-.. automodule:: eduvpn.openvpn
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. Notifications
-.. =============
-..
-.. .. automodule:: eduvpn.notify
-..     :members:
-..     :undoc-members:
-..     :show-inheritance:
-..
-.. Utilities
-.. =========
-..
-.. .. automodule:: eduvpn.util
-..     :members:
-..     :undoc-members:
-..     :show-inheritance:
-
-Exceptions
-==========
-
-.. automodule:: eduvpn.exceptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: eduvpn.utils
+     :members:
+     :undoc-members:
+     :show-inheritance:

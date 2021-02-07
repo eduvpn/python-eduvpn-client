@@ -69,7 +69,9 @@ b0b85a410294cdea5eb29ae009f98687
 remote internet.demo.eduvpn.nl 1194 udp
 remote internet.demo.eduvpn.nl 1194 tcp
 remote internet.demo.eduvpn.nl 443 tcp
-<cert>
+"""
+
+mock_cert = """
 -----BEGIN CERTIFICATE-----
 MIIFSzCCAzOgAwIBAgICAdkwDQYJKoZIhvcNAQELBQAwETEPMA0GA1UEAxMGVlBO
 IENBMB4XDTE3MDgyNDE0MDk0NloXDTE4MDgyNDE0MDk0NlowKzEpMCcGA1UEAxMg
@@ -101,8 +103,8 @@ T93kKrIIM0/VXzaMOr2iVTuc90im5yFczFXuy0JhL1agV7yCEW43YUClGESg48W6
 zxWzRatGON7I9fPr4zd9h6au5rN9iOObof+JZGPk9tbH2Bg6wV3qZNIPZPVUBfc4
 q5QpoF0ATpXqjhwu4yI9
 -----END CERTIFICATE-----
-</cert>
-<key>
+"""
+mock_key = """
 -----BEGIN PRIVATE KEY-----
 MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQCZ5/FNshijQG51
 CVpyXdYpk6gnQbEX9ZKTW5S2HULBZ0jmVOisdW6eV8nHTCkpZx8MWRvIe7OvndBm
@@ -155,7 +157,6 @@ fQKCAQEAjOoIfVWm4t4wps72SIDZSugmfD2M4dPTAKyshQeTugkhCZ2pCBuoTmSW
 SdooJUoYqqMaG2Yf63D4C8oTRIAqqPxsI+p3SSd6P4YnSN69fcmQ8qAy/RJQ0Mn5
 xL2Pccm97PHvBS/J8JMzBn8y3hhT0g==
 -----END PRIVATE KEY-----
-</key>
 """
 
 mock_config_dict = {
@@ -178,4 +179,18 @@ mock_config_dict = {
     'tls-cipher': 'TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384',
     'tls-version-min': '1.2',
     'verb': '3'
+}
+
+mock_server = {
+    'server_type': 'secure_internet',
+    'base_url': 'https://eduvpn.bogus/',
+    'public_key_list': ['Xv3l24gbMX8NtTnFQbWO2fGKPwKuc6EbjQDv8qwXXXX'],
+    'country_code': 'NL',
+    'support_contact': ['mailto:bogus@bogus.nl']
+}
+
+mock_org = {
+    'display_name': {'nl': 'bogus', 'en': 'bogus'},
+    'org_id': 'http://idp.mock.bogus/adfs/services/trust',
+    'secure_internet_home': 'https://idp.mock.bogus/'
 }
