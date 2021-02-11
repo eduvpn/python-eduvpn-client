@@ -156,6 +156,7 @@ class ServerDatabase:
     def __init__(self):
         # TODO load the servers from a cache
         self.servers = []
+        self.is_loaded = False
 
     def update(self):
         """
@@ -183,6 +184,7 @@ class ServerDatabase:
         # Atomic update of server map.
         # TODO keep custom other servers
         self.servers = new_servers
+        self.is_loaded = True
 
     def all(self) -> Iterable[Server]:
         "Return all servers."
