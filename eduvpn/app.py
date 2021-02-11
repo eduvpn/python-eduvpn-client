@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class Application:
-    def __init__(self):
+    def __init__(self, make_func_threadsafe):
+        self.make_func_threadsafe = make_func_threadsafe
         from .network import InitialNetworkState
         from .interface import InitialInterfaceState
         self.network_state_machine = StateMachine(InitialNetworkState())
@@ -17,25 +18,25 @@ class Application:
         self.server_db = ServerDatabase()
         self.current_network_uuid = None
 
-    def initialize(self, make_func_threadsafe):
-        self.initialize_network(make_func_threadsafe)
+    def initialize(self):
+        self.initialize_network()
         self.initialize_server_db()
 
     @run_in_background_thread
-    def initialize_network(self, make_func_threadsafe):
+    def initialize_network(self):
         """
         Determine the current network state.
         """
         # Check if a previous network profile exists.
         self.current_network_uuid = get_uuid()
-        threadsafe_transition = make_func_threadsafe(self.network_transition)
         if self.current_network_uuid:
             if 0:  # TODO
-                threadsafe_transition('found_active_connection')
+                transition = 'found_active_connection'
             else:
-                threadsafe_transition('found_previous_connection')
+                transition = 'found_previous_connection'
         else:
-            threadsafe_transition('no_previous_connection_found')
+            transition = 'no_previous_connection_found'
+        self.network_transition_threadsafe(transition)
 
     @run_in_background_thread
     def initialize_server_db(self):
@@ -91,3 +92,17 @@ class Application:
             logger.error(f'invalid interface state transition: {self.interface_state} -> {transition}')
         else:
             logger.info(f'interface transitioned: {transition} -> {self.interface_state}')
+
+    def network_transition_threadsafe(self, transition, *args, **kwargs):
+        """
+        Threadsafe version of `network_transition()`.
+        """
+        network_transition = self.make_func_threadsafe(self.network_transition)
+        network_transition(transition, *args, **kwargs)
+
+    def interface_transition_threadsafe(self, transition, *args, **kwargs):
+        """
+        Threadsafe version of `network_transition()`.
+        """
+        interface_transition = self.make_func_threadsafe(self.interface_transition)
+        interface_transition(transition, *args, **kwargs)
