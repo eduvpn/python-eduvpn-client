@@ -163,17 +163,13 @@ class EduVpnGui:
     def exit_ConfigureSettings(self, old_state, new_state):
         self.show_component('settingsPage', False)
 
-    @transition_edge_callback(ENTER, interface.PendingConfigurePredefinedServer)
-    @transition_edge_callback(ENTER, interface.ConfigurePredefinedServer)
-    @transition_edge_callback(ENTER, interface.ConfigureCustomServer)
+    @transition_edge_callback(ENTER, interface.configure_server_states)
     def enter_search(self, old_state, new_state):
         if not isinstance(old_state, interface.configure_server_states):
             search.init_server_search(self.builder)
             search.connect_selection_handlers(self.builder, self.on_select_server)
 
-    @transition_edge_callback(EXIT, interface.PendingConfigurePredefinedServer)
-    @transition_edge_callback(EXIT, interface.ConfigurePredefinedServer)
-    @transition_edge_callback(EXIT, interface.ConfigureCustomServer)
+    @transition_edge_callback(EXIT, interface.configure_server_states)
     def exit_search(self, old_state, new_state):
         if not isinstance(new_state, interface.configure_server_states):
             search.exit_server_search(self.builder)

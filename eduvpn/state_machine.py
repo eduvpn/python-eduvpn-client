@@ -1,9 +1,10 @@
-from typing import Any, Callable, Type
+from typing import Any, Union, Callable, Type, Tuple
 import enum
 
 
 State = Any
 Callback = Callable[[State, State], None]
+StateTargets = Union[Type[State], Tuple[Type[State]]]
 
 
 class TransitionEdge(enum.Enum):
@@ -32,7 +33,7 @@ def setattr_list_item(obj, attr, item):
         setattr(obj, attr, list_attr)
     list_attr.append(item)
 
-def transition_callback(state_type: Type[State]):
+def transition_callback(state_targets: StateTargets):
     """
     Decorator factory to mark a method as a transition callback for all transitions.
 
@@ -41,20 +42,29 @@ def transition_callback(state_type: Type[State]):
     Without this, there would be no way to know which
     state machine this callback targets.
     """
+    if not isinstance(state_targets, tuple):
+        # Normalise argument to tuple.
+        state_targets = (state_targets, )
+
     def decorator(func: Callback):
-        setattr_list_item(func, TRANSITION_CALLBACK_MARKER, (None, state_type))
+        for state_type in state_targets:
+            setattr_list_item(func, TRANSITION_CALLBACK_MARKER, (None, state_type))
         return func
 
     return decorator
 
-def transition_edge_callback(edge: TransitionEdge, state_type: Type[State]):
+def transition_edge_callback(edge: TransitionEdge, state_targets: StateTargets):
     """
     Decorator factory to mark a method as a transition callback
     for specific state transition edges.
     """
+    if not isinstance(state_targets, tuple):
+        # Normalise argument to tuple.
+        state_targets = (state_targets, )
 
     def decorator(func: Callback):
-        setattr_list_item(func, TRANSITION_CALLBACK_MARKER, (edge, state_type))
+        for state_type in state_targets:
+            setattr_list_item(func, TRANSITION_CALLBACK_MARKER, (edge, state_type))
         return func
 
     return decorator
