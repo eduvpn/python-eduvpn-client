@@ -42,6 +42,7 @@ def thread_helper(func: Callable) -> threading.Thread:
     thread.start()
     return thread
 
+
 def run_in_background_thread(func):
     """
     Decorator for functions that must always run
@@ -53,6 +54,7 @@ def run_in_background_thread(func):
         thread_helper(partial(func, *args, **kwargs))
 
     return background_func
+
 
 def run_in_main_gtk_thread(func):
     """

@@ -25,6 +25,7 @@ EXIT = TransitionEdge.exit
 
 TRANSITION_CALLBACK_MARKER = '__transition_callback_for_state'
 
+
 def setattr_list_item(obj, attr, item):
     try:
         list_attr = getattr(obj, attr)
@@ -33,9 +34,11 @@ def setattr_list_item(obj, attr, item):
         setattr(obj, attr, list_attr)
     list_attr.append(item)
 
+
 def transition_callback(state_targets: StateTargets):
     """
-    Decorator factory to mark a method as a transition callback for all transitions.
+    Decorator factory to mark a method as a
+    transition callback for all transitions.
 
     Note the argument is the base class for states of the state machine
     to register transition events of.
@@ -48,12 +51,16 @@ def transition_callback(state_targets: StateTargets):
 
     def decorator(func: Callback):
         for state_type in state_targets:
-            setattr_list_item(func, TRANSITION_CALLBACK_MARKER, (None, state_type))
+            setattr_list_item(func,
+                              TRANSITION_CALLBACK_MARKER,
+                              (None, state_type))
         return func
 
     return decorator
 
-def transition_edge_callback(edge: TransitionEdge, state_targets: StateTargets):
+
+def transition_edge_callback(edge: TransitionEdge,
+                             state_targets: StateTargets):
     """
     Decorator factory to mark a method as a transition callback
     for specific state transition edges.
@@ -64,10 +71,13 @@ def transition_edge_callback(edge: TransitionEdge, state_targets: StateTargets):
 
     def decorator(func: Callback):
         for state_type in state_targets:
-            setattr_list_item(func, TRANSITION_CALLBACK_MARKER, (edge, state_type))
+            setattr_list_item(func,
+                              TRANSITION_CALLBACK_MARKER,
+                              (edge, state_type))
         return func
 
     return decorator
+
 
 def _find_transition_callbacks(obj: Any, base_state_type: Type[State]):
     for attr in dir(obj):
@@ -132,7 +142,10 @@ class StateMachine:
         """
         self._callbacks.setdefault(None, set()).add(callback)
 
-    def register_edge_callback(self, state_type: Type[State], edge: TransitionEdge, callback: Callback):
+    def register_edge_callback(self,
+                               state_type: Type[State],
+                               edge: TransitionEdge,
+                               callback: Callback):
         """
         Register a callback for specific transition edges.
         """
@@ -141,7 +154,8 @@ class StateMachine:
     def connect_object_callbacks(self, obj, base_state_type: Type[State]):
         """
         Register all state transition callback methods decorated with
-        `@transition_callback()` and `@transition_edge_callback()` of an object.
+        `@transition_callback()` and `@transition_edge_callback()`
+        of an object.
 
         Provide the base class of states for this state machine
         as the second argument to filter registrations for this
@@ -149,7 +163,8 @@ class StateMachine:
         Only method registered to a subclass of this base class
         will be connected.
         """
-        for callback, edge, state_type in _find_transition_callbacks(obj, base_state_type):
+        iterator = _find_transition_callbacks(obj, base_state_type)
+        for callback, edge, state_type in iterator:
             if edge is None:
                 # This callback targets all events.
                 self.register_generic_callback(callback)
@@ -161,7 +176,10 @@ class StateMachine:
         for callback in self._callbacks.get(None, []):
             callback(old_state, new_state)
 
-    def _call_edge_callbacks(self, edge: TransitionEdge, old_state: State, new_state: State):
+    def _call_edge_callbacks(self,
+                             edge: TransitionEdge,
+                             old_state: State,
+                             new_state: State):
         state = new_state if edge is ENTER else old_state
         for callback in self._callbacks.get((state.__class__, edge), []):
             callback(old_state, new_state)

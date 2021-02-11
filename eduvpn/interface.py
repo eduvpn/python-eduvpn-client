@@ -30,7 +30,9 @@ class InitialInterfaceState(InterfaceState):
     the actual first state has been determined.
     """
 
-    def found_active_connection(self, app: Application, server: Server) -> InterfaceState:
+    def found_active_connection(self,
+                                app: Application,
+                                server: Server) -> InterfaceState:
         """
         An connection is already active, show its details.
         """
@@ -84,7 +86,9 @@ class MainState(InterfaceState):
     def configure_new_server(self, app: Application) -> InterfaceState:
         return ConfigurePredefinedServer()
 
-    def connect_to_server(self, app: Application, server: Server) -> InterfaceState:
+    def connect_to_server(self,
+                          app: Application,
+                          server: Server) -> InterfaceState:
         return connect_to_server(app, server)
 
 
@@ -119,13 +123,21 @@ class PendingConfigurePredefinedServer(InterfaceState):
     def __init__(self, search_query: str = ''):
         self.search_query = search_query
 
-    def enter_search_query(self, app: Application, search_query: str) -> InterfaceState:
+    def enter_search_query(self,
+                           app: Application,
+                           search_query: str,
+                           ) -> InterfaceState:
         return PendingConfigurePredefinedServer(search_query)
 
-    def enter_custom_address(self, app: Application, address: str) -> InterfaceState:
+    def enter_custom_address(self,
+                             app: Application,
+                             address: str,
+                             ) -> InterfaceState:
         return enter_custom_address(app, address)
 
-    def connect_to_server(self, app: Application, server: Server) -> InterfaceState:
+    def connect_to_server(self,
+                          app: Application,
+                          server: Server) -> InterfaceState:
         return connect_to_server(app, server)
 
     def server_db_finished_loading(self, app: Application) -> InterfaceState:
@@ -138,7 +150,9 @@ class ConfigurePredefinedServer(InterfaceState):
     from a list of known servers.
     """
 
-    def __init__(self, search_query: str = '', results: Optional[Server] = None):
+    def __init__(self,
+                 search_query: str = '',
+                 results: Optional[Server] = None):
         self.search_query = search_query
         self.results = results
 
@@ -148,15 +162,25 @@ class ConfigurePredefinedServer(InterfaceState):
         else:
             # Don't include the long list of results.
             results = len(self.results)
-        return f"<ConfigurePredefinedServer search_query={self.search_query!r} results={results}>"
+        return (
+            f"<ConfigurePredefinedServer"
+            f" search_query={self.search_query!r}"
+            f" results={results}>"
+        )
 
-    def enter_search_query(self, app: Application, search_query: str) -> InterfaceState:
+    def enter_search_query(self, app: Application,
+                           search_query: str,
+                           ) -> InterfaceState:
         return enter_search_query(app, search_query)
 
-    def enter_custom_address(self, app: Application, address: str) -> InterfaceState:
+    def enter_custom_address(self, app: Application,
+                             address: str,
+                             ) -> InterfaceState:
         return enter_custom_address(app, address)
 
-    def connect_to_server(self, app: Application, server: Server) -> InterfaceState:
+    def connect_to_server(self,
+                          app: Application,
+                          server: Server) -> InterfaceState:
         return connect_to_server(app, server)
 
 
@@ -169,13 +193,19 @@ class ConfigureCustomServer(InterfaceState):
     def __init__(self, address: str):
         self.address = address
 
-    def enter_search_query(self, app: Application, search_query: str) -> InterfaceState:
+    def enter_search_query(self, app: Application,
+                           search_query: str,
+                           ) -> InterfaceState:
         return enter_search_query(app, search_query)
 
-    def enter_custom_address(self, app: Application, address: str) -> InterfaceState:
+    def enter_custom_address(self, app: Application,
+                             address: str,
+                             ) -> InterfaceState:
         return enter_custom_address(app, address)
 
-    def connect_to_server(self, app: Application, server: Server):
+    def connect_to_server(self,
+                          app: Application,
+                          server: Server) -> InterfaceState:
         return connect_to_server(app, server)
 
 
@@ -201,7 +231,10 @@ class OAuthSetup(InterfaceState):
     def oauth_setup_success(self, app: Application) -> InterfaceState:
         return ConnectionStatus(self.server)
 
-    def oauth_setup_failure(self, app: Application, error: str) -> InterfaceState:
+    def oauth_setup_failure(self,
+                            app: Application,
+                            error: str,
+                            ) -> InterfaceState:
         return OAuthFailed(self.server, error)
 
 
