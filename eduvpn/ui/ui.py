@@ -143,6 +143,9 @@ class EduVpnGui:
         self.show_component('backButton', show)
         self.show_component('backButtonEventBox', show)
 
+    def set_search_text(self, text: str):
+        self.builder.get_object('findYourInstituteSearch').set_text(text)
+
     # network state transition callbacks
 
     # TODO
@@ -174,25 +177,25 @@ class EduVpnGui:
         if not isinstance(new_state, interface.configure_server_states):
             search.exit_server_search(self.builder)
             search.disconnect_selection_handlers(self.builder, self.on_select_server)
-            self.builder.get_object('findYourInstituteSearch').set_text('')
+            self.set_search_text('')
 
     @transition_edge_callback(ENTER, interface.PendingConfigurePredefinedServer)
     def enter_PendingConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self.builder, [])
         if not isinstance(old_state, interface.configure_server_states):
-            self.builder.get_object('findYourInstituteSearch').set_text(new_state.search_query)
+            self.set_search_text(new_state.search_query)
 
     @transition_edge_callback(ENTER, interface.ConfigurePredefinedServer)
     def enter_ConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self.builder, new_state.results)
         if not isinstance(old_state, interface.configure_server_states):
-            self.builder.get_object('findYourInstituteSearch').set_text(new_state.search_query)
+            self.set_search_text(new_state.search_query)
 
     @transition_edge_callback(ENTER, interface.ConfigureCustomServer)
     def enter_ConfigureCustomServer(self, old_state, new_state):
         search.update_results(self.builder, [CustomServer(new_state.address)])
         if not isinstance(old_state, interface.configure_server_states):
-            self.builder.get_object('findYourInstituteSearch').set_text(new_state.address)
+            self.set_search_text(new_state.address)
 
     @transition_edge_callback(ENTER, interface.OAuthSetup)
     def enter_OAuthSetup(self, old_state, new_state):
