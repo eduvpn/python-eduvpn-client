@@ -4,15 +4,6 @@ from typing import (
 import enum
 
 
-State = TypeVar('State')
-StateType = Type[State]
-Callback = Callable[[State, State], None]
-StateTargets = Union[StateType, Iterable[StateType]]
-CallbackRegistry = Dict[
-    Optional[Tuple[StateType, TransitionEdge]],
-    Set[Callback]]
-
-
 class TransitionEdge(enum.Enum):
     """
     The edge of a state lifetime.
@@ -27,6 +18,16 @@ class TransitionEdge(enum.Enum):
 
 ENTER = TransitionEdge.enter
 EXIT = TransitionEdge.exit
+
+
+# typing aliases
+State = TypeVar('State')
+StateType = Type[State]
+Callback = Callable[[State, State], None]
+StateTargets = Union[StateType, Iterable[StateType]]
+CallbackRegistry = Dict[
+    Optional[Tuple[StateType, TransitionEdge]],
+    Set[Callback]]
 
 
 TRANSITION_CALLBACK_MARKER = '__transition_callback_for_state'
