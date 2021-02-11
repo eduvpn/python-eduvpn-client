@@ -9,8 +9,8 @@ import webbrowser
 import logging
 
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('NM', '1.0')
+gi.require_version('Gtk', '3.0')  # noqa: E402
+gi.require_version('NM', '1.0')  # noqa: E402
 from gi.repository import Gtk
 
 from requests_oauthlib import OAuth2Session
@@ -22,7 +22,8 @@ from .. import network
 from .. import interface
 from ..server import CustomServer
 from ..app import Application
-from ..state_machine import ENTER, EXIT, transition_callback, transition_edge_callback
+from ..state_machine import (
+    ENTER, EXIT, transition_callback, transition_edge_callback)
 from ..utils import get_prefix, thread_helper, run_in_main_gtk_thread
 from . import search
 from .utils import show_ui_component
@@ -30,7 +31,7 @@ from .utils import show_ui_component
 
 logger = logging.getLogger(__name__)
 
-builder_files: List[str] = ['mainwindow.ui']
+builder_files = ['mainwindow.ui']
 
 variable_objects = [
     'backButton',
@@ -94,7 +95,7 @@ class EduVpnGui:
         for b in builder_files:
             p = os.path.join(prefix, 'share/eduvpn/builder', b)
             if not os.access(p, os.R_OK):
-                logger.error(f"Can't find {p}! That is quite an important file.")
+                logger.error(f"Can't find builder file {p}!")
                 raise Exception
             self.builder.add_from_file(p)
 
@@ -105,9 +106,12 @@ class EduVpnGui:
             "on_back_button_released": self.on_back_button_released,
             "on_search_changed": self.on_search_changed,
             "on_activate_changed": self.on_activate_changed,
-            "on_add_other_server_button_clicked": self.on_add_other_server_button_clicked,
-            "on_cancel_browser_button_clicked": self.on_cancel_oauth_setup_button_clicked,
-            "on_connection_switch_state_set": self.on_connection_switch_state_set
+            "on_add_other_server_button_clicked":
+                self.on_add_other_server_button_clicked,
+            "on_cancel_browser_button_clicked":
+                self.on_cancel_oauth_setup_button_clicked,
+            "on_connection_switch_state_set":
+                self.on_connection_switch_state_set
         }
         self.builder.connect_signals(handlers)
 
@@ -116,17 +120,6 @@ class EduVpnGui:
             self.show_component(name, False)
 
         self.app = Application(run_in_main_gtk_thread)
-
-
-        # TODO x
-        from eduvpn import nm
-        print('-' * 20)
-        client = nm.get_client()
-        x1 = nm.connection_status(client)
-        print(x1)
-        x2 = nm.get_vpn_status(client)
-        print(x2)
-        print('-' * 20)
 
     def run(self):
         logger.info("starting ui")
@@ -170,16 +163,19 @@ class EduVpnGui:
     def enter_search(self, old_state, new_state):
         if not isinstance(old_state, interface.configure_server_states):
             search.init_server_search(self.builder)
-            search.connect_selection_handlers(self.builder, self.on_select_server)
+            search.connect_selection_handlers(
+                self.builder, self.on_select_server)
 
     @transition_edge_callback(EXIT, interface.configure_server_states)
     def exit_search(self, old_state, new_state):
         if not isinstance(new_state, interface.configure_server_states):
             search.exit_server_search(self.builder)
-            search.disconnect_selection_handlers(self.builder, self.on_select_server)
+            search.disconnect_selection_handlers(
+                self.builder, self.on_select_server)
             self.set_search_text('')
 
-    @transition_edge_callback(ENTER, interface.PendingConfigurePredefinedServer)
+    @transition_edge_callback(
+        ENTER, interface.PendingConfigurePredefinedServer)
     def enter_PendingConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self.builder, [])
         if not isinstance(old_state, interface.configure_server_states):
@@ -202,10 +198,18 @@ class EduVpnGui:
         self.show_component('openBrowserPage', True)
 
         def fetch_token():
-            url, oauth_session, token_endpoint, auth_endpoint = actions.fetch_token(new_state.server.oauth_login_url)
-            # TODO handle error: self.app.interface_transition('oauth_setup_failure', error="unknown error")
-            # TODO handle cancel: self.app.interface_transition('oauth_setup_cancel')
-            logger.debug(f'got new oauth token: {url!r} {oauth_session!r} {token_endpoint!r} {auth_endpoint!r}')
+            url, oauth_session, token_endpoint, auth_endpoint = \
+                actions.fetch_token(new_state.server.oauth_login_url)
+            # TODO handle error:
+            #     self.app.interface_transition(
+            #         'oauth_setup_failure', error="unknown error")
+            # TODO handle cancel:
+            #     self.app.interface_transition('oauth_setup_cancel')
+            logger.debug(
+                f'got new oauth token: '
+                f'{url!r} {oauth_session!r} '
+                f'{token_endpoint!r} {auth_endpoint!r}'
+            )
             self.app.interface_transition('oauth_setup_success')
 
         # TODO stop thread when state changes (eg. click on settings)
@@ -252,10 +256,13 @@ class EduVpnGui:
         query = self.builder.get_object('findYourInstituteSearch').get_text()
         logger.debug(f"entered search query: {query}")
         if self.lets_connect or query.count('.') >= 2:
-            # Anything with two periods is interpreted as a custom server address.
-            self.app.interface_transition('enter_custom_address', address=query)
+            # Anything with two periods is interpreted
+            # as a custom server address.
+            self.app.interface_transition(
+                'enter_custom_address', address=query)
         else:
-            self.app.interface_transition('enter_search_query', search_query=query)
+            self.app.interface_transition(
+                'enter_search_query', search_query=query)
 
     def on_activate_changed(self, _=None):
         logger.debug("on_activate_changed")

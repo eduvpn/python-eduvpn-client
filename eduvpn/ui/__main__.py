@@ -6,12 +6,15 @@ from argparse import ArgumentParser
 from os import geteuid
 from sys import exit, argv
 import gi
-gi.require_version('Gtk', '3.0')
+gi.require_version('Gtk', '3.0')  # noqa: E402
 from gi.repository import Gtk
 from eduvpn import __version__
 
 logger = logging.getLogger(__name__)
-log_format = format_ = '%(asctime)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s'
+log_format = format_ = (
+    '%(asctime)s - %(levelname)s - %(name)s'
+    ' - %(filename)s:%(lineno)d - %(message)s'
+)
 
 
 def parse_args(args: Optional[Sequence[str]]) -> int:
@@ -21,8 +24,18 @@ def parse_args(args: Optional[Sequence[str]]) -> int:
         logging_level
     """
     parser = ArgumentParser()
-    parser.add_argument('-d', '--debug', action='store_true', help="enable debug logging")
-    parser.add_argument('-v', '--version', action='store_true', help="print version and exit")
+    parser.add_argument(
+        '-d',
+        '--debug',
+        action='store_true',
+        help="enable debug logging",
+    )
+    parser.add_argument(
+        '-v',
+        '--version',
+        action='store_true',
+        help="print version and exit",
+    )
     parsed = parser.parse_args(args=args)
 
     if parsed.version:

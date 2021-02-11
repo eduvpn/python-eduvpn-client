@@ -63,47 +63,63 @@ class Application:
     def connect_state_transition_callbacks(self, obj):
         """
         Register all state transition callback methods decorated with
-        `@transition_callback()` and `@transition_edge_callback()` of an object.
+        `@transition_callback()` and `@transition_edge_callback()`
+        of an object.
         """
         from .network import NetworkState
         self.network_state_machine.connect_object_callbacks(obj, NetworkState)
         from .interface import InterfaceState
-        self.interface_state_machine.connect_object_callbacks(obj, InterfaceState)
+        self.interface_state_machine.connect_object_callbacks(
+            obj, InterfaceState)
 
     def network_transition(self, transition, *args, **kwargs):
         """
         Perform a transition on the network state.
         """
-        logger.info(f'network transitioning: {self.network_state} -> {transition}')
+        logger.info(
+            f'network transitioning: '
+            f'{self.network_state} -> {transition}')
         try:
-            self.network_state_machine.transition(transition, self, *args, **kwargs)
+            self.network_state_machine.transition(
+                transition, self, *args, **kwargs)
         except InvalidStateTransition:
-            logger.error(f'invalid network state transition: {self.network_state} -> {transition}')
+            logger.error(
+                f'invalid network state transition: '
+                f'{self.network_state} -> {transition}')
         else:
-            logger.info(f'network transitioned: {transition} -> {self.network_state}')
+            logger.info(
+                f'network transitioned: '
+                f'{transition} -> {self.network_state}')
 
     def interface_transition(self, transition, *args, **kwargs):
         """
         Perform a transition on the interface state.
         """
-        logger.info(f'interface transitioning: {self.interface_state} -> {transition}')
+        logger.info(
+            f'interface transitioning: '
+            f'{self.interface_state} -> {transition}')
         try:
-            self.interface_state_machine.transition(transition, self, *args, **kwargs)
+            self.interface_state_machine.transition(
+                transition, self, *args, **kwargs)
         except InvalidStateTransition:
-            logger.error(f'invalid interface state transition: {self.interface_state} -> {transition}')
+            logger.error(
+                f'invalid interface state transition: '
+                f'{self.interface_state} -> {transition}')
         else:
-            logger.info(f'interface transitioned: {transition} -> {self.interface_state}')
+            logger.info(
+                f'interface transitioned: '
+                f'{transition} -> {self.interface_state}')
 
     def network_transition_threadsafe(self, transition, *args, **kwargs):
         """
         Threadsafe version of `network_transition()`.
         """
-        network_transition = self.make_func_threadsafe(self.network_transition)
-        network_transition(transition, *args, **kwargs)
+        transit = self.make_func_threadsafe(self.network_transition)
+        transit(transition, *args, **kwargs)
 
     def interface_transition_threadsafe(self, transition, *args, **kwargs):
         """
         Threadsafe version of `network_transition()`.
         """
-        interface_transition = self.make_func_threadsafe(self.interface_transition)
-        interface_transition(transition, *args, **kwargs)
+        transit = self.make_func_threadsafe(self.interface_transition)
+        transit(transition, *args, **kwargs)
