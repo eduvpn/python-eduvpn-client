@@ -80,7 +80,7 @@ class OrganisationServer:
                  secure_internet_home: str,
                  display_name: Union[str, Dict[str, str]],
                  org_id: str,
-                 keyword_list: List[str] = []):
+                 keyword_list: Dict[str, str] = {}):
         self.secure_internet_home = secure_internet_home
         self.display_name = display_name
         self.org_id = org_id
@@ -133,11 +133,17 @@ server_types = [
 
 
 # typing aliases
-ServerType = Any
-Server = Union[tuple(server_types)]
+Server = Union[
+    InstituteAccessServer,
+    OrganisationServer,
+    CustomServer,
+]
+ServerType = Type[Server]
 
 
-def group_servers_by_type(servers: Iterable[Server]) -> Dict[Type, Server]:
+def group_servers_by_type(
+        servers: Iterable[Server]) -> Dict[ServerType, List[Server]]:
+    groups: Dict[ServerType, List[Server]]
     groups = {server_type: [] for server_type in server_types}
     for server in servers:
         groups[type(server)].append(server)
@@ -147,7 +153,8 @@ def group_servers_by_type(servers: Iterable[Server]) -> Dict[Type, Server]:
 def is_search_match(server: Server, query: str) -> bool:
     if hasattr(server, 'search_texts'):
         return any(query.lower() in search_text.lower()
-                   for search_text in server.search_texts)
+                   for search_text
+                   in server.search_texts)  # type: ignore
     else:
         return False
 

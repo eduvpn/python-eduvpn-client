@@ -5,9 +5,9 @@ from gi.repository import Gtk, GObject
 
 
 # ui thread
-def error_helper(parent: GObject,
+def error_helper(parent: GObject,  # type: ignore
                  msg_big: str,
-                 msg_small: str) -> None:  # type: ignore
+                 msg_small: str) -> None:
     """
     Shows a GTK error message dialog.
     args:
@@ -16,9 +16,13 @@ def error_helper(parent: GObject,
         msg_small (str): the small string
     """
     logger.error(f"{msg_big}: {msg_small}")
-    error_dialog = Gtk.MessageDialog(
-        parent, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, str(msg_big),
-        )  # type: ignore
+    error_dialog = Gtk.MessageDialog(  # type: ignore
+        parent,
+        0,
+        Gtk.MessageType.ERROR,  # type: ignore
+        Gtk.ButtonsType.OK,  # type: ignore
+        str(msg_big),
+    )
     error_dialog.format_secondary_text(str(msg_small))  # type: ignore
     error_dialog.run()  # type: ignore
     error_dialog.hide()  # type: ignore
@@ -30,6 +34,6 @@ def show_ui_component(builder, component: str, show: bool):
     """
     component = builder.get_object(component)
     if show:
-        component.show()
+        component.show()  # type: ignore
     else:
-        component.hide()
+        component.hide()  # type: ignore
