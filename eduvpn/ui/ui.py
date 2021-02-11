@@ -115,7 +115,7 @@ class EduVpnGui:
         for name in variable_objects:
             self.show_component(name, False)
 
-        self.app = Application()
+        self.app = Application(run_in_main_gtk_thread)
 
 
         # TODO x
@@ -132,7 +132,7 @@ class EduVpnGui:
         logger.info("starting ui")
         self.show_component('applicationWindow', True)
         self.app.connect_state_transition_callbacks(self)
-        self.app.initialize(run_in_main_gtk_thread)
+        self.app.initialize()
 
     # ui functions
 
