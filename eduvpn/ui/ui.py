@@ -163,31 +163,39 @@ class EduVpnGui:
     def exit_ConfigureSettings(self, old_state, new_state):
         self.show_component('settingsPage', False)
 
+    @transition_edge_callback(ENTER, interface.PendingConfigurePredefinedServer)
     @transition_edge_callback(ENTER, interface.ConfigurePredefinedServer)
     @transition_edge_callback(ENTER, interface.ConfigureCustomServer)
     def enter_search(self, old_state, new_state):
-        if not isinstance(old_state, (interface.ConfigureCustomServer, interface.ConfigurePredefinedServer)):
+        if not isinstance(old_state, interface.configure_server_states):
             search.init_server_search(self.builder)
             search.connect_selection_handlers(self.builder, self.on_select_server)
 
+    @transition_edge_callback(EXIT, interface.PendingConfigurePredefinedServer)
     @transition_edge_callback(EXIT, interface.ConfigurePredefinedServer)
     @transition_edge_callback(EXIT, interface.ConfigureCustomServer)
     def exit_search(self, old_state, new_state):
-        if not isinstance(new_state, (interface.ConfigureCustomServer, interface.ConfigurePredefinedServer)):
+        if not isinstance(new_state, interface.configure_server_states):
             search.exit_server_search(self.builder)
             search.disconnect_selection_handlers(self.builder, self.on_select_server)
             self.builder.get_object('findYourInstituteSearch').set_text('')
 
+    @transition_edge_callback(ENTER, interface.PendingConfigurePredefinedServer)
+    def enter_PendingConfigurePredefinedServer(self, old_state, new_state):
+        search.update_results(self.builder, [])
+        if not isinstance(old_state, interface.configure_server_states):
+            self.builder.get_object('findYourInstituteSearch').set_text(new_state.search_query)
+
     @transition_edge_callback(ENTER, interface.ConfigurePredefinedServer)
     def enter_ConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self.builder, new_state.results)
-        if not isinstance(old_state, (interface.ConfigureCustomServer, interface.ConfigurePredefinedServer)):
+        if not isinstance(old_state, interface.configure_server_states):
             self.builder.get_object('findYourInstituteSearch').set_text(new_state.search_query)
 
     @transition_edge_callback(ENTER, interface.ConfigureCustomServer)
     def enter_ConfigureCustomServer(self, old_state, new_state):
         search.update_results(self.builder, [CustomServer(new_state.address)])
-        if not isinstance(old_state, (interface.ConfigureCustomServer, interface.ConfigurePredefinedServer)):
+        if not isinstance(old_state, interface.configure_server_states):
             self.builder.get_object('findYourInstituteSearch').set_text(new_state.address)
 
     @transition_edge_callback(ENTER, interface.OAuthSetup)

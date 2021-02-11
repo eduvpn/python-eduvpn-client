@@ -44,6 +44,7 @@ class Application:
         Load the lists of organisations and servers.
         """
         self.server_db.update()
+        self.interface_transition_threadsafe('server_db_finished_loading')
 
     @property
     def network_state(self):

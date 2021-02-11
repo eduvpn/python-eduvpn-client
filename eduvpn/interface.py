@@ -14,6 +14,10 @@ class InterfaceState(BaseState):
     Base class for all interface states.
     """
 
+    def server_db_finished_loading(self, app: Application) -> 'InterfaceState':
+        # By default, loading the server db doesn't change the interface state.
+        return self
+
     def toggle_settings(self, app: Application) -> 'InterfaceState':
         return ConfigureSettings(self)
 
@@ -89,7 +93,10 @@ def enter_search_query(app: Application, search_query: str) -> InterfaceState:
     Enter a search query for a predefined server.
     """
     if search_query:
-        results = list(app.server_db.search(search_query))
+        if app.server_db.is_loaded:
+            results = list(app.server_db.search(search_query))
+        else:
+            return PendingConfigurePredefinedServer(search_query)
     else:
         results = None
     return ConfigurePredefinedServer(search_query, results)
@@ -100,6 +107,29 @@ def enter_custom_address(app: Application, address: str) -> InterfaceState:
     Enter an address for a custom server.
     """
     return ConfigureCustomServer(address)
+
+
+class PendingConfigurePredefinedServer(InterfaceState):
+    """
+    When the user searches for a server, but the list
+    hasn't been downloaded yet, this state is temporarily
+    set until the download is finished.
+    """
+
+    def __init__(self, search_query: str = ''):
+        self.search_query = search_query
+
+    def enter_search_query(self, app: Application, search_query: str) -> InterfaceState:
+        return PendingConfigurePredefinedServer(search_query)
+
+    def enter_custom_address(self, app: Application, address: str) -> InterfaceState:
+        return enter_custom_address(app, address)
+
+    def connect_to_server(self, app: Application, server: Server) -> InterfaceState:
+        return connect_to_server(app, server)
+
+    def server_db_finished_loading(self, app: Application) -> InterfaceState:
+        return enter_search_query(app, self.search_query)
 
 
 class ConfigurePredefinedServer(InterfaceState):
@@ -147,6 +177,14 @@ class ConfigureCustomServer(InterfaceState):
 
     def connect_to_server(self, app: Application, server: Server):
         return connect_to_server(app, server)
+
+
+configure_server_states = (
+    # This is a tuple so it can be used with `isinstance()`.
+    PendingConfigurePredefinedServer,
+    ConfigurePredefinedServer,
+    ConfigureCustomServer,
+)
 
 
 class OAuthSetup(InterfaceState):
