@@ -39,7 +39,9 @@ Model = Gtk.ListStore
 @lru_cache()
 def get_server_type_model(server_type: ServerType) -> Model:
     # Model: (name: str, server: ServerType)
-    return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
+    return Gtk.ListStore(  # type: ignore
+        GObject.TYPE_STRING,
+        GObject.TYPE_PYOBJECT)
 
 
 def server_to_model_data(server: Server) -> list:
@@ -115,19 +117,21 @@ def disconnect_selection_handlers(builder, select_callback: Callable):
 
 def update_search_results_for_type(builder,
                                    server_type: ServerType,
-                                   servers: List[Server]):
+                                   servers: Iterable[Server]):
     """
     Update the UI with the search results
     for a single type of server.
     """
-    model = get_server_type_model(server_type)
+    model = get_server_type_model(server_type)  # type: ignore
     # Remove the old search results.
-    model.clear()
+    model.clear()  # type: ignore
     # Add the new search results.
     for server in servers:
-        model.append(server_to_model_data(server))
+        model_data = server_to_model_data(server)
+        model.append(model_data)  # type: ignore
     # Update the UI.
-    show_server_type_tree(builder, server_type, show=len(model) > 0)
+    model_has_results = len(model) > 0  # type: ignore
+    show_server_type_tree(builder, server_type, show=model_has_results)
 
 
 def update_results(builder, servers: Optional[Iterable[Server]]):

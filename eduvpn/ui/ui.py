@@ -3,7 +3,7 @@
 # Copyright: 2017-2020, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from typing import List
+from typing import Any, List
 import os
 import webbrowser
 import logging
@@ -89,7 +89,7 @@ class EduVpnGui:
         """
         self.lets_connect = lets_connect
 
-        self.builder = Gtk.Builder()
+        self.builder: Any = Gtk.Builder()
 
         prefix = get_prefix()
         for b in builder_files:

@@ -50,7 +50,7 @@ def go_to_main_state(app: Application) -> InterfaceState:
     If any servers have been configured, show the main state to select one.
     Otherwise, allow the user to configure a new server.
     """
-    configured_servers = []  # TODO
+    configured_servers: List[Server] = []  # TODO
     if configured_servers:
         return MainState(servers=configured_servers)
     else:
@@ -62,7 +62,7 @@ def connect_to_server(app: Application, server: Server) -> InterfaceState:
         # This server doesn't require OAuth setup
         # TODO make connection
         return ConnectionStatus(server)
-    metadata = get_current_metadata(server.oauth_login_url)
+    metadata = get_current_metadata(server.oauth_login_url)  # type: ignore
     if metadata:
         # We've already configured this server.
         # TODO make connection
@@ -96,6 +96,7 @@ def enter_search_query(app: Application, search_query: str) -> InterfaceState:
     """
     Enter a search query for a predefined server.
     """
+    results: Optional[List[Server]]
     if search_query:
         if app.server_db.is_loaded:
             results = list(app.server_db.search(search_query))
@@ -152,7 +153,7 @@ class ConfigurePredefinedServer(InterfaceState):
 
     def __init__(self,
                  search_query: str = '',
-                 results: Optional[Server] = None):
+                 results: Optional[List[Server]] = None):
         self.search_query = search_query
         self.results = results
 

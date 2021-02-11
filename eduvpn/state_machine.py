@@ -1,10 +1,16 @@
-from typing import Any, Union, Callable, Type, Tuple
+from typing import (
+    TypeVar, Generic, Any, Union, Optional, Callable,
+    Type, Iterable, Tuple, Dict, Set)
 import enum
 
 
-State = Any
+State = TypeVar('State')
+StateType = Type[State]
 Callback = Callable[[State, State], None]
-StateTargets = Union[Type[State], Tuple[Type[State]]]
+StateTargets = Union[StateType, Iterable[StateType]]
+CallbackRegistry = Dict[
+    Optional[Tuple[StateType, TransitionEdge]],
+    Set[Callback]]
 
 
 class TransitionEdge(enum.Enum):
@@ -47,7 +53,7 @@ def transition_callback(state_targets: StateTargets):
     """
     if not isinstance(state_targets, tuple):
         # Normalise argument to tuple.
-        state_targets = (state_targets, )
+        state_targets = (state_targets, )  # type: ignore
 
     def decorator(func: Callback):
         for state_type in state_targets:
@@ -67,7 +73,7 @@ def transition_edge_callback(edge: TransitionEdge,
     """
     if not isinstance(state_targets, tuple):
         # Normalise argument to tuple.
-        state_targets = (state_targets, )
+        state_targets = (state_targets, )  # type: ignore
 
     def decorator(func: Callback):
         for state_type in state_targets:
@@ -97,14 +103,14 @@ class InvalidStateTransition(Exception):
         self.name = name
 
 
-class StateMachine:
+class StateMachine(Generic[State]):
     """
     State machine wrapper that allows registering transition callbacks.
     """
 
     def __init__(self, initial_state: State):
         self._state = initial_state
-        self._callbacks = {}
+        self._callbacks: CallbackRegistry = {}
 
     @property
     def state(self) -> State:
