@@ -64,7 +64,7 @@ dnf:
 
 # install required binary packages when running GUI on OSX
 osx:
-	brew install gobject-introspection pygobject3
+	brew install gobject-introspection cairo # py3cairo pygobject3
 
 doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt

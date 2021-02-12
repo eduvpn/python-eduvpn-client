@@ -16,13 +16,12 @@ install_requires = [
     'cryptography',
     'pynacl',
     'wheel',
-    'PyGObject-stubs',
 ]
 
 gui_require = [
     'dbus-python',
     'pygobject',
-
+    'PyGObject-stubs',
 ]
 
 extras_require = {
