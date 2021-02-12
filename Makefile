@@ -77,11 +77,14 @@ srpm:
 	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_32 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 
-$(VENV)/bin/mypy $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
+$(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
 	touch $(VENV)/bin/pytest
-	touch $(VENV)/bin/mypy
 	touch $(VENV)/bin/pycodestyle
+
+$(VENV)/bin/mypy: $(VENV)/
+	$(VENV)/bin/pip install -e ".[mypy]"t
+	touch $(VENV)/bin/mypy
 
 mypy: $(VENV)/bin/mypy
 	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests
