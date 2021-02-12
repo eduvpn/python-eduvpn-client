@@ -22,14 +22,20 @@ class InitialNetworkState(NetworkState):
     the actual network state is obtained.
     """
 
-    def found_active_connection(self, app: Application, server: Server) -> NetworkState:
+    def found_active_connection(self,
+                                app: Application,
+                                server: Server,
+                                ) -> NetworkState:
         """
         An already active connection was found.
         """
         app.interface_transition('found_active_connection', server)
         return ConnectedState(server)
 
-    def found_previous_connection(self, app: Application, server: Server) -> NetworkState:
+    def found_previous_connection(self,
+                                  app: Application,
+                                  server: Server,
+                                  ) -> NetworkState:
         """
         A previously established connection was found.
 
@@ -58,7 +64,10 @@ class UnconnectedState(NetworkState):
     and this state is no longer reached.
     """
 
-    def connecting_to_server(self, app: Application, server: Server) -> NetworkState:
+    def connecting_to_server(self,
+                             app: Application,
+                             server: Server,
+                             ) -> NetworkState:
         # TODO store this as the default server
         return ConnectingState(server)
 
@@ -69,7 +78,7 @@ def connect(app: Application, server: Server) -> NetworkState:
     """
     client = get_client()
     activate_connection(client, app.current_network_uuid)
-    return ConnectingState(self.server)
+    return ConnectingState(server)
 
 
 def disconnect(app: Application, server: Server) -> NetworkState:
@@ -78,7 +87,7 @@ def disconnect(app: Application, server: Server) -> NetworkState:
     """
     client = get_client()
     deactivate_connection(client, app.current_network_uuid)
-    return DisconnectedState(self.server)
+    return DisconnectedState(server)
 
 
 class ConnectingState(NetworkState):
@@ -105,7 +114,8 @@ class ConnectingState(NetworkState):
         """
         The connection has been established.
         """
-        return ConnectionErrorState(self.server)
+        error = ""  # TODO
+        return ConnectionErrorState(self.server, error)
 
 
 class ConnectedState(NetworkState):
