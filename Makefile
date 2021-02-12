@@ -11,16 +11,16 @@ all: eduvpn-cli
 
 $(VENV)/:
 	python3 -m venv venv --system-site-packages
-	venv/bin/pip install --upgrade pip wheel pytest
+	$(VENV)/bin/pip install --upgrade pip wheel pytest
 
 $(VENV)/bin/eduvpn-cli: $(VENV)/
-	venv/bin/pip install -e ".[test]"
+	$(VENV)/bin/pip install -e ".[test]"
 
 $(VENV)/bin/eduvpn-gui: $(VENV)/
-	venv/bin/pip install -e ".[test,gui]"
+	$(VENV)/bin/pip install -e ".[test,gui]"
 
 eduvpn-gui: $(VENV)/bin/eduvpn-gui
-	venv/bin/eduvpn-gui
+	$(VENV)/bin/eduvpn-gui
 
 letsconnect-gui: $(VENV)/bin/eduvpn-gui
 	venv/bin/letsconnect-gui
@@ -61,6 +61,10 @@ dnf:
 		gobject-introspection-devel \
 		cairo-gobject-devel \
 		dbus-python-devel
+
+# install required binary packages when running GUI on OSX
+osx:
+	brew install gobject-introspection pygobject3
 
 doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt
