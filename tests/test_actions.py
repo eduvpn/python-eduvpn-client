@@ -1,47 +1,101 @@
-import unittest
-from unittest.mock import MagicMock, patch
-from tests.util import MockSelection
-from eduvpn.actions.add import new_provider
-from eduvpn.actions.delete import delete_profile
-from eduvpn.actions.select import select_profile
-from eduvpn.actions.vpn_status import vpn_change
-from eduvpn.metadata import Metadata
-from eduvpn.util import have_dbus_notification_service
+from unittest import TestCase
+from unittest.mock import patch, MagicMock
+from argparse import Namespace
+from eduvpn.actions import fetch_token, refresh, activate, deactivate
+from tests.mock_config import mock_server, mock_org
+from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
 
-class MockBuilder:
-    def __init__(self):
-        self.objects = {
-            'provider-selection': MockSelection(4),
-        }
+class TestCli(TestCase):
+    @patch('eduvpn.actions.save_connection_with_mainloop')
+    @patch('eduvpn.actions.create_keypair')
+    @patch('eduvpn.actions.get_config')
+    @patch('eduvpn.actions.list_profiles')
+    @patch('eduvpn.actions.get_oauth')
+    @patch('eduvpn.actions.get_info')
+    @patch('eduvpn.actions.get_client')
+    def test_start(
+            self,
+            get_client: MagicMock,
+            get_info: MagicMock,
+            get_oauth: MagicMock,
+            list_profiles: MagicMock,
+            get_config: MagicMock,
+            create_keypair: MagicMock,
+            save_connection: MagicMock,
+    ):
+        create_keypair.return_value = ["cert", "key"]
+        get_info.return_value = {"api_base_uri", "token_endpoint", "auth_endpoint"}
+        list_profiles.return_value = [{'profile_id': 'internet'}]
+        get_config.return_value = "a config file"
 
-    def get_object(self, o):
-        return self.objects.get(o, MagicMock())
+        args = MagicMock()
+        args.match = "https://test"
+        fetch_token(args)
 
+    @patch('eduvpn.actions.OAuth2Session')
+    @patch('eduvpn.actions.get_storage')
+    @patch('eduvpn.actions.get_cert_key')
+    @patch('eduvpn.actions.get_info')
+    @patch('eduvpn.actions.check_certificate')
+    @patch('eduvpn.actions.create_keypair')
+    @patch('eduvpn.actions.get_config')
+    @patch('eduvpn.actions.save_connection_with_mainloop')
+    @patch('eduvpn.actions.get_client')
+    def test_refresh(
+            self,
+            get_client: MagicMock,
+            save_connection: MagicMock,
+            get_config: MagicMock,
+            create_keypair: MagicMock,
+            check_certificate: MagicMock,
+            get_info: MagicMock,
+            get_cert_key: MagicMock,
+            get_storage: MagicMock, _: MagicMock
+    ):
+        create_keypair.return_value = "key", "cert"
+        check_certificate.return_value = False
+        get_cert_key.return_value = "cert", "key"
+        get_storage.return_value = "uuid", "auth_url", ({}, "", "", "", "", "", "", "", "")
+        get_info.return_value = "api_base_uri", "token_endpoint", "auth_endpoint"
+        refresh()
 
-class TestActions(unittest.TestCase):
-    uuid = 'test'
+    @patch('eduvpn.actions.OAuth2Session')
+    @patch('eduvpn.actions.get_storage')
+    @patch('eduvpn.actions.get_cert_key')
+    @patch('eduvpn.actions.get_info')
+    @patch('eduvpn.actions.check_certificate')
+    @patch('eduvpn.actions.create_keypair')
+    @patch('eduvpn.actions.get_config')
+    @patch('eduvpn.actions.save_connection_with_mainloop')
+    @patch('eduvpn.actions.get_client')
+    def test_refresh_invalid_signature(
+            self,
+            get_client: MagicMock,
+            save_connection: MagicMock,
+            get_config: MagicMock,
+            create_keypair: MagicMock,
+            check_certificate: MagicMock,
+            get_info: MagicMock,
+            get_cert_key: MagicMock,
+            get_storage: MagicMock, oauth: MagicMock
+    ):
+        oauth.refresh_token = MagicMock(side_effect=InvalidGrantError("invalid signature"))
 
-    @classmethod
-    def setUpClass(cls):
-        cls.meta = Metadata()
-        cls.meta.uuid = cls.uuid
+        create_keypair.return_value = "key", "cert"
+        check_certificate.return_value = False
+        get_cert_key.return_value = "cert", "key"
+        get_storage.return_value = "uuid", "auth_url", ({}, "", "", "", "", "", "", "", "")
+        get_info.return_value = "api_base_uri", "token_endpoint", "auth_endpoint"
+        refresh()
 
-        cls.builder = MockBuilder()
-        cls.verifier = MagicMock()
+    @patch('eduvpn.actions.refresh')
+    @patch('eduvpn.actions.activate_connection_with_mainloop')
+    @patch('eduvpn.actions.get_client')
+    def test_activate(self, get_client, activate_connection, refresh):
+        activate()
 
-    @patch('gi.repository.Gtk.MessageDialog')
-    def test_delete_profile(self, _):
-        delete_profile(builder=self.builder, lets_connect=False)
-
-    def test_select_profile(self):
-        select_profile(builder=self.builder, verifier=self.verifier, lets_connect=False)
-
-    def test_new_provider(self):
-        new_provider(builder=self.builder, verifier=self.verifier,
-                     institute_access_uri="bla",
-                     secure_internet_uri="bla", lets_connect=False)
-
-    @unittest.skipUnless(have_dbus_notification_service(), "DBus notification service not available")
-    def test_vpn_change(self):
-        vpn_change(builder=self.builder, lets_connect=False)
+    @patch('eduvpn.actions.get_client')
+    @patch('eduvpn.actions.deactivate_connection_with_mainloop')
+    def test_deactivate(self, get_client, deactivate_connection_with_mainloop):
+        deactivate()

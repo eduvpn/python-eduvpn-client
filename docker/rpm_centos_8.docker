@@ -1,0 +1,35 @@
+FROM centos:8
+
+RUN yum install -y epel-release
+
+RUN yum install -y	\
+    rpm-build \
+    rpmdevtools \
+    libnotify \
+    gtk3 \
+    python3 \
+    python3-devel \
+    python3-pynacl \
+    python3-pip \
+    python3-requests-oauthlib \
+    python3-gobject \
+    python3-pytest \
+    python3-dbus \
+    python3-pytest-runner \
+    python3-dateutil \
+    python3-cryptography \
+    NetworkManager-libnm
+
+RUN rpmdev-setuptree
+
+ADD . /code
+WORKDIR /code
+
+RUN python3 setup.py sdist
+RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
+
+RUN rpmbuild -bs eduvpn.spec
+RUN rpmbuild -bb eduvpn.spec
+
+
+

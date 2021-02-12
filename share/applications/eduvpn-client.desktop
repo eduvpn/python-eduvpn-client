@@ -3,7 +3,7 @@ Type=Application
 Encoding=UTF-8
 Name=eduVPN client
 Comment=a configuration tool to connect to eduVPN using OpenVPN
-Exec=eduvpn-client
+Exec=eduvpn-gui
 Icon=eduvpn-client
 Terminal=false
 

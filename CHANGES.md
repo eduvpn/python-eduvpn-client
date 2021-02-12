@@ -1,6 +1,11 @@
 Work in progress
 ================
 
+1.9.0
+=====
+
+This is a complete rewrite of the code base.
+
 1.1
 ===
 
