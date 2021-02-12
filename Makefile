@@ -83,7 +83,7 @@ $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	touch $(VENV)/bin/pycodestyle
 
 $(VENV)/bin/mypy: $(VENV)/
-	$(VENV)/bin/pip install -e ".[mypy]"t
+	$(VENV)/bin/pip install -e ".[mypy]"
 	touch $(VENV)/bin/mypy
 
 mypy: $(VENV)/bin/mypy
