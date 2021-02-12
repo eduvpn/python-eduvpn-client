@@ -1,0 +1,19 @@
+name: OS X
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ "*" ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  osx_wheel:
+    runs-on: macos-11.0
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Run test Suite
+        run:  make test
