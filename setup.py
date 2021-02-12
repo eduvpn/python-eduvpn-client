@@ -6,7 +6,6 @@ __version__ = "1.9.1"
 
 tests_require = [
     'pytest',
-    'PyGObject-stubs',
     'mypy',
     'pycodestyle',
 ]
@@ -17,10 +16,17 @@ install_requires = [
     'cryptography',
     'pynacl',
     'wheel',
+    'PyGObject-stubs',
+]
+
+gui_require = [
+    'dbus-python',
+    'pygobject',
+
 ]
 
 extras_require = {
-    'gui': ['dbus-python', 'pygobject'],
+    'gui': gui_require,
     'test': tests_require,
 }
 
