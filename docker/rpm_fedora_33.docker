@@ -1,4 +1,4 @@
-FROM fedora:32
+FROM fedora:33
 
 RUN dnf install -y	\
     fedora-packager \
@@ -14,6 +14,7 @@ RUN dnf install -y	\
     python3-dbus \
     python3-dateutil \
     python3-cryptography \
+    python3-wheel \
     NetworkManager-libnm
 
 RUN rpmdev-setuptree
