@@ -7,7 +7,6 @@ from urllib.parse import urlparse, parse_qs
 import requests
 from requests_oauthlib import OAuth2Session
 from eduvpn.settings import get_brand
-from typing import Optional
 from eduvpn.settings import CLIENT_ID, SCOPE, CODE_CHALLENGE_METHOD
 from eduvpn.utils import run_in_background_thread
 
@@ -130,9 +129,10 @@ def get_oauth_at_port(port: int, token_endpoint: str, authorization_endpoint: st
         return None
     code = response['code'][0]
     assert (state == response['state'][0])
-    token = oauth.fetch_token(token_url=token_endpoint, code=code, code_verifier=code_verifier,
+    token = oauth.fetch_token(token_url=token_endpoint, code=code,
+                              code_verifier=code_verifier,
                               client_id=oauth.client_id, include_client_id=True)
-    return oauth
+    return token
 
 
 def send_cancel_request(port):
