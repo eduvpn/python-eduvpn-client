@@ -151,7 +151,7 @@ class OAuthWebServer:
 
         @run_in_background_thread('oauth-http-server')
         def run_webserver():
-            token = get_oauth_at_port(port, token_endpoint,  authorization_endpoint)
+            token = get_oauth_at_port(port, token_endpoint, authorization_endpoint)
             callback(token)
 
         run_webserver()
