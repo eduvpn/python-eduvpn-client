@@ -12,7 +12,7 @@ from eduvpn import __version__
 
 logger = logging.getLogger(__name__)
 log_format = format_ = (
-    '%(asctime)s - %(levelname)s - %(name)s'
+    '%(asctime)s - %(threadName)s - %(levelname)s - %(name)s'
     ' - %(filename)s:%(lineno)d - %(message)s'
 )
 

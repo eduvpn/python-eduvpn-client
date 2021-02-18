@@ -22,7 +22,7 @@ class Application:
         self.initialize_network()
         self.initialize_server_db()
 
-    @run_in_background_thread
+    @run_in_background_thread('init-network')
     def initialize_network(self):
         """
         Determine the current network state.
@@ -38,7 +38,7 @@ class Application:
             transition = 'no_previous_connection_found'
         self.network_transition_threadsafe(transition)
 
-    @run_in_background_thread
+    @run_in_background_thread('init-server-db')
     def initialize_server_db(self):
         """
         Load the lists of organisations and servers.
