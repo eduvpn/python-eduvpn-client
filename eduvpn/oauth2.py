@@ -99,11 +99,12 @@ def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None) ->
     if not hasattr(httpd, "path"):
         raise Exception("Invalid response received")
 
-    if httpd.path == '/cancel':
+    path = httpd.path  # type: ignore
+    if path == '/cancel':
         return None
     else:
-        parsed = urlparse(httpd.path)  # type: ignore
-        logger.info(f"received a request {httpd.path}")  # type: ignore
+        parsed = urlparse(path)
+        logger.info(f"received a request {path}")  # type: ignore
         return parse_qs(parsed.query)
 
 
@@ -146,7 +147,7 @@ class OAuthWebServer:
     def start(cls,
               token_endpoint: str,
               authorization_endpoint: str,
-              callback: Callable[[Optional[OAuth2Session]], None]) -> 'Self':
+              callback: Callable[[Optional[OAuth2Session]], None]) -> 'OAuthWebServer':
         port = get_open_port()
 
         @run_in_background_thread('oauth-http-server')
