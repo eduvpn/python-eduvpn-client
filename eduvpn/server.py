@@ -133,9 +133,15 @@ class ServerInfo:
 
 
 class Profile:
-    def __init__(self, profile_id: str, display_name: str):
+    def __init__(self,
+                 profile_id: str,
+                 display_name: str,
+                 two_factor: bool,
+                 default_gateway: bool):
         self.profile_id = profile_id
         self.display_name = display_name
+        self.two_factor = two_factor
+        self.default_gateway = default_gateway
 
     @property
     def id(self):
