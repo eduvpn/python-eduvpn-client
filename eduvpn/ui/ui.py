@@ -17,14 +17,12 @@ from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 
 from ..settings import HELP_URL
-from .. import actions
-from .. import network
-from .. import interface
+from ..interface import state as interface_state
 from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
-from ..utils import get_prefix, thread_helper, run_in_main_gtk_thread
+from ..utils import get_prefix, run_in_main_gtk_thread
 from . import search
 from .utils import show_ui_component
 
@@ -145,79 +143,91 @@ class EduVpnGui:
 
     # interface state transition callbacks
 
-    @transition_callback(interface.InterfaceState)
+    @transition_callback(interface_state.InterfaceState)
     def default_transition_callback(self, old_state, new_state):
         # Only show the 'go back' button if
         # the corresponding transition is available.
         self.show_back_button(new_state.has_transition('go_back'))
 
-    @transition_edge_callback(ENTER, interface.ConfigureSettings)
+    @transition_edge_callback(ENTER, interface_state.ConfigureSettings)
     def enter_ConfigureSettings(self, old_state, new_state):
         self.show_component('settingsPage', True)
 
-    @transition_edge_callback(EXIT, interface.ConfigureSettings)
+    @transition_edge_callback(EXIT, interface_state.ConfigureSettings)
     def exit_ConfigureSettings(self, old_state, new_state):
         self.show_component('settingsPage', False)
 
-    @transition_edge_callback(ENTER, interface.configure_server_states)
+    @transition_edge_callback(ENTER, interface_state.configure_server_states)
     def enter_search(self, old_state, new_state):
-        if not isinstance(old_state, interface.configure_server_states):
+        if not isinstance(old_state, interface_state.configure_server_states):
             search.init_server_search(self.builder)
             search.connect_selection_handlers(
                 self.builder, self.on_select_server)
 
-    @transition_edge_callback(EXIT, interface.configure_server_states)
+    @transition_edge_callback(EXIT, interface_state.configure_server_states)
     def exit_search(self, old_state, new_state):
-        if not isinstance(new_state, interface.configure_server_states):
+        if not isinstance(new_state, interface_state.configure_server_states):
             search.exit_server_search(self.builder)
             search.disconnect_selection_handlers(
                 self.builder, self.on_select_server)
             self.set_search_text('')
 
     @transition_edge_callback(
-        ENTER, interface.PendingConfigurePredefinedServer)
+        ENTER, interface_state.PendingConfigurePredefinedServer)
     def enter_PendingConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self.builder, [])
-        if not isinstance(old_state, interface.configure_server_states):
+        if not isinstance(old_state, interface_state.configure_server_states):
             self.set_search_text(new_state.search_query)
 
-    @transition_edge_callback(ENTER, interface.ConfigurePredefinedServer)
+    @transition_edge_callback(ENTER, interface_state.ConfigurePredefinedServer)
     def enter_ConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self.builder, new_state.results)
-        if not isinstance(old_state, interface.configure_server_states):
+        if not isinstance(old_state, interface_state.configure_server_states):
             self.set_search_text(new_state.search_query)
 
-    @transition_edge_callback(ENTER, interface.ConfigureCustomServer)
+    @transition_edge_callback(ENTER, interface_state.ConfigureCustomServer)
     def enter_ConfigureCustomServer(self, old_state, new_state):
         search.update_results(self.builder, [CustomServer(new_state.address)])
-        if not isinstance(old_state, interface.configure_server_states):
+        if not isinstance(old_state, interface_state.configure_server_states):
             self.set_search_text(new_state.address)
 
-    @transition_edge_callback(ENTER, interface.OAuthSetup)
+    @transition_edge_callback(ENTER, interface_state.OAuthSetup)
     def enter_OAuthSetup(self, old_state, new_state):
         self.show_component('openBrowserPage', True)
 
-        def fetch_token():
-            url, oauth_session, token_endpoint, auth_endpoint = \
-                actions.fetch_token(new_state.server.oauth_login_url)
-            # TODO handle error:
-            #     self.app.interface_transition(
-            #         'oauth_setup_failure', error="unknown error")
-            # TODO handle cancel:
-            #     self.app.interface_transition('oauth_setup_cancel')
-            logger.debug(
-                f'got new oauth token: '
-                f'{url!r} {oauth_session!r} '
-                f'{token_endpoint!r} {auth_endpoint!r}'
-            )
-            self.app.interface_transition('oauth_setup_success')
-
-        # TODO stop thread when state changes (eg. click on settings)
-        thread_helper(fetch_token)
-
-    @transition_edge_callback(EXIT, interface.OAuthSetup)
+    @transition_edge_callback(EXIT, interface_state.OAuthSetup)
     def exit_OAuthSetup(self, old_state, new_state):
         self.show_component('openBrowserPage', False)
+
+    @transition_edge_callback(ENTER, interface_state.ChooseProfile)
+    def enter_ChooseProfile(self, old_state, new_state):
+        self.show_component('chooseProfilePage', True)
+        self.show_component('profileTreeView', True)
+
+        from gi.repository import Gtk, GObject
+        profile_tree_view = self.builder.get_object('profileTreeView')
+        text_cell = Gtk.CellRendererText()
+        text_cell.set_property("size-points", 14)  # type: ignore
+        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
+        profile_tree_view.append_column(col)
+        profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
+        profile_tree_view.set_model(profiles_list_model)
+
+        selection = profile_tree_view.get_selection()
+        selection.connect("changed", self.on_profile_selection_changed)
+
+        profiles_list_model.clear()  # type: ignore
+        for profile in new_state.profiles:
+            profiles_list_model.append([str(profile), profile])  # type: ignore
+
+    @transition_edge_callback(EXIT, interface_state.ChooseProfile)
+    def exit_ChooseProfile(self, old_state, new_state):
+        self.show_component('chooseProfilePage', False)
+        self.show_component('profileTreeView', False)
+
+        profile_tree_view = self.builder.get_object('profileTreeView')
+        selection = profile_tree_view.get_selection()
+        selection.disconnect_by_func(self.on_profile_selection_changed)
 
     # ui callbacks
 
@@ -277,5 +287,13 @@ class EduVpnGui:
         return True
 
     def on_profile_selection_changed(self, selection):
-        logger.debug("on_activate_changed")
-        # TODO
+        logger.debug("selected profile")
+        (model, tree_iter) = selection.get_selected()
+        selection.unselect_all()
+        if tree_iter is None:
+            logger.info("selection empty")
+        else:
+            row = model[tree_iter]
+            profile = row[1]
+            logger.debug(f"selected profile: {profile!r}")
+            self.app.interface_transition('select_profile', profile)

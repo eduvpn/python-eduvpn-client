@@ -12,7 +12,7 @@ class Application:
     def __init__(self, make_func_threadsafe):
         self.make_func_threadsafe = make_func_threadsafe
         from .network import InitialNetworkState
-        from .interface import InitialInterfaceState
+        from .interface.state import InitialInterfaceState
         self.network_state_machine = StateMachine(InitialNetworkState())
         self.interface_state_machine = StateMachine(InitialInterfaceState())
         self.server_db = ServerDatabase()
@@ -68,7 +68,7 @@ class Application:
         """
         from .network import NetworkState
         self.network_state_machine.connect_object_callbacks(obj, NetworkState)
-        from .interface import InterfaceState
+        from .interface.state import InterfaceState
         self.interface_state_machine.connect_object_callbacks(
             obj, InterfaceState)
 
