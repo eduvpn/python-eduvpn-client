@@ -11,16 +11,16 @@ all: eduvpn-cli
 
 $(VENV)/:
 	python3 -m venv venv --system-site-packages
-	venv/bin/pip install --upgrade pip wheel pytest
+	$(VENV)/bin/pip install --upgrade pip wheel pytest
 
 $(VENV)/bin/eduvpn-cli: $(VENV)/
-	venv/bin/pip install -e ".[test]"
+	$(VENV)/bin/pip install -e ".[test]"
 
 $(VENV)/bin/eduvpn-gui: $(VENV)/
-	venv/bin/pip install -e ".[test,gui]"
+	$(VENV)/bin/pip install -e ".[test,gui]"
 
 eduvpn-gui: $(VENV)/bin/eduvpn-gui
-	venv/bin/eduvpn-gui
+	$(VENV)/bin/eduvpn-gui
 
 letsconnect-gui: $(VENV)/bin/eduvpn-gui
 	venv/bin/letsconnect-gui
@@ -62,6 +62,10 @@ dnf:
 		cairo-gobject-devel \
 		dbus-python-devel
 
+# install required binary packages when running GUI on OSX
+osx:
+	brew install gobject-introspection cairo # py3cairo pygobject3
+
 doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt
 	$(VENV)/bin/python -msphinx doc doc/_build
@@ -73,11 +77,14 @@ srpm:
 	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_32 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 
-$(VENV)/bin/mypy $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
+$(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
 	touch $(VENV)/bin/pytest
-	touch $(VENV)/bin/mypy
 	touch $(VENV)/bin/pycodestyle
+
+$(VENV)/bin/mypy: $(VENV)/
+	$(VENV)/bin/pip install -e ".[mypy]"
+	touch $(VENV)/bin/mypy
 
 mypy: $(VENV)/bin/mypy
 	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests
