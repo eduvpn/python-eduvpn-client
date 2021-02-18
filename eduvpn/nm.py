@@ -126,7 +126,7 @@ def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
     try:
         connection = client.get_connection_by_uuid(uuid)
         cert_path = connection.get_setting_vpn().get_data_item('cert')
-    except Exception as e:
+    except Exception:
         _logger.error(f"Can't fetch stored VPN connecton with uuid {uuid}")
         raise IOError("Can't fetch eduVPN profile")
 

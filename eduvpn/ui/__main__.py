@@ -63,7 +63,7 @@ def main_loop(args=None, lets_connect=False):
     signal.signal(signal.SIGINT, signal_handler)
 
     if geteuid() == 0:
-        logger.error(f"Running client as root is not supported (yet)")
+        logger.error("Running client as root is not supported (yet)")
         exit(1)
 
     try:
