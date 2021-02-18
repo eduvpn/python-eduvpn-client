@@ -1,4 +1,4 @@
-from typing import Any, Union, Optional, Iterable, List, Dict, Type
+from typing import Union, Optional, Iterable, List, Dict, Type
 from eduvpn import remote
 from eduvpn.i18n import extract_translation
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI

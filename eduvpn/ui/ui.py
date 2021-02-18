@@ -3,7 +3,7 @@
 # Copyright: 2017-2020, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from typing import Any, List
+from typing import Any
 import os
 import webbrowser
 import logging
@@ -12,9 +12,6 @@ import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 gi.require_version('NM', '1.0')  # noqa: E402
 from gi.repository import Gtk
-
-from requests_oauthlib import OAuth2Session
-from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 
 from ..settings import HELP_URL
 from ..interface import state as interface_state

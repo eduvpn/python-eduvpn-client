@@ -1,9 +1,9 @@
-from typing import Optional, List, Dict, Iterable, Callable
+from typing import Optional, Iterable, Callable
 from functools import lru_cache
 from gi.repository import Gtk, GObject
 from eduvpn.server import (
     ServerType, Server, InstituteAccessServer, OrganisationServer,
-    CustomServer, ServerDatabase, group_servers_by_type)
+    CustomServer, group_servers_by_type)
 from .utils import show_ui_component
 
 
