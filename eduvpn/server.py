@@ -1,5 +1,5 @@
-from typing import Any, Union, Optional, Iterable, List, Dict, Type
-from eduvpn.remote import list_servers, list_organisations
+from typing import Union, Optional, Iterable, List, Dict, Type
+from eduvpn import remote
 from eduvpn.i18n import extract_translation
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI
 
@@ -125,6 +125,32 @@ class CustomServer:
         return f"<CustomServer {str(self)!r}>"
 
 
+class ServerInfo:
+    def __init__(self, api_base_uri, token_endpoint, auth_endpoint):
+        self.api_base_uri = api_base_uri
+        self.token_endpoint = token_endpoint
+        self.auth_endpoint = auth_endpoint
+
+
+class Profile:
+    def __init__(self,
+                 profile_id: str,
+                 display_name: str,
+                 two_factor: bool,
+                 default_gateway: bool):
+        self.profile_id = profile_id
+        self.display_name = display_name
+        self.two_factor = two_factor
+        self.default_gateway = default_gateway
+
+    @property
+    def id(self):
+        return self.profile_id
+
+    def __str__(self):
+        return self.display_name
+
+
 server_types = [
     InstituteAccessServer,
     OrganisationServer,
@@ -173,8 +199,8 @@ class ServerDatabase:
         This method must be thread-safe.
         """
         new_servers = []
-        server_list = list_servers(SERVER_URI)
-        organisation_list = list_organisations(ORGANISATION_URI)
+        server_list = remote.list_servers(SERVER_URI)
+        organisation_list = remote.list_organisations(ORGANISATION_URI)
         for server_data in server_list:
             server_type = server_data.pop('server_type')
             if server_type == 'institute_access':
@@ -205,3 +231,7 @@ class ServerDatabase:
                     yield server
         else:
             yield from self.all()
+
+    def get_server_info(self, server):
+        info = remote.get_info(server.oauth_login_url)
+        return ServerInfo(*info)

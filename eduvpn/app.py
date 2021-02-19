@@ -12,7 +12,7 @@ class Application:
     def __init__(self, make_func_threadsafe):
         self.make_func_threadsafe = make_func_threadsafe
         from .network import InitialNetworkState
-        from .interface import InitialInterfaceState
+        from .interface.state import InitialInterfaceState
         self.network_state_machine = StateMachine(InitialNetworkState())
         self.interface_state_machine = StateMachine(InitialInterfaceState())
         self.server_db = ServerDatabase()
@@ -22,7 +22,7 @@ class Application:
         self.initialize_network()
         self.initialize_server_db()
 
-    @run_in_background_thread
+    @run_in_background_thread('init-network')
     def initialize_network(self):
         """
         Determine the current network state.
@@ -38,7 +38,7 @@ class Application:
             transition = 'no_previous_connection_found'
         self.network_transition_threadsafe(transition)
 
-    @run_in_background_thread
+    @run_in_background_thread('init-server-db')
     def initialize_server_db(self):
         """
         Load the lists of organisations and servers.
@@ -68,7 +68,7 @@ class Application:
         """
         from .network import NetworkState
         self.network_state_machine.connect_object_callbacks(obj, NetworkState)
-        from .interface import InterfaceState
+        from .interface.state import InterfaceState
         self.interface_state_machine.connect_object_callbacks(
             obj, InterfaceState)
 

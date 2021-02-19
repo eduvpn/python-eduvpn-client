@@ -1,13 +1,14 @@
 import logging
 import webbrowser
-from typing import Dict, List
+from typing import Optional, Callable, Dict, List
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
 from urllib.parse import urlparse, parse_qs
+import requests
 from requests_oauthlib import OAuth2Session
 from eduvpn.settings import get_brand
-from typing import Optional
 from eduvpn.settings import CLIENT_ID, SCOPE, CODE_CHALLENGE_METHOD
+from eduvpn.utils import run_in_background_thread
 
 from eduvpn.crypto import gen_code_verifier, gen_code_challenge
 
@@ -50,7 +51,7 @@ def stringify_image(logo: str) -> str:
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
-def get_open_port():  # type: () -> int
+def get_open_port() -> int:
     """
     Find an unused local port.
 
@@ -65,7 +66,7 @@ def get_open_port():  # type: () -> int
     return port
 
 
-def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None) -> Dict[str, List[str]]:
+def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None) -> Optional[Dict[str, List[str]]]:
     """
     Listen for one http request on port, then close and return request query
 
@@ -97,13 +98,21 @@ def one_request(port: int, lets_connect: bool, timeout: Optional[int] = None) ->
     if not hasattr(httpd, "path"):
         raise Exception("Invalid response received")
 
-    parsed = urlparse(httpd.path)  # type: ignore
-    logger.info(f"received a request {httpd.path}")  # type: ignore
-    return parse_qs(parsed.query)
+    path = httpd.path  # type: ignore
+    if path == '/cancel':
+        return None
+    else:
+        parsed = urlparse(path)
+        logger.info(f"received a request {path}")  # type: ignore
+        return parse_qs(parsed.query)
 
 
-def get_oauth(token_endpoint: str, authorization_endpoint: str):
+def get_oauth(token_endpoint: str, authorization_endpoint: str) -> Optional[OAuth2Session]:
     port = get_open_port()
+    return get_oauth_at_port(port, token_endpoint, authorization_endpoint)
+
+
+def get_oauth_at_port(port: int, token_endpoint: str, authorization_endpoint: str) -> Optional[OAuth2Session]:
     redirect_uri = f'http://127.0.0.1:{port}/callback'
     oauth = OAuth2Session(CLIENT_ID, redirect_uri=redirect_uri, auto_refresh_url=token_endpoint, scope=SCOPE)
 
@@ -113,11 +122,42 @@ def get_oauth(token_endpoint: str, authorization_endpoint: str):
                                                        code_challenge_method=CODE_CHALLENGE_METHOD,
                                                        code_challenge=code_challenge)
 
-    print(f"opening browser with {authorization_url}")
+    logger.info(f"opening browser with {authorization_url}")
     webbrowser.open(authorization_url)
     response = one_request(port, lets_connect=False)
+    if response is None:
+        return None
     code = response['code'][0]
     assert (state == response['state'][0])
-    token = oauth.fetch_token(token_url=token_endpoint, code=code, code_verifier=code_verifier,
-                              client_id=oauth.client_id, include_client_id=True)
+    oauth.fetch_token(token_url=token_endpoint, code=code,
+                      code_verifier=code_verifier,
+                      client_id=oauth.client_id, include_client_id=True)
     return oauth
+
+
+def send_cancel_request(port):
+    requests.get(f'http://127.0.0.1:{port}/cancel')
+
+
+class OAuthWebServer:
+    def __init__(self, port: int):
+        self.port = port
+
+    @classmethod
+    def start(cls,
+              token_endpoint: str,
+              authorization_endpoint: str,
+              callback: Callable[[Optional[OAuth2Session]], None]) -> 'OAuthWebServer':
+        port = get_open_port()
+
+        @run_in_background_thread('oauth-http-server')
+        def run_webserver():
+            token = get_oauth_at_port(port, token_endpoint, authorization_endpoint)
+            callback(token)
+
+        run_webserver()
+        return cls(port)
+
+    @run_in_background_thread('oauth-http-server-stop')
+    def stop(self):
+        send_cancel_request(self.port)

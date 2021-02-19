@@ -12,7 +12,7 @@ from eduvpn import __version__
 
 logger = logging.getLogger(__name__)
 log_format = format_ = (
-    '%(asctime)s - %(levelname)s - %(name)s'
+    '%(asctime)s - %(threadName)s - %(levelname)s - %(name)s'
     ' - %(filename)s:%(lineno)d - %(message)s'
 )
 
@@ -63,7 +63,7 @@ def main_loop(args=None, lets_connect=False):
     signal.signal(signal.SIGINT, signal_handler)
 
     if geteuid() == 0:
-        logger.error(f"Running client as root is not supported (yet)")
+        logger.error("Running client as root is not supported (yet)")
         exit(1)
 
     try:

@@ -1,3 +1,4 @@
+from typing import Optional
 import threading
 from functools import lru_cache, partial, wraps
 from logging import getLogger
@@ -30,30 +31,33 @@ def get_prefix() -> str:
     raise Exception("Can't find eduVPN installation")
 
 
-def thread_helper(func: Callable) -> threading.Thread:
+def thread_helper(func: Callable, *, name: Optional[str] = None) -> threading.Thread:
     """
     Runs a function in a thread
 
     args:
         func (lambda): a function to run in the background
     """
-    thread = threading.Thread(target=func)
+    thread = threading.Thread(target=func, name=name)
     thread.daemon = True
     thread.start()
     return thread
 
 
-def run_in_background_thread(func):
+def run_in_background_thread(name: Optional[str] = None):
     """
     Decorator for functions that must always run
     in a background thread.
     """
+    def decorator(func):
 
-    @wraps(func)
-    def background_func(*args, **kwargs):
-        thread_helper(partial(func, *args, **kwargs))
+        @wraps(func)
+        def background_func(*args, **kwargs):
+            thread_helper(partial(func, *args, **kwargs), name=name)
 
-    return background_func
+        return background_func
+
+    return decorator
 
 
 def run_in_main_gtk_thread(func):
