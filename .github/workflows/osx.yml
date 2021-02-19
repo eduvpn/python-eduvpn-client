@@ -23,7 +23,7 @@ jobs:
         run: make osx
 
       - name: Install GUI python requirements
-        run: venv/bin/pip install -e ".[gui]"
+        run: venv/bin/pip install -e "."
 
       # run test suite again with GUI deps installed
       - name: Run test Suite

@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Any, List
+from typing import List
 from enum import Enum
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 

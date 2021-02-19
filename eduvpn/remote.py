@@ -72,9 +72,13 @@ def list_servers(uri: str) -> List[Dict[str, Any]]:
     return result
 
 
-def get_info(base_uri: str):
+def get_full_info(base_uri: str) -> Dict[str, Any]:
     uri = base_uri + 'info.json'
-    info = request(uri)['api']['http://eduvpn.org/api#2']
+    return request(uri)['api']['http://eduvpn.org/api#2']
+
+
+def get_info(base_uri: str):
+    info = get_full_info(base_uri)
     api_base_uri = info['api_base_uri']
     token_endpoint = info['token_endpoint']
     auth_endpoint = info['authorization_endpoint']

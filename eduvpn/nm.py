@@ -1,8 +1,6 @@
 import logging
 import time
 from functools import lru_cache
-import dbus
-import dbus.mainloop.glib
 from pathlib import Path
 from shutil import rmtree
 from sys import modules
@@ -126,7 +124,7 @@ def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
     try:
         connection = client.get_connection_by_uuid(uuid)
         cert_path = connection.get_setting_vpn().get_data_item('cert')
-    except Exception as e:
+    except Exception:
         _logger.error(f"Can't fetch stored VPN connecton with uuid {uuid}")
         raise IOError("Can't fetch eduVPN profile")
 
@@ -191,32 +189,6 @@ def connection_status(client: 'NM.Client') -> Tuple[Optional[str], Optional['NM.
     uuid = con.get_uuid()
     status = con.get_state()
     return uuid, status
-
-
-def init_dbus_system_bus(callback):
-    """
-    Create a new D-Bus system bus object. We put this here so other modules don't need to import D-Bus
-    """
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    bus = dbus.SystemBus()
-    _ = bus.add_signal_receiver(handler_function=callback,
-                                dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
-                                signal_name='VpnStateChanged')
-    m_proxy = bus.get_object("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager")
-    mgr_props = dbus.Interface(m_proxy, "org.freedesktop.DBus.Properties")
-    active = mgr_props.Get("org.freedesktop.NetworkManager", "ActiveConnections")
-    for a in active:
-        a_proxy = bus.get_object("org.freedesktop.NetworkManager", a)
-        a_props = dbus.Interface(a_proxy, "org.freedesktop.DBus.Properties")
-        vpn_id = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Id")
-        vpn = a_props.Get("org.freedesktop.NetworkManager.Connection.Active", "Vpn")
-        if vpn:
-            vpn_state_raw = a_props.Get("org.freedesktop.NetworkManager.VPN.Connection", "VpnState")
-            vpn_state = NM.VpnConnectionStateReason(vpn_state_raw)
-            _logger.debug(f'Id: {vpn_id} VpnState: {vpn_state}')
-            callback(vpn_state, NM.VpnConnectionStateReason.NONE)
-            return
-    callback(NM.VpnConnectionState.DISCONNECTED, NM.VpnConnectionStateReason.NONE)
 
 
 def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.VpnConnectionStateReason']:
