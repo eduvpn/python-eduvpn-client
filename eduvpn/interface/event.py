@@ -156,6 +156,7 @@ def chosen_profile(app: Application,
         country_code = None
         con_type = storage.ConnectionType.INSTITUTE
         display_name = str(server)
+        support_contact = server.support_contact
     elif isinstance(server, SecureInternetLocation):
         server_info = app.server_db.get_server_info(server.server)
         location_info = app.server_db.get_server_info(server.server)
@@ -164,12 +165,12 @@ def chosen_profile(app: Application,
         country_code = server.location.country_code
         con_type = storage.ConnectionType.SECURE
         display_name = str(server.server)
+        support_contact = server.location.support_contact
     else:
         raise TypeError(server)
 
     @run_in_background_thread('configure-connection')
     def configure_connection_thread():
-        support_contact = server.support_contact  # type: ignore
         config, private_key, certificate = actions.get_config_and_keycert(
             oauth_session, api_url, profile.id)
         storage.set_metadata(

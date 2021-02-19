@@ -1,7 +1,8 @@
 from typing import Union, Optional, Iterable, List, Dict, Type
+import os
 from eduvpn import remote
-from eduvpn.i18n import extract_translation
-from eduvpn.settings import SERVER_URI, ORGANISATION_URI
+from eduvpn.i18n import extract_translation, retrieve_country_name
+from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX
 
 
 class InstituteAccessServer:
@@ -61,10 +62,22 @@ class SecureInternetServer:
         self.authentication_url_template = authentication_url_template
 
     def __str__(self):
-        return self.base_url  # TODO
+        return f"{self.country_name} @ {self.base_url}"
 
     def __repr__(self):
         return f"<SecureInternetServer {str(self)!r}>"
+
+    @property
+    def country_name(self) -> str:
+        return retrieve_country_name(self.country_code)
+
+    @property
+    def flag_path(self) -> Optional[str]:
+        path = f'{FLAG_PREFIX}{self.country_code}@1,5x.png'
+        if os.path.exists(path):
+            return path
+        else:
+            return None
 
     @property
     def oauth_login_url(self):
@@ -133,6 +146,25 @@ class ServerInfo:
 
 
 class Profile:
+    def __init__(self,
+                 profile_id: str,
+                 display_name: str,
+                 two_factor: bool,
+                 default_gateway: bool):
+        self.profile_id = profile_id
+        self.display_name = display_name
+        self.two_factor = two_factor
+        self.default_gateway = default_gateway
+
+    @property
+    def id(self):
+        return self.profile_id
+
+    def __str__(self):
+        return self.display_name
+
+
+class Location:
     def __init__(self,
                  profile_id: str,
                  display_name: str,

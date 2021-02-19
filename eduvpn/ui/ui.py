@@ -11,7 +11,7 @@ import logging
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 gi.require_version('NM', '1.0')  # noqa: E402
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 
 from ..settings import HELP_URL
 from ..interface import state as interface_state
@@ -227,6 +227,45 @@ class EduVpnGui:
         selection = profile_tree_view.get_selection()
         selection.disconnect_by_func(self.on_profile_selection_changed)
 
+    @transition_edge_callback(ENTER, interface_state.ChooseSecureInternetLocation)
+    def enter_ChooseSecureInternetLocation(self, old_state, new_state):
+        self.show_component('chooseLocationPage', True)
+        self.show_component('locationTreeView', True)
+
+        from gi.repository import Gtk, GObject
+        location_tree_view = self.builder.get_object('locationTreeView')
+        text_cell = Gtk.CellRendererText()
+        text_cell.set_property("size-points", 14)  # type: ignore
+
+        renderer_pixbuf = Gtk.CellRendererPixbuf()
+        column_pixbuf = Gtk.TreeViewColumn("Image", renderer_pixbuf, pixbuf=1)  # type: ignore
+        location_tree_view.append_column(column_pixbuf)
+
+        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
+        location_tree_view.append_column(col)
+        location_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT)  # type: ignore
+        location_tree_view.set_model(location_list_model)
+
+        selection = location_tree_view.get_selection()
+        selection.connect("changed", self.on_location_selection_changed)
+
+        location_list_model.clear()  # type: ignore
+        for location in new_state.locations:
+            if location.flag_path is None:
+                continue  # TODO
+            else:
+                flag = GdkPixbuf.Pixbuf.new_from_file(location.flag_path)
+            location_list_model.append([location.country_name, flag, location])  # type: ignore
+
+    @transition_edge_callback(EXIT, interface_state.ChooseSecureInternetLocation)
+    def exit_ChooseSecureInternetLocation(self, old_state, new_state):
+        self.show_component('chooseLocationPage', False)
+        self.show_component('locationTreeView', False)
+
+        location_tree_view = self.builder.get_object('locationTreeView')
+        selection = location_tree_view.get_selection()
+        selection.disconnect_by_func(self.on_location_selection_changed)
+
     # ui callbacks
 
     def on_settings_button_released(self, widget, event):
@@ -295,3 +334,15 @@ class EduVpnGui:
             profile = row[1]
             logger.debug(f"selected profile: {profile!r}")
             self.app.interface_transition('select_profile', profile)
+
+    def on_location_selection_changed(self, selection):
+        logger.debug("selected location")
+        (model, tree_iter) = selection.get_selected()
+        selection.unselect_all()
+        if tree_iter is None:
+            logger.info("selection empty")
+        else:
+            row = model[tree_iter]
+            location = row[2]
+            logger.debug(f"selected location: {location!r}")
+            self.app.interface_transition('select_secure_internet_location', location)
