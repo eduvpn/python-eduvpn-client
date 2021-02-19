@@ -1,4 +1,4 @@
-from typing import Union, Optional, List
+from typing import Optional, List
 import logging
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2.rfc6749.errors import (
@@ -11,10 +11,10 @@ from .. import remote
 from ..oauth2 import OAuthWebServer
 from ..app import Application
 from ..server import (
-    Server, SecureInternetServer, OrganisationServer, InstituteAccessServer,
-    CustomServer, Profile)
+    AnyServer, PredefinedServer, ConfiguredServer, InstituteAccessServer,
+    SecureInternetServer, OrganisationServer, CustomServer,
+    SecureInternetLocation, Profile)
 from ..utils import run_in_background_thread
-from .utils import SecureInternetLocation
 from . import state
 
 
@@ -26,7 +26,7 @@ def go_to_main_state(app: Application) -> state.InterfaceState:
     If any servers have been configured, show the main state to select one.
     Otherwise, allow the user to configure a new server.
     """
-    configured_servers: List[Server] = []  # TODO
+    configured_servers = list(app.server_db.all_configured())
     if configured_servers:
         return state.MainState(servers=configured_servers)
     else:
@@ -37,7 +37,7 @@ def enter_search_query(app: Application, search_query: str) -> state.InterfaceSt
     """
     Enter a search query for a predefined server.
     """
-    results: Optional[List[Server]]
+    results: Optional[List[PredefinedServer]]
     if search_query:
         if app.server_db.is_loaded:
             results = list(app.server_db.search(search_query))
@@ -63,11 +63,7 @@ def create_new_oauth_session(token: str, token_endpoint: str) -> OAuth2Session:
     )
 
 
-def connect_to_server(app: Application, server: Server) -> state.InterfaceState:
-    if not hasattr(server, 'oauth_login_url'):
-        # This server doesn't require OAuth setup
-        # TODO make connection
-        return state.ConnectionStatus(server)  # type: ignore
+def connect_to_server(app: Application, server: AnyServer) -> state.InterfaceState:
     oauth_login_url = server.oauth_login_url  # type: ignore
     metadata = storage.get_current_metadata(oauth_login_url)
     if metadata:
@@ -80,7 +76,7 @@ def connect_to_server(app: Application, server: Server) -> state.InterfaceState:
         return setup_oauth(app, server)
 
 
-def setup_oauth(app: Application, server: Server) -> state.InterfaceState:
+def setup_oauth(app: Application, server: AnyServer) -> state.InterfaceState:
     server_info = app.server_db.get_server_info(server)
 
     def oauth_token_callback(oauth_session: Optional[OAuth2Session]):
@@ -101,7 +97,7 @@ def setup_oauth(app: Application, server: Server) -> state.InterfaceState:
 
 
 def refresh_oauth_token(app: Application,
-                        server: Server,
+                        server: AnyServer,
                         oauth_session: OAuth2Session) -> state.InterfaceState:
 
     @run_in_background_thread('oauth-refresh')
@@ -120,13 +116,13 @@ def refresh_oauth_token(app: Application,
 
 
 def start_connection(app: Application,
-                     server: Server,
+                     server: AnyServer,
                      oauth_session: OAuth2Session,
                      location: Optional[SecureInternetServer] = None,
                      ) -> state.InterfaceState:
     server_info = app.server_db.get_server_info(server)
     api_url = server_info.api_base_uri
-    profile_server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer]
+    profile_server: ConfiguredServer
 
     if isinstance(server, OrganisationServer):
         if not location:
@@ -144,7 +140,7 @@ def start_connection(app: Application,
 
 
 def chosen_profile(app: Application,
-                   server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer],
+                   server: AnyServer,
                    oauth_session: OAuth2Session,
                    profile: Profile) -> state.InterfaceState:
     country_code: Optional[str]

@@ -158,6 +158,8 @@ class EduVpnGui:
     def enter_search(self, old_state, new_state):
         if not isinstance(old_state, interface_state.configure_server_states):
             self.builder.get_object('findYourInstituteSearch').grab_focus()
+            search.show_result_components(self.builder, True)
+            search.show_search_components(self.builder, True)
             search.init_server_search(self.builder)
             search.connect_selection_handlers(
                 self.builder, self.on_select_server)
@@ -165,6 +167,8 @@ class EduVpnGui:
     @transition_edge_callback(EXIT, interface_state.configure_server_states)
     def exit_search(self, old_state, new_state):
         if not isinstance(new_state, interface_state.configure_server_states):
+            search.show_result_components(self.builder, False)
+            search.show_search_components(self.builder, False)
             search.exit_server_search(self.builder)
             search.disconnect_selection_handlers(
                 self.builder, self.on_select_server)
@@ -188,6 +192,25 @@ class EduVpnGui:
         search.update_results(self.builder, [CustomServer(new_state.address)])
         if not isinstance(old_state, interface_state.configure_server_states):
             self.set_search_text(new_state.address)
+
+    @transition_edge_callback(ENTER, interface_state.MainState)
+    def enter_MainState(self, old_state, new_state):
+        search.show_result_components(self.builder, True)
+        self.show_component('addOtherServerRow', True)
+        self.show_component('addOtherServerButton', True)
+        search.update_results(self.builder, new_state.servers)
+        search.init_server_search(self.builder)
+        search.connect_selection_handlers(
+            self.builder, self.on_select_server)
+
+    @transition_edge_callback(EXIT, interface_state.MainState)
+    def exit_MainState(self, old_state, new_state):
+        search.show_result_components(self.builder, False)
+        self.show_component('addOtherServerRow', False)
+        self.show_component('addOtherServerButton', False)
+        search.exit_server_search(self.builder)
+        search.disconnect_selection_handlers(
+            self.builder, self.on_select_server)
 
     @transition_edge_callback(ENTER, interface_state.OAuthSetup)
     def enter_OAuthSetup(self, old_state, new_state):

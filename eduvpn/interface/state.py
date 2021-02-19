@@ -1,11 +1,11 @@
-from typing import Union, Optional, List
+from typing import Optional, List
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
 from ..app import Application
 from ..server import (
-    Server, SecureInternetServer, InstituteAccessServer, CustomServer, Profile)
-from .utils import SecureInternetLocation
+    AnyServer, PredefinedServer, ConfiguredServer,
+    SecureInternetServer, OrganisationServer, CustomServer, Profile)
 from . import event
 
 
@@ -33,7 +33,7 @@ class InitialInterfaceState(InterfaceState):
 
     def found_active_connection(self,
                                 app: Application,
-                                server: Union[InstituteAccessServer, SecureInternetLocation],
+                                server: ConfiguredServer,
                                 ) -> InterfaceState:
         """
         An connection is already active, show its details.
@@ -58,7 +58,7 @@ class MainState(InterfaceState):
     Present the list of configured servers to start a connection.
     """
 
-    def __init__(self, servers: List[Server]):
+    def __init__(self, servers: List[ConfiguredServer]):
         self.servers = servers
 
     def configure_new_server(self, app: Application) -> InterfaceState:
@@ -67,7 +67,7 @@ class MainState(InterfaceState):
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
+                          server: ConfiguredServer) -> InterfaceState:
         "Connect to an already configured server."
         return event.connect_to_server(app, server)
 
@@ -96,7 +96,7 @@ class PendingConfigurePredefinedServer(InterfaceState):
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
+                          server: ConfiguredServer) -> InterfaceState:
         return event.connect_to_server(app, server)
 
     def server_db_finished_loading(self, app: Application) -> InterfaceState:
@@ -114,7 +114,7 @@ class ConfigurePredefinedServer(InterfaceState):
 
     def __init__(self,
                  search_query: str = '',
-                 results: Optional[List[Server]] = None):
+                 results: Optional[List[PredefinedServer]] = None):
         self.search_query = search_query
         self.results = results
 
@@ -142,7 +142,7 @@ class ConfigurePredefinedServer(InterfaceState):
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
+                          server: PredefinedServer) -> InterfaceState:
         return event.connect_to_server(app, server)
 
 
@@ -167,7 +167,7 @@ class ConfigureCustomServer(InterfaceState):
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
+                          server: CustomServer) -> InterfaceState:
         return event.connect_to_server(app, server)
 
 
@@ -184,7 +184,7 @@ class OAuthSetup(InterfaceState):
     Allow the user to log into the VPN server using their browser.
     """
 
-    def __init__(self, server: Server, oauth_web_server: OAuthWebServer):
+    def __init__(self, server: AnyServer, oauth_web_server: OAuthWebServer):
         self.server = server
         self.oauth_web_server = oauth_web_server
 
@@ -212,7 +212,7 @@ class OAuthRefreshToken(InterfaceState):
 
     def __init__(self,
                  app: Application,
-                 server: Server,
+                 server: AnyServer,
                  oauth_session: OAuth2Session):
         self.app = app
         self.server = server
@@ -235,7 +235,7 @@ class ChooseSecureInternetLocation(InterfaceState):
     """
 
     def __init__(self,
-                 server: Server,
+                 server: OrganisationServer,
                  oauth_session: OAuth2Session,
                  locations: List[SecureInternetServer]):
         self.server = server
@@ -252,7 +252,7 @@ class ChooseProfile(InterfaceState):
     """
 
     def __init__(self,
-                 server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer],
+                 server: AnyServer,
                  oauth_session: OAuth2Session,
                  profiles: List[Profile]):
         self.server = server
@@ -271,7 +271,7 @@ class ConfiguringConnection(InterfaceState):
     save the configuration to the network manager.
     """
 
-    def __init__(self, server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer]):
+    def __init__(self, server: AnyServer):
         self.server = server
 
     def finished_configuring_connection(self, app: Application) -> InterfaceState:
@@ -283,7 +283,7 @@ class ConnectionStatus(InterfaceState):
     Show info on the active connection status.
     """
 
-    def __init__(self, server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer]):
+    def __init__(self, server: AnyServer):
         self.server = server
 
 
