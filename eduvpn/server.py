@@ -3,6 +3,7 @@ import os
 from eduvpn import remote
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX
+from .utils import custom_server_oauth_url
 
 
 class InstituteAccessServer:
@@ -136,6 +137,10 @@ class CustomServer:
 
     def __repr__(self):
         return f"<CustomServer {str(self)!r}>"
+
+    @property
+    def oauth_login_url(self):
+        return custom_server_oauth_url(self.address)
 
 
 class ServerInfo:

@@ -252,7 +252,7 @@ class ChooseProfile(InterfaceState):
     """
 
     def __init__(self,
-                 server: Union[InstituteAccessServer, SecureInternetLocation],
+                 server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer],
                  oauth_session: OAuth2Session,
                  profiles: List[Profile]):
         self.server = server
@@ -271,7 +271,7 @@ class ConfiguringConnection(InterfaceState):
     save the configuration to the network manager.
     """
 
-    def __init__(self, server: Union[InstituteAccessServer, SecureInternetLocation]):
+    def __init__(self, server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer]):
         self.server = server
 
     def finished_configuring_connection(self, app: Application) -> InterfaceState:

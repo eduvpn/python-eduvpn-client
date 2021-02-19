@@ -31,6 +31,14 @@ def get_prefix() -> str:
     raise Exception("Can't find eduVPN installation")
 
 
+def custom_server_oauth_url(address):
+    if not address.startswith(('http://', 'https://')):
+        address = f'https://{address}'
+    if not address.endswith('/'):
+        address += '/'
+    return address
+
+
 def thread_helper(func: Callable, *, name: Optional[str] = None) -> threading.Thread:
     """
     Runs a function in a thread

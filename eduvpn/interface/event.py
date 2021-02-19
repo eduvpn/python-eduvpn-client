@@ -126,7 +126,7 @@ def start_connection(app: Application,
                      ) -> state.InterfaceState:
     server_info = app.server_db.get_server_info(server)
     api_url = server_info.api_base_uri
-    profile_server: Union[InstituteAccessServer, SecureInternetLocation]
+    profile_server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer]
 
     if isinstance(server, OrganisationServer):
         if not location:
@@ -136,8 +136,6 @@ def start_connection(app: Application,
         else:
             api_url = app.server_db.get_server_info(location).api_base_uri
             profile_server = SecureInternetLocation(server, location)
-    elif isinstance(server, CustomServer):
-        raise NotImplementedError  # TODO
     else:
         profile_server = server
 
@@ -146,18 +144,11 @@ def start_connection(app: Application,
 
 
 def chosen_profile(app: Application,
-                   server: Union[InstituteAccessServer, SecureInternetLocation],
+                   server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer],
                    oauth_session: OAuth2Session,
                    profile: Profile) -> state.InterfaceState:
-    if isinstance(server, InstituteAccessServer):
-        server_info = app.server_db.get_server_info(server)
-        api_url = server_info.api_base_uri
-        auth_url = server.oauth_login_url
-        country_code = None
-        con_type = storage.ConnectionType.INSTITUTE
-        display_name = str(server)
-        support_contact = server.support_contact
-    elif isinstance(server, SecureInternetLocation):
+    country_code: Optional[str]
+    if isinstance(server, SecureInternetLocation):
         server_info = app.server_db.get_server_info(server.server)
         location_info = app.server_db.get_server_info(server.server)
         auth_url = server.server.oauth_login_url
@@ -167,7 +158,19 @@ def chosen_profile(app: Application,
         display_name = str(server.server)
         support_contact = server.location.support_contact
     else:
-        raise TypeError(server)
+        server_info = app.server_db.get_server_info(server)
+        api_url = server_info.api_base_uri
+        auth_url = server.oauth_login_url
+        country_code = None
+        display_name = str(server)
+        if isinstance(server, InstituteAccessServer):
+            con_type = storage.ConnectionType.INSTITUTE
+            support_contact = server.support_contact
+        elif isinstance(server, CustomServer):
+            con_type = storage.ConnectionType.OTHER
+            support_contact = []
+        else:
+            raise TypeError(server)
 
     @run_in_background_thread('configure-connection')
     def configure_connection_thread():
