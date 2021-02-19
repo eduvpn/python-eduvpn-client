@@ -157,6 +157,7 @@ class EduVpnGui:
     @transition_edge_callback(ENTER, interface_state.configure_server_states)
     def enter_search(self, old_state, new_state):
         if not isinstance(old_state, interface_state.configure_server_states):
+            self.builder.get_object('findYourInstituteSearch').grab_focus()
             search.init_server_search(self.builder)
             search.connect_selection_handlers(
                 self.builder, self.on_select_server)
