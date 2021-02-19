@@ -129,10 +129,10 @@ def get_oauth_at_port(port: int, token_endpoint: str, authorization_endpoint: st
         return None
     code = response['code'][0]
     assert (state == response['state'][0])
-    token = oauth.fetch_token(token_url=token_endpoint, code=code,
-                              code_verifier=code_verifier,
-                              client_id=oauth.client_id, include_client_id=True)
-    return token
+    oauth.fetch_token(token_url=token_endpoint, code=code,
+                      code_verifier=code_verifier,
+                      client_id=oauth.client_id, include_client_id=True)
+    return oauth
 
 
 def send_cancel_request(port):
