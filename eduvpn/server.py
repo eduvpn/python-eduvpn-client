@@ -1,6 +1,7 @@
-from typing import Union, Optional, Iterable, List, Dict, Type
+from typing import Union, Optional, Iterable, List, Dict
 import os
 from eduvpn import remote
+from eduvpn import storage
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX
 from .utils import custom_server_oauth_url
@@ -169,51 +170,48 @@ class Profile:
         return self.display_name
 
 
-class Location:
+class SecureInternetLocation:
     def __init__(self,
-                 profile_id: str,
-                 display_name: str,
-                 two_factor: bool,
-                 default_gateway: bool):
-        self.profile_id = profile_id
-        self.display_name = display_name
-        self.two_factor = two_factor
-        self.default_gateway = default_gateway
-
-    @property
-    def id(self):
-        return self.profile_id
+                 server: OrganisationServer,
+                 location: SecureInternetServer):
+        self.server = server
+        self.location = location
 
     def __str__(self):
-        return self.display_name
+        return self.location.country_name
+
+    @property
+    def oauth_login_url(self):
+        assert self.server.oauth_login_url == self.location.oauth_login_url
+        return self.server.oauth_login_url
 
 
 server_types = [
     InstituteAccessServer,
+    SecureInternetServer,
     OrganisationServer,
     CustomServer,
 ]
 
 
 # typing aliases
-Server = Union[
+PredefinedServer = Union[
     InstituteAccessServer,
     OrganisationServer,
     CustomServer,
 ]
-ServerType = Type[Server]
+ConfiguredServer = Union[
+    InstituteAccessServer,
+    SecureInternetLocation,
+    CustomServer,
+]
+AnyServer = Union[
+    PredefinedServer,
+    ConfiguredServer,
+]
 
 
-def group_servers_by_type(
-        servers: Iterable[Server]) -> Dict[ServerType, List[Server]]:
-    groups: Dict[ServerType, List[Server]]
-    groups = {server_type: [] for server_type in server_types}
-    for server in servers:
-        groups[type(server)].append(server)
-    return groups
-
-
-def is_search_match(server: Server, query: str) -> bool:
+def is_search_match(server: PredefinedServer, query: str) -> bool:
     if hasattr(server, 'search_texts'):
         return any(query.lower() in search_text.lower()
                    for search_text
@@ -256,11 +254,41 @@ class ServerDatabase:
         self.servers = new_servers
         self.is_loaded = True
 
-    def all(self) -> Iterable[Server]:
+    def all_configured(self) -> Iterable[ConfiguredServer]:
+        "Return all configured servers."
+        for key, data in storage.get_all_metadatas().items():
+            if data['con_type'] == storage.ConnectionType.INSTITUTE:
+                yield InstituteAccessServer(
+                    base_url=data['api_base_uri'],
+                    display_name=data['display_name'],
+                    support_contact=data['support_contact'],
+                    keyword_list=None,  # TODO
+                )
+            elif data['con_type'] == storage.ConnectionType.SECURE:
+                secure_internet = SecureInternetServer(
+                    base_url=data['api_base_uri'],
+                    public_key_list=[],  # TODO
+                    country_code=data['country_id'],
+                    support_contact=data['support_contact'],
+                    authentication_url_template=None,  # TODO
+                )
+                organisation = OrganisationServer(
+                    secure_internet_home=data['api_base_uri'],
+                    display_name=data['display_name'],
+                    org_id='',  # TODO
+                    keyword_list={},
+                )
+                yield SecureInternetLocation(organisation, secure_internet)
+            elif data['con_type'] == storage.ConnectionType.OTHER:
+                yield CustomServer(data['api_base_uri'])
+            else:
+                raise ValueError(data)
+
+    def all(self) -> Iterable[PredefinedServer]:
         "Return all servers."
         return iter(self.servers)
 
-    def search(self, query: str) -> Iterable[Server]:
+    def search(self, query: str) -> Iterable[PredefinedServer]:
         "Return all servers that match the search query."
         if query:
             for server in self.all():

@@ -29,14 +29,17 @@ class Application:
         """
         # Check if a previous network profile exists.
         self.current_network_uuid = get_uuid()
+        kwargs = {}
         if self.current_network_uuid:
+            from .server import CustomServer  # TODO x
+            kwargs['server'] = CustomServer('demo.eduvpn.nl')  # TODO x
             if 0:  # TODO
                 transition = 'found_active_connection'
             else:
                 transition = 'found_previous_connection'
         else:
             transition = 'no_previous_connection_found'
-        self.network_transition_threadsafe(transition)
+        self.network_transition_threadsafe(transition, **kwargs)
 
     @run_in_background_thread('init-server-db')
     def initialize_server_db(self):

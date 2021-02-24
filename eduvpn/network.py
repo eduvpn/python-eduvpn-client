@@ -2,7 +2,7 @@ import logging
 from .nm import get_client, activate_connection, deactivate_connection
 from .state_machine import BaseState
 from .app import Application
-from .server import Server
+from .server import ConfiguredServer as Server
 
 
 logger = logging.getLogger(__name__)
