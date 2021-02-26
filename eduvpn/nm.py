@@ -241,7 +241,7 @@ def get_dbus() -> Optional['dbus.SystemBus']:
 
 
 def subscribe_to_status_changes(
-    callback: Callable[[NM.VpnConnectionState, NM.VpnConnectionStateReason], Any],
+    callback: Callable[['NM.VpnConnectionState', 'NM.VpnConnectionStateReason'], Any],
 ) -> bool:
     """
     Subscribe to all network status changes via DBus.
