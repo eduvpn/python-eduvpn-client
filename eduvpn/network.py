@@ -189,3 +189,9 @@ class ConnectionErrorState(NetworkState):
 
     def reconnect(self, app: Application) -> NetworkState:
         return connect(app)
+
+
+class UnknownState(NetworkState):
+    """
+    The network state could not be determined.
+    """
