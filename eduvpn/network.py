@@ -1,6 +1,6 @@
 import logging
 import enum
-from .nm import get_client, activate_connection, deactivate_connection
+from . import nm
 from . import settings
 from .state_machine import BaseState
 from .app import Application
@@ -95,8 +95,8 @@ def connect(app: Application) -> NetworkState:
     """
     Estabilish a connection to the server.
     """
-    client = get_client()
-    activate_connection(client, app.current_network_uuid)
+    client = nm.get_client()
+    nm.activate_connection(client, app.current_network_uuid)
     return ConnectingState()
 
 
@@ -104,8 +104,8 @@ def disconnect(app: Application) -> NetworkState:
     """
     Break the connection to the server.
     """
-    client = get_client()
-    deactivate_connection(client, app.current_network_uuid)
+    client = nm.get_client()
+    nm.deactivate_connection(client, app.current_network_uuid)
     return DisconnectedState()
 
 
