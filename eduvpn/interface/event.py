@@ -180,10 +180,14 @@ def chosen_profile(app: Application,
 
         def finished_saving_config_callback(result):
             logger.info(f"Finished saving network manager config: {result}")
-            app.interface_transition_threadsafe('finished_configuring_connection')
+            app.interface_transition('finished_configuring_connection')
 
-        nm.save_connection(nm.get_client(), config, private_key, certificate,
-                           callback=finished_saving_config_callback)
+        @app.make_func_threadsafe
+        def save_connection():
+            nm.save_connection(nm.get_client(), config, private_key, certificate,
+                               callback=finished_saving_config_callback)
+
+        save_connection()
 
     configure_connection_thread()
     return state.ConfiguringConnection(server)
