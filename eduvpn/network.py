@@ -154,7 +154,7 @@ class DisconnectedState(NetworkState):
     """
 
     status_label: str = "Disconnected"
-    status_image = StatusImage.DEFAULT
+    status_image = StatusImage.NOT_CONNECTED
 
     def reconnect(self, app: Application) -> NetworkState:
         return connect(app)
