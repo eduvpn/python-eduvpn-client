@@ -154,7 +154,7 @@ def activate_connection(client: 'NM.Client', uuid: str, callback=None):
         # late while according to the logging the connection is already
         # created. Need to find the correct event to sync on.
         time.sleep(.1)
-        GLib.idle_add(lambda: activate_connection(client, uuid))
+        GLib.idle_add(lambda: activate_connection(client, uuid, callback))
         return
 
     def activate_connection_callback(a_client, res, callback=None):
