@@ -34,7 +34,7 @@ class NetworkState(BaseState):
                              app: Application,
                              server: Server,
                              ) -> 'NetworkState':
-        return connect(app, server)
+        return connect(app)
 
 
 class InitialNetworkState(NetworkState):
@@ -53,7 +53,7 @@ class InitialNetworkState(NetworkState):
         An already active connection was found.
         """
         app.interface_transition('found_active_connection', server)
-        return ConnectedState(server)
+        return ConnectedState()
 
     def found_previous_connection(self,
                                   app: Application,
@@ -65,7 +65,7 @@ class InitialNetworkState(NetworkState):
         This will be the default connection to start.
         """
         app.interface_transition('no_active_connection_found')
-        return DisconnectedState(server)
+        return DisconnectedState()
 
     def no_previous_connection_found(self, app: Application) -> NetworkState:
         """
@@ -91,22 +91,22 @@ class UnconnectedState(NetworkState):
     status_image = StatusImage.DEFAULT
 
 
-def connect(app: Application, server: Server) -> NetworkState:
+def connect(app: Application) -> NetworkState:
     """
     Estabilish a connection to the server.
     """
     client = get_client()
     activate_connection(client, app.current_network_uuid)
-    return ConnectingState(server)
+    return ConnectingState()
 
 
-def disconnect(app: Application, server: Server) -> NetworkState:
+def disconnect(app: Application) -> NetworkState:
     """
     Break the connection to the server.
     """
     client = get_client()
     deactivate_connection(client, app.current_network_uuid)
-    return DisconnectedState(server)
+    return DisconnectedState()
 
 
 class ConnectingState(NetworkState):
@@ -117,14 +117,11 @@ class ConnectingState(NetworkState):
     status_label: str = "Preparing to connect"
     status_image = StatusImage.CONNECTING
 
-    def __init__(self, server: Server):
-        self.server = server
-
     def disconnect(self, app: Application) -> NetworkState:
         """
         Abort connecting.
         """
-        return disconnect(app, self.server)
+        return disconnect(app)
 
     def connection_established(self, app: Application) -> NetworkState:
         """
@@ -138,8 +135,6 @@ class ConnectingState(NetworkState):
         """
         error = ""  # TODO
         return ConnectionErrorState(self.server, error)
-
-
 class ConnectedState(NetworkState):
     """
     The network is currently connected to a server.
@@ -148,22 +143,8 @@ class ConnectedState(NetworkState):
     status_label: str = "Connection active"
     status_image = StatusImage.CONNECTED
 
-    def __init__(self, server: Server):
-        self.server = server
-        # TODO
-        # self.time_started =
-        # self.valid_until =
-        # self.bytes_received =
-        # self.bytes_uploaded =
-
     def disconnect(self, app: Application) -> NetworkState:
-        return disconnect(app, self.server)
-
-    def certificate_expired(self, app: Application) -> NetworkState:
-        """
-        The certificate for this connection has expired.
-        """
-        return CertificateExpiredState(self.server)
+        return disconnect(app)
 
 
 class DisconnectedState(NetworkState):
@@ -175,11 +156,8 @@ class DisconnectedState(NetworkState):
     status_label: str = "Disconnected"
     status_image = StatusImage.DEFAULT
 
-    def __init__(self, server: Server):
-        self.server = server
-
     def reconnect(self, app: Application) -> NetworkState:
-        return connect(app, self.server)
+        return connect(app)
 
 
 class CertificateExpiredState(NetworkState):
@@ -190,15 +168,12 @@ class CertificateExpiredState(NetworkState):
     status_label: str = "Connection failed"
     status_image = StatusImage.NOT_CONNECTED
 
-    def __init__(self, server: Server):
-        self.server = server
-
     def renew_certificate(self, app: Application) -> NetworkState:
         """
         Re-estabilish a connection to the server.
         """
         # TODO perform actual renewal
-        return connect(app, self.server)
+        return connect(app)
 
 
 class ConnectionErrorState(NetworkState):
@@ -209,9 +184,8 @@ class ConnectionErrorState(NetworkState):
     status_label: str = "Connection failed"
     status_image = StatusImage.NOT_CONNECTED
 
-    def __init__(self, server: Server, error: str):
-        self.server = server
+    def __init__(self, error: str):
         self.error = error
 
     def reconnect(self, app: Application) -> NetworkState:
-        return connect(app, self.server)
+        return connect(app)
