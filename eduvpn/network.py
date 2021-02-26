@@ -100,7 +100,6 @@ class UnconnectedState(NetworkState):
     """
 
     status_label: str = "Disconnected"
-    status_image = StatusImage.DEFAULT
 
 
 def connect(app: Application) -> NetworkState:
