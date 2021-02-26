@@ -178,7 +178,7 @@ def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
         active_uuid = con.get_uuid()
 
         if uuid == active_uuid:
-            def on_deactivate_connection(a_client, res, callback=None):
+            def on_deactivate_connection(a_client: 'NM.Client', res, callback=None):
                 try:
                     result = a_client.deactivate_connection_finish(res)
                 except Exception as e:
