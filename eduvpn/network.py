@@ -1,5 +1,7 @@
 import logging
+import enum
 from .nm import get_client, activate_connection, deactivate_connection
+from . import settings
 from .state_machine import BaseState
 from .app import Application
 from .server import ConfiguredServer as Server
@@ -8,10 +10,31 @@ from .server import ConfiguredServer as Server
 logger = logging.getLogger(__name__)
 
 
+class StatusImage(enum.Enum):
+    # The value is the image filename.
+    DEFAULT = 'desktop-default.png'
+    CONNECTING = 'desktop-connecting.png'
+    CONNECTED = 'desktop-connected.png'
+    NOT_CONNECTED = 'desktop-not-connected.png'
+
+    @property
+    def path(self):
+        return settings.IMAGE_PREFIX + self.value
+
+
 class NetworkState(BaseState):
     """
     Base class for all interface states.
     """
+
+    status_label: str = "Connection state unknown"
+    status_image = StatusImage.DEFAULT
+
+    def start_new_connection(self,
+                             app: Application,
+                             server: Server,
+                             ) -> 'NetworkState':
+        return connect(app, server)
 
 
 class InitialNetworkState(NetworkState):
@@ -64,12 +87,8 @@ class UnconnectedState(NetworkState):
     and this state is no longer reached.
     """
 
-    def connecting_to_server(self,
-                             app: Application,
-                             server: Server,
-                             ) -> NetworkState:
-        # TODO store this as the default server
-        return ConnectingState(server)
+    status_label: str = "Disconnected"
+    status_image = StatusImage.DEFAULT
 
 
 def connect(app: Application, server: Server) -> NetworkState:
@@ -94,6 +113,9 @@ class ConnectingState(NetworkState):
     """
     The network is currently trying to connect to a server.
     """
+
+    status_label: str = "Preparing to connect"
+    status_image = StatusImage.CONNECTING
 
     def __init__(self, server: Server):
         self.server = server
@@ -123,6 +145,9 @@ class ConnectedState(NetworkState):
     The network is currently connected to a server.
     """
 
+    status_label: str = "Connection active"
+    status_image = StatusImage.CONNECTED
+
     def __init__(self, server: Server):
         self.server = server
         # TODO
@@ -143,8 +168,12 @@ class ConnectedState(NetworkState):
 
 class DisconnectedState(NetworkState):
     """
-    The network is currently connected to a server.
+    The network is not currently connected to a server,
+    but a configured connection exists.
     """
+
+    status_label: str = "Disconnected"
+    status_image = StatusImage.DEFAULT
 
     def __init__(self, server: Server):
         self.server = server
@@ -155,8 +184,11 @@ class DisconnectedState(NetworkState):
 
 class CertificateExpiredState(NetworkState):
     """
-    The network is currently connected to a server.
+    The network could not connect because the certifcate has expired.
     """
+
+    status_label: str = "Connection failed"
+    status_image = StatusImage.NOT_CONNECTED
 
     def __init__(self, server: Server):
         self.server = server
@@ -171,8 +203,11 @@ class CertificateExpiredState(NetworkState):
 
 class ConnectionErrorState(NetworkState):
     """
-    The network is currently connected to a server.
+    The network could not connect because an error occured.
     """
+
+    status_label: str = "Connection failed"
+    status_image = StatusImage.NOT_CONNECTED
 
     def __init__(self, server: Server, error: str):
         self.server = server

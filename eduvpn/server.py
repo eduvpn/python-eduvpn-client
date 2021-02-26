@@ -284,6 +284,14 @@ class ServerDatabase:
             else:
                 raise ValueError(data)
 
+    def get_single_configured(self) -> Optional[ConfiguredServer]:
+        auth_url = storage.get_auth_url()
+        if auth_url is not None:
+            for server in self.all_configured():
+                if server.oauth_login_url == auth_url:
+                    return server
+        return None
+
     def all(self) -> Iterable[PredefinedServer]:
         "Return all servers."
         return iter(self.servers)

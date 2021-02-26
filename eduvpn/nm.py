@@ -50,6 +50,16 @@ def nm_available() -> bool:
     return False
 
 
+def get_existing_configuration_uuid() -> Optional[str]:
+    uuid = get_uuid()
+    client = get_client()
+    connection = client.get_connection_by_uuid(uuid)
+    if connection is None:
+        return None
+    else:
+        return uuid
+
+
 def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
     """
     Use the Network Manager VPN config importer to import an OpenVPN configuration file.

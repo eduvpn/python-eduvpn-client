@@ -181,6 +181,9 @@ def chosen_profile(app: Application,
         def finished_saving_config_callback(result):
             logger.info(f"Finished saving network manager config: {result}")
             app.interface_transition('finished_configuring_connection')
+            app.current_network_uuid = storage.get_uuid()
+            assert app.current_network_uuid is not None
+            app.network_transition('start_new_connection', server)
 
         @app.make_func_threadsafe
         def save_connection():

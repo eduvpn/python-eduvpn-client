@@ -15,6 +15,7 @@ from gi.repository import Gtk, GdkPixbuf
 
 from ..settings import HELP_URL
 from ..interface import state as interface_state
+from .. import network as network_state
 from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
@@ -136,12 +137,54 @@ class EduVpnGui:
 
     # network state transition callbacks
 
-    # TODO
+    @transition_callback(network_state.NetworkState)
+    def default_network_transition_callback(self, old_state, new_state):
+        if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
+            self.update_connection_status()
+
+    def update_connection_server(self):
+        server = self.app.interface_state.server
+        self.builder.get_object('serverLabel').set_text(str(server))
+
+        server_image_component = self.builder.get_object('serverImage')
+        server_image_path = getattr(server, 'image_path', None)
+        if server_image_path:
+            server_image_component.set_from_file(server_image_path)
+            server_image_component.show()
+        else:
+            server_image_component.hide()
+
+        if getattr(server, 'support_contact', []):
+            support_text = "Support: " + ", ".join(server.support_contact)
+            self.builder.get_object('supportLabel').set_text(support_text)
+            self.show_component('supportLabel', True)
+        else:
+            self.show_component('supportLabel', False)
+
+    def update_connection_status(self):
+        self.builder.get_object('connectionStatusLabel').set_text(self.app.network_state.status_label)
+        self.builder.get_object('connectionStatusImage').set_from_file(self.app.network_state.status_image.path)
+
+        assert not (hasattr(self.app.network_state, 'reconnect') and hasattr(self.app.network_state, 'disconnect'))
+        connection_switch = self.builder.get_object('connectionSwitch')
+        if hasattr(self.app.network_state, 'reconnect'):
+            self.show_component('currentConnectionSubPage', True)
+            connection_switch.show()
+            connection_switch.set_state(False)
+        elif hasattr(self.app.network_state, 'disconnect'):
+            self.show_component('currentConnectionSubPage', True)
+            connection_switch.show()
+            connection_switch.set_state(True)
+        else:
+            self.show_component('currentConnectionSubPage', False)
+            connection_switch.hide()
+
+        self.show_component('renewSessionButton', False)
 
     # interface state transition callbacks
 
     @transition_callback(interface_state.InterfaceState)
-    def default_transition_callback(self, old_state, new_state):
+    def default_interface_transition_callback(self, old_state, new_state):
         # Only show the 'go back' button if
         # the corresponding transition is available.
         self.show_back_button(new_state.has_transition('go_back'))
@@ -289,48 +332,22 @@ class EduVpnGui:
         selection = location_tree_view.get_selection()
         selection.disconnect_by_func(self.on_location_selection_changed)
 
+    # TODO ConfiguringConnection
+
     @transition_edge_callback(ENTER, interface_state.ConnectionStatus)
     def enter_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', True)
         self.show_component('serverLabel', True)
-
         self.show_component('connectionStatusImage', True)
         self.show_component('connectionStatusLabel', True)
         self.show_component('connectionSubStatus', True)
 
-        self.show_component('currentConnectionSubPage', True)
-        self.show_component('connectionSwitch', True)
-        self.show_component('renewSessionButton', False)
-
-        self.builder.get_object('serverLabel').set_text(str(new_state.server))
-
-        server_image_component = self.builder.get_object('serverImage')
-        server_image_path = getattr(new_state.server, 'image_path', None)
-        if server_image_path:
-            server_image_component.set_from_file(server_image_path)
-            server_image_component.show()
-        else:
-            server_image_component.hide()
-
-        if getattr(new_state.server, 'support_contact', []):
-            support_text = "Support: " + ", ".join(new_state.server.support_contact)
-            self.builder.get_object('supportLabel').set_text(support_text)
-            self.show_component('supportLabel', True)
-        else:
-            self.show_component('supportLabel', False)
+        self.update_connection_server()
+        self.update_connection_status()
 
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', False)
-        self.show_component('serverLabel', False)
-
-        self.show_component('connectionStatusImage', False)
-        self.show_component('connectionStatusLabel', False)
-        self.show_component('connectionSubStatus', False)
-
-        self.show_component('currentConnectionSubPage', False)
-        self.show_component('connectionSwitch', False)
-        self.show_component('renewSessionButton', False)
 
     # ui callbacks
 

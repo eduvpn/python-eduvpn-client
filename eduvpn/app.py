@@ -1,6 +1,6 @@
 import logging
 from .server import ServerDatabase
-from .storage import get_uuid
+from . import nm
 from .state_machine import StateMachine, InvalidStateTransition
 from .utils import run_in_background_thread
 
@@ -28,13 +28,21 @@ class Application:
         Determine the current network state.
         """
         # Check if a previous network profile exists.
-        self.current_network_uuid = get_uuid()
+        uuid = nm.get_existing_configuration_uuid()
         kwargs = {}
-        if self.current_network_uuid:
-            from .server import CustomServer  # TODO x
-            kwargs['server'] = CustomServer('demo.eduvpn.nl')  # TODO x
-            if 0:  # TODO
-                transition = 'found_active_connection'
+        if uuid:
+            self.current_network_uuid = uuid
+            status_uuid, status = nm.connection_status(nm.get_client())
+            if status is nm.NM.ActiveConnectionState.ACTIVATED:
+                assert uuid == status_uuid
+                server = self.server_db.get_single_configured()
+                if server is None:
+                    # There is an active connection to a server,
+                    # but there is no record of what server that is.
+                    transition = 'found_previous_connection'
+                else:
+                    transition = 'found_active_connection'
+                    kwargs = dict(server=server)
             else:
                 transition = 'found_previous_connection'
         else:
