@@ -1,5 +1,6 @@
 import logging
 import enum
+from functools import partial
 from . import nm
 from . import settings
 from .state_machine import BaseState
@@ -107,7 +108,11 @@ def connect(app: Application) -> NetworkState:
     Estabilish a connection to the server.
     """
     client = nm.get_client()
-    nm.activate_connection(client, app.current_network_uuid)
+    nm.activate_connection(
+        client,
+        app.current_network_uuid,
+        partial(on_any_update_callback, app),
+    )
     return ConnectingState()
 
 
@@ -116,8 +121,54 @@ def disconnect(app: Application) -> NetworkState:
     Break the connection to the server.
     """
     client = nm.get_client()
-    nm.deactivate_connection(client, app.current_network_uuid)
+    nm.deactivate_connection(
+        client,
+        app.current_network_uuid,
+        partial(on_any_update_callback, app),
+    )
     return DisconnectedState()
+
+
+def on_status_update_callback(app: Application, status: nm.NM.VpnConnectionState):
+    """
+    Callback for whenever a connection status changes.
+    """
+    if status in [nm.NM.VpnConnectionState.CONNECT,
+                  nm.NM.VpnConnectionState.IP_CONFIG_GET,
+                  nm.NM.VpnConnectionState.PREPARE]:
+        app.network_transition('set_connecting')
+    elif status is nm.NM.VpnConnectionState.ACTIVATED:
+        app.network_transition('set_connected')
+    elif status is nm.NM.VpnConnectionState.DISCONNECTED:
+        app.network_transition('set_disconnected')
+    elif status is nm.NM.VpnConnectionState.FAILED:
+        app.network_transition('set_error')
+    elif status is nm.NM.VpnConnectionState.NEED_AUTH:
+        app.network_transition('set_error')
+    elif status is nm.NM.VpnConnectionState.UNKNOWN:
+        app.network_transition('set_unknown')
+    else:
+        raise ValueError(status)
+
+
+def on_any_update_callback(app: Application):
+    """
+    Callback for whenever a connection status might have changed.
+    """
+    _, status = nm.connection_status(nm.get_client())
+    if status is nm.NM.ActiveConnectionState.ACTIVATING:
+        app.network_transition('set_connecting')
+    elif status is nm.NM.ActiveConnectionState.ACTIVATED:
+        app.network_transition('set_connected')
+    elif status in [nm.NM.ActiveConnectionState.DEACTIVATED,
+                    nm.NM.ActiveConnectionState.DEACTIVATING]:
+        app.network_transition('set_disconnected')
+    elif status is nm.NM.ActiveConnectionState.UNKNOWN:
+        app.network_transition('set_unknown')
+    elif status is None:
+        app.network_transition('set_unknown')
+    else:
+        raise ValueError(status)
 
 
 class ConnectingState(NetworkState):
