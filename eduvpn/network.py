@@ -36,6 +36,18 @@ class NetworkState(BaseState):
                              ) -> 'NetworkState':
         return connect(app)
 
+    def set_connecting(self, app: Application) -> 'NetworkState':
+        return ConnectingState()
+
+    def set_connected(self, app: Application) -> 'NetworkState':
+        return ConnectedState()
+
+    def set_disconnected(self, app: Application) -> 'NetworkState':
+        return DisconnectedState()
+
+    def set_unknown(self, app: Application) -> 'NetworkState':
+        return UnknownState()
+
 
 class InitialNetworkState(NetworkState):
     """
@@ -123,18 +135,7 @@ class ConnectingState(NetworkState):
         """
         return disconnect(app)
 
-    def connection_established(self, app: Application) -> NetworkState:
-        """
-        The connection has been established.
-        """
-        return ConnectedState(self.server)
 
-    def connection_failed(self, app: Application) -> NetworkState:
-        """
-        The connection has been established.
-        """
-        error = ""  # TODO
-        return ConnectionErrorState(self.server, error)
 class ConnectedState(NetworkState):
     """
     The network is currently connected to a server.
