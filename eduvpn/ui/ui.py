@@ -402,9 +402,9 @@ class EduVpnGui:
     def on_connection_switch_state_set(self, switch, state):
         logger.debug("on_activate_changed")
         if state:
-            self.app.network_transition('reconnect')
+            self.app.interface_transition('activate_connection')
         else:
-            self.app.network_transition('disconnect')
+            self.app.interface_transition('deactivate_connection')
         return True
 
     def on_profile_selection_changed(self, selection):

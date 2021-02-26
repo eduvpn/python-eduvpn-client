@@ -286,6 +286,14 @@ class ConnectionStatus(InterfaceState):
     def __init__(self, server: AnyServer):
         self.server = server
 
+    def activate_connection(self, app: Application) -> InterfaceState:
+        app.network_transition('reconnect')
+        return self
+
+    def deactivate_connection(self, app: Application) -> InterfaceState:
+        app.network_transition('disconnect')
+        return self
+
 
 class ConfigureSettings(InterfaceState):
     """
