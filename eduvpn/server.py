@@ -181,6 +181,14 @@ class SecureInternetLocation:
         return self.location.country_name
 
     @property
+    def image_path(self) -> Optional[str]:
+        return self.location.flag_path
+
+    @property
+    def support_contact(self) -> List[str]:
+        return self.location.support_contact
+
+    @property
     def oauth_login_url(self):
         assert self.server.oauth_login_url == self.location.oauth_login_url
         return self.server.oauth_login_url

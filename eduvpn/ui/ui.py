@@ -289,6 +289,49 @@ class EduVpnGui:
         selection = location_tree_view.get_selection()
         selection.disconnect_by_func(self.on_location_selection_changed)
 
+    @transition_edge_callback(ENTER, interface_state.ConnectionStatus)
+    def enter_ConnectionStatus(self, old_state, new_state):
+        self.show_component('connectionPage', True)
+        self.show_component('serverLabel', True)
+
+        self.show_component('connectionStatusImage', True)
+        self.show_component('connectionStatusLabel', True)
+        self.show_component('connectionSubStatus', True)
+
+        self.show_component('currentConnectionSubPage', True)
+        self.show_component('connectionSwitch', True)
+        self.show_component('renewSessionButton', False)
+
+        self.builder.get_object('serverLabel').set_text(str(new_state.server))
+
+        server_image_component = self.builder.get_object('serverImage')
+        server_image_path = getattr(new_state.server, 'image_path', None)
+        if server_image_path:
+            server_image_component.set_from_file(server_image_path)
+            server_image_component.show()
+        else:
+            server_image_component.hide()
+
+        if getattr(new_state.server, 'support_contact', []):
+            support_text = "Support: " + ", ".join(new_state.server.support_contact)
+            self.builder.get_object('supportLabel').set_text(support_text)
+            self.show_component('supportLabel', True)
+        else:
+            self.show_component('supportLabel', False)
+
+    @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
+    def exit_ConnectionStatus(self, old_state, new_state):
+        self.show_component('connectionPage', False)
+        self.show_component('serverLabel', False)
+
+        self.show_component('connectionStatusImage', False)
+        self.show_component('connectionStatusLabel', False)
+        self.show_component('connectionSubStatus', False)
+
+        self.show_component('currentConnectionSubPage', False)
+        self.show_component('connectionSwitch', False)
+        self.show_component('renewSessionButton', False)
+
     # ui callbacks
 
     def on_settings_button_released(self, widget, event):
