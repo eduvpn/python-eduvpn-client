@@ -186,14 +186,6 @@ class SecureInternetLocation:
         return self.server.oauth_login_url
 
 
-server_types = [
-    InstituteAccessServer,
-    SecureInternetServer,
-    OrganisationServer,
-    CustomServer,
-]
-
-
 # typing aliases
 PredefinedServer = Union[
     InstituteAccessServer,
