@@ -144,6 +144,7 @@ class EduVpnGui:
 
     def update_connection_server(self):
         server = self.app.interface_state.server
+        self.show_component('serverLabel', True)
         self.builder.get_object('serverLabel').set_text(str(server))
 
         server_image_component = self.builder.get_object('serverImage')
