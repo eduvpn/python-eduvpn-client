@@ -27,24 +27,27 @@ class Application:
         """
         Determine the current network state.
         """
-        # Check if a previous network profile exists.
+        # Check if a previous network configuration exists.
         uuid = nm.get_existing_configuration_uuid()
         kwargs = {}
         if uuid:
             self.current_network_uuid = uuid
-            status_uuid, status = nm.connection_status(nm.get_client())
-            if status is nm.NM.ActiveConnectionState.ACTIVATED:
-                assert uuid == status_uuid
-                server = self.server_db.get_single_configured()
-                if server is None:
-                    # There is an active connection to a server,
-                    # but there is no record of what server that is.
-                    transition = 'found_previous_connection'
-                else:
-                    transition = 'found_active_connection'
-                    kwargs = dict(server=server)
+            # Check what server corresponds to the configuration.
+            server = self.server_db.get_single_configured()
+            if server is None:
+                # There is a network configuration,
+                # but no record of what server corresponds to it.
+                transition = 'no_previous_connection_found'
             else:
-                transition = 'found_previous_connection'
+                status_uuid, status = nm.connection_status(nm.get_client())
+                if status in [nm.NM.ActiveConnectionState.ACTIVATED,
+                              nm.NM.ActiveConnectionState.ACTIVATING]:
+                    assert uuid == status_uuid
+                    transition = 'found_active_connection'
+                    kwargs['server'] = server
+                else:
+                    transition = 'found_previous_connection'
+                    kwargs['server'] = server
         else:
             transition = 'no_previous_connection_found'
         self.network_transition_threadsafe(transition, **kwargs)
