@@ -5,7 +5,7 @@ from pathlib import Path
 from shutil import rmtree
 from sys import modules
 from tempfile import mkdtemp
-from typing import Optional, Tuple, Callable
+from typing import Any, Optional, Tuple, Callable
 
 from eduvpn.storage import set_uuid, get_uuid, write_config
 
@@ -19,6 +19,11 @@ try:
 except (ImportError, ValueError):
     _logger.warning("Network Manager not available")
     NM = None
+
+try:
+    import dbus
+except ImportError:
+    dbus = None
 
 
 @lru_cache()
@@ -48,6 +53,18 @@ def nm_available() -> bool:
         except Exception:
             ...
     return False
+
+
+def get_existing_configuration_uuid() -> Optional[str]:
+    uuid = get_uuid()
+    if uuid is None:
+        return None
+    client = get_client()
+    connection = client.get_connection_by_uuid(uuid)
+    if connection is None:
+        return None
+    else:
+        return uuid
 
 
 def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
@@ -142,7 +159,7 @@ def activate_connection(client: 'NM.Client', uuid: str, callback=None):
         # late while according to the logging the connection is already
         # created. Need to find the correct event to sync on.
         time.sleep(.1)
-        GLib.idle_add(lambda: activate_connection(client, uuid))
+        GLib.idle_add(lambda: activate_connection(client, uuid, callback))
         return
 
     def activate_connection_callback(a_client, res, callback=None):
@@ -166,7 +183,7 @@ def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
         active_uuid = con.get_uuid()
 
         if uuid == active_uuid:
-            def on_deactivate_connection(a_client, res, callback=None):
+            def on_deactivate_connection(a_client: 'NM.Client', res, callback=None):
                 try:
                     result = a_client.deactivate_connection_finish(res)
                 except Exception as e:
@@ -200,6 +217,55 @@ def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.Vp
         return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
     else:
         return vpns[0].get_state(), vpns[0].get_state_reason()
+
+
+@lru_cache(maxsize=1)
+def get_dbus() -> Optional['dbus.SystemBus']:
+    """
+    Get the DBus system bus.
+
+    None is returned on failure.
+    """
+    if dbus is None:
+        logging.debug("DBus module could not be imported")
+        return None
+    try:
+        from dbus.mainloop.glib import DBusGMainLoop
+        DBusGMainLoop(set_as_default=True)
+        bus = dbus.SystemBus(private=True)
+    except Exception:
+        logging.debug("Unable to access dbus", exc_info=True)
+        return None
+    else:
+        return bus
+
+
+def subscribe_to_status_changes(
+    callback: Callable[['NM.VpnConnectionState', 'NM.VpnConnectionStateReason'], Any],
+) -> bool:
+    """
+    Subscribe to all network status changes via DBus.
+
+    The callback argument is called with the connection state and reason
+    whenever they change.
+
+    False is returned on failure.
+    """
+    bus = get_dbus()
+    if bus is None:
+        return False
+
+    def wrapped_callback(state_code: 'dbus.UInt32', reason_code: 'dbus.UInt32'):
+        state = NM.VpnConnectionState(state_code)
+        reason = NM.VpnConnectionStateReason(reason_code)
+        callback(state, reason)
+
+    bus.add_signal_receiver(
+        handler_function=wrapped_callback,
+        dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
+        signal_name='VpnStateChanged',
+    )
+    return True
 
 
 def action_with_mainloop(action: Callable):

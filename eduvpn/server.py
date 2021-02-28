@@ -181,17 +181,17 @@ class SecureInternetLocation:
         return self.location.country_name
 
     @property
+    def image_path(self) -> Optional[str]:
+        return self.location.flag_path
+
+    @property
+    def support_contact(self) -> List[str]:
+        return self.location.support_contact
+
+    @property
     def oauth_login_url(self):
         assert self.server.oauth_login_url == self.location.oauth_login_url
         return self.server.oauth_login_url
-
-
-server_types = [
-    InstituteAccessServer,
-    SecureInternetServer,
-    OrganisationServer,
-    CustomServer,
-]
 
 
 # typing aliases
@@ -283,6 +283,14 @@ class ServerDatabase:
                 yield CustomServer(data['api_base_uri'])
             else:
                 raise ValueError(data)
+
+    def get_single_configured(self) -> Optional[ConfiguredServer]:
+        auth_url = storage.get_auth_url()
+        if auth_url is not None:
+            for server in self.all_configured():
+                if server.oauth_login_url == auth_url:
+                    return server
+        return None
 
     def all(self) -> Iterable[PredefinedServer]:
         "Return all servers."

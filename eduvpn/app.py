@@ -1,6 +1,6 @@
 import logging
 from .server import ServerDatabase
-from .storage import get_uuid
+from . import nm
 from .state_machine import StateMachine, InvalidStateTransition
 from .utils import run_in_background_thread
 
@@ -27,19 +27,40 @@ class Application:
         """
         Determine the current network state.
         """
-        # Check if a previous network profile exists.
-        self.current_network_uuid = get_uuid()
+        # Check if a previous network configuration exists.
+        uuid = nm.get_existing_configuration_uuid()
         kwargs = {}
-        if self.current_network_uuid:
-            from .server import CustomServer  # TODO x
-            kwargs['server'] = CustomServer('demo.eduvpn.nl')  # TODO x
-            if 0:  # TODO
-                transition = 'found_active_connection'
+        if uuid:
+            self.current_network_uuid = uuid
+            # Check what server corresponds to the configuration.
+            server = self.server_db.get_single_configured()
+            if server is None:
+                # There is a network configuration,
+                # but no record of what server corresponds to it.
+                transition = 'no_previous_connection_found'
             else:
-                transition = 'found_previous_connection'
+                status_uuid, status = nm.connection_status(nm.get_client())
+                if status in [nm.NM.ActiveConnectionState.ACTIVATED,
+                              nm.NM.ActiveConnectionState.ACTIVATING]:
+                    assert uuid == status_uuid
+                    transition = 'found_active_connection'
+                    kwargs['server'] = server
+                else:
+                    transition = 'found_previous_connection'
+                    kwargs['server'] = server
         else:
             transition = 'no_previous_connection_found'
         self.network_transition_threadsafe(transition, **kwargs)
+
+        def on_network_update_callback(state, reason):
+            network.on_status_update_callback(self, state)
+
+        from . import network
+        if not nm.subscribe_to_status_changes(on_network_update_callback):
+            logger.warning(
+                "unable to subscribe to network updates; "
+                "the application may not reflect the current state"
+            )
 
     @run_in_background_thread('init-server-db')
     def initialize_server_db(self):
