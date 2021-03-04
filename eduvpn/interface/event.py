@@ -140,7 +140,11 @@ def start_connection(app: Application,
         profile_server = server
 
     profiles = [Profile(**data) for data in remote.list_profiles(oauth_session, api_url)]
-    return state.ChooseProfile(profile_server, oauth_session, profiles)
+    if len(profiles) == 1:
+        # Skip profile choice if there's only a single option.
+        return chosen_profile(app, profile_server, oauth_session, profiles[0])
+    else:
+        return state.ChooseProfile(profile_server, oauth_session, profiles)
 
 
 def chosen_profile(app: Application,
