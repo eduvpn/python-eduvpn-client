@@ -259,10 +259,12 @@ class EduVpnGui:
     @transition_edge_callback(ENTER, interface_state.OAuthSetup)
     def enter_OAuthSetup(self, old_state, new_state):
         self.show_component('openBrowserPage', True)
+        self.show_component('cancelBrowserButton', True)
 
     @transition_edge_callback(EXIT, interface_state.OAuthSetup)
     def exit_OAuthSetup(self, old_state, new_state):
         self.show_component('openBrowserPage', False)
+        self.show_component('cancelBrowserButton', False)
 
     @transition_edge_callback(ENTER, interface_state.ChooseProfile)
     def enter_ChooseProfile(self, old_state, new_state):
