@@ -35,6 +35,8 @@ class NetworkState(BaseState):
                              app: Application,
                              server: Server,
                              ) -> 'NetworkState':
+        if isinstance(app.network_state, (ConnectingState, ConnectedState)):
+            disconnect(app, update_state=False)
         return connect(app)
 
     def set_connecting(self, app: Application) -> 'NetworkState':
@@ -116,15 +118,18 @@ def connect(app: Application) -> NetworkState:
     return ConnectingState()
 
 
-def disconnect(app: Application) -> NetworkState:
+def disconnect(app: Application, *, update_state=True) -> NetworkState:
     """
     Break the connection to the server.
     """
     client = nm.get_client()
+    callback = None
+    if update_state:
+        callback = partial(on_any_update_callback, app)
     nm.deactivate_connection(
         client,
         app.current_network_uuid,
-        partial(on_any_update_callback, app),
+        callback,
     )
     return DisconnectedState()
 
