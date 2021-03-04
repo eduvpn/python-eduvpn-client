@@ -6,6 +6,7 @@ from ..app import Application
 from ..server import (
     AnyServer, PredefinedServer, ConfiguredServer,
     SecureInternetServer, OrganisationServer, CustomServer, Profile)
+from .error import translate_error
 from . import event
 
 
@@ -308,3 +309,26 @@ class ConfigureSettings(InterfaceState):
 
     def toggle_settings(self, app: Application) -> InterfaceState:
         return self.previous_state
+
+
+class ErrorState(InterfaceState):
+    """
+    An error has occured.
+    """
+
+    def __init__(self, message: str, next_state: Optional[InterfaceState]):
+        self.message = message
+        self.next_state = next_state
+
+    @classmethod
+    def from_exception(cls,
+                       exception: Exception,
+                       next_state: Optional[InterfaceState] = None,
+                       ) -> 'ErrorState':
+        return cls(translate_error(exception), next_state)
+
+    def acknowledge_error(self, app: Application) -> InterfaceState:
+        if self.next_state is None:
+            return event.go_to_main_state(app)
+        else:
+            return self.next_state

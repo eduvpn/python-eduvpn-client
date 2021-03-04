@@ -359,6 +359,24 @@ class EduVpnGui:
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', False)
 
+    @transition_edge_callback(ENTER, interface_state.ErrorState)
+    def enter_ErrorState(self, old_state, new_state):
+        self.show_component('messagePage', True)
+        self.show_component('messageLabel', True)
+        self.show_component('messageText', True)
+        self.builder.get_object('messageLabel').set_text("Error")
+        self.builder.get_object('messageText').set_text(new_state.message)
+        self.show_component('messageButton', True)
+        self.builder.get_object('messageButton').set_label("Ok")
+        button = self.builder.get_object('messageButton')
+        button.connect("clicked", self.on_acknowledge_error)
+
+    @transition_edge_callback(EXIT, interface_state.ErrorState)
+    def exit_ErrorState(self, old_state, new_state):
+        self.show_component('messagePage', False)
+        button = self.builder.get_object('messageButton')
+        button.disconnect_by_func(self.on_acknowledge_error)
+
     # ui callbacks
 
     def on_settings_button_released(self, widget, event):
@@ -439,3 +457,6 @@ class EduVpnGui:
             location = row[2]
             logger.debug(f"selected location: {location!r}")
             self.app.interface_transition('select_secure_internet_location', location)
+
+    def on_acknowledge_error(self, event):
+        self.app.interface_transition('acknowledge_error')

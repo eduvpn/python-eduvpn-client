@@ -77,7 +77,10 @@ def connect_to_server(app: Application, server: AnyServer) -> state.InterfaceSta
 
 
 def setup_oauth(app: Application, server: AnyServer) -> state.InterfaceState:
-    server_info = app.server_db.get_server_info(server)
+    try:
+        server_info = app.server_db.get_server_info(server)
+    except Exception as e:
+        return state.ErrorState.from_exception(e)
 
     def oauth_token_callback(oauth_session: Optional[OAuth2Session]):
         if oauth_session:
@@ -102,7 +105,10 @@ def refresh_oauth_token(app: Application,
 
     @run_in_background_thread('oauth-refresh')
     def oauth_refresh_thread():
-        server_info = app.server_db.get_server_info(server)
+        try:
+            server_info = app.server_db.get_server_info(server)
+        except Exception as e:
+            return state.ErrorState.from_exception(e)
         try:
             oauth_session.refresh_token(token_url=server_info.token_endpoint)
         except InvalidOauthGrantError as e:
@@ -120,7 +126,10 @@ def start_connection(app: Application,
                      oauth_session: OAuth2Session,
                      location: Optional[SecureInternetServer] = None,
                      ) -> state.InterfaceState:
-    server_info = app.server_db.get_server_info(server)
+    try:
+        server_info = app.server_db.get_server_info(server)
+    except Exception as e:
+        return state.ErrorState.from_exception(e)
     api_url = server_info.api_base_uri
     profile_server: ConfiguredServer
 
@@ -134,7 +143,10 @@ def start_connection(app: Application,
             else:
                 return state.ChooseSecureInternetLocation(server, oauth_session, locations)
         else:
-            api_url = app.server_db.get_server_info(location).api_base_uri
+            try:
+                api_url = app.server_db.get_server_info(location).api_base_uri
+            except Exception as e:
+                return state.ErrorState.from_exception(e)
             profile_server = SecureInternetLocation(server, location)
     else:
         profile_server = server
@@ -153,8 +165,11 @@ def chosen_profile(app: Application,
                    profile: Profile) -> state.InterfaceState:
     country_code: Optional[str]
     if isinstance(server, SecureInternetLocation):
-        server_info = app.server_db.get_server_info(server.server)
-        location_info = app.server_db.get_server_info(server.server)
+        try:
+            server_info = app.server_db.get_server_info(server.server)
+            location_info = app.server_db.get_server_info(server.server)
+        except Exception as e:
+            return state.ErrorState.from_exception(e)
         auth_url = server.server.oauth_login_url
         api_url = location_info.api_base_uri
         country_code = server.location.country_code
@@ -162,7 +177,10 @@ def chosen_profile(app: Application,
         display_name = str(server.server)
         support_contact = server.location.support_contact
     else:
-        server_info = app.server_db.get_server_info(server)
+        try:
+            server_info = app.server_db.get_server_info(server)
+        except Exception as e:
+            return state.ErrorState.from_exception(e)
         api_url = server_info.api_base_uri
         auth_url = server.oauth_login_url
         country_code = None
