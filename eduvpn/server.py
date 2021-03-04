@@ -180,6 +180,9 @@ class SecureInternetLocation:
     def __str__(self):
         return self.location.country_name
 
+    def __repr__(self):
+        return f"<SecureInternetLocation {self.server!r} {self.location!r}>"
+
     @property
     def image_path(self) -> Optional[str]:
         return self.location.flag_path
