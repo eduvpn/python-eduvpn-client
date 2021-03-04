@@ -128,7 +128,11 @@ def start_connection(app: Application,
         if not location:
             locations = [server for server in app.server_db.all()
                          if isinstance(server, SecureInternetServer)]
-            return state.ChooseSecureInternetLocation(server, oauth_session, locations)
+            if len(locations) == 1:
+                # Skip location choice if there's only a single option.
+                return start_connection(app, server, oauth_session, locations[0])
+            else:
+                return state.ChooseSecureInternetLocation(server, oauth_session, locations)
         else:
             api_url = app.server_db.get_server_info(location).api_base_uri
             profile_server = SecureInternetLocation(server, location)
