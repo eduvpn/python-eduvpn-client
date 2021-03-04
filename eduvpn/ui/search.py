@@ -123,9 +123,9 @@ def init_server_search(builder):
     for group in group_tree_component:
         component_name = group_tree_component[group]
         tree_view = builder.get_object(component_name)
-        column = Gtk.TreeViewColumn(None, text_cell, text=0)
         if len(tree_view.get_columns()) == 0:
             # Only add this column once.
+            column = Gtk.TreeViewColumn(None, text_cell, text=0)
             tree_view.append_column(column)
         model = get_group_model(group)
         tree_view.set_model(model)
