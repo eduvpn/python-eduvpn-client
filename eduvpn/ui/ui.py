@@ -11,7 +11,7 @@ import logging
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 gi.require_version('NM', '1.0')  # noqa: E402
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, GObject, GdkPixbuf
 
 from ..settings import HELP_URL
 from ..interface import state as interface_state
@@ -259,31 +259,37 @@ class EduVpnGui:
     @transition_edge_callback(ENTER, interface_state.OAuthSetup)
     def enter_OAuthSetup(self, old_state, new_state):
         self.show_component('openBrowserPage', True)
+        self.show_component('cancelBrowserButton', True)
 
     @transition_edge_callback(EXIT, interface_state.OAuthSetup)
     def exit_OAuthSetup(self, old_state, new_state):
         self.show_component('openBrowserPage', False)
+        self.show_component('cancelBrowserButton', False)
 
     @transition_edge_callback(ENTER, interface_state.ChooseProfile)
     def enter_ChooseProfile(self, old_state, new_state):
         self.show_component('chooseProfilePage', True)
         self.show_component('profileTreeView', True)
 
-        from gi.repository import Gtk, GObject
         profile_tree_view = self.builder.get_object('profileTreeView')
-        text_cell = Gtk.CellRendererText()
-        text_cell.set_property("size-points", 14)  # type: ignore
-        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
-        profile_tree_view.append_column(col)
-        profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
-        profile_tree_view.set_model(profiles_list_model)
+        profiles_list_model = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
+
+        if len(profile_tree_view.get_columns()) == 0:
+            # Only initialize this tree view once.
+            text_cell = Gtk.CellRendererText()
+            text_cell.set_property("size-points", 14)
+
+            column = Gtk.TreeViewColumn(None, text_cell, text=0)
+            profile_tree_view.append_column(column)
+
+            profile_tree_view.set_model(profiles_list_model)
 
         selection = profile_tree_view.get_selection()
         selection.connect("changed", self.on_profile_selection_changed)
 
-        profiles_list_model.clear()  # type: ignore
+        profiles_list_model.clear()
         for profile in new_state.profiles:
-            profiles_list_model.append([str(profile), profile])  # type: ignore
+            profiles_list_model.append([str(profile), profile])
 
     @transition_edge_callback(EXIT, interface_state.ChooseProfile)
     def exit_ChooseProfile(self, old_state, new_state):
@@ -299,30 +305,33 @@ class EduVpnGui:
         self.show_component('chooseLocationPage', True)
         self.show_component('locationTreeView', True)
 
-        from gi.repository import Gtk, GObject
         location_tree_view = self.builder.get_object('locationTreeView')
-        text_cell = Gtk.CellRendererText()
-        text_cell.set_property("size-points", 14)  # type: ignore
+        location_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT)
 
-        renderer_pixbuf = Gtk.CellRendererPixbuf()
-        column_pixbuf = Gtk.TreeViewColumn("Image", renderer_pixbuf, pixbuf=1)  # type: ignore
-        location_tree_view.append_column(column_pixbuf)
+        if len(location_tree_view.get_columns()) == 0:
+            # Only initialize this tree view once.
+            text_cell = Gtk.CellRendererText()
+            text_cell.set_property("size-points", 14)
 
-        col = Gtk.TreeViewColumn(None, text_cell, text=0)  # type: ignore
-        location_tree_view.append_column(col)
-        location_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT)  # type: ignore
-        location_tree_view.set_model(location_list_model)
+            renderer_pixbuf = Gtk.CellRendererPixbuf()
+            column = Gtk.TreeViewColumn("Image", renderer_pixbuf, pixbuf=1)
+            location_tree_view.append_column(column)
+
+            column = Gtk.TreeViewColumn(None, text_cell, text=0)
+            location_tree_view.append_column(column)
+
+            location_tree_view.set_model(location_list_model)
 
         selection = location_tree_view.get_selection()
         selection.connect("changed", self.on_location_selection_changed)
 
-        location_list_model.clear()  # type: ignore
+        location_list_model.clear()
         for location in new_state.locations:
             if location.flag_path is None:
                 continue  # TODO
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(location.flag_path)
-            location_list_model.append([location.country_name, flag, location])  # type: ignore
+            location_list_model.append([location.country_name, flag, location])
 
     @transition_edge_callback(EXIT, interface_state.ChooseSecureInternetLocation)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
@@ -349,6 +358,24 @@ class EduVpnGui:
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', False)
+
+    @transition_edge_callback(ENTER, interface_state.ErrorState)
+    def enter_ErrorState(self, old_state, new_state):
+        self.show_component('messagePage', True)
+        self.show_component('messageLabel', True)
+        self.show_component('messageText', True)
+        self.builder.get_object('messageLabel').set_text("Error")
+        self.builder.get_object('messageText').set_text(new_state.message)
+        self.show_component('messageButton', True)
+        self.builder.get_object('messageButton').set_label("Ok")
+        button = self.builder.get_object('messageButton')
+        button.connect("clicked", self.on_acknowledge_error)
+
+    @transition_edge_callback(EXIT, interface_state.ErrorState)
+    def exit_ErrorState(self, old_state, new_state):
+        self.show_component('messagePage', False)
+        button = self.builder.get_object('messageButton')
+        button.disconnect_by_func(self.on_acknowledge_error)
 
     # ui callbacks
 
@@ -430,3 +457,6 @@ class EduVpnGui:
             location = row[2]
             logger.debug(f"selected location: {location!r}")
             self.app.interface_transition('select_secure_internet_location', location)
+
+    def on_acknowledge_error(self, event):
+        self.app.interface_transition('acknowledge_error')

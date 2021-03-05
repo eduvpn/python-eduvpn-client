@@ -1483,6 +1483,7 @@ have completed the authorization</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">General failure, please quit</property>
                     <property name="justify">center</property>
+                    <property name="wrap">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

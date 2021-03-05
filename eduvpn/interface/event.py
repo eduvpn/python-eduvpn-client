@@ -77,7 +77,10 @@ def connect_to_server(app: Application, server: AnyServer) -> state.InterfaceSta
 
 
 def setup_oauth(app: Application, server: AnyServer) -> state.InterfaceState:
-    server_info = app.server_db.get_server_info(server)
+    try:
+        server_info = app.server_db.get_server_info(server)
+    except Exception as e:
+        return state.ErrorState.from_exception(e)
 
     def oauth_token_callback(oauth_session: Optional[OAuth2Session]):
         if oauth_session:
@@ -102,7 +105,10 @@ def refresh_oauth_token(app: Application,
 
     @run_in_background_thread('oauth-refresh')
     def oauth_refresh_thread():
-        server_info = app.server_db.get_server_info(server)
+        try:
+            server_info = app.server_db.get_server_info(server)
+        except Exception as e:
+            return state.ErrorState.from_exception(e)
         try:
             oauth_session.refresh_token(token_url=server_info.token_endpoint)
         except InvalidOauthGrantError as e:
@@ -120,7 +126,10 @@ def start_connection(app: Application,
                      oauth_session: OAuth2Session,
                      location: Optional[SecureInternetServer] = None,
                      ) -> state.InterfaceState:
-    server_info = app.server_db.get_server_info(server)
+    try:
+        server_info = app.server_db.get_server_info(server)
+    except Exception as e:
+        return state.ErrorState.from_exception(e)
     api_url = server_info.api_base_uri
     profile_server: ConfiguredServer
 
@@ -128,15 +137,26 @@ def start_connection(app: Application,
         if not location:
             locations = [server for server in app.server_db.all()
                          if isinstance(server, SecureInternetServer)]
-            return state.ChooseSecureInternetLocation(server, oauth_session, locations)
+            if len(locations) == 1:
+                # Skip location choice if there's only a single option.
+                return start_connection(app, server, oauth_session, locations[0])
+            else:
+                return state.ChooseSecureInternetLocation(server, oauth_session, locations)
         else:
-            api_url = app.server_db.get_server_info(location).api_base_uri
+            try:
+                api_url = app.server_db.get_server_info(location).api_base_uri
+            except Exception as e:
+                return state.ErrorState.from_exception(e)
             profile_server = SecureInternetLocation(server, location)
     else:
         profile_server = server
 
     profiles = [Profile(**data) for data in remote.list_profiles(oauth_session, api_url)]
-    return state.ChooseProfile(profile_server, oauth_session, profiles)
+    if len(profiles) == 1:
+        # Skip profile choice if there's only a single option.
+        return chosen_profile(app, profile_server, oauth_session, profiles[0])
+    else:
+        return state.ChooseProfile(profile_server, oauth_session, profiles)
 
 
 def chosen_profile(app: Application,
@@ -145,8 +165,11 @@ def chosen_profile(app: Application,
                    profile: Profile) -> state.InterfaceState:
     country_code: Optional[str]
     if isinstance(server, SecureInternetLocation):
-        server_info = app.server_db.get_server_info(server.server)
-        location_info = app.server_db.get_server_info(server.server)
+        try:
+            server_info = app.server_db.get_server_info(server.server)
+            location_info = app.server_db.get_server_info(server.server)
+        except Exception as e:
+            return state.ErrorState.from_exception(e)
         auth_url = server.server.oauth_login_url
         api_url = location_info.api_base_uri
         country_code = server.location.country_code
@@ -154,7 +177,10 @@ def chosen_profile(app: Application,
         display_name = str(server.server)
         support_contact = server.location.support_contact
     else:
-        server_info = app.server_db.get_server_info(server)
+        try:
+            server_info = app.server_db.get_server_info(server)
+        except Exception as e:
+            return state.ErrorState.from_exception(e)
         api_url = server_info.api_base_uri
         auth_url = server.oauth_login_url
         country_code = None
