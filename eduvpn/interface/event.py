@@ -80,7 +80,7 @@ def setup_oauth(app: Application, server: AnyServer) -> state.InterfaceState:
     try:
         server_info = app.server_db.get_server_info(server)
     except Exception as e:
-        logging.error("error getting server info", exc_info=True)
+        logger.error("error getting server info", exc_info=True)
         return state.ErrorState(e)
 
     def oauth_token_callback(oauth_session: Optional[OAuth2Session]):
@@ -109,12 +109,12 @@ def refresh_oauth_token(app: Application,
         try:
             server_info = app.server_db.get_server_info(server)
         except Exception as e:
-            logging.error("error getting server info", exc_info=True)
+            logger.error("error getting server info", exc_info=True)
             return state.ErrorState(e)
         try:
             oauth_session.refresh_token(token_url=server_info.token_endpoint)
         except InvalidOauthGrantError as e:
-            logging.warning(f'Error refreshing OAuth token: {e}')
+            logger.warning(f'Error refreshing OAuth token: {e}')
             app.interface_transition_threadsafe('oauth_refresh_failed')
         else:
             app.interface_transition_threadsafe('oauth_refresh_success')
@@ -131,7 +131,7 @@ def start_connection(app: Application,
     try:
         server_info = app.server_db.get_server_info(server)
     except Exception as e:
-        logging.error("error getting server info", exc_info=True)
+        logger.error("error getting server info", exc_info=True)
         return state.ErrorState(e)
     api_url = server_info.api_base_uri
     profile_server: ConfiguredServer
@@ -149,7 +149,7 @@ def start_connection(app: Application,
             try:
                 location_info = app.server_db.get_server_info(location)
             except Exception as e:
-                logging.error("error getting server info", exc_info=True)
+                logger.error("error getting server info", exc_info=True)
                 return state.ErrorState(e)
             api_url = location_info.api_base_uri
             profile_server = SecureInternetLocation(server, location)
@@ -174,7 +174,7 @@ def chosen_profile(app: Application,
             server_info = app.server_db.get_server_info(server.server)
             location_info = app.server_db.get_server_info(server.server)
         except Exception as e:
-            logging.error("error getting server info", exc_info=True)
+            logger.error("error getting server info", exc_info=True)
             return state.ErrorState(e)
         auth_url = server.server.oauth_login_url
         api_url = location_info.api_base_uri
@@ -186,7 +186,7 @@ def chosen_profile(app: Application,
         try:
             server_info = app.server_db.get_server_info(server)
         except Exception as e:
-            logging.error("error getting server info", exc_info=True)
+            logger.error("error getting server info", exc_info=True)
             return state.ErrorState(e)
         api_url = server_info.api_base_uri
         auth_url = server.oauth_login_url
@@ -207,7 +207,7 @@ def chosen_profile(app: Application,
             config, private_key, certificate = actions.get_config_and_keycert(
                 oauth_session, api_url, profile.id)
         except Exception as e:
-            logging.error("error getting config and keycert", exc_info=True)
+            logger.error("error getting config and keycert", exc_info=True)
             app.make_func_threadsafe(enter_error_state)(app, e)
             return
         storage.set_metadata(
