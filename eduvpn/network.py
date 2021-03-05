@@ -1,11 +1,13 @@
 import logging
 import enum
 from functools import partial
+from time import sleep
 from . import nm
 from . import settings
 from .state_machine import BaseState
 from .app import Application
 from .server import ConfiguredServer as Server
+from .utils import run_in_background_thread
 
 
 logger = logging.getLogger(__name__)
@@ -49,7 +51,7 @@ class NetworkState(BaseState):
         return DisconnectedState()
 
     def set_unknown(self, app: Application) -> 'NetworkState':
-        return UnknownState()
+        return enter_unknown_state(app)
 
 
 class InitialNetworkState(NetworkState):
@@ -134,6 +136,24 @@ def disconnect(app: Application, *, update_state=True) -> NetworkState:
     return DisconnectedState()
 
 
+def enter_unknown_state(app: Application) -> NetworkState:
+    # Set the state temporarily to unknown but keep polling for updates,
+    # since we don't always get notified by the update callback.
+    @run_in_background_thread('poll-network-state')
+    def determine_network_state_thread():
+        _, status = nm.connection_status(nm.get_client())
+        while status is nm.NM.ActiveConnectionState.UNKNOWN or status is None:
+            sleep(1)
+            if not isinstance(app.network_state, UnknownState):
+                return
+            _, status = nm.connection_status(nm.get_client())
+            logger.debug(f"polling network state: {status}")
+        handle_active_connection_status(app, status)
+
+    determine_network_state_thread()
+    return UnknownState()
+
+
 def on_status_update_callback(app: Application, status: nm.NM.VpnConnectionState):
     """
     Callback for whenever a connection status changes.
@@ -161,6 +181,13 @@ def on_any_update_callback(app: Application):
     Callback for whenever a connection status might have changed.
     """
     _, status = nm.connection_status(nm.get_client())
+    if status is None:
+        app.network_transition('set_unknown')
+    else:
+        handle_active_connection_status(app, status)
+
+
+def handle_active_connection_status(app: Application, status: nm.NM.ActiveConnectionState):
     if status is nm.NM.ActiveConnectionState.ACTIVATING:
         app.network_transition('set_connecting')
     elif status is nm.NM.ActiveConnectionState.ACTIVATED:
@@ -169,8 +196,6 @@ def on_any_update_callback(app: Application):
                     nm.NM.ActiveConnectionState.DEACTIVATING]:
         app.network_transition('set_disconnected')
     elif status is nm.NM.ActiveConnectionState.UNKNOWN:
-        app.network_transition('set_unknown')
-    elif status is None:
         app.network_transition('set_unknown')
     else:
         raise ValueError(status)
