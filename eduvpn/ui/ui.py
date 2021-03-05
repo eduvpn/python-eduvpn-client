@@ -22,7 +22,7 @@ from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
 from ..utils import get_prefix, run_in_main_gtk_thread
 from . import search
-from .utils import show_ui_component
+from .utils import show_ui_component, link_markup
 
 
 logger = logging.getLogger(__name__)
@@ -156,8 +156,8 @@ class EduVpnGui:
             server_image_component.hide()
 
         if getattr(server, 'support_contact', []):
-            support_text = "Support: " + ", ".join(server.support_contact)
-            self.builder.get_object('supportLabel').set_text(support_text)
+            support_text = "Support: " + ", ".join(map(link_markup, server.support_contact))
+            self.builder.get_object('supportLabel').set_markup(support_text)
             self.show_component('supportLabel', True)
         else:
             self.show_component('supportLabel', False)
