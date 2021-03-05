@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Union, Optional, List
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
@@ -22,6 +22,13 @@ class InterfaceState(BaseState):
     def toggle_settings(self, app: Application) -> 'InterfaceState':
         # Toggling the settings page normally shows the settings page.
         return ConfigureSettings(self)
+
+    def encountered_exception(self,
+                              app: Application,
+                              message: Union[str, Exception],
+                              next_state: Optional['InterfaceState'] = None,
+                              ) -> 'InterfaceState':
+        return ErrorState(message, next_state)
 
 
 class InitialInterfaceState(InterfaceState):
@@ -316,16 +323,11 @@ class ErrorState(InterfaceState):
     An error has occured.
     """
 
-    def __init__(self, message: str, next_state: Optional[InterfaceState]):
+    def __init__(self, message: Union[str, Exception], next_state: Optional[InterfaceState] = None):
+        if isinstance(message, Exception):
+            message = translate_error(message)
         self.message = message
         self.next_state = next_state
-
-    @classmethod
-    def from_exception(cls,
-                       exception: Exception,
-                       next_state: Optional[InterfaceState] = None,
-                       ) -> 'ErrorState':
-        return cls(translate_error(exception), next_state)
 
     def acknowledge_error(self, app: Application) -> InterfaceState:
         if self.next_state is None:

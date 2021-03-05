@@ -1,5 +1,6 @@
 import logging
 from typing import Tuple, List, Dict, Any
+import json
 
 import requests
 from requests_oauthlib import OAuth2Session
@@ -8,6 +9,11 @@ from eduvpn.crypto import common_name_from_cert
 from eduvpn.crypto import validate
 
 logger = logging.getLogger(__name__)
+
+
+class InvalidProfile(Exception):
+    def __init__(self, message):
+        self.message = message
 
 
 def request(uri: str, verify: bool = False) -> dict:
@@ -87,7 +93,12 @@ def get_info(base_uri: str):
 
 def get_config(oauth: OAuth2Session, base_uri: str, profile_id: str) -> str:
     uri = base_uri + f'/profile_config?profile_id={profile_id}'
-    return oauth_request(oauth, uri).text
+    text = oauth_request(oauth, uri).text
+    data = json.loads(text)
+    if not data['profile_config']['ok']:
+        logging.error(f"invalid profile_id: {profile_id} @ {base_uri}: {data}")
+        raise InvalidProfile(data['profile_config']['error'])
+    return json.dumps(text)
 
 
 def list_profiles(oauth: OAuth2Session, api_base_uri: str):

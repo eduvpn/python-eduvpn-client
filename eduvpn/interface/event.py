@@ -80,7 +80,7 @@ def setup_oauth(app: Application, server: AnyServer) -> state.InterfaceState:
     try:
         server_info = app.server_db.get_server_info(server)
     except Exception as e:
-        return state.ErrorState.from_exception(e)
+        return state.ErrorState(e)
 
     def oauth_token_callback(oauth_session: Optional[OAuth2Session]):
         if oauth_session:
@@ -108,7 +108,7 @@ def refresh_oauth_token(app: Application,
         try:
             server_info = app.server_db.get_server_info(server)
         except Exception as e:
-            return state.ErrorState.from_exception(e)
+            return state.ErrorState(e)
         try:
             oauth_session.refresh_token(token_url=server_info.token_endpoint)
         except InvalidOauthGrantError as e:
@@ -129,7 +129,7 @@ def start_connection(app: Application,
     try:
         server_info = app.server_db.get_server_info(server)
     except Exception as e:
-        return state.ErrorState.from_exception(e)
+        return state.ErrorState(e)
     api_url = server_info.api_base_uri
     profile_server: ConfiguredServer
 
@@ -146,7 +146,7 @@ def start_connection(app: Application,
             try:
                 api_url = app.server_db.get_server_info(location).api_base_uri
             except Exception as e:
-                return state.ErrorState.from_exception(e)
+                return state.ErrorState(e)
             profile_server = SecureInternetLocation(server, location)
     else:
         profile_server = server
@@ -169,7 +169,7 @@ def chosen_profile(app: Application,
             server_info = app.server_db.get_server_info(server.server)
             location_info = app.server_db.get_server_info(server.server)
         except Exception as e:
-            return state.ErrorState.from_exception(e)
+            return state.ErrorState(e)
         auth_url = server.server.oauth_login_url
         api_url = location_info.api_base_uri
         country_code = server.location.country_code
@@ -180,7 +180,7 @@ def chosen_profile(app: Application,
         try:
             server_info = app.server_db.get_server_info(server)
         except Exception as e:
-            return state.ErrorState.from_exception(e)
+            return state.ErrorState(e)
         api_url = server_info.api_base_uri
         auth_url = server.oauth_login_url
         country_code = None
@@ -196,8 +196,12 @@ def chosen_profile(app: Application,
 
     @run_in_background_thread('configure-connection')
     def configure_connection_thread():
-        config, private_key, certificate = actions.get_config_and_keycert(
-            oauth_session, api_url, profile.id)
+        try:
+            config, private_key, certificate = actions.get_config_and_keycert(
+                oauth_session, api_url, profile.id)
+        except Exception as e:
+            app.make_func_threadsafe(enter_error_state)(app, e)
+            return
         storage.set_metadata(
             auth_url, oauth_session.token, server_info.token_endpoint,
             server_info.auth_endpoint, api_url, display_name,
@@ -220,3 +224,7 @@ def chosen_profile(app: Application,
 
     configure_connection_thread()
     return state.ConfiguringConnection(server)
+
+
+def enter_error_state(app: Application, error: Exception):
+    app.interface_transition('encountered_exception', error)
