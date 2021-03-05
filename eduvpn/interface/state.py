@@ -187,6 +187,24 @@ configure_server_states = (
 )
 
 
+class OAuthSetupPending(InterfaceState):
+    """
+    Wait for the local OAuth webserver to start.
+    """
+
+    def __init__(self, server: AnyServer):
+        self.server = server
+
+    def ready_for_oauth_setup(self,
+                              app: Application,
+                              oauth_web_server: OAuthWebServer) -> InterfaceState:
+        """
+        Cancel the OAuth setup process
+        and take the user back to the main page.
+        """
+        return OAuthSetup(self.server, oauth_web_server)
+
+
 class OAuthSetup(InterfaceState):
     """
     Allow the user to log into the VPN server using their browser.
@@ -235,6 +253,34 @@ class OAuthRefreshToken(InterfaceState):
         so the OAuth setup needs to be redone.
         """
         return event.setup_oauth(app, self.server)
+
+
+class LoadingServerInformation(InterfaceState):
+    """
+    Wait for server information to be requested.
+    """
+
+    def choose_secure_internet_location(self,
+                                        app: Application,
+                                        server: OrganisationServer,
+                                        oauth_session: OAuth2Session,
+                                        locations: List[SecureInternetServer]):
+        if len(locations) == 1:
+            # Skip location choice if there's only a single option.
+            return event.start_connection(app, server, oauth_session, locations[0])
+        else:
+            return ChooseSecureInternetLocation(server, oauth_session, locations)
+
+    def choose_profile(self,
+                       app: Application,
+                       server: AnyServer,
+                       oauth_session: OAuth2Session,
+                       profiles: List[Profile]) -> InterfaceState:
+        if len(profiles) == 1:
+            # Skip profile choice if there's only a single option.
+            return event.chosen_profile(app, server, oauth_session, profiles[0])
+        else:
+            return ChooseProfile(server, oauth_session, profiles)
 
 
 class ChooseSecureInternetLocation(InterfaceState):

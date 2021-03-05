@@ -77,27 +77,33 @@ def connect_to_server(app: Application, server: AnyServer) -> state.InterfaceSta
 
 
 def setup_oauth(app: Application, server: AnyServer) -> state.InterfaceState:
-    try:
-        server_info = app.server_db.get_server_info(server)
-    except Exception as e:
-        logger.error("error getting server info", exc_info=True)
-        return state.ErrorState(e)
+    @run_in_background_thread('start-oauth-web-server')
+    def start_local_oauth_web_server_thread():
+        try:
+            server_info = app.server_db.get_server_info(server)
+        except Exception as e:
+            logger.error("error getting server info", exc_info=True)
+            enter_error_state_threadsafe(app, e)
+            return
 
-    def oauth_token_callback(oauth_session: Optional[OAuth2Session]):
-        if oauth_session:
-            app.interface_transition_threadsafe('oauth_setup_success', oauth_session)
-        else:
-            # The process has been canceled by the user through the app,
-            # which already schedules the state transition so we don't need
-            # to do that here.
-            pass
+        def oauth_token_callback(oauth_session: Optional[OAuth2Session]):
+            if oauth_session:
+                app.interface_transition_threadsafe('oauth_setup_success', oauth_session)
+            else:
+                # The process has been canceled by the user through the app,
+                # which already schedules the state transition so we don't need
+                # to do that here.
+                pass
 
-    web_server = OAuthWebServer.start(
-        server_info.token_endpoint,
-        server_info.auth_endpoint,
-        oauth_token_callback,
-    )
-    return state.OAuthSetup(server, web_server)
+        web_server = OAuthWebServer.start(
+            server_info.token_endpoint,
+            server_info.auth_endpoint,
+            oauth_token_callback,
+        )
+        app.interface_transition_threadsafe('ready_for_oauth_setup', web_server)
+
+    start_local_oauth_web_server_thread()
+    return state.OAuthSetupPending(server)
 
 
 def refresh_oauth_token(app: Application,
@@ -110,7 +116,8 @@ def refresh_oauth_token(app: Application,
             server_info = app.server_db.get_server_info(server)
         except Exception as e:
             logger.error("error getting server info", exc_info=True)
-            return state.ErrorState(e)
+            enter_error_state_threadsafe(app, e)
+            return
         try:
             oauth_session.refresh_token(token_url=server_info.token_endpoint)
         except InvalidOauthGrantError as e:
@@ -128,87 +135,93 @@ def start_connection(app: Application,
                      oauth_session: OAuth2Session,
                      location: Optional[SecureInternetServer] = None,
                      ) -> state.InterfaceState:
-    try:
-        server_info = app.server_db.get_server_info(server)
-    except Exception as e:
-        logger.error("error getting server info", exc_info=True)
-        return state.ErrorState(e)
-    api_url = server_info.api_base_uri
-    profile_server: ConfiguredServer
 
-    if isinstance(server, OrganisationServer):
-        if not location:
-            locations = [server for server in app.server_db.all()
-                         if isinstance(server, SecureInternetServer)]
-            if len(locations) == 1:
-                # Skip location choice if there's only a single option.
-                return start_connection(app, server, oauth_session, locations[0])
+    @run_in_background_thread('load-server-info')
+    def load_server_information_thread():
+        try:
+            server_info = app.server_db.get_server_info(server)
+        except Exception as e:
+            logger.error("error getting server info", exc_info=True)
+            enter_error_state_threadsafe(app, e)
+            return
+        api_url = server_info.api_base_uri
+        profile_server: ConfiguredServer
+
+        if isinstance(server, OrganisationServer):
+            if not location:
+                locations = [server for server in app.server_db.all()
+                             if isinstance(server, SecureInternetServer)]
+                app.interface_transition_threadsafe(
+                    'choose_secure_internet_location', server, oauth_session, locations)
+                return
             else:
-                return state.ChooseSecureInternetLocation(server, oauth_session, locations)
+                try:
+                    location_info = app.server_db.get_server_info(location)
+                except Exception as e:
+                    logger.error("error getting server info", exc_info=True)
+                    enter_error_state_threadsafe(app, e)
+                    return
+                api_url = location_info.api_base_uri
+                profile_server = SecureInternetLocation(server, location)
         else:
-            try:
-                location_info = app.server_db.get_server_info(location)
-            except Exception as e:
-                logger.error("error getting server info", exc_info=True)
-                return state.ErrorState(e)
-            api_url = location_info.api_base_uri
-            profile_server = SecureInternetLocation(server, location)
-    else:
-        profile_server = server
+            profile_server = server
 
-    profiles = [Profile(**data) for data in remote.list_profiles(oauth_session, api_url)]
-    if len(profiles) == 1:
-        # Skip profile choice if there's only a single option.
-        return chosen_profile(app, profile_server, oauth_session, profiles[0])
-    else:
-        return state.ChooseProfile(profile_server, oauth_session, profiles)
+        profiles = [Profile(**data) for data in remote.list_profiles(oauth_session, api_url)]
+        app.interface_transition_threadsafe(
+            'choose_profile', profile_server, oauth_session, profiles)
+
+    load_server_information_thread()
+    return state.LoadingServerInformation()
 
 
 def chosen_profile(app: Application,
                    server: AnyServer,
                    oauth_session: OAuth2Session,
                    profile: Profile) -> state.InterfaceState:
-    country_code: Optional[str]
-    if isinstance(server, SecureInternetLocation):
-        try:
-            server_info = app.server_db.get_server_info(server.server)
-            location_info = app.server_db.get_server_info(server.server)
-        except Exception as e:
-            logger.error("error getting server info", exc_info=True)
-            return state.ErrorState(e)
-        auth_url = server.server.oauth_login_url
-        api_url = location_info.api_base_uri
-        country_code = server.location.country_code
-        con_type = storage.ConnectionType.SECURE
-        display_name = str(server.server)
-        support_contact = server.location.support_contact
-    else:
-        try:
-            server_info = app.server_db.get_server_info(server)
-        except Exception as e:
-            logger.error("error getting server info", exc_info=True)
-            return state.ErrorState(e)
-        api_url = server_info.api_base_uri
-        auth_url = server.oauth_login_url
-        country_code = None
-        display_name = str(server)
-        if isinstance(server, InstituteAccessServer):
-            con_type = storage.ConnectionType.INSTITUTE
-            support_contact = server.support_contact
-        elif isinstance(server, CustomServer):
-            con_type = storage.ConnectionType.OTHER
-            support_contact = []
-        else:
-            raise TypeError(server)
 
     @run_in_background_thread('configure-connection')
     def configure_connection_thread():
+        country_code: Optional[str]
+        if isinstance(server, SecureInternetLocation):
+            try:
+                server_info = app.server_db.get_server_info(server.server)
+                location_info = app.server_db.get_server_info(server.server)
+            except Exception as e:
+                logger.error("error getting server info", exc_info=True)
+                enter_error_state_threadsafe(app, e)
+                return
+            auth_url = server.server.oauth_login_url
+            api_url = location_info.api_base_uri
+            country_code = server.location.country_code
+            con_type = storage.ConnectionType.SECURE
+            display_name = str(server.server)
+            support_contact = server.location.support_contact
+        else:
+            try:
+                server_info = app.server_db.get_server_info(server)
+            except Exception as e:
+                logger.error("error getting server info", exc_info=True)
+                enter_error_state_threadsafe(app, e)
+                return
+            api_url = server_info.api_base_uri
+            auth_url = server.oauth_login_url
+            country_code = None
+            display_name = str(server)
+            if isinstance(server, InstituteAccessServer):
+                con_type = storage.ConnectionType.INSTITUTE
+                support_contact = server.support_contact
+            elif isinstance(server, CustomServer):
+                con_type = storage.ConnectionType.OTHER
+                support_contact = []
+            else:
+                raise TypeError(server)
+
         try:
             config, private_key, certificate = actions.get_config_and_keycert(
                 oauth_session, api_url, profile.id)
         except Exception as e:
             logger.error("error getting config and keycert", exc_info=True)
-            app.make_func_threadsafe(enter_error_state)(app, e)
+            enter_error_state_threadsafe(app, e)
             return
         storage.set_metadata(
             auth_url, oauth_session.token, server_info.token_endpoint,
@@ -236,3 +249,7 @@ def chosen_profile(app: Application,
 
 def enter_error_state(app: Application, error: Exception):
     app.interface_transition('encountered_exception', error)
+
+
+def enter_error_state_threadsafe(app: Application, error: Exception):
+    app.make_func_threadsafe(enter_error_state)(app, error)
