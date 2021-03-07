@@ -308,6 +308,6 @@ class ServerDatabase:
         else:
             yield from self.all()
 
-    def get_server_info(self, server):
+    def get_server_info(self, server) -> ServerInfo:
         info = remote.get_info(server.oauth_login_url)
         return ServerInfo(*info)

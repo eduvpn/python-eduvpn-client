@@ -22,7 +22,7 @@ from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
 from ..utils import get_prefix, run_in_main_gtk_thread
 from . import search
-from .utils import show_ui_component
+from .utils import show_ui_component, link_markup
 
 
 logger = logging.getLogger(__name__)
@@ -125,15 +125,31 @@ class EduVpnGui:
 
     # ui functions
 
-    def show_component(self, component: str, show: bool):
-        show_ui_component(self.builder, component, show)
+    def show_component(self, component_id: str, show: bool):
+        show_ui_component(self.builder, component_id, show)
+
+    def set_text(self, component_id: str, text: str):
+        component = self.builder.get_object(component_id)
+        component.set_text(text)
 
     def show_back_button(self, show: bool):
         self.show_component('backButton', show)
         self.show_component('backButtonEventBox', show)
 
     def set_search_text(self, text: str):
-        self.builder.get_object('findYourInstituteSearch').set_text(text)
+        self.set_text('findYourInstituteSearch', text)
+
+    def show_message_page(self, title: str, message: str):
+        self.show_component('loadingPage', True)
+        self.show_component('loadingSpacer', True)
+        self.show_component('loadingTitle', True)
+        self.show_component('loadingMessage', True)
+        self.show_component('loadingSpinner', True)
+        self.set_text('loadingTitle', title)
+        self.set_text('loadingMessage', message)
+
+    def hide_message_page(self):
+        self.show_component('loadingPage', False)
 
     # network state transition callbacks
 
@@ -145,7 +161,7 @@ class EduVpnGui:
     def update_connection_server(self):
         server = self.app.interface_state.server
         self.show_component('serverLabel', True)
-        self.builder.get_object('serverLabel').set_text(str(server))
+        self.set_text('serverLabel', str(server))
 
         server_image_component = self.builder.get_object('serverImage')
         server_image_path = getattr(server, 'image_path', None)
@@ -156,14 +172,14 @@ class EduVpnGui:
             server_image_component.hide()
 
         if getattr(server, 'support_contact', []):
-            support_text = "Support: " + ", ".join(server.support_contact)
-            self.builder.get_object('supportLabel').set_text(support_text)
+            support_text = "Support: " + ", ".join(map(link_markup, server.support_contact))
+            self.builder.get_object('supportLabel').set_markup(support_text)
             self.show_component('supportLabel', True)
         else:
             self.show_component('supportLabel', False)
 
     def update_connection_status(self):
-        self.builder.get_object('connectionStatusLabel').set_text(self.app.network_state.status_label)
+        self.set_text('connectionStatusLabel', self.app.network_state.status_label)
         self.builder.get_object('connectionStatusImage').set_from_file(self.app.network_state.status_image.path)
 
         assert not (hasattr(self.app.network_state, 'reconnect') and hasattr(self.app.network_state, 'disconnect'))
@@ -256,15 +272,40 @@ class EduVpnGui:
         search.disconnect_selection_handlers(
             self.builder, self.on_select_server)
 
+    @transition_edge_callback(ENTER, interface_state.OAuthSetupPending)
     @transition_edge_callback(ENTER, interface_state.OAuthSetup)
-    def enter_OAuthSetup(self, old_state, new_state):
+    def enter_oauth_setup(self, old_state, new_state):
         self.show_component('openBrowserPage', True)
-        self.show_component('cancelBrowserButton', True)
+        self.show_component('cancelBrowserButton',
+                            isinstance(new_state, interface_state.OAuthSetup))
 
+    @transition_edge_callback(EXIT, interface_state.OAuthSetupPending)
     @transition_edge_callback(EXIT, interface_state.OAuthSetup)
-    def exit_OAuthSetup(self, old_state, new_state):
+    def exit_oauth_setup(self, old_state, new_state):
         self.show_component('openBrowserPage', False)
         self.show_component('cancelBrowserButton', False)
+
+    @transition_edge_callback(ENTER, interface_state.OAuthRefreshToken)
+    def enter_OAuthRefreshToken(self, old_state, new_state):
+        self.show_message_page(
+            "Finishing Authorization",
+            "The authorization token is being finished.",
+        )
+
+    @transition_edge_callback(EXIT, interface_state.OAuthRefreshToken)
+    def exit_OAuthRefreshToken(self, old_state, new_state):
+        self.hide_message_page()
+
+    @transition_edge_callback(ENTER, interface_state.LoadingServerInformation)
+    def enter_LoadingServerInformation(self, old_state, new_state):
+        self.show_message_page(
+            "Loading",
+            "The server details are being loaded.",
+        )
+
+    @transition_edge_callback(EXIT, interface_state.LoadingServerInformation)
+    def exit_LoadingServerInformation(self, old_state, new_state):
+        self.hide_message_page()
 
     @transition_edge_callback(ENTER, interface_state.ChooseProfile)
     def enter_ChooseProfile(self, old_state, new_state):
@@ -342,7 +383,16 @@ class EduVpnGui:
         selection = location_tree_view.get_selection()
         selection.disconnect_by_func(self.on_location_selection_changed)
 
-    # TODO ConfiguringConnection
+    @transition_edge_callback(ENTER, interface_state.ConfiguringConnection)
+    def enter_ConfiguringConnection(self, old_state, new_state):
+        self.show_message_page(
+            "Configuring",
+            "Your connection is being configured.",
+        )
+
+    @transition_edge_callback(EXIT, interface_state.ConfiguringConnection)
+    def exit_ConfiguringConnection(self, old_state, new_state):
+        self.hide_message_page()
 
     @transition_edge_callback(ENTER, interface_state.ConnectionStatus)
     def enter_ConnectionStatus(self, old_state, new_state):
@@ -364,8 +414,8 @@ class EduVpnGui:
         self.show_component('messagePage', True)
         self.show_component('messageLabel', True)
         self.show_component('messageText', True)
-        self.builder.get_object('messageLabel').set_text("Error")
-        self.builder.get_object('messageText').set_text(new_state.message)
+        self.set_text('messageLabel', "Error")
+        self.set_text('messageText', new_state.message)
         self.show_component('messageButton', True)
         self.builder.get_object('messageButton').set_label("Ok")
         button = self.builder.get_object('messageButton')
