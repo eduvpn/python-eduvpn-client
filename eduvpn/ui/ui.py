@@ -130,7 +130,9 @@ class EduVpnGui:
             "on_cancel_browser_button_clicked":
                 self.on_cancel_oauth_setup_button_clicked,
             "on_connection_switch_state_set":
-                self.on_connection_switch_state_set
+                self.on_connection_switch_state_set,
+            "on_renew_session_clicked":
+                self.on_renew_session_clicked,
         }
         self.builder.connect_signals(handlers)
 
@@ -232,7 +234,11 @@ class EduVpnGui:
             self.show_component('currentConnectionSubPage', False)
             connection_switch.hide()
 
-        self.show_component('renewSessionButton', False)
+        if hasattr(self.app.network_state, 'renew_certificate'):
+            self.show_component('currentConnectionSubPage', True)
+            self.show_component('renewSessionButton', True)
+        else:
+            self.show_component('renewSessionButton', False)
 
     # interface state transition callbacks
 
@@ -573,3 +579,6 @@ class EduVpnGui:
 
     def on_acknowledge_error(self, event):
         self.app.interface_transition('acknowledge_error')
+
+    def on_renew_session_clicked(self, event):
+        self.app.network_transition('renew_certificate')
