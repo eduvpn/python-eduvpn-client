@@ -59,8 +59,6 @@ class NetworkState(BaseState):
         return ConnectionErrorState(message)
 
     def set_certificate_expired(self, app: Application) -> 'NetworkState':
-        if isinstance(app.network_state, (ConnectingState, ConnectedState)):
-            disconnect(app, update_state=False)
         return CertificateExpiredState()
 
 
