@@ -169,6 +169,9 @@ class Profile:
     def __str__(self):
         return self.display_name
 
+    def __repr__(self):
+        return f"<Profile id={self.id!r} {str(self)!r}>"
+
 
 class SecureInternetLocation:
     def __init__(self,
