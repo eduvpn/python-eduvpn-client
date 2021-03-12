@@ -2,7 +2,6 @@ from base64 import urlsafe_b64encode, b64decode
 import hashlib
 import random
 import logging
-import subprocess
 from datetime import datetime
 from typing import Optional, List
 from functools import lru_cache
@@ -99,37 +98,11 @@ def validate(signature: str, content: bytes) -> bytes:
     raise BadSignatureError
 
 
-def get_certificate_expiry(certificate: str) -> Optional[datetime]:
-    process = subprocess.Popen(
-        ['openssl', 'x509', '-noout', '-enddate'],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+def get_certificate_expiry(certificate_text: str) -> Optional[datetime]:
     try:
-        certificate_bytes = certificate.encode('ascii')
+        certificate_bytes = certificate_text.encode('ascii')
     except UnicodeEncodeError:
-        logger.error(f"non-ascii certificate: {certificate!r}")
+        logger.error(f"non-ascii certificate: {certificate_text!r}")
         return None
-    try:
-        stdout, stderr = process.communicate(certificate_bytes, timeout=.5)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        stdout, strerr = process.communicate()
-        logger.error(f"timeout getting certificate expiry: {stdout!r} {strerr!r}")
-        return None
-    if stderr:
-        logger.error(f"failed getting certificate expiry: {stderr!r}")
-        return None
-    if process.returncode != 0:
-        logger.warning("error getting certificate expiry")
-    if not stdout.startswith(b'notAfter='):
-        logger.error(f"unexpected output getting certificate expiry: {stdout!r}")
-        return None
-    expiry_text = stdout[len(b'notAfter='):].decode('ascii').strip()
-    datetime_format = '%b %d %H:%M:%S %Y %Z'
-    try:
-        return datetime.strptime(expiry_text, datetime_format)
-    except ValueError:
-        logger.error(f"invalid expiry date format: {expiry_text!r}")
-        return None
+    certificate = x509.load_pem_x509_certificate(certificate_bytes, default_backend())
+    return certificate.not_valid_after
