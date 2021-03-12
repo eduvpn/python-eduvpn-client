@@ -82,7 +82,7 @@ variable_objects = [
 def get_expiry_text(expiry: Optional[datetime]):
     if expiry is None:
         return "Valid for <b>unknown</b>"
-    now = datetime.now()
+    now = datetime.utcnow()
     if expiry <= now:
         return "This session has expired"
     delta = expiry - now
