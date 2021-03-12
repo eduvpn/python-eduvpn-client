@@ -133,6 +133,9 @@ class EduVpnGui:
 
         self.app = Application(run_in_main_gtk_thread)
 
+        # TODO implement settings page (issue #334)
+        self.show_component('settingsButton', False)
+
     def run(self):
         logger.info("starting ui")
         self.show_component('applicationWindow', True)
