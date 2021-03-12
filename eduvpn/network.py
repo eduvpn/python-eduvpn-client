@@ -1,7 +1,9 @@
+from typing import Optional
 import logging
 import enum
 from functools import partial
 from time import sleep
+from datetime import datetime
 from . import nm
 from . import settings
 from .state_machine import BaseState
@@ -65,11 +67,12 @@ class InitialNetworkState(NetworkState):
     def found_active_connection(self,
                                 app: Application,
                                 server: Server,
+                                expiry: Optional[datetime],
                                 ) -> NetworkState:
         """
         An already active connection was found.
         """
-        app.interface_transition('found_active_connection', server)
+        app.interface_transition('found_active_connection', server, expiry)
         return ConnectedState()
 
     def found_previous_connection(self,

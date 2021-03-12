@@ -3,10 +3,11 @@
 # Copyright: 2017-2020, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from typing import Any
+from typing import Any, Optional
 import os
 import webbrowser
 import logging
+from datetime import datetime
 
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
@@ -78,6 +79,21 @@ variable_objects = [
 ]
 
 
+def get_expiry_text(expiry: Optional[datetime]):
+    if expiry is None:
+        return "Valid for <b>unknown</b>"
+    now = datetime.now()
+    if expiry <= now:
+        return "This session has expired"
+    delta = expiry - now
+    days = delta.days
+    hours = delta.seconds // 3600
+    if days == 0:
+        return f"Valid for <b>{hours} hours</b>"
+    else:
+        return f"Valid for <b>{days} days</b> and <b>{hours} hours</b>"
+
+
 class EduVpnGui:
     def __init__(self, lets_connect: bool):
         """
@@ -132,6 +148,10 @@ class EduVpnGui:
         component = self.builder.get_object(component_id)
         component.set_text(text)
 
+    def set_markup_text(self, component_id: str, text: str):
+        component = self.builder.get_object(component_id)
+        component.set_markup(text)
+
     def show_back_button(self, show: bool):
         self.show_component('backButton', show)
         self.show_component('backButtonEventBox', show)
@@ -173,7 +193,7 @@ class EduVpnGui:
 
         if getattr(server, 'support_contact', []):
             support_text = "Support: " + ", ".join(map(link_markup, server.support_contact))
-            self.builder.get_object('supportLabel').set_markup(support_text)
+            self.set_markup_text('supportLabel', support_text)
             self.show_component('supportLabel', True)
         else:
             self.show_component('supportLabel', False)
@@ -181,6 +201,8 @@ class EduVpnGui:
     def update_connection_status(self):
         self.set_text('connectionStatusLabel', self.app.network_state.status_label)
         self.builder.get_object('connectionStatusImage').set_from_file(self.app.network_state.status_image.path)
+
+        self.set_markup_text('connectionSubStatus', get_expiry_text(self.app.interface_state.expiry))
 
         assert not (hasattr(self.app.network_state, 'reconnect') and hasattr(self.app.network_state, 'disconnect'))
         connection_switch = self.builder.get_object('connectionSwitch')
