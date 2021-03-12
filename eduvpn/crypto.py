@@ -2,7 +2,8 @@ from base64 import urlsafe_b64encode, b64decode
 import hashlib
 import random
 import logging
-from typing import List
+from datetime import datetime
+from typing import Optional, List
 from functools import lru_cache
 from cryptography.x509.oid import NameOID
 from cryptography import x509
@@ -95,3 +96,13 @@ def validate(signature: str, content: bytes) -> bytes:
         except BadSignatureError:
             logger.debug(f"Skipping signature {f}")
     raise BadSignatureError
+
+
+def get_certificate_expiry(certificate_text: str) -> Optional[datetime]:
+    try:
+        certificate_bytes = certificate_text.encode('ascii')
+    except UnicodeEncodeError:
+        logger.error(f"non-ascii certificate: {certificate_text!r}")
+        return None
+    certificate = x509.load_pem_x509_certificate(certificate_bytes, default_backend())
+    return certificate.not_valid_after

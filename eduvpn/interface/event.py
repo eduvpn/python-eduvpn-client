@@ -7,6 +7,7 @@ from .. import storage
 from .. import nm
 from .. import actions
 from .. import remote
+from .. import crypto
 from ..oauth2 import OAuthWebServer
 from ..app import Application
 from ..server import (
@@ -111,7 +112,7 @@ def on_chosen_profile(app: Application,
     if isinstance(server, SecureInternetLocation):
         try:
             server_info = app.server_db.get_server_info(server.server)
-            location_info = app.server_db.get_server_info(server.server)
+            location_info = app.server_db.get_server_info(server.location)
         except Exception as e:
             logger.error("error getting server info", exc_info=True)
             enter_error_state_threadsafe(app, e)
@@ -149,15 +150,16 @@ def on_chosen_profile(app: Application,
         logger.error("error getting config and keycert", exc_info=True)
         enter_error_state_threadsafe(app, e)
         return
+    expiry = crypto.get_certificate_expiry(certificate)
     storage.set_metadata(
         auth_url, oauth_session.token, server_info.token_endpoint,
         server_info.auth_endpoint, api_url, display_name,
-        support_contact, profile.id, con_type, country_code)
+        support_contact, profile.id, con_type, country_code, expiry)
     storage.set_auth_url(auth_url)
 
     def finished_saving_config_callback(result):
         logger.info(f"Finished saving network manager config: {result}")
-        app.interface_transition('finished_configuring_connection')
+        app.interface_transition('finished_configuring_connection', expiry)
         app.current_network_uuid = storage.get_uuid()
         assert app.current_network_uuid is not None
         app.network_transition('start_new_connection', server)

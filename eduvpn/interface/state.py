@@ -1,4 +1,5 @@
 from typing import Union, Optional, List
+from datetime import datetime
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
@@ -43,11 +44,12 @@ class InitialInterfaceState(InterfaceState):
     def found_active_connection(self,
                                 app: Application,
                                 server: ConfiguredServer,
+                                expiry: Optional[datetime],
                                 ) -> InterfaceState:
         """
         An connection is already active, show its details.
         """
-        return ConnectionStatus(server)
+        return ConnectionStatus(server, expiry)
 
     def no_active_connection_found(self, app: Application) -> InterfaceState:
         """
@@ -336,8 +338,11 @@ class ConfiguringConnection(InterfaceState):
     def __init__(self, server: AnyServer):
         self.server = server
 
-    def finished_configuring_connection(self, app: Application) -> InterfaceState:
-        return ConnectionStatus(self.server)
+    def finished_configuring_connection(self,
+                                        app: Application,
+                                        expiry: Optional[datetime],
+                                        ) -> InterfaceState:
+        return ConnectionStatus(self.server, expiry)
 
 
 class ConnectionStatus(InterfaceState):
@@ -345,8 +350,9 @@ class ConnectionStatus(InterfaceState):
     Show info on the active connection status.
     """
 
-    def __init__(self, server: AnyServer):
+    def __init__(self, server: AnyServer, expiry: Optional[datetime]):
         self.server = server
+        self.expiry = expiry
 
     def go_back(self, app: Application) -> InterfaceState:
         return transition.go_to_main_state(app)

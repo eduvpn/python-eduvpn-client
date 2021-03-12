@@ -4,6 +4,7 @@ This module contains code to maintain a simple metadata storage in ~/.config/edu
 from typing import Optional, Tuple, List
 from enum import Enum
 from os import PathLike
+from datetime import datetime
 import json
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 from eduvpn.settings import CONFIG_PREFIX
@@ -61,7 +62,7 @@ def _set_setting(what: str, value: str):
         f.write(value)
 
 
-Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str]
+Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[datetime]]
 
 
 def get_current_metadata(auth_url: str) -> Optional[Metadata]:
@@ -71,6 +72,9 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
     storage = get_all_metadatas()
     if auth_url in storage:
         v = storage[auth_url]
+        expiry = v.get('certificate_expiry')
+        if expiry is not None:
+            expiry = datetime.fromisoformat(expiry)
         return (
             OAuth2Token(v['token']),
             v['token_endpoint'],
@@ -80,7 +84,8 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
             v['support_contact'],
             v['profile_id'],
             v['con_type'],
-            v['country_id']
+            v['country_id'],
+            expiry,
         )
     else:
         return None
@@ -96,12 +101,17 @@ def set_metadata(
         support_contact: List[str],
         profile_id: str,
         con_type: str,
-        country_id: Optional[str]
+        country_id: Optional[str],
+        certificate_expiry: Optional[datetime] = None,
 ) -> None:
     """
     Set a configuration profile in storage
     """
     storage = get_all_metadatas()
+    if certificate_expiry is None:
+        expiry_str = None
+    else:
+        expiry_str = certificate_expiry.isoformat()
     storage[auth_url] = {
         'token': token,
         'api_base_uri': auth_url,
@@ -112,7 +122,8 @@ def set_metadata(
         'support_contact': support_contact,
         'profile_id': profile_id,
         'con_type': con_type,
-        'country_id': country_id
+        'country_id': country_id,
+        'certificate_expiry': expiry_str,
     }
     _write_metadatas(storage)
 

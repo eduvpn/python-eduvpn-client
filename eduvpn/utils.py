@@ -1,10 +1,9 @@
-from typing import Optional
+from typing import Optional, Callable
 import threading
 from functools import lru_cache, partial, wraps
 from logging import getLogger
 from os import path
 from sys import prefix
-from typing import Callable
 
 logger = getLogger(__file__)
 
@@ -80,3 +79,30 @@ def run_in_main_gtk_thread(func):
         GLib.idle_add(partial(func, *args, **kwargs))
 
     return main_gtk_thread_func
+
+
+def run_periodically(func: Callable[[], None],
+                     interval: float,
+                     name: Optional[str] = None,
+                     ) -> Callable[[], None]:
+    """
+    Run a funtion periodically in a background thread.
+
+    The given function is called every `interval` seconds,
+    until either it returns False
+    or until the returned cancel callback is called.
+    """
+    if name is None:
+        name = 'run-periodically'
+    event = threading.Event()
+
+    @run_in_background_thread(name)
+    def run_periodic_thread():
+        while 1:
+            if event.wait(interval):
+                return
+            elif func() is False:
+                return
+
+    run_periodic_thread()
+    return event.set

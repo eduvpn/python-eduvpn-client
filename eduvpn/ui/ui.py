@@ -3,10 +3,11 @@
 # Copyright: 2017-2020, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from typing import Any
+from typing import Any, Optional
 import os
 import webbrowser
 import logging
+from datetime import datetime
 
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
@@ -20,7 +21,7 @@ from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
-from ..utils import get_prefix, run_in_main_gtk_thread
+from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
 from . import search
 from .utils import show_ui_component, link_markup
 
@@ -78,6 +79,28 @@ variable_objects = [
 ]
 
 
+UPDATE_EXIPRY_INTERVAL = 1.  # seconds
+
+
+def get_expiry_text(expiry: Optional[datetime]):
+    if expiry is None:
+        return "Valid for <b>unknown</b>"
+    now = datetime.utcnow()
+    if expiry <= now:
+        return "This session has expired"
+    delta = expiry - now
+    days = delta.days
+    hours = delta.seconds // 3600
+    if days == 0:
+        if hours == 0:
+            minutes = delta.seconds // 60
+            return f"Valid for <b>{minutes} minutes</b>"
+        else:
+            return f"Valid for <b>{hours} hours</b>"
+    else:
+        return f"Valid for <b>{days} days</b> and <b>{hours} hours</b>"
+
+
 class EduVpnGui:
     def __init__(self, lets_connect: bool):
         """
@@ -107,7 +130,9 @@ class EduVpnGui:
             "on_cancel_browser_button_clicked":
                 self.on_cancel_oauth_setup_button_clicked,
             "on_connection_switch_state_set":
-                self.on_connection_switch_state_set
+                self.on_connection_switch_state_set,
+            "on_renew_session_clicked":
+                self.on_renew_session_clicked,
         }
         self.builder.connect_signals(handlers)
 
@@ -116,6 +141,9 @@ class EduVpnGui:
             self.show_component(name, False)
 
         self.app = Application(run_in_main_gtk_thread)
+
+        # TODO implement settings page (issue #334)
+        self.show_component('settingsButton', False)
 
     def run(self):
         logger.info("starting ui")
@@ -131,6 +159,10 @@ class EduVpnGui:
     def set_text(self, component_id: str, text: str):
         component = self.builder.get_object(component_id)
         component.set_text(text)
+
+    def set_markup_text(self, component_id: str, text: str):
+        component = self.builder.get_object(component_id)
+        component.set_markup(text)
 
     def show_back_button(self, show: bool):
         self.show_component('backButton', show)
@@ -173,14 +205,20 @@ class EduVpnGui:
 
         if getattr(server, 'support_contact', []):
             support_text = "Support: " + ", ".join(map(link_markup, server.support_contact))
-            self.builder.get_object('supportLabel').set_markup(support_text)
+            self.set_markup_text('supportLabel', support_text)
             self.show_component('supportLabel', True)
         else:
             self.show_component('supportLabel', False)
 
+    def update_connection_expiry(self):
+        expiry_text = get_expiry_text(self.app.interface_state.expiry)
+        self.set_markup_text('connectionSubStatus', expiry_text)
+
     def update_connection_status(self):
         self.set_text('connectionStatusLabel', self.app.network_state.status_label)
         self.builder.get_object('connectionStatusImage').set_from_file(self.app.network_state.status_image.path)
+
+        self.update_connection_expiry()
 
         assert not (hasattr(self.app.network_state, 'reconnect') and hasattr(self.app.network_state, 'disconnect'))
         connection_switch = self.builder.get_object('connectionSwitch')
@@ -196,7 +234,11 @@ class EduVpnGui:
             self.show_component('currentConnectionSubPage', False)
             connection_switch.hide()
 
-        self.show_component('renewSessionButton', False)
+        if hasattr(self.app.network_state, 'renew_certificate'):
+            self.show_component('currentConnectionSubPage', True)
+            self.show_component('renewSessionButton', True)
+        else:
+            self.show_component('renewSessionButton', False)
 
     # interface state transition callbacks
 
@@ -405,9 +447,36 @@ class EduVpnGui:
         self.update_connection_server()
         self.update_connection_status()
 
+        if hasattr(self, '_cancel_expiry_updates'):
+            # Cancel any previous threads, as they might have been cancelled
+            # and there shouln't be multiple threads running.
+            self._cancel_expiry_updates()
+
+        def update_connection_expiry():
+            # This function runs in a background thread.
+            state = self.app.interface_state
+            if not isinstance(state, interface_state.ConnectionStatus):
+                # cancel this thread
+                return False
+            run_in_main_gtk_thread(self.update_connection_expiry)()
+            if datetime.utcnow() < state.expiry:
+                return True
+            else:
+                self.app.network_transition_threadsafe('set_certificate_expired')
+                return False
+
+        self._cancel_expiry_updates = run_periodically(
+            update_connection_expiry,
+            UPDATE_EXIPRY_INTERVAL,
+            'update-expiry',
+        )
+
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', False)
+
+        self._cancel_expiry_updates()
+        del self._cancel_expiry_updates
 
     @transition_edge_callback(ENTER, interface_state.ErrorState)
     def enter_ErrorState(self, old_state, new_state):
@@ -510,3 +579,6 @@ class EduVpnGui:
 
     def on_acknowledge_error(self, event):
         self.app.interface_transition('acknowledge_error')
+
+    def on_renew_session_clicked(self, event):
+        self.app.network_transition('renew_certificate')

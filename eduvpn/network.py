@@ -1,7 +1,9 @@
+from typing import Optional
 import logging
 import enum
 from functools import partial
 from time import sleep
+from datetime import datetime
 from . import nm
 from . import settings
 from .state_machine import BaseState
@@ -53,6 +55,12 @@ class NetworkState(BaseState):
     def set_unknown(self, app: Application) -> 'NetworkState':
         return enter_unknown_state(app)
 
+    def set_error(self, app: Application, message: Optional[str] = None) -> 'NetworkState':
+        return ConnectionErrorState(message)
+
+    def set_certificate_expired(self, app: Application) -> 'NetworkState':
+        return CertificateExpiredState()
+
 
 class InitialNetworkState(NetworkState):
     """
@@ -65,11 +73,12 @@ class InitialNetworkState(NetworkState):
     def found_active_connection(self,
                                 app: Application,
                                 server: Server,
+                                expiry: Optional[datetime],
                                 ) -> NetworkState:
         """
         An already active connection was found.
         """
-        app.interface_transition('found_active_connection', server)
+        app.interface_transition('found_active_connection', server, expiry)
         return ConnectedState()
 
     def found_previous_connection(self,
@@ -246,7 +255,7 @@ class CertificateExpiredState(NetworkState):
     The network could not connect because the certifcate has expired.
     """
 
-    status_label = "Connection failed"
+    status_label = "Certificate expired"
     status_image = StatusImage.NOT_CONNECTED
 
     def renew_certificate(self, app: Application) -> NetworkState:
@@ -265,7 +274,7 @@ class ConnectionErrorState(NetworkState):
     status_label = "Connection failed"
     status_image = StatusImage.NOT_CONNECTED
 
-    def __init__(self, error: str):
+    def __init__(self, error: Optional[str]):
         self.error = error
 
     def reconnect(self, app: Application) -> NetworkState:
