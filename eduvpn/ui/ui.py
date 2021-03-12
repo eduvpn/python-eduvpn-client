@@ -21,7 +21,7 @@ from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
-from ..utils import get_prefix, run_in_main_gtk_thread
+from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
 from . import search
 from .utils import show_ui_component, link_markup
 
@@ -77,6 +77,9 @@ variable_objects = [
     'messageText',
     'messageButton',
 ]
+
+
+UPDATE_EXIPRY_INTERVAL = 1.  # seconds
 
 
 def get_expiry_text(expiry: Optional[datetime]):
@@ -205,11 +208,15 @@ class EduVpnGui:
         else:
             self.show_component('supportLabel', False)
 
+    def update_connection_expiry(self):
+        expiry_text = get_expiry_text(self.app.interface_state.expiry)
+        self.set_markup_text('connectionSubStatus', expiry_text)
+
     def update_connection_status(self):
         self.set_text('connectionStatusLabel', self.app.network_state.status_label)
         self.builder.get_object('connectionStatusImage').set_from_file(self.app.network_state.status_image.path)
 
-        self.set_markup_text('connectionSubStatus', get_expiry_text(self.app.interface_state.expiry))
+        self.update_connection_expiry()
 
         assert not (hasattr(self.app.network_state, 'reconnect') and hasattr(self.app.network_state, 'disconnect'))
         connection_switch = self.builder.get_object('connectionSwitch')
@@ -434,9 +441,32 @@ class EduVpnGui:
         self.update_connection_server()
         self.update_connection_status()
 
+        if hasattr(self, '_cancel_expiry_updates'):
+            # Cancel any previous threads, as they might have been cancelled
+            # and there shouln't be multiple threads running.
+            self._cancel_expiry_updates()
+
+        def update_connection_expiry():
+            # This function runs in a background thread.
+            state = self.app.interface_state
+            if not isinstance(state, interface_state.ConnectionStatus):
+                # cancel this thread
+                return False
+            run_in_main_gtk_thread(self.update_connection_expiry)()
+            return datetime.utcnow() < state.expiry
+
+        self._cancel_expiry_updates = run_periodically(
+            update_connection_expiry,
+            UPDATE_EXIPRY_INTERVAL,
+            'update-expiry',
+        )
+
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', False)
+
+        self._cancel_expiry_updates()
+        del self._cancel_expiry_updates
 
     @transition_edge_callback(ENTER, interface_state.ErrorState)
     def enter_ErrorState(self, old_state, new_state):
