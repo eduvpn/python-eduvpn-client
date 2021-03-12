@@ -55,6 +55,9 @@ class NetworkState(BaseState):
     def set_unknown(self, app: Application) -> 'NetworkState':
         return enter_unknown_state(app)
 
+    def set_error(self, app: Application, message: Optional[str] = None) -> 'NetworkState':
+        return ConnectionErrorState(message)
+
 
 class InitialNetworkState(NetworkState):
     """
@@ -268,7 +271,7 @@ class ConnectionErrorState(NetworkState):
     status_label = "Connection failed"
     status_image = StatusImage.NOT_CONNECTED
 
-    def __init__(self, error: str):
+    def __init__(self, error: Optional[str]):
         self.error = error
 
     def reconnect(self, app: Application) -> NetworkState:
