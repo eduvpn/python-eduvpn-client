@@ -58,6 +58,11 @@ class NetworkState(BaseState):
     def set_error(self, app: Application, message: Optional[str] = None) -> 'NetworkState':
         return ConnectionErrorState(message)
 
+    def set_certificate_expired(self, app: Application) -> 'NetworkState':
+        if isinstance(app.network_state, (ConnectingState, ConnectedState)):
+            disconnect(app, update_state=False)
+        return CertificateExpiredState()
+
 
 class InitialNetworkState(NetworkState):
     """
@@ -252,7 +257,7 @@ class CertificateExpiredState(NetworkState):
     The network could not connect because the certifcate has expired.
     """
 
-    status_label = "Connection failed"
+    status_label = "Certificate expired"
     status_image = StatusImage.NOT_CONNECTED
 
     def renew_certificate(self, app: Application) -> NetworkState:

@@ -453,7 +453,11 @@ class EduVpnGui:
                 # cancel this thread
                 return False
             run_in_main_gtk_thread(self.update_connection_expiry)()
-            return datetime.utcnow() < state.expiry
+            if datetime.utcnow() < state.expiry:
+                return True
+            else:
+                self.app.network_transition_threadsafe('set_certificate_expired')
+                return False
 
         self._cancel_expiry_updates = run_periodically(
             update_connection_expiry,
