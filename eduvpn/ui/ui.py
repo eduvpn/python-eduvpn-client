@@ -89,7 +89,11 @@ def get_expiry_text(expiry: Optional[datetime]):
     days = delta.days
     hours = delta.seconds // 3600
     if days == 0:
-        return f"Valid for <b>{hours} hours</b>"
+        if hours == 0:
+            minutes = delta.seconds // 60
+            return f"Valid for <b>{minutes} minutes</b>"
+        else:
+            return f"Valid for <b>{hours} hours</b>"
     else:
         return f"Valid for <b>{days} days</b> and <b>{hours} hours</b>"
 
