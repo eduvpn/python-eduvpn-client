@@ -112,7 +112,7 @@ def on_chosen_profile(app: Application,
     if isinstance(server, SecureInternetLocation):
         try:
             server_info = app.server_db.get_server_info(server.server)
-            location_info = app.server_db.get_server_info(server.server)
+            location_info = app.server_db.get_server_info(server.location)
         except Exception as e:
             logger.error("error getting server info", exc_info=True)
             enter_error_state_threadsafe(app, e)
