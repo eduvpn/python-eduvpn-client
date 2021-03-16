@@ -3,8 +3,8 @@ import logging
 import enum
 from functools import partial
 from time import sleep
-from datetime import datetime
 from . import nm
+from .crypto import Validity
 from . import settings
 from .state_machine import BaseState
 from .app import Application
@@ -73,12 +73,12 @@ class InitialNetworkState(NetworkState):
     def found_active_connection(self,
                                 app: Application,
                                 server: Server,
-                                expiry: Optional[datetime],
+                                validity: Optional[Validity],
                                 ) -> NetworkState:
         """
         An already active connection was found.
         """
-        app.interface_transition('found_active_connection', server, expiry)
+        app.interface_transition('found_active_connection', server, validity)
         return ConnectedState()
 
     def found_previous_connection(self,
@@ -143,6 +143,11 @@ def disconnect(app: Application, *, update_state=True) -> NetworkState:
         callback,
     )
     return DisconnectedState()
+
+
+def renew_certificate(app: Application) -> NetworkState:
+    app.interface_transition('renew_certificate')
+    return ConnectedState()
 
 
 UNKNOWN_STATE_MAX_RETRIES = 5
@@ -250,6 +255,12 @@ class ConnectedState(NetworkState):
     def disconnect(self, app: Application) -> NetworkState:
         return disconnect(app)
 
+    def renew_certificate(self, app: Application) -> NetworkState:
+        """
+        Re-estabilish a connection to the server.
+        """
+        return renew_certificate(app)
+
 
 class DisconnectedState(NetworkState):
     """
@@ -276,8 +287,7 @@ class CertificateExpiredState(NetworkState):
         """
         Re-estabilish a connection to the server.
         """
-        # TODO perform actual renewal
-        return connect(app)
+        return renew_certificate(app)
 
 
 class ConnectionErrorState(NetworkState):

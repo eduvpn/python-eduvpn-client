@@ -98,11 +98,27 @@ def validate(signature: str, content: bytes) -> bytes:
     raise BadSignatureError
 
 
-def get_certificate_expiry(certificate_text: str) -> Optional[datetime]:
+class Validity:
+    def __init__(self, start: datetime, end: datetime):
+        self.start = start
+        self.end = end
+
+    @property
+    def duration(self):
+        return self.end - self.start
+
+    def fraction(self, fraction: float) -> datetime:
+        return self.start + self.duration * fraction
+
+
+def get_certificate_validity(certificate_text: str) -> Optional[Validity]:
     try:
         certificate_bytes = certificate_text.encode('ascii')
     except UnicodeEncodeError:
         logger.error(f"non-ascii certificate: {certificate_text!r}")
         return None
     certificate = x509.load_pem_x509_certificate(certificate_bytes, default_backend())
-    return certificate.not_valid_after
+    return Validity(
+        start=certificate.not_valid_before,
+        end=certificate.not_valid_after,
+    )
