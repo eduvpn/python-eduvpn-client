@@ -17,10 +17,15 @@ class InstituteAccessServer:
                  base_url: str,
                  display_name: Union[str, Dict[str, str]],
                  support_contact: List[str] = [],
-                 keyword_list: Optional[str] = None):
+                 keyword_list: Optional[Union[str, List[str]]] = None):
         self.base_url = base_url
         self.display_name = display_name
         self.support_contact = support_contact
+        if keyword_list is not None:
+            if isinstance(keyword_list, str):
+                keyword_list = [keyword_list]
+            elif not isinstance(keyword_list, list):
+                raise TypeError(keyword_list)
         self.keyword_list = keyword_list
 
     def __str__(self):
@@ -30,14 +35,10 @@ class InstituteAccessServer:
         return f"<InstituteAccessServer {str(self)!r}>"
 
     @property
-    def keyword(self) -> Optional[str]:
-        return self.keyword_list
-
-    @property
     def search_texts(self):
         texts = [str(self)]
-        if self.keyword:
-            texts.append(self.keyword)
+        if self.keyword_list:
+            texts.extend(self.keyword_list)
         return texts
 
     @property
@@ -118,6 +119,7 @@ class OrganisationServer:
         texts = [str(self)]
         if self.keyword:
             texts.append(self.keyword)
+        # print(f'===> search_texts ORG = {texts}')
         return texts
 
     @property
@@ -196,6 +198,13 @@ class SecureInternetLocation:
 
     @property
     def oauth_login_url(self):
+        print('=' * 20)
+        from pprint import pprint
+        print('SecureInternetLocation')
+        pprint(self.server.__dict__)
+        pprint(self.location.__dict__)
+        print('=' * 20)
+
         assert self.server.oauth_login_url == self.location.oauth_login_url
         return self.server.oauth_login_url
 
@@ -219,6 +228,7 @@ AnyServer = Union[
 
 def is_search_match(server: PredefinedServer, query: str) -> bool:
     if hasattr(server, 'search_texts'):
+        # print(f'==== query={query!r}')#  search_text={search_text}')
         return any(query.lower() in search_text.lower()
                    for search_text
                    in server.search_texts)  # type: ignore
@@ -302,6 +312,12 @@ class ServerDatabase:
         "Return all servers."
         return iter(self.servers)
 
+    def get_secure_internet_server(self, base_url: str) -> Optional[SecureInternetServer]:
+        for server in self.all():
+            if isinstance(server, SecureInternetServer) and server.base_url == base_url:
+                return server
+        return None
+
     def search(self, query: str) -> Iterable[PredefinedServer]:
         "Return all servers that match the search query."
         if query:
@@ -312,5 +328,7 @@ class ServerDatabase:
             yield from self.all()
 
     def get_server_info(self, server) -> ServerInfo:
+        # try:
         info = remote.get_info(server.oauth_login_url)
+        # except requests.exceptions.ConnectionError:
         return ServerInfo(*info)
