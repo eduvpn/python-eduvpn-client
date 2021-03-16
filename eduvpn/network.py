@@ -145,14 +145,28 @@ def disconnect(app: Application, *, update_state=True) -> NetworkState:
     return DisconnectedState()
 
 
+UNKNOWN_STATE_MAX_RETRIES = 5
+
+
 def enter_unknown_state(app: Application) -> NetworkState:
     # Set the state temporarily to unknown but keep polling for updates,
     # since we don't always get notified by the update callback.
     @run_in_background_thread('poll-network-state')
     def determine_network_state_thread():
+        counter = 0
         _, status = nm.connection_status(nm.get_client())
         while status is nm.NM.ActiveConnectionState.UNKNOWN or status is None:
+            if counter > UNKNOWN_STATE_MAX_RETRIES:
+                # After a number of retries, assume we've disconnected
+                # so the user can try to connect again.
+                status = nm.NM.ActiveConnectionState.DEACTIVATED
+                logger.debug(
+                    "network state has been unknown for too long,"
+                    " fall back to disconnected state"
+                )
+                break
             sleep(1)
+            counter += 1
             if not isinstance(app.network_state, UnknownState):
                 return
             _, status = nm.connection_status(nm.get_client())
