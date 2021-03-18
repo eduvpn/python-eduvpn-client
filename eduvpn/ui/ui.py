@@ -21,6 +21,7 @@ from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
+from ..crypto import Validity
 from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
 from . import search
 from .utils import show_ui_component, link_markup
@@ -84,9 +85,10 @@ UPDATE_EXIPRY_INTERVAL = 1.  # seconds
 RENEWAL_ALLOW_FRACTION = .8
 
 
-def get_expiry_text(expiry: Optional[datetime]):
-    if expiry is None:
+def get_validity_text(validity: Optional[Validity]):
+    if validity is None:
         return "Valid for <b>unknown</b>"
+    expiry = validity.end
     now = datetime.utcnow()
     if expiry <= now:
         return "This session has expired"
@@ -103,7 +105,9 @@ def get_expiry_text(expiry: Optional[datetime]):
         return f"Valid for <b>{days} days</b> and <b>{hours} hours</b>"
 
 
-def allow_certificate_renewal(validity):
+def allow_certificate_renewal(validity: Optional[Validity]):
+    if validity is None:
+        return True
     return datetime.utcnow() >= validity.fraction(RENEWAL_ALLOW_FRACTION)
 
 
@@ -217,7 +221,7 @@ class EduVpnGui:
             self.show_component('supportLabel', False)
 
     def update_connection_validity(self):
-        expiry_text = get_expiry_text(self.app.interface_state.validity.end)
+        expiry_text = get_validity_text(self.app.interface_state.validity)
         self.set_markup_text('connectionSubStatus', expiry_text)
 
         if (hasattr(self.app.network_state, 'renew_certificate') and (
