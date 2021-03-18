@@ -487,8 +487,9 @@ class EduVpnGui:
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', False)
 
-        self._cancel_validity_updates()
-        del self._cancel_validity_updates
+        if hasattr(self, '_cancel_validity_updates'):
+            self._cancel_validity_updates()
+            del self._cancel_validity_updates
 
     @transition_edge_callback(ENTER, interface_state.ErrorState)
     def enter_ErrorState(self, old_state, new_state):
