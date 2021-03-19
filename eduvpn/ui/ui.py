@@ -21,6 +21,7 @@ from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
+from ..crypto import Validity
 from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
 from . import search
 from .utils import show_ui_component, link_markup
@@ -81,10 +82,13 @@ variable_objects = [
 
 UPDATE_EXIPRY_INTERVAL = 1.  # seconds
 
+RENEWAL_ALLOW_FRACTION = .8
 
-def get_expiry_text(expiry: Optional[datetime]):
-    if expiry is None:
+
+def get_validity_text(validity: Optional[Validity]):
+    if validity is None:
         return "Valid for <b>unknown</b>"
+    expiry = validity.end
     now = datetime.utcnow()
     if expiry <= now:
         return "This session has expired"
@@ -99,6 +103,12 @@ def get_expiry_text(expiry: Optional[datetime]):
             return f"Valid for <b>{hours} hours</b>"
     else:
         return f"Valid for <b>{days} days</b> and <b>{hours} hours</b>"
+
+
+def allow_certificate_renewal(validity: Optional[Validity]):
+    if validity is None:
+        return True
+    return datetime.utcnow() >= validity.fraction(RENEWAL_ALLOW_FRACTION)
 
 
 class EduVpnGui:
@@ -210,15 +220,23 @@ class EduVpnGui:
         else:
             self.show_component('supportLabel', False)
 
-    def update_connection_expiry(self):
-        expiry_text = get_expiry_text(self.app.interface_state.expiry)
+    def update_connection_validity(self):
+        expiry_text = get_validity_text(self.app.interface_state.validity)
         self.set_markup_text('connectionSubStatus', expiry_text)
+
+        if (hasattr(self.app.network_state, 'renew_certificate') and (
+                isinstance(self.app.network_state, network_state.CertificateExpiredState) or (
+                allow_certificate_renewal(self.app.interface_state.validity)))):
+            self.show_component('currentConnectionSubPage', True)
+            self.show_component('renewSessionButton', True)
+        else:
+            self.show_component('renewSessionButton', False)
 
     def update_connection_status(self):
         self.set_text('connectionStatusLabel', self.app.network_state.status_label)
         self.builder.get_object('connectionStatusImage').set_from_file(self.app.network_state.status_image.path)
 
-        self.update_connection_expiry()
+        self.update_connection_validity()
 
         assert not (hasattr(self.app.network_state, 'reconnect') and hasattr(self.app.network_state, 'disconnect'))
         connection_switch = self.builder.get_object('connectionSwitch')
@@ -233,12 +251,6 @@ class EduVpnGui:
         else:
             self.show_component('currentConnectionSubPage', False)
             connection_switch.hide()
-
-        if hasattr(self.app.network_state, 'renew_certificate'):
-            self.show_component('currentConnectionSubPage', True)
-            self.show_component('renewSessionButton', True)
-        else:
-            self.show_component('renewSessionButton', False)
 
     # interface state transition callbacks
 
@@ -447,36 +459,37 @@ class EduVpnGui:
         self.update_connection_server()
         self.update_connection_status()
 
-        if hasattr(self, '_cancel_expiry_updates'):
+        if hasattr(self, '_cancel_validity_updates'):
             # Cancel any previous threads, as they might have been cancelled
             # and there shouln't be multiple threads running.
-            self._cancel_expiry_updates()
+            self._cancel_validity_updates()
 
-        def update_connection_expiry():
+        def update_connection_validity():
             # This function runs in a background thread.
             state = self.app.interface_state
             if not isinstance(state, interface_state.ConnectionStatus):
                 # cancel this thread
                 return False
-            run_in_main_gtk_thread(self.update_connection_expiry)()
-            if datetime.utcnow() < state.expiry:
+            run_in_main_gtk_thread(self.update_connection_validity)()
+            if datetime.utcnow() < state.validity.end:
                 return True
             else:
                 self.app.network_transition_threadsafe('set_certificate_expired')
                 return False
 
-        self._cancel_expiry_updates = run_periodically(
-            update_connection_expiry,
+        self._cancel_validity_updates = run_periodically(
+            update_connection_validity,
             UPDATE_EXIPRY_INTERVAL,
-            'update-expiry',
+            'update-validity',
         )
 
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_component('connectionPage', False)
 
-        self._cancel_expiry_updates()
-        del self._cancel_expiry_updates
+        if hasattr(self, '_cancel_validity_updates'):
+            self._cancel_validity_updates()
+            del self._cancel_validity_updates
 
     @transition_edge_callback(ENTER, interface_state.ErrorState)
     def enter_ErrorState(self, old_state, new_state):

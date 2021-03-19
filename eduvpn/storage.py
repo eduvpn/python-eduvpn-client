@@ -62,7 +62,7 @@ def _set_setting(what: str, value: str):
         f.write(value)
 
 
-Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[datetime]]
+Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[datetime], Optional[datetime]]
 
 
 def get_current_metadata(auth_url: str) -> Optional[Metadata]:
@@ -72,6 +72,9 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
     storage = get_all_metadatas()
     if auth_url in storage:
         v = storage[auth_url]
+        created = v.get('certificate_created')
+        if created is not None:
+            created = datetime.fromisoformat(created)
         expiry = v.get('certificate_expiry')
         if expiry is not None:
             expiry = datetime.fromisoformat(expiry)
@@ -85,6 +88,7 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
             v['profile_id'],
             v['con_type'],
             v['country_id'],
+            created,
             expiry,
         )
     else:
@@ -102,12 +106,17 @@ def set_metadata(
         profile_id: str,
         con_type: str,
         country_id: Optional[str],
+        certificate_created: Optional[datetime] = None,
         certificate_expiry: Optional[datetime] = None,
 ) -> None:
     """
     Set a configuration profile in storage
     """
     storage = get_all_metadatas()
+    if certificate_created is None:
+        created_str = None
+    else:
+        created_str = certificate_created.isoformat()
     if certificate_expiry is None:
         expiry_str = None
     else:
@@ -123,6 +132,7 @@ def set_metadata(
         'profile_id': profile_id,
         'con_type': con_type,
         'country_id': country_id,
+        'certificate_created': created_str,
         'certificate_expiry': expiry_str,
     }
     _write_metadatas(storage)

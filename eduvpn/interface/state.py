@@ -1,8 +1,8 @@
 from typing import Union, Optional, List
-from datetime import datetime
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
+from ..crypto import Validity
 from ..app import Application
 from ..server import (
     AnyServer, PredefinedServer, ConfiguredServer,
@@ -44,12 +44,12 @@ class InitialInterfaceState(InterfaceState):
     def found_active_connection(self,
                                 app: Application,
                                 server: ConfiguredServer,
-                                expiry: Optional[datetime],
+                                validity: Optional[Validity],
                                 ) -> InterfaceState:
         """
         An connection is already active, show its details.
         """
-        return ConnectionStatus(server, expiry)
+        return ConnectionStatus(server, validity)
 
     def no_active_connection_found(self, app: Application) -> InterfaceState:
         """
@@ -340,9 +340,9 @@ class ConfiguringConnection(InterfaceState):
 
     def finished_configuring_connection(self,
                                         app: Application,
-                                        expiry: Optional[datetime],
+                                        validity: Optional[Validity],
                                         ) -> InterfaceState:
-        return ConnectionStatus(self.server, expiry)
+        return ConnectionStatus(self.server, validity)
 
 
 class ConnectionStatus(InterfaceState):
@@ -350,9 +350,11 @@ class ConnectionStatus(InterfaceState):
     Show info on the active connection status.
     """
 
-    def __init__(self, server: AnyServer, expiry: Optional[datetime]):
+    def __init__(self,
+                 server: AnyServer,
+                 validity: Optional[Validity]):
         self.server = server
-        self.expiry = expiry
+        self.validity = validity
 
     def go_back(self, app: Application) -> InterfaceState:
         return transition.go_to_main_state(app)
@@ -364,6 +366,9 @@ class ConnectionStatus(InterfaceState):
     def deactivate_connection(self, app: Application) -> InterfaceState:
         app.network_transition('disconnect')
         return self
+
+    def renew_certificate(self, app: Application) -> InterfaceState:
+        return transition.connect_to_server(app, self.server, renew=True)
 
 
 class ConfigureSettings(InterfaceState):

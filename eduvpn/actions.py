@@ -21,7 +21,7 @@ def refresh():
     is invalid.
     """
     uuid, auth_url, metadata = get_storage(check=True)
-    token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id, con_type, country_id, _ = metadata
+    token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id, con_type, country_id, _, _ = metadata
     oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
 
     try:
@@ -62,7 +62,7 @@ def fetch_token(auth_url: str) -> Tuple[str, OAuth2Session, str, str]:
 
     if exists:
         _logger.info("token exists, restoring")
-        token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id, con_type, country_id, _ = exists
+        token, token_endpoint, auth_endpoint, api_url, display_name, support_contact, profile_id, con_type, country_id, _, _ = exists
         oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
         api_url, token_endpoint, auth_endpoint = get_info(auth_url)
     else:
