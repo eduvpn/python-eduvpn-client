@@ -119,7 +119,6 @@ class OrganisationServer:
         texts = [str(self)]
         if self.keyword:
             texts.append(self.keyword)
-        # print(f'===> search_texts ORG = {texts}')
         return texts
 
     @property
@@ -198,13 +197,6 @@ class SecureInternetLocation:
 
     @property
     def oauth_login_url(self):
-        print('=' * 20)
-        from pprint import pprint
-        print('SecureInternetLocation')
-        pprint(self.server.__dict__)
-        pprint(self.location.__dict__)
-        print('=' * 20)
-
         assert self.server.oauth_login_url == self.location.oauth_login_url
         return self.server.oauth_login_url
 
@@ -228,7 +220,6 @@ AnyServer = Union[
 
 def is_search_match(server: PredefinedServer, query: str) -> bool:
     if hasattr(server, 'search_texts'):
-        # print(f'==== query={query!r}')#  search_text={search_text}')
         return any(query.lower() in search_text.lower()
                    for search_text
                    in server.search_texts)  # type: ignore
@@ -328,7 +319,5 @@ class ServerDatabase:
             yield from self.all()
 
     def get_server_info(self, server) -> ServerInfo:
-        # try:
         info = remote.get_info(server.oauth_login_url)
-        # except requests.exceptions.ConnectionError:
         return ServerInfo(*info)
