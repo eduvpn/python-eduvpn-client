@@ -42,6 +42,7 @@ def show_ui_component(builder, component: str, show: bool):
 def link_markup(link: str) -> str:
     try:
         scheme, rest = link.split(':', 1)
+        if rest.startswith('//'): rest = rest[2:]
     except ValueError:
         return link
     else:
