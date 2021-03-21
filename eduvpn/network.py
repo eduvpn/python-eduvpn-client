@@ -13,9 +13,12 @@ from .utils import run_in_background_thread
 
 logger = logging.getLogger(__name__)
 
+
 # gettext _(...) function is not available here, but we
 # need it for xgettext to recognize translatable strings.
-_ = lambda s:s
+def _(s: str) -> str:
+    return s
+
 
 class StatusImage(enum.Enum):
     # The value is the image filename.

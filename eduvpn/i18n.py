@@ -12,6 +12,7 @@ logger = get_logger(__name__)
 
 country_mapping = None
 
+
 def init(lets_connect: bool, prefix: str):
     """
     Init locale and gettext, returns text domain
@@ -26,6 +27,7 @@ def init(lets_connect: bool, prefix: str):
 
     return domain
 
+
 def f(fstring: str) -> str:
     """
     Implements late f-string evaluation to make them translatable.
@@ -38,8 +40,9 @@ def f(fstring: str) -> str:
     """
     frame = currentframe().f_back
     while True:
-        match = re.match(r'(.*)\{(?:(.*?):(.*?))\}(.*)',fstring)
-        if match is None: break
+        match = re.match(r'(.*)\{(?:(.*?):(.*?))\}(.*)', fstring)
+        if match is None:
+            break
 
         variant = match.group(3).split('|')
 
@@ -49,19 +52,23 @@ def f(fstring: str) -> str:
         elif match.group(2) in frame.f_globals:
             n = int(frame.f_globals[match.group(2)])
 
-		# Examples
+        # Examples
         # English:   {seconds:second|seconds} (singular|plural)
         # German:    {seconds:Sekunde|Sekunden} (singular|plural)
         # Slovenian: {seconds:sekunda|sekundi|sekunde|sekund} (singular|dual|plural 3-4|plural >=5)
 
         unit = variant[0]
-        if (n == 0 or  n >= 2) and len(variant)>1: unit = variant[1]
-        if (n >= 3 and n <= 4) and len(variant)>2: unit = variant[2]
-        if (n >= 5           ) and len(variant)>3: unit = variant[3]
+        if (n == 0 or n >= 2) and len(variant) > 1:
+            unit = variant[1]
+        if n >= 3 and n <= 4 and len(variant) > 2:
+            unit = variant[2]
+        if n >= 5 and len(variant) > 3:
+            unit = variant[3]
 
         fstring = match.group(1) + "{" + match.group(2) + "} " + unit + match.group(4)
 
     return eval(f"f'{fstring}'", frame.f_locals, frame.f_globals)
+
 
 def country() -> str:
     try:
@@ -69,11 +76,13 @@ def country() -> str:
     except Exception:
         return COUNTRY
 
+
 def language() -> str:
     try:
-        return locale.getlocale()[0].split('_')[0];
+        return locale.getlocale()[0].split('_')[0]
     except Exception:
         return LANGUAGE
+
 
 def extract_translation(d: Union[str, Dict[str, str]]):
     if isinstance(d, dict):

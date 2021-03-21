@@ -84,6 +84,7 @@ UPDATE_EXIPRY_INTERVAL = 1.  # seconds
 
 RENEWAL_ALLOW_FRACTION = .8
 
+
 def get_validity_text(validity: Optional[Validity]):
     if validity is None:
         return _("Valid for <b>unknown</b>")
