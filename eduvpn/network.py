@@ -3,8 +3,8 @@ import logging
 import enum
 from functools import partial
 from time import sleep
-from datetime import datetime
 from . import nm
+from .crypto import Validity
 from . import settings
 from .state_machine import BaseState
 from .app import Application
@@ -75,12 +75,12 @@ class InitialNetworkState(NetworkState):
     def found_active_connection(self,
                                 app: Application,
                                 server: Server,
-                                expiry: Optional[datetime],
+                                validity: Optional[Validity],
                                 ) -> NetworkState:
         """
         An already active connection was found.
         """
-        app.interface_transition('found_active_connection', server, expiry)
+        app.interface_transition('found_active_connection', server, validity)
         return ConnectedState()
 
     def found_previous_connection(self,
@@ -147,14 +147,33 @@ def disconnect(app: Application, *, update_state=True) -> NetworkState:
     return DisconnectedState()
 
 
+def renew_certificate(app: Application) -> NetworkState:
+    app.interface_transition('renew_certificate')
+    return ConnectedState()
+
+
+UNKNOWN_STATE_MAX_RETRIES = 5
+
+
 def enter_unknown_state(app: Application) -> NetworkState:
     # Set the state temporarily to unknown but keep polling for updates,
     # since we don't always get notified by the update callback.
     @run_in_background_thread('poll-network-state')
     def determine_network_state_thread():
+        counter = 0
         _, status = nm.connection_status(nm.get_client())
         while status is nm.NM.ActiveConnectionState.UNKNOWN or status is None:
+            if counter > UNKNOWN_STATE_MAX_RETRIES:
+                # After a number of retries, assume we've disconnected
+                # so the user can try to connect again.
+                status = nm.NM.ActiveConnectionState.DEACTIVATED
+                logger.debug(
+                    "network state has been unknown for too long,"
+                    " fall back to disconnected state"
+                )
+                break
             sleep(1)
+            counter += 1
             if not isinstance(app.network_state, UnknownState):
                 return
             _, status = nm.connection_status(nm.get_client())
@@ -238,6 +257,12 @@ class ConnectedState(NetworkState):
     def disconnect(self, app: Application) -> NetworkState:
         return disconnect(app)
 
+    def renew_certificate(self, app: Application) -> NetworkState:
+        """
+        Re-estabilish a connection to the server.
+        """
+        return renew_certificate(app)
+
 
 class DisconnectedState(NetworkState):
     """
@@ -264,8 +289,7 @@ class CertificateExpiredState(NetworkState):
         """
         Re-estabilish a connection to the server.
         """
-        # TODO perform actual renewal
-        return connect(app)
+        return renew_certificate(app)
 
 
 class ConnectionErrorState(NetworkState):
@@ -287,3 +311,6 @@ class UnknownState(NetworkState):
     """
     The network state could not be determined.
     """
+
+    def reconnect(self, app: Application) -> NetworkState:
+        return connect(app)

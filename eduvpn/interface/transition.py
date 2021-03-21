@@ -50,9 +50,14 @@ def create_new_oauth_session(token: str, token_endpoint: str) -> OAuth2Session:
     )
 
 
-def connect_to_server(app: Application, server: AnyServer) -> state.InterfaceState:
+def connect_to_server(app: Application,
+                      server: AnyServer,
+                      renew: bool = False) -> state.InterfaceState:
     oauth_login_url = server.oauth_login_url  # type: ignore
-    metadata = storage.get_current_metadata(oauth_login_url)
+    if renew:
+        metadata = None
+    else:
+        metadata = storage.get_current_metadata(oauth_login_url)
     if metadata:
         # We've already configured this server.
         token, token_endpoint, *_ = metadata
