@@ -87,22 +87,22 @@ RENEWAL_ALLOW_FRACTION = .8
 
 def get_validity_text(validity: Optional[Validity]):
     if validity is None:
-        return _("Valid for <b>unknown</b>")
+        return _("Valid for <b>unknown</b>")  # type: ignore
     expiry = validity.end
     now = datetime.utcnow()
     if expiry <= now:
-        return _("This session has expired")
+        return _("This session has expired")  # type: ignore
     delta = expiry - now
     days = delta.days
     hours = delta.seconds // 3600
     if days == 0:
         if hours == 0:
             minutes = delta.seconds // 60
-            return i18n_f(_("Valid for <b>{minutes:minute|minutes}</b>"))
+            return i18n_f(_("Valid for <b>{minutes:minute|minutes}</b>"))  # type: ignore
         else:
-            return i18n_f(_("Valid for <b>{hours:hour|hours}</b>"))
+            return i18n_f(_("Valid for <b>{hours:hour|hours}</b>"))  # type: ignore
     else:
-        return i18n_f(_("Valid for <b>{days:day|days}</b> and <b>{hours:hour|hours}</b>"))
+        return i18n_f(_("Valid for <b>{days:day|days}</b> and <b>{hours:hour|hours}</b>"))  # type: ignore
 
 
 def allow_certificate_renewal(validity: Optional[Validity]):

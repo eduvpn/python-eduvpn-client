@@ -21,8 +21,8 @@ def init(lets_connect: bool, prefix: str):
     directory = os.path.join(prefix, 'share/locale')
 
     locale.setlocale(locale.LC_ALL, '')
-    locale.bindtextdomain(domain, directory)
-    locale.textdomain(domain)
+    locale.bindtextdomain(domain, directory)  # type: ignore
+    locale.textdomain(domain)  # type: ignore
     install(domain, localedir=directory)
 
     return domain
@@ -38,7 +38,9 @@ def f(fstring: str) -> str:
     https://stackoverflow.com/questions/49797658/how-to-use-gettext-with-python-3-6-f-strings
     https://www.transifex.com/amebis/teams/83968/discussions/
     """
-    frame = currentframe().f_back
+    frame = currentframe().f_back  # type: ignore
+    if frame is None:
+        return fstring
     while True:
         match = re.match(r'(.*)\{(?:(.*?):(.*?))\}(.*)', fstring)
         if match is None:
