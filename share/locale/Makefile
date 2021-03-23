@@ -10,6 +10,7 @@ MO_FILES  = $(PO_FILES:.po=.mo)
 SHELL    := bash
 
 .SUFFIXES: .ui .py .pot .mo .po
+.PRECIOUS: $(PO_FILES)
 
 default: $(POT) $(MO_FILES)
 
