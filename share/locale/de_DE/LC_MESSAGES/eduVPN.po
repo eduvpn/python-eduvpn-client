@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: python-eduvpn-client-1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-21 22:38+0100\n"
+"POT-Creation-Date: 2021-03-24 09:24+0100\n"
 "PO-Revision-Date: 2020-05-16 00:21+0200\n"
 "Last-Translator: Ralf Becker <beckerr@hochschule-trier.de>\n"
 "Language-Team: German\n"
@@ -16,6 +16,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../eduvpn/ui/ui.py:109
+#, python-brace-format
+msgid " and <b>{0} hour</b>"
+msgid_plural " and <b>{0} hours</b>"
+msgstr[0] " und <b>{0} Stunde</b>"
+msgstr[1] " und <b>{0} Stunden</b>"
 
 #: ../eduvpn/builder/mainwindow.ui:1395
 msgid "0000:0000:0000:0000:0000:0000:0000:0000"
@@ -53,7 +60,7 @@ msgstr "Zertifikat abgelaufen"
 msgid "Change Location"
 msgstr "Standort ändern"
 
-#: ../../eduvpn/ui/ui.py:449
+#: ../../eduvpn/ui/ui.py:454
 msgid "Configuring"
 msgstr "Konfigurieren"
 
@@ -85,7 +92,7 @@ msgstr "DAUER"
 msgid "Disconnected"
 msgstr "Nicht verbunden"
 
-#: ../eduvpn/builder/mainwindow.ui:1525 ../../eduvpn/ui/ui.py:505
+#: ../eduvpn/builder/mainwindow.ui:1525 ../../eduvpn/ui/ui.py:510
 msgid "Error"
 msgstr "Fehler"
 
@@ -93,7 +100,7 @@ msgstr "Fehler"
 msgid "Find your institute"
 msgstr "Finden Sie Ihr Institut"
 
-#: ../../eduvpn/ui/ui.py:351
+#: ../../eduvpn/ui/ui.py:356
 msgid "Finishing Authorization"
 msgstr "Autorisierung wird abgeschlossen"
 
@@ -113,7 +120,7 @@ msgstr "IPv6 ADRESSE"
 msgid "Institute Access"
 msgstr "Institut-Zugang"
 
-#: ../eduvpn/builder/mainwindow.ui:786 ../../eduvpn/ui/ui.py:362
+#: ../eduvpn/builder/mainwindow.ui:786 ../../eduvpn/ui/ui.py:367
 msgid "Loading"
 msgstr "Laden"
 
@@ -121,7 +128,7 @@ msgstr "Laden"
 msgid "Not connected"
 msgstr "Nicht verbunden"
 
-#: ../../eduvpn/ui/ui.py:508
+#: ../../eduvpn/ui/ui.py:513
 msgid "Ok"
 msgstr "OK"
 
@@ -173,15 +180,15 @@ msgstr "Server-Bezeichnung"
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: ../eduvpn/builder/mainwindow.ui:933 ../../eduvpn/ui/ui.py:223
+#: ../eduvpn/builder/mainwindow.ui:933 ../../eduvpn/ui/ui.py:228
 msgid "Support:"
 msgstr "Hilfe und Support:"
 
-#: ../../eduvpn/ui/ui.py:352
+#: ../../eduvpn/ui/ui.py:357
 msgid "The authorization token is being finished."
 msgstr "Das Autorisierungs-Token wird fertiggestellt."
 
-#: ../../eduvpn/ui/ui.py:363
+#: ../../eduvpn/ui/ui.py:368
 msgid "The server details are being loaded."
 msgstr "Die Serverdetails werden geladen."
 
@@ -207,19 +214,28 @@ msgstr "HOCHGELADEN"
 msgid "Valid for <b>unknown</b>"
 msgstr "Gültig für <b>unbekannt</b>"
 
-#: ../../eduvpn/ui/ui.py:105
-msgid "Valid for <b>{days:day|days}</b> and <b>{hours:hour|hours}</b>"
-msgstr "Gültig für <b>{days:Tag|Tage}</b> und <b>{hours:Stunde|Stunden}</b>"
+#: ../../eduvpn/ui/ui.py:107
+#, python-brace-format
+msgid "Valid for <b>{0} day</b>"
+msgid_plural "Valid for <b>{0} days</b>"
+msgstr[0] "Gültig für <b>{0} Tag</b>"
+msgstr[1] "Gültig für <b>{0} Tage</b>"
 
-#: ../../eduvpn/ui/ui.py:103
-msgid "Valid for <b>{hours:hour|hours}</b>"
-msgstr "Gültig für <b>{hours:Stunde|Stunden} Stunden</b>"
+#: ../../eduvpn/ui/ui.py:104
+#, python-brace-format
+msgid "Valid for <b>{0} hour</b>"
+msgid_plural "Valid for <b>{0} hours</b>"
+msgstr[0] "Gültig für <b>{0} Stunde</b>"
+msgstr[1] "Gültig für <b{0} Stunden</b>"
 
 #: ../../eduvpn/ui/ui.py:101
-msgid "Valid for <b>{minutes:minute|minutes}</b>"
-msgstr "Gültig für <b>{minutes:Minute|Minuten}</b>"
+#, python-brace-format
+msgid "Valid for <b>{0} minute</b>"
+msgid_plural "Valid for <b>{0} minutes</b>"
+msgstr[0] "Gültig für <b>{0} Minute</b>"
+msgstr[1] "Gültig für <b>{0} Minuten</b>"
 
-#: ../../eduvpn/ui/ui.py:450
+#: ../../eduvpn/ui/ui.py:455
 msgid "Your connection is being configured."
 msgstr "Ihre Verbindung wird nun konfiguriert."
 

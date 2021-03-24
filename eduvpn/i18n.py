@@ -23,53 +23,9 @@ def init(lets_connect: bool, prefix: str):
     locale.setlocale(locale.LC_ALL, '')
     locale.bindtextdomain(domain, directory)  # type: ignore
     locale.textdomain(domain)  # type: ignore
-    install(domain, localedir=directory)
+    install(domain, names=('gettext', 'ngettext'), localedir=directory)
 
     return domain
-
-
-def f(fstring: str) -> str:
-    """
-    Implements late f-string evaluation to make them translatable.
-    Includes support for translating pluralizable placeholders like {number:singular|plural}.
-    usage: f(_('Hey, {username}')) or
-           f(_('Count {number:entry|entries}'))
-
-    https://stackoverflow.com/questions/49797658/how-to-use-gettext-with-python-3-6-f-strings
-    https://www.transifex.com/amebis/teams/83968/discussions/
-    """
-    frame = currentframe().f_back  # type: ignore
-    if frame is None:
-        return fstring
-    while True:
-        match = re.match(r'(.*)\{(?:(.*?):(.*?))\}(.*)', fstring)
-        if match is None:
-            break
-
-        variant = match.group(3).split('|')
-
-        n = 0
-        if match.group(2) in frame.f_locals:
-            n = int(frame.f_locals[match.group(2)])
-        elif match.group(2) in frame.f_globals:
-            n = int(frame.f_globals[match.group(2)])
-
-        # Examples
-        # English:   {seconds:second|seconds} (singular|plural)
-        # German:    {seconds:Sekunde|Sekunden} (singular|plural)
-        # Slovenian: {seconds:sekunda|sekundi|sekunde|sekund} (singular|dual|plural 3-4|plural >=5)
-
-        unit = variant[0]
-        if (n == 0 or n >= 2) and len(variant) > 1:
-            unit = variant[1]
-        if n >= 3 and n <= 4 and len(variant) > 2:
-            unit = variant[2]
-        if n >= 5 and len(variant) > 3:
-            unit = variant[3]
-
-        fstring = match.group(1) + "{" + match.group(2) + "} " + unit + match.group(4)
-
-    return eval(f"f'{fstring}'", frame.f_locals, frame.f_globals)
 
 
 def country() -> str:

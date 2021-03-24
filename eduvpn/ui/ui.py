@@ -23,7 +23,7 @@ from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
 from ..crypto import Validity
 from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
-from ..i18n import init as i18n_init, f as i18n_f
+from ..i18n import init as i18n_init
 from . import search
 from .utils import show_ui_component, link_markup
 
@@ -98,11 +98,16 @@ def get_validity_text(validity: Optional[Validity]):
     if days == 0:
         if hours == 0:
             minutes = delta.seconds // 60
-            return i18n_f(_("Valid for <b>{minutes:minute|minutes}</b>"))  # type: ignore
+            return ngettext("Valid for <b>{0} minute</b>", \
+                            "Valid for <b>{0} minutes</b>", minutes).format(minutes)
         else:
-            return i18n_f(_("Valid for <b>{hours:hour|hours}</b>"))  # type: ignore
+            return ngettext("Valid for <b>{0} hour</b>", \
+                            "Valid for <b>{0} hours</b>", hours).format(hours)
     else:
-        return i18n_f(_("Valid for <b>{days:day|days}</b> and <b>{hours:hour|hours}</b>"))  # type: ignore
+        return ngettext("Valid for <b>{0} day</b>", \
+                        "Valid for <b>{0} days</b>", days).format(days) + \
+               ngettext(" and <b>{0} hour</b>", \
+                        " and <b>{0} hours</b>", hours).format(hours)
 
 
 def allow_certificate_renewal(validity: Optional[Validity]):
