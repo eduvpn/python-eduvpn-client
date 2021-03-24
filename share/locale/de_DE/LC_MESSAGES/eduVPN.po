@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: python-eduvpn-client-1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-24 09:24+0100\n"
+"POT-Creation-Date: 2021-03-24 13:43+0100\n"
 "PO-Revision-Date: 2020-05-16 00:21+0200\n"
 "Last-Translator: Ralf Becker <beckerr@hochschule-trier.de>\n"
 "Language-Team: German\n"
@@ -52,7 +52,7 @@ msgstr "Autorisierung erforderlich"
 msgid "Cancel"
 msgstr "Abbruch"
 
-#: ../../eduvpn/network.py:288
+#: ../../eduvpn/network.py:286
 msgid "Certificate expired"
 msgstr "Zertifikat abgelaufen"
 
@@ -60,15 +60,15 @@ msgstr "Zertifikat abgelaufen"
 msgid "Change Location"
 msgstr "Standort ändern"
 
-#: ../../eduvpn/ui/ui.py:454
+#: ../../eduvpn/ui/ui.py:455
 msgid "Configuring"
 msgstr "Konfigurieren"
 
-#: ../../eduvpn/network.py:257
+#: ../../eduvpn/network.py:255
 msgid "Connection active"
 msgstr "Verbindung aktiv"
 
-#: ../../eduvpn/network.py:303
+#: ../../eduvpn/network.py:301
 msgid "Connection failed"
 msgstr "Verbindung fehlgeschlagen"
 
@@ -76,7 +76,7 @@ msgstr "Verbindung fehlgeschlagen"
 msgid "Connection info"
 msgstr "Verbindungsinformationen"
 
-#: ../../eduvpn/network.py:40
+#: ../../eduvpn/network.py:38
 msgid "Connection state unknown"
 msgstr "Verbindungsstatus unbekannt"
 
@@ -88,11 +88,11 @@ msgstr "HERUNTERGELADEN"
 msgid "DURATION"
 msgstr "DAUER"
 
-#: ../../eduvpn/network.py:121 ../../eduvpn/network.py:276
+#: ../../eduvpn/network.py:119 ../../eduvpn/network.py:274
 msgid "Disconnected"
 msgstr "Nicht verbunden"
 
-#: ../eduvpn/builder/mainwindow.ui:1525 ../../eduvpn/ui/ui.py:510
+#: ../eduvpn/builder/mainwindow.ui:1525 ../../eduvpn/ui/ui.py:511
 msgid "Error"
 msgstr "Fehler"
 
@@ -100,7 +100,7 @@ msgstr "Fehler"
 msgid "Find your institute"
 msgstr "Finden Sie Ihr Institut"
 
-#: ../../eduvpn/ui/ui.py:356
+#: ../../eduvpn/ui/ui.py:357
 msgid "Finishing Authorization"
 msgstr "Autorisierung wird abgeschlossen"
 
@@ -120,7 +120,7 @@ msgstr "IPv6 ADRESSE"
 msgid "Institute Access"
 msgstr "Institut-Zugang"
 
-#: ../eduvpn/builder/mainwindow.ui:786 ../../eduvpn/ui/ui.py:367
+#: ../eduvpn/builder/mainwindow.ui:786 ../../eduvpn/ui/ui.py:368
 msgid "Loading"
 msgstr "Laden"
 
@@ -128,7 +128,7 @@ msgstr "Laden"
 msgid "Not connected"
 msgstr "Nicht verbunden"
 
-#: ../../eduvpn/ui/ui.py:513
+#: ../../eduvpn/ui/ui.py:514
 msgid "Ok"
 msgstr "OK"
 
@@ -152,7 +152,7 @@ msgstr "Bitte wählen Sie Ihr Profil"
 msgid "Please wait"
 msgstr "Bitte warten"
 
-#: ../../eduvpn/network.py:242
+#: ../../eduvpn/network.py:240
 msgid "Preparing to connect"
 msgstr "Verbindung vorbereiten"
 
@@ -180,15 +180,15 @@ msgstr "Server-Bezeichnung"
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: ../eduvpn/builder/mainwindow.ui:933 ../../eduvpn/ui/ui.py:228
+#: ../eduvpn/builder/mainwindow.ui:933 ../../eduvpn/ui/ui.py:229
 msgid "Support:"
 msgstr "Hilfe und Support:"
 
-#: ../../eduvpn/ui/ui.py:357
+#: ../../eduvpn/ui/ui.py:358
 msgid "The authorization token is being finished."
 msgstr "Das Autorisierungs-Token wird fertiggestellt."
 
-#: ../../eduvpn/ui/ui.py:368
+#: ../../eduvpn/ui/ui.py:369
 msgid "The server details are being loaded."
 msgstr "Die Serverdetails werden geladen."
 
@@ -235,7 +235,7 @@ msgid_plural "Valid for <b>{0} minutes</b>"
 msgstr[0] "Gültig für <b>{0} Minute</b>"
 msgstr[1] "Gültig für <b>{0} Minuten</b>"
 
-#: ../../eduvpn/ui/ui.py:455
+#: ../../eduvpn/ui/ui.py:456
 msgid "Your connection is being configured."
 msgstr "Ihre Verbindung wird nun konfiguriert."
 
