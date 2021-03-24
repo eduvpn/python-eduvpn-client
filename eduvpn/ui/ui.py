@@ -98,15 +98,15 @@ def get_validity_text(validity: Optional[Validity]):
     if days == 0:
         if hours == 0:
             minutes = delta.seconds // 60
-            return ngettext("Valid for <b>{0} minute</b>",
+            return ngettext("Valid for <b>{0} minute</b>",  # type: ignore
                             "Valid for <b>{0} minutes</b>", minutes).format(minutes)
         else:
-            return ngettext("Valid for <b>{0} hour</b>",
+            return ngettext("Valid for <b>{0} hour</b>",  # type: ignore
                             "Valid for <b>{0} hours</b>", hours).format(hours)
     else:
-        dstr = ngettext("Valid for <b>{0} day</b>",
+        dstr = ngettext("Valid for <b>{0} day</b>",  # type: ignore
                         "Valid for <b>{0} days</b>", days).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>",
+        hstr = ngettext(" and <b>{0} hour</b>",  # type: ignore
                         " and <b>{0} hours</b>", hours).format(hours)
         return dstr + hstr
 
