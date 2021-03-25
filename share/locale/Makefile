@@ -16,7 +16,7 @@ default: $(POT) $(MO_FILES)
 
 # Update pot if ui changed
 $(POT): $(UI_FILES)
-	xgettext --keyword=translatable --add-comments --sort-output -o $@ $^
+	xgettext --keyword=translatable --keyword=translated_property --add-comments --sort-output -o $@ $^
 
 # Create or update po if pot changed
 %.po: $(POT)
