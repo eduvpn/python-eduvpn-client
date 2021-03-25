@@ -245,7 +245,7 @@ class EduVpnGui:
             self.show_component('renewSessionButton', False)
 
     def update_connection_status(self):
-        self.set_text('connectionStatusLabel', _(self.app.network_state.status_label))
+        self.set_text('connectionStatusLabel', self.app.network_state.status_label)
         self.builder.get_object('connectionStatusImage').set_from_file(self.app.network_state.status_image.path)
 
         self.update_connection_validity()
