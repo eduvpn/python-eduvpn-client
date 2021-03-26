@@ -105,4 +105,7 @@ notebook: $(VENV)/bin/jupyter-notebook
 	$(VENV)/bin/jupyter-notebook --notebook-dir= notebooks/
 
 clean:
-	rm -rf $(VENV) dist .eggs eduvpn_client.egg-info
+	rm -rf $(VENV) dist .eggs eduvpn_client.egg-info .pytest_cache tests/__pycache__/
+	find  . -name *.pyc -delete
+	find  . -name __pycache__ -delete
+
