@@ -8,6 +8,7 @@ import os
 import webbrowser
 import logging
 from datetime import datetime
+from gettext import gettext as _, ngettext
 
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402

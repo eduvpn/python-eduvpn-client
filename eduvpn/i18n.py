@@ -1,7 +1,7 @@
 import json
 import os
 import locale
-from gettext import install
+import gettext
 from typing import Union, Dict
 from eduvpn.settings import COUNTRY, LANGUAGE, COUNTRY_MAP
 from eduvpn.utils import get_logger
@@ -21,7 +21,7 @@ def init(lets_connect: bool, prefix: str):
     locale.setlocale(locale.LC_ALL, '')
     locale.bindtextdomain(domain, directory)  # type: ignore
     locale.textdomain(domain)  # type: ignore
-    install(domain, names=('gettext', 'ngettext'), localedir=directory)
+    gettext.bindtextdomain(domain, directory)
 
     return domain
 
