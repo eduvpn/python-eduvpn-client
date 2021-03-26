@@ -14,7 +14,6 @@ BuildRequires: gtk3
 BuildRequires: libnotify
 BuildRequires: python3-pytest
 BuildRequires: python3-pytest-runner
-# BuildRequires: python3-devel
 BuildRequires: python3-dbus
 BuildRequires: python3-gobject
 BuildRequires: python3-pynacl
@@ -97,6 +96,7 @@ Let's Connect! desktop client
 %{_datarootdir}/icons/hicolor/512x512/apps/eduvpn-client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
+%{_datarootdir}/locale/*/LC_MESSAGES/eduVPN.mo
 
 %files -n letsconnect-client
 %license LICENSE
