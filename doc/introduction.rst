@@ -113,10 +113,10 @@ You can install the client API from pypi:
 
 .. code-block:: bash
 
-    $ pip install eduvpn
+    $ pip install python-eduvpn
 
 
-Or if you want to try out the bleeding edge development version:
+Or, if you want to try out the bleeding edge development version:
 
 .. code-block:: bash
 
