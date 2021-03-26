@@ -56,7 +56,7 @@ def extract_translation(d: Union[str, Dict[str, str]]):
 
 def retrieve_country_name(country_code: str) -> str:
     country_map = _read_country_map()
-    loc = getlocale()
+    loc = locale.getlocale()
     if loc[0] is None:
         prefix = 'en'
     else:
