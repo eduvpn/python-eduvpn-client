@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        1.9.1
+Version:        2.0.0
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -14,13 +14,16 @@ BuildRequires: gtk3
 BuildRequires: libnotify
 BuildRequires: python3-pytest
 BuildRequires: python3-pytest-runner
-# BuildRequires: python3-devel
 BuildRequires: python3-dbus
 BuildRequires: python3-gobject
 BuildRequires: python3-pynacl
 BuildRequires: python3-requests-oauthlib
 BuildRequires: python3-dateutil
 BuildRequires: python3-cryptography
+BuildRequires: python3-devel
+BuildRequires: python3-wheel
+BuildRequires: python3-pip
+BuildRequires: python3-pycodestyle
 
 
 %description
@@ -97,6 +100,7 @@ Let's Connect! desktop client
 %{_datarootdir}/icons/hicolor/512x512/apps/eduvpn-client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
+%{_datarootdir}/locale/*/LC_MESSAGES/eduVPN.mo
 
 %files -n letsconnect-client
 %license LICENSE

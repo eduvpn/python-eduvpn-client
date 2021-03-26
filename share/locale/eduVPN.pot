@@ -1,0 +1,226 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-03-26 13:18+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: ../../eduvpn/ui/ui.py:110
+#, python-brace-format
+msgid " and <b>{0} hour</b>"
+msgid_plural " and <b>{0} hours</b>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../eduvpn/builder/mainwindow.ui:253
+msgid "Add Other Server"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:678
+msgid "Authorization required"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:740
+msgid "Cancel"
+msgstr ""
+
+#: ../../eduvpn/network.py:287
+msgid "Certificate expired"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:382
+msgid "Change Location"
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:456
+msgid "Configuring"
+msgstr ""
+
+#: ../../eduvpn/network.py:256
+msgid "Connection active"
+msgstr ""
+
+#: ../../eduvpn/network.py:302
+msgid "Connection failed"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1225 ../eduvpn/builder/mainwindow.ui:1445
+msgid "Connection info"
+msgstr ""
+
+#: ../../eduvpn/network.py:39
+msgid "Connection state unknown"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1299
+msgid "DOWNLOADED"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1271
+msgid "DURATION"
+msgstr ""
+
+#: ../../eduvpn/network.py:120 ../../eduvpn/network.py:275
+msgid "Disconnected"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1525 ../../eduvpn/ui/ui.py:512
+msgid "Error"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:206
+msgid "Find your institute"
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:358
+msgid "Finishing Authorization"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1552
+msgid "General failure, please quit"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1353
+msgid "IPv4 ADDRESS"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1380
+msgid "IPv6 ADDRESS"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:310
+msgid "Institute Access"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:786 ../../eduvpn/ui/ui.py:369
+msgid "Loading"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:984
+msgid "Not connected"
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:515
+msgid "Ok"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:440
+msgid "Other Servers"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1022
+msgid "PROFILES"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:609
+msgid "Please choose a location"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:552
+msgid "Please choose a profile"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:804
+msgid "Please wait"
+msgstr ""
+
+#: ../../eduvpn/network.py:241
+msgid "Preparing to connect"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1583
+msgid "Quit"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1141
+msgid "Renew Session"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:229
+msgid "Search for your institute..."
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:369
+msgid "Secure Internet"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:883
+msgid "Server Label"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:515
+msgid "Settings"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:933 ../../eduvpn/ui/ui.py:230
+msgid "Support:"
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:359
+msgid "The authorization token is being finished."
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:370
+msgid "The server details are being loaded."
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:696
+msgid ""
+"This app needs authorization and has opened\n"
+"your webbrowser. It will proceed when you\n"
+"have completed the authorization"
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:95
+msgid "This session has expired"
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:1326
+msgid "UPLOADED"
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:91
+msgid "Valid for <b>unknown</b>"
+msgstr ""
+
+#: ../../eduvpn/ui/ui.py:108
+#, python-brace-format
+msgid "Valid for <b>{0} day</b>"
+msgid_plural "Valid for <b>{0} days</b>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../../eduvpn/ui/ui.py:105
+#, python-brace-format
+msgid "Valid for <b>{0} hour</b>"
+msgid_plural "Valid for <b>{0} hours</b>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../../eduvpn/ui/ui.py:102
+#, python-brace-format
+msgid "Valid for <b>{0} minute</b>"
+msgid_plural "Valid for <b>{0} minutes</b>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../../eduvpn/ui/ui.py:457
+msgid "Your connection is being configured."
+msgstr ""
+
+#: ../eduvpn/builder/mainwindow.ui:7
+msgid "eduVPN"
+msgstr ""

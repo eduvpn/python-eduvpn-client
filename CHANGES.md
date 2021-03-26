@@ -1,10 +1,75 @@
 Work in progress
 ================
 
-1.9.0
-=====
+2.0
+===
 
 This is a complete rewrite of the code base.
+
+Notable new features:
+
+ * #337  Implement localization
+ * #200/#229  Add command line interface
+ * #206  Remove 2FA support (done by remote server now)
+ * #153  Make GUI similar to other clients
+
+Bug fixes:
+
+ * #346  g_main_context warnings printed to console
+ * #329  Selecting SURFnet bv and selecting Norway causes traceback
+ * #312  Renew session button doesn't seem to do anything
+ * #311  While starting/status update, check if active connection is the eduVPN connection
+ * #296  Remove eduvpn.nm.VpnConnection layer
+ * #295  Replace eduvpn.ui.vpn_connection with eduvpn.storage implementation
+ * #293  PyGTKDeprecationWarning in ui/__main__.py on Ubuntu 20.04
+ * #292  Application should show and only then start doing web requests
+ * #291  GTK component is modified from background thread
+ * #288  Disconnecting from an already disconnected session doesnt work
+ * #283  Selecting a secure internet server doesn't work correctly
+ * #281  Add new public keys for discovery signature verification
+ * #279  let's connect: proceed when pressed <enter> after entering URL
+ * #273  update discovery URL
+ * #269  Debian: connecting to another vpn server fails
+ * #265  TypeError: write() argument must be str, not None
+ * #264  when connected, close app, restart app, configure profile, app indicated 'not connected' while connected
+ * #263  When connected and re-configuring profile, user ends up in 'connected' screen with wrong info
+ * #260  Error with cli when nm and/or dbus are not installed or not available
+ * #259  Dark mode should look good (icons etc.)
+ * #258  Refactor ui.py
+ * #256  Improve logging
+ * #254  Error handling/display
+ * #252  React on status changes in the NetworkManager connection
+ * #251  Remember the last connection
+ * #250  Save the connection so you can access it quickly again
+ * #249  Get UI stable
+ * #247  In dark mode institute list background is still light 
+ * #246  new UI: improve token handling
+ * #246  new UI: improve token handling
+ * #245  new UI: make tests work with docker / travis
+ * #244  new UI: create a deb package
+ * #243  new UI: create a RPM package
+ * #242  new UI: install using pip install
+ * #237  building eduVPN from fc31.src.rpm on Fedora 32 fails
+ * #235  Switch the country_code instead of display_name for "Secure Internet"
+ * #234  centos8 docker container RPM build fails on travis
+ * #233  Use DBus in case of VPN connection status change
+ * #232  Update debian packages to match new setup.py layout
+ * #230  Support multiple verify keys
+ * #224  Only use one dynamically updated networkmanager VPN configuration
+ * #223  Simplify storing of metadata
+ * #222  Create new ui files for all screens
+ * #221  Merge all RPM spec files into one
+ * #213  Do not show VPN entries already in NetworkManager
+ * #208  tests failure in headless Linux build environment
+ * #205  switch to new server discovery procedure
+ * #197  remove /user_info API calls
+ * #175  Restructure packaging to improve letsconnect/eduvpn packaging results
+ * #173  Reorganise certificate management
+ * #170  Use NM config parser for importing .ovpn
+ * #159  when obtaining new token for 1 profile for one server, other profiles should not ask again
+ * #152  profiles selected one by one after profile delete triggering user/system message fetch
+ * #151  No need to create new keypair per profile
+ * #139  Add connect-timeout to settings
 
 1.1
 ===
