@@ -86,28 +86,28 @@ UPDATE_EXIPRY_INTERVAL = 1.  # seconds
 RENEWAL_ALLOW_FRACTION = .8
 
 
-def get_validity_text(validity: Optional[Validity]):
+def get_validity_text(validity: Optional[Validity]) -> str:
     if validity is None:
-        return _("Valid for <b>unknown</b>")  # type: ignore
+        return _("Valid for <b>unknown</b>")
     expiry = validity.end
     now = datetime.utcnow()
     if expiry <= now:
-        return _("This session has expired")  # type: ignore
+        return _("This session has expired")
     delta = expiry - now
     days = delta.days
     hours = delta.seconds // 3600
     if days == 0:
         if hours == 0:
             minutes = delta.seconds // 60
-            return ngettext("Valid for <b>{0} minute</b>",  # type: ignore
+            return ngettext("Valid for <b>{0} minute</b>",
                             "Valid for <b>{0} minutes</b>", minutes).format(minutes)
         else:
-            return ngettext("Valid for <b>{0} hour</b>",  # type: ignore
+            return ngettext("Valid for <b>{0} hour</b>",
                             "Valid for <b>{0} hours</b>", hours).format(hours)
     else:
-        dstr = ngettext("Valid for <b>{0} day</b>",  # type: ignore
+        dstr = ngettext("Valid for <b>{0} day</b>",
                         "Valid for <b>{0} days</b>", days).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>",  # type: ignore
+        hstr = ngettext(" and <b>{0} hour</b>",
                         " and <b>{0} hours</b>", hours).format(hours)
         return dstr + hstr
 

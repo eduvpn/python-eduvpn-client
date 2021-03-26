@@ -22,6 +22,7 @@ def init(lets_connect: bool, prefix: str):
     locale.bindtextdomain(domain, directory)  # type: ignore
     locale.textdomain(domain)  # type: ignore
     gettext.bindtextdomain(domain, directory)
+    gettext.textdomain(domain)
 
     return domain
 
