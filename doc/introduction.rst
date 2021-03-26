@@ -91,19 +91,14 @@ Retrieve the code:
     $ git clone https://github.com/eduvpn/python-eduvpn-client.git
     $ cd python-eduvpn-client
 
-Optionally change to another branch, e.g.
+
+For Debian or Ubuntu we made a make target to install the required debian packages:
 
 .. code-block:: bash
 
-    $ git checkout 2.0.x
+    $ sudo make deb
 
-For Debian or Ubuntu:
-
-.. code-block:: bash
-
-    $ sudo make debdev
-
-For fedora:
+For fedora we did the same:
 
 .. code-block:: bash
 
@@ -139,11 +134,6 @@ Development version
 
 Please follow the instructions in section 'Install the dependencies' first.
 
-Optionally change to another branch, e.g.
-
-.. code-block:: bash
-
-    $ git checkout 2.0.x
 
 Start eduVPN GUI:
 
