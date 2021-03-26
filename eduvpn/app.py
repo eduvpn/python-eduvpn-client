@@ -24,7 +24,6 @@ class Application:
         self.initialize_network()
         self.initialize_server_db()
 
-    @run_in_background_thread('init-network')
     def initialize_network(self):
         """
         Determine the current network state.
@@ -58,7 +57,7 @@ class Application:
                     kwargs['server'] = server
         else:
             transition = 'no_previous_connection_found'
-        self.network_transition_threadsafe(transition, **kwargs)
+        self.network_transition(transition, **kwargs)
 
         def on_network_update_callback(state, reason):
             network.on_status_update_callback(self, state)
