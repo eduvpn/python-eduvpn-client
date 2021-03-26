@@ -1,4 +1,5 @@
 import os
+from glob import glob
 
 from setuptools import setup, find_packages
 
@@ -51,6 +52,8 @@ data_files = [
     extra_files_line('share/icons/hicolor/256x256/apps'),
     extra_files_line('share/icons/hicolor/512x512/apps'),
 ]
+for dir in glob('share/locale/*/LC_MESSAGES'):
+    data_files.append([dir, glob(os.path.join(dir,'*.mo'))])
 
 setup(
     name="eduvpn_client",

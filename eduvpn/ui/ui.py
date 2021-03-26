@@ -23,9 +23,9 @@ from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
 from ..crypto import Validity
 from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
+from ..i18n import init as i18n_init
 from . import search
 from .utils import show_ui_component, link_markup
-
 
 logger = logging.getLogger(__name__)
 
@@ -87,22 +87,28 @@ RENEWAL_ALLOW_FRACTION = .8
 
 def get_validity_text(validity: Optional[Validity]):
     if validity is None:
-        return "Valid for <b>unknown</b>"
+        return _("Valid for <b>unknown</b>")  # type: ignore
     expiry = validity.end
     now = datetime.utcnow()
     if expiry <= now:
-        return "This session has expired"
+        return _("This session has expired")  # type: ignore
     delta = expiry - now
     days = delta.days
     hours = delta.seconds // 3600
     if days == 0:
         if hours == 0:
             minutes = delta.seconds // 60
-            return f"Valid for <b>{minutes} minutes</b>"
+            return ngettext("Valid for <b>{0} minute</b>",  # type: ignore
+                            "Valid for <b>{0} minutes</b>", minutes).format(minutes)
         else:
-            return f"Valid for <b>{hours} hours</b>"
+            return ngettext("Valid for <b>{0} hour</b>",  # type: ignore
+                            "Valid for <b>{0} hours</b>", hours).format(hours)
     else:
-        return f"Valid for <b>{days} days</b> and <b>{hours} hours</b>"
+        dstr = ngettext("Valid for <b>{0} day</b>",  # type: ignore
+                        "Valid for <b>{0} days</b>", days).format(days)
+        hstr = ngettext(" and <b>{0} hour</b>",  # type: ignore
+                        " and <b>{0} hours</b>", hours).format(hours)
+        return dstr + hstr
 
 
 def allow_certificate_renewal(validity: Optional[Validity]):
@@ -121,6 +127,12 @@ class EduVpnGui:
         self.builder: Any = Gtk.Builder()
 
         prefix = get_prefix()
+        try:
+            self.builder.set_translation_domain(i18n_init(lets_connect, prefix))
+            logger.info(u"i18n successfully initialized")
+        except Exception as e:
+            logger.error(f"i18n initialization failed: {e}")
+
         for b in builder_files:
             p = os.path.join(prefix, 'share/eduvpn/builder', b)
             if not os.access(p, os.R_OK):
@@ -214,7 +226,7 @@ class EduVpnGui:
             server_image_component.hide()
 
         if getattr(server, 'support_contact', []):
-            support_text = "Support: " + ", ".join(map(link_markup, server.support_contact))
+            support_text = _("Support:") + "\n" + "\n".join(map(link_markup, server.support_contact))
             self.set_markup_text('supportLabel', support_text)
             self.show_component('supportLabel', True)
         else:
@@ -342,8 +354,8 @@ class EduVpnGui:
     @transition_edge_callback(ENTER, interface_state.OAuthRefreshToken)
     def enter_OAuthRefreshToken(self, old_state, new_state):
         self.show_message_page(
-            "Finishing Authorization",
-            "The authorization token is being finished.",
+            _("Finishing Authorization"),
+            _("The authorization token is being finished."),
         )
 
     @transition_edge_callback(EXIT, interface_state.OAuthRefreshToken)
@@ -353,8 +365,8 @@ class EduVpnGui:
     @transition_edge_callback(ENTER, interface_state.LoadingServerInformation)
     def enter_LoadingServerInformation(self, old_state, new_state):
         self.show_message_page(
-            "Loading",
-            "The server details are being loaded.",
+            _("Loading"),
+            _("The server details are being loaded."),
         )
 
     @transition_edge_callback(EXIT, interface_state.LoadingServerInformation)
@@ -440,8 +452,8 @@ class EduVpnGui:
     @transition_edge_callback(ENTER, interface_state.ConfiguringConnection)
     def enter_ConfiguringConnection(self, old_state, new_state):
         self.show_message_page(
-            "Configuring",
-            "Your connection is being configured.",
+            _("Configuring"),
+            _("Your connection is being configured."),
         )
 
     @transition_edge_callback(EXIT, interface_state.ConfiguringConnection)
@@ -496,10 +508,10 @@ class EduVpnGui:
         self.show_component('messagePage', True)
         self.show_component('messageLabel', True)
         self.show_component('messageText', True)
-        self.set_text('messageLabel', "Error")
+        self.set_text('messageLabel', _("Error"))
         self.set_text('messageText', new_state.message)
         self.show_component('messageButton', True)
-        self.builder.get_object('messageButton').set_label("Ok")
+        self.builder.get_object('messageButton').set_label(_("Ok"))
         button = self.builder.get_object('messageButton')
         button.connect("clicked", self.on_acknowledge_error)
 
