@@ -72,10 +72,10 @@ doc:  $(VENV)/
 
 srpm:
 	docker build -t rpm_centos_8 -f docker/rpm_centos_8.docker .
-	docker build -t rpm_fedora_32 -f docker/rpm_fedora_32.docker .
+	docker build -t rpm_fedora_33 -f docker/rpm_fedora_33.docker .
 	mkdir dist || true
 	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
-	docker run -v `pwd`/dist:/dist:rw rpm_fedora_32 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
+	docker run -v `pwd`/dist:/dist:rw rpm_fedora_33 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 
 $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"

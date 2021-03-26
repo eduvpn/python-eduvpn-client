@@ -3,18 +3,22 @@ FROM fedora:33
 RUN dnf install -y	\
     fedora-packager \
     fedora-review \
-    gtk3 \
     libnotify \
+    gtk3 \
+    python3 \
     python3-devel \
-	python3-gobject  \
-	python3-requests-oauthlib \
-	python3-pytest \
-    python3-pytest-runner \
+    python3-wheel \
     python3-pynacl \
+    python3-pip \
+    python3-requests-oauthlib \
+    python3-gobject \
+    python3-pytest \
     python3-dbus \
+    python3-pytest-runner \
     python3-dateutil \
     python3-cryptography \
-    python3-wheel \
+    python3-pycodestyle \
+    python3-mypy \
     NetworkManager-libnm
 
 RUN rpmdev-setuptree

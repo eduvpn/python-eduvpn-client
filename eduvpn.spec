@@ -20,6 +20,10 @@ BuildRequires: python3-pynacl
 BuildRequires: python3-requests-oauthlib
 BuildRequires: python3-dateutil
 BuildRequires: python3-cryptography
+BuildRequires: python3-devel
+BuildRequires: python3-wheel
+BuildRequires: python3-pip
+BuildRequires: python3-pycodestyle
 
 
 %description
