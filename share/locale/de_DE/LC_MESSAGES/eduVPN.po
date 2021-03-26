@@ -24,22 +24,6 @@ msgid_plural " and <b>{0} hours</b>"
 msgstr[0] " und <b>{0} Stunde</b>"
 msgstr[1] " und <b>{0} Stunden</b>"
 
-#: ../eduvpn/builder/mainwindow.ui:1395
-msgid "0000:0000:0000:0000:0000:0000:0000:0000"
-msgstr "0000:0000:0000:0000:0000:0000:0000:0000"
-
-#: ../eduvpn/builder/mainwindow.ui:1314 ../eduvpn/builder/mainwindow.ui:1341
-msgid "0MB"
-msgstr "0MB"
-
-#: ../eduvpn/builder/mainwindow.ui:1287
-msgid "0h 00m 00s"
-msgstr "0h 00m 00s"
-
-#: ../eduvpn/builder/mainwindow.ui:1368
-msgid "255.255.255.255"
-msgstr "255.255.255.255"
-
 #: ../eduvpn/builder/mainwindow.ui:253
 msgid "Add Other Server"
 msgstr "Anderen Server hinzufügen"
@@ -242,23 +226,3 @@ msgstr "Ihre Verbindung wird nun konfiguriert."
 #: ../eduvpn/builder/mainwindow.ui:7
 msgid "eduVPN"
 msgstr "eduVPN"
-
-#: ../eduvpn/builder/mainwindow.ui:499 ../eduvpn/builder/mainwindow.ui:1072
-msgid "page 1"
-msgstr "Seite 1"
-
-#: ../eduvpn/builder/mainwindow.ui:535 ../eduvpn/builder/mainwindow.ui:1184
-msgid "page 2"
-msgstr "Seite 2"
-
-#: ../eduvpn/builder/mainwindow.ui:592 ../eduvpn/builder/mainwindow.ui:1198
-msgid "page 3"
-msgstr "Seite 3"
-
-#: ../eduvpn/builder/mainwindow.ui:649 ../eduvpn/builder/mainwindow.ui:835
-msgid "page 4"
-msgstr "Seite 4"
-
-#: ../eduvpn/builder/mainwindow.ui:1496
-msgid "page 5"
-msgstr "Seite 5"
