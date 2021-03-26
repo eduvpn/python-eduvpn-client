@@ -1,5 +1,9 @@
 import json
-from locale import getlocale
+import os
+import locale
+import re
+from gettext import install
+from inspect import currentframe
 from typing import Union, Dict
 from eduvpn.settings import COUNTRY, LANGUAGE, COUNTRY_MAP
 from eduvpn.utils import get_logger
@@ -9,9 +13,38 @@ logger = get_logger(__name__)
 country_mapping = None
 
 
+def init(lets_connect: bool, prefix: str):
+    """
+    Init locale and gettext, returns text domain
+    """
+    domain = 'LetConnect' if lets_connect else 'eduVPN'
+    directory = os.path.join(prefix, 'share/locale')
+
+    locale.setlocale(locale.LC_ALL, '')
+    locale.bindtextdomain(domain, directory)  # type: ignore
+    locale.textdomain(domain)  # type: ignore
+    install(domain, names=('gettext', 'ngettext'), localedir=directory)
+
+    return domain
+
+
+def country() -> str:
+    try:
+        return locale.getlocale()[0].replace('_', '-')
+    except Exception:
+        return COUNTRY
+
+
+def language() -> str:
+    try:
+        return locale.getlocale()[0].split('_')[0]
+    except Exception:
+        return LANGUAGE
+
+
 def extract_translation(d: Union[str, Dict[str, str]]):
     if isinstance(d, dict):
-        for m in [COUNTRY, LANGUAGE, 'en-US', 'en']:
+        for m in [country(), language(), 'en-US', 'en']:
             try:
                 return d[m]
             except KeyError:

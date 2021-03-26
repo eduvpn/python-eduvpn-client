@@ -11,8 +11,11 @@ from .app import Application
 from .server import ConfiguredServer as Server
 from .utils import run_in_background_thread
 
-
 logger = logging.getLogger(__name__)
+
+
+def translated_property(text):
+    return property(lambda self: gettext(text))  # type: ignore
 
 
 class StatusImage(enum.Enum):
@@ -32,7 +35,7 @@ class NetworkState(BaseState):
     Base class for all interface states.
     """
 
-    status_label = "Connection state unknown"
+    status_label = translated_property("Connection state unknown")
     status_image = StatusImage.DEFAULT
 
     def start_new_connection(self,
@@ -113,7 +116,7 @@ class UnconnectedState(NetworkState):
     and this state is no longer reached.
     """
 
-    status_label = "Disconnected"
+    status_label = translated_property("Disconnected")
 
 
 def connect(app: Application) -> NetworkState:
@@ -234,7 +237,7 @@ class ConnectingState(NetworkState):
     The network is currently trying to connect to a server.
     """
 
-    status_label = "Preparing to connect"
+    status_label = translated_property("Preparing to connect")
     status_image = StatusImage.CONNECTING
 
     def disconnect(self, app: Application) -> NetworkState:
@@ -249,7 +252,7 @@ class ConnectedState(NetworkState):
     The network is currently connected to a server.
     """
 
-    status_label = "Connection active"
+    status_label = translated_property("Connection active")
     status_image = StatusImage.CONNECTED
 
     def disconnect(self, app: Application) -> NetworkState:
@@ -268,7 +271,7 @@ class DisconnectedState(NetworkState):
     but a configured connection exists.
     """
 
-    status_label = "Disconnected"
+    status_label = translated_property("Disconnected")
     status_image = StatusImage.NOT_CONNECTED
 
     def reconnect(self, app: Application) -> NetworkState:
@@ -280,7 +283,7 @@ class CertificateExpiredState(NetworkState):
     The network could not connect because the certifcate has expired.
     """
 
-    status_label = "Certificate expired"
+    status_label = translated_property("Certificate expired")
     status_image = StatusImage.NOT_CONNECTED
 
     def renew_certificate(self, app: Application) -> NetworkState:
@@ -295,7 +298,7 @@ class ConnectionErrorState(NetworkState):
     The network could not connect because an error occured.
     """
 
-    status_label = "Connection failed"
+    status_label = translated_property("Connection failed")
     status_image = StatusImage.NOT_CONNECTED
 
     def __init__(self, error: Optional[str]):
