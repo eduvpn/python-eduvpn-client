@@ -37,3 +37,12 @@ def show_ui_component(builder, component: str, show: bool):
         component.show()  # type: ignore
     else:
         component.hide()  # type: ignore
+
+
+def link_markup(link: str) -> str:
+    try:
+        scheme, rest = link.split(':', 1)
+    except ValueError:
+        return link
+    else:
+        return f'<a href="{link}">{rest}</a>'

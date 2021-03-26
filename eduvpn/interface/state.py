@@ -2,11 +2,14 @@ from typing import Union, Optional, List
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
+from ..crypto import Validity
 from ..app import Application
 from ..server import (
-    Server, SecureInternetServer, InstituteAccessServer, CustomServer, Profile)
-from .utils import SecureInternetLocation
+    AnyServer, PredefinedServer, ConfiguredServer,
+    SecureInternetServer, OrganisationServer, CustomServer, Profile)
+from .error import translate_error
 from . import event
+from . import transition
 
 
 class InterfaceState(BaseState):
@@ -22,6 +25,13 @@ class InterfaceState(BaseState):
         # Toggling the settings page normally shows the settings page.
         return ConfigureSettings(self)
 
+    def encountered_exception(self,
+                              app: Application,
+                              message: Union[str, Exception],
+                              next_state: Optional['InterfaceState'] = None,
+                              ) -> 'InterfaceState':
+        return ErrorState(message, next_state)
+
 
 class InitialInterfaceState(InterfaceState):
     """
@@ -33,12 +43,13 @@ class InitialInterfaceState(InterfaceState):
 
     def found_active_connection(self,
                                 app: Application,
-                                server: Union[InstituteAccessServer, SecureInternetLocation],
+                                server: ConfiguredServer,
+                                validity: Optional[Validity],
                                 ) -> InterfaceState:
         """
         An connection is already active, show its details.
         """
-        return ConnectionStatus(server)
+        return ConnectionStatus(server, validity)
 
     def no_active_connection_found(self, app: Application) -> InterfaceState:
         """
@@ -47,7 +58,7 @@ class InitialInterfaceState(InterfaceState):
         The concrete main state depends on
         whether any servers have been configured previously.
         """
-        return event.go_to_main_state(app)
+        return transition.go_to_main_state(app)
 
 
 class MainState(InterfaceState):
@@ -58,7 +69,7 @@ class MainState(InterfaceState):
     Present the list of configured servers to start a connection.
     """
 
-    def __init__(self, servers: List[Server]):
+    def __init__(self, servers: List[ConfiguredServer]):
         self.servers = servers
 
     def configure_new_server(self, app: Application) -> InterfaceState:
@@ -67,9 +78,9 @@ class MainState(InterfaceState):
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
+                          server: ConfiguredServer) -> InterfaceState:
         "Connect to an already configured server."
-        return event.connect_to_server(app, server)
+        return transition.connect_to_server(app, server)
 
 
 class PendingConfigurePredefinedServer(InterfaceState):
@@ -92,19 +103,19 @@ class PendingConfigurePredefinedServer(InterfaceState):
                              app: Application,
                              address: str,
                              ) -> InterfaceState:
-        return event.enter_custom_address(app, address)
+        return transition.enter_custom_address(app, address)
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
-        return event.connect_to_server(app, server)
+                          server: ConfiguredServer) -> InterfaceState:
+        return transition.connect_to_server(app, server)
 
     def server_db_finished_loading(self, app: Application) -> InterfaceState:
         """
         The list of predefined servers has been loaded,
         and the can how be shown to the user.
         """
-        return event.enter_search_query(app, self.search_query)
+        return transition.enter_search_query(app, self.search_query)
 
 
 class ConfigurePredefinedServer(InterfaceState):
@@ -114,7 +125,7 @@ class ConfigurePredefinedServer(InterfaceState):
 
     def __init__(self,
                  search_query: str = '',
-                 results: Optional[List[Server]] = None):
+                 results: Optional[List[PredefinedServer]] = None):
         self.search_query = search_query
         self.results = results
 
@@ -133,17 +144,17 @@ class ConfigurePredefinedServer(InterfaceState):
     def enter_search_query(self, app: Application,
                            search_query: str,
                            ) -> InterfaceState:
-        return event.enter_search_query(app, search_query)
+        return transition.enter_search_query(app, search_query)
 
     def enter_custom_address(self, app: Application,
                              address: str,
                              ) -> InterfaceState:
-        return event.enter_custom_address(app, address)
+        return transition.enter_custom_address(app, address)
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
-        return event.connect_to_server(app, server)
+                          server: PredefinedServer) -> InterfaceState:
+        return transition.connect_to_server(app, server)
 
 
 class ConfigureCustomServer(InterfaceState):
@@ -158,17 +169,17 @@ class ConfigureCustomServer(InterfaceState):
     def enter_search_query(self, app: Application,
                            search_query: str,
                            ) -> InterfaceState:
-        return event.enter_search_query(app, search_query)
+        return transition.enter_search_query(app, search_query)
 
     def enter_custom_address(self, app: Application,
                              address: str,
                              ) -> InterfaceState:
-        return event.enter_custom_address(app, address)
+        return transition.enter_custom_address(app, address)
 
     def connect_to_server(self,
                           app: Application,
-                          server: Server) -> InterfaceState:
-        return event.connect_to_server(app, server)
+                          server: CustomServer) -> InterfaceState:
+        return transition.connect_to_server(app, server)
 
 
 configure_server_states = (
@@ -179,12 +190,30 @@ configure_server_states = (
 )
 
 
+class OAuthSetupPending(InterfaceState):
+    """
+    Wait for the local OAuth webserver to start.
+    """
+
+    def __init__(self, server: AnyServer):
+        self.server = server
+
+    def ready_for_oauth_setup(self,
+                              app: Application,
+                              oauth_web_server: OAuthWebServer) -> InterfaceState:
+        """
+        Cancel the OAuth setup process
+        and take the user back to the main page.
+        """
+        return OAuthSetup(self.server, oauth_web_server)
+
+
 class OAuthSetup(InterfaceState):
     """
     Allow the user to log into the VPN server using their browser.
     """
 
-    def __init__(self, server: Server, oauth_web_server: OAuthWebServer):
+    def __init__(self, server: AnyServer, oauth_web_server: OAuthWebServer):
         self.server = server
         self.oauth_web_server = oauth_web_server
 
@@ -194,7 +223,7 @@ class OAuthSetup(InterfaceState):
         and take the user back to the main page.
         """
         self.oauth_web_server.stop()
-        return event.go_to_main_state(app)
+        return transition.go_to_main_state(app)
 
     def oauth_setup_success(self,
                             app: Application,
@@ -202,7 +231,8 @@ class OAuthSetup(InterfaceState):
         """
         The user has successfully completed the oauth setup by logging in.
         """
-        return event.refresh_oauth_token(app, self.server, oauth_session)
+        event.on_refresh_oauth_token(app, self.server, oauth_session)
+        return OAuthRefreshToken(app, self.server, oauth_session)
 
 
 class OAuthRefreshToken(InterfaceState):
@@ -212,21 +242,53 @@ class OAuthRefreshToken(InterfaceState):
 
     def __init__(self,
                  app: Application,
-                 server: Server,
+                 server: AnyServer,
                  oauth_session: OAuth2Session):
         self.app = app
         self.server = server
         self.oauth_session = oauth_session
 
     def oauth_refresh_success(self, app: Application) -> InterfaceState:
-        return event.start_connection(app, self.server, self.oauth_session)
+        event.on_start_connection(app, self.server, self.oauth_session)
+        return LoadingServerInformation()
 
     def oauth_refresh_failed(self, app: Application) -> InterfaceState:
         """
         Refreshing the OAuth token failed,
         so the OAuth setup needs to be redone.
         """
-        return event.setup_oauth(app, self.server)
+        event.on_setup_oauth(app, self.server)
+        return OAuthSetupPending(self.server)
+
+
+class LoadingServerInformation(InterfaceState):
+    """
+    Wait for server information to be requested.
+    """
+
+    def choose_secure_internet_location(self,
+                                        app: Application,
+                                        server: OrganisationServer,
+                                        oauth_session: OAuth2Session,
+                                        locations: List[SecureInternetServer]):
+        if len(locations) == 1:
+            # Skip location choice if there's only a single option.
+            event.on_start_connection(app, server, oauth_session, locations[0])
+            return LoadingServerInformation()
+        else:
+            return ChooseSecureInternetLocation(server, oauth_session, locations)
+
+    def choose_profile(self,
+                       app: Application,
+                       server: AnyServer,
+                       oauth_session: OAuth2Session,
+                       profiles: List[Profile]) -> InterfaceState:
+        if len(profiles) == 1:
+            # Skip profile choice if there's only a single option.
+            event.on_chosen_profile(app, server, oauth_session, profiles[0])
+            return ConfiguringConnection(server)
+        else:
+            return ChooseProfile(server, oauth_session, profiles)
 
 
 class ChooseSecureInternetLocation(InterfaceState):
@@ -235,7 +297,7 @@ class ChooseSecureInternetLocation(InterfaceState):
     """
 
     def __init__(self,
-                 server: Server,
+                 server: OrganisationServer,
                  oauth_session: OAuth2Session,
                  locations: List[SecureInternetServer]):
         self.server = server
@@ -243,7 +305,8 @@ class ChooseSecureInternetLocation(InterfaceState):
         self.locations = locations
 
     def select_secure_internet_location(self, app, location) -> InterfaceState:
-        return event.start_connection(app, self.server, self.oauth_session, location)
+        event.on_start_connection(app, self.server, self.oauth_session, location)
+        return LoadingServerInformation()
 
 
 class ChooseProfile(InterfaceState):
@@ -252,7 +315,7 @@ class ChooseProfile(InterfaceState):
     """
 
     def __init__(self,
-                 server: Union[InstituteAccessServer, SecureInternetLocation],
+                 server: AnyServer,
                  oauth_session: OAuth2Session,
                  profiles: List[Profile]):
         self.server = server
@@ -262,7 +325,8 @@ class ChooseProfile(InterfaceState):
     def select_profile(self,
                        app: Application,
                        profile: Profile) -> InterfaceState:
-        return event.chosen_profile(app, self.server, self.oauth_session, profile)
+        event.on_chosen_profile(app, self.server, self.oauth_session, profile)
+        return ConfiguringConnection(self.server)
 
 
 class ConfiguringConnection(InterfaceState):
@@ -271,11 +335,14 @@ class ConfiguringConnection(InterfaceState):
     save the configuration to the network manager.
     """
 
-    def __init__(self, server: Union[InstituteAccessServer, SecureInternetLocation]):
+    def __init__(self, server: AnyServer):
         self.server = server
 
-    def finished_configuring_connection(self, app: Application) -> InterfaceState:
-        return ConnectionStatus(self.server)
+    def finished_configuring_connection(self,
+                                        app: Application,
+                                        validity: Optional[Validity],
+                                        ) -> InterfaceState:
+        return ConnectionStatus(self.server, validity)
 
 
 class ConnectionStatus(InterfaceState):
@@ -283,8 +350,25 @@ class ConnectionStatus(InterfaceState):
     Show info on the active connection status.
     """
 
-    def __init__(self, server: Union[InstituteAccessServer, SecureInternetLocation, CustomServer]):
+    def __init__(self,
+                 server: AnyServer,
+                 validity: Optional[Validity]):
         self.server = server
+        self.validity = validity
+
+    def go_back(self, app: Application) -> InterfaceState:
+        return transition.go_to_main_state(app)
+
+    def activate_connection(self, app: Application) -> InterfaceState:
+        app.network_transition('reconnect')
+        return self
+
+    def deactivate_connection(self, app: Application) -> InterfaceState:
+        app.network_transition('disconnect')
+        return self
+
+    def renew_certificate(self, app: Application) -> InterfaceState:
+        return transition.connect_to_server(app, self.server, renew=True)
 
 
 class ConfigureSettings(InterfaceState):
@@ -297,3 +381,21 @@ class ConfigureSettings(InterfaceState):
 
     def toggle_settings(self, app: Application) -> InterfaceState:
         return self.previous_state
+
+
+class ErrorState(InterfaceState):
+    """
+    An error has occured.
+    """
+
+    def __init__(self, message: Union[str, Exception], next_state: Optional[InterfaceState] = None):
+        if isinstance(message, Exception):
+            message = translate_error(message)
+        self.message = message
+        self.next_state = next_state
+
+    def acknowledge_error(self, app: Application) -> InterfaceState:
+        if self.next_state is None:
+            return transition.go_to_main_state(app)
+        else:
+            return self.next_state

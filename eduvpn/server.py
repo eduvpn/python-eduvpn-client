@@ -1,7 +1,10 @@
-from typing import Union, Optional, Iterable, List, Dict, Type
+from typing import Union, Optional, Iterable, List, Dict
+import os
 from eduvpn import remote
-from eduvpn.i18n import extract_translation
-from eduvpn.settings import SERVER_URI, ORGANISATION_URI
+from eduvpn import storage
+from eduvpn.i18n import extract_translation, retrieve_country_name
+from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX
+from .utils import custom_server_oauth_url
 
 
 class InstituteAccessServer:
@@ -14,10 +17,15 @@ class InstituteAccessServer:
                  base_url: str,
                  display_name: Union[str, Dict[str, str]],
                  support_contact: List[str] = [],
-                 keyword_list: Optional[str] = None):
+                 keyword_list: Optional[Union[str, List[str]]] = None):
         self.base_url = base_url
         self.display_name = display_name
         self.support_contact = support_contact
+        if keyword_list is not None:
+            if isinstance(keyword_list, str):
+                keyword_list = [keyword_list]
+            elif not isinstance(keyword_list, list):
+                raise TypeError(keyword_list)
         self.keyword_list = keyword_list
 
     def __str__(self):
@@ -27,14 +35,10 @@ class InstituteAccessServer:
         return f"<InstituteAccessServer {str(self)!r}>"
 
     @property
-    def keyword(self) -> Optional[str]:
-        return self.keyword_list
-
-    @property
     def search_texts(self):
         texts = [str(self)]
-        if self.keyword:
-            texts.append(self.keyword)
+        if self.keyword_list:
+            texts.extend(self.keyword_list)
         return texts
 
     @property
@@ -61,10 +65,22 @@ class SecureInternetServer:
         self.authentication_url_template = authentication_url_template
 
     def __str__(self):
-        return self.base_url  # TODO
+        return f"{self.country_name} @ {self.base_url}"
 
     def __repr__(self):
         return f"<SecureInternetServer {str(self)!r}>"
+
+    @property
+    def country_name(self) -> str:
+        return retrieve_country_name(self.country_code)
+
+    @property
+    def flag_path(self) -> Optional[str]:
+        path = f'{FLAG_PREFIX}{self.country_code}@1,5x.png'
+        if os.path.exists(path):
+            return path
+        else:
+            return None
 
     @property
     def oauth_login_url(self):
@@ -124,6 +140,10 @@ class CustomServer:
     def __repr__(self):
         return f"<CustomServer {str(self)!r}>"
 
+    @property
+    def oauth_login_url(self):
+        return custom_server_oauth_url(self.address)
+
 
 class ServerInfo:
     def __init__(self, api_base_uri, token_endpoint, auth_endpoint):
@@ -150,33 +170,55 @@ class Profile:
     def __str__(self):
         return self.display_name
 
+    def __repr__(self):
+        return f"<Profile id={self.id!r} {str(self)!r}>"
 
-server_types = [
-    InstituteAccessServer,
-    OrganisationServer,
-    CustomServer,
-]
+
+class SecureInternetLocation:
+    def __init__(self,
+                 server: OrganisationServer,
+                 location: SecureInternetServer):
+        self.server = server
+        self.location = location
+
+    def __str__(self):
+        return self.location.country_name
+
+    def __repr__(self):
+        return f"<SecureInternetLocation {self.server!r} {self.location!r}>"
+
+    @property
+    def image_path(self) -> Optional[str]:
+        return self.location.flag_path
+
+    @property
+    def support_contact(self) -> List[str]:
+        return self.location.support_contact
+
+    @property
+    def oauth_login_url(self):
+        assert self.server.oauth_login_url == self.location.oauth_login_url
+        return self.server.oauth_login_url
 
 
 # typing aliases
-Server = Union[
+PredefinedServer = Union[
     InstituteAccessServer,
     OrganisationServer,
     CustomServer,
 ]
-ServerType = Type[Server]
+ConfiguredServer = Union[
+    InstituteAccessServer,
+    SecureInternetLocation,
+    CustomServer,
+]
+AnyServer = Union[
+    PredefinedServer,
+    ConfiguredServer,
+]
 
 
-def group_servers_by_type(
-        servers: Iterable[Server]) -> Dict[ServerType, List[Server]]:
-    groups: Dict[ServerType, List[Server]]
-    groups = {server_type: [] for server_type in server_types}
-    for server in servers:
-        groups[type(server)].append(server)
-    return groups
-
-
-def is_search_match(server: Server, query: str) -> bool:
+def is_search_match(server: PredefinedServer, query: str) -> bool:
     if hasattr(server, 'search_texts'):
         return any(query.lower() in search_text.lower()
                    for search_text
@@ -219,11 +261,55 @@ class ServerDatabase:
         self.servers = new_servers
         self.is_loaded = True
 
-    def all(self) -> Iterable[Server]:
+    def all_configured(self) -> Iterable[ConfiguredServer]:
+        "Return all configured servers."
+        for key, data in storage.get_all_metadatas().items():
+            if data['con_type'] == storage.ConnectionType.INSTITUTE:
+                yield InstituteAccessServer(
+                    base_url=data['api_base_uri'],
+                    display_name=data['display_name'],
+                    support_contact=data['support_contact'],
+                    keyword_list=None,  # TODO
+                )
+            elif data['con_type'] == storage.ConnectionType.SECURE:
+                secure_internet = SecureInternetServer(
+                    base_url=data['api_base_uri'],
+                    public_key_list=[],  # TODO
+                    country_code=data['country_id'],
+                    support_contact=data['support_contact'],
+                    authentication_url_template=None,  # TODO
+                )
+                organisation = OrganisationServer(
+                    secure_internet_home=data['api_base_uri'],
+                    display_name=data['display_name'],
+                    org_id='',  # TODO
+                    keyword_list={},
+                )
+                yield SecureInternetLocation(organisation, secure_internet)
+            elif data['con_type'] == storage.ConnectionType.OTHER:
+                yield CustomServer(data['api_base_uri'])
+            else:
+                raise ValueError(data)
+
+    def get_single_configured(self) -> Optional[ConfiguredServer]:
+        auth_url = storage.get_auth_url()
+        if auth_url is not None:
+            for server in self.all_configured():
+                if server.oauth_login_url == auth_url:
+                    return server
+        return None
+
+    def all(self) -> Iterable[PredefinedServer]:
         "Return all servers."
         return iter(self.servers)
 
-    def search(self, query: str) -> Iterable[Server]:
+    def get_secure_internet_server(self, base_url: str) -> Optional[SecureInternetServer]:
+        for server in self.all():
+            if isinstance(server, SecureInternetServer) and server.base_url == base_url:
+                return server
+        return None
+
+    def search(self, query: str) -> Iterable[PredefinedServer]:
         "Return all servers that match the search query."
         if query:
             for server in self.all():
@@ -232,6 +318,6 @@ class ServerDatabase:
         else:
             yield from self.all()
 
-    def get_server_info(self, server):
+    def get_server_info(self, server) -> ServerInfo:
         info = remote.get_info(server.oauth_login_url)
         return ServerInfo(*info)
