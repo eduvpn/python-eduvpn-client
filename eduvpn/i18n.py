@@ -1,9 +1,7 @@
 import json
 import os
 import locale
-import re
-from gettext import install
-from inspect import currentframe
+import gettext
 from typing import Union, Dict
 from eduvpn.settings import COUNTRY, LANGUAGE, COUNTRY_MAP
 from eduvpn.utils import get_logger
@@ -23,7 +21,7 @@ def init(lets_connect: bool, prefix: str):
     locale.setlocale(locale.LC_ALL, '')
     locale.bindtextdomain(domain, directory)  # type: ignore
     locale.textdomain(domain)  # type: ignore
-    install(domain, names=('gettext', 'ngettext'), localedir=directory)
+    gettext.bindtextdomain(domain, directory)
 
     return domain
 
@@ -56,7 +54,7 @@ def extract_translation(d: Union[str, Dict[str, str]]):
 
 def retrieve_country_name(country_code: str) -> str:
     country_map = _read_country_map()
-    loc = getlocale()
+    loc = locale.getlocale()
     if loc[0] is None:
         prefix = 'en'
     else:
