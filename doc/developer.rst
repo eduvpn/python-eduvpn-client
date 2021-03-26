@@ -37,9 +37,9 @@ How to make a release
 
 * Compose a list of changes (check issue tracker)
 
-* Make sure the test suite runs with python2 and python3
+* Make sure the test suite runs with python3
 
-* Set version number in ``setup.py``, ``setup_letsconnect.py`` and ``rpm/\*.spec``
+* Set version number in ``setup.py``, and ``eduvpn.spec``
 
 * add changes to CHANGES.md
 
@@ -47,17 +47,25 @@ How to make a release
 
 * Press release button on github. List all changes here also
 
-* Check if travis builds. If so, it will upload to pypi.
+* Check if github actions builds.
 
-* If it doesn't build fix and do a manual upload using `twine <https://github.com/pypa/twine>`_
+* Do a manual wheel upload using `twine <https://github.com/pypa/twine>`_:
 
-* For now you need to manually create the Let's connect! wheel and upload using twine.
+.. code-block::
 
-* Make a SRPM and upload to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_
+    # rm dist/*
+    $ python setup.py bdist_wheel sdist
+    $ twine upload dist/*
 
-.. note::
+* Build packages to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_:
 
-   ``$ make srpm`` will use docker to build a srpm and put it in tmp/
+.. code-block::
 
+    on copr -> builds -> new build -> scm.
+    clone URL: https://github.com/eduvpn/python-eduvpn-client
+    Committish: branch or tag
+    spec file: eduvpn.spec
+    Build for all supported/configured platforms
+    at the moment they are centos8, fedora 33 and fedora 34.
 
 * Update the debian package using the `eduVPN Debian meta files <https://github.com/eduvpn-debian/packaging>`_.
