@@ -3,6 +3,7 @@ import logging
 import enum
 from functools import partial
 from time import sleep
+from gettext import gettext
 from . import nm
 from .crypto import Validity
 from . import settings
