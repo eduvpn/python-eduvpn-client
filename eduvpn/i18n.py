@@ -1,9 +1,7 @@
 import json
 import os
 import locale
-import re
 from gettext import install
-from inspect import currentframe
 from typing import Union, Dict
 from eduvpn.settings import COUNTRY, LANGUAGE, COUNTRY_MAP
 from eduvpn.utils import get_logger
