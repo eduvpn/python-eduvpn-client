@@ -120,6 +120,12 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callba
     """
     _logger.info("Updating existing connection with new configuration")
 
+    # Don't attempt to overwrite the uuid,
+    # but reuse the one from the previous connection.
+    # Refer to issue #269.
+    for setting in new_con.get_settings():
+        if setting.get_name() == 'connection':
+            setting.props.uuid = old_con.get_uuid()
     old_con.replace_settings_from_connection(new_con)
     old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback,
                                  user_data=callback)
