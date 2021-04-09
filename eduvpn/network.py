@@ -43,8 +43,6 @@ class NetworkState(BaseState):
                              app: Application,
                              server: Server,
                              ) -> 'NetworkState':
-        if isinstance(app.network_state, (ConnectingState, ConnectedState)):
-            disconnect(app, update_state=False)
         return connect(app)
 
     def set_connecting(self, app: Application) -> 'NetworkState':
@@ -149,6 +147,14 @@ def disconnect(app: Application, *, update_state=True) -> NetworkState:
     return DisconnectedState()
 
 
+def reconnect(app: Application) -> NetworkState:
+    """
+    Disconnect and then connect again.
+    """
+    disconnect(app, update_state=False)
+    return ReconnectingState()
+
+
 def renew_certificate(app: Application) -> NetworkState:
     app.interface_transition('renew_certificate')
     return ConnectedState()
@@ -241,6 +247,12 @@ class ConnectingState(NetworkState):
     status_label = translated_property("Preparing to connect")
     status_image = StatusImage.CONNECTING
 
+    def start_new_connection(self,
+                             app: Application,
+                             server: Server,
+                             ) -> NetworkState:
+        return reconnect(app)
+
     def disconnect(self, app: Application) -> NetworkState:
         """
         Abort connecting.
@@ -255,6 +267,12 @@ class ConnectedState(NetworkState):
 
     status_label = translated_property("Connection active")
     status_image = StatusImage.CONNECTED
+
+    def start_new_connection(self,
+                             app: Application,
+                             server: Server,
+                             ) -> NetworkState:
+        return reconnect(app)
 
     def disconnect(self, app: Application) -> NetworkState:
         return disconnect(app)
@@ -276,6 +294,22 @@ class DisconnectedState(NetworkState):
     status_image = StatusImage.NOT_CONNECTED
 
     def reconnect(self, app: Application) -> NetworkState:
+        return connect(app)
+
+
+class ReconnectingState(NetworkState):
+    """
+    The network is currently disconnecting
+    and will connect again when ready.
+    """
+
+    status_label = translated_property("Preparing to connect")
+    status_image = StatusImage.CONNECTING
+
+    def set_unknown(self, app: Application) -> NetworkState:
+        return connect(app)
+
+    def set_disconnected(self, app: Application) -> NetworkState:
         return connect(app)
 
 
