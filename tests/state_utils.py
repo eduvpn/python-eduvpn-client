@@ -29,9 +29,17 @@ def wait_until_state(state_machine, state_type):
 
 class StateTestCaseMixin:
     def assertReachesInterfaceState(self, app, state_type):
-        wait_until_state(app.interface_state_machine, state_type)
+        if not wait_until_state(app.interface_state_machine, state_type):
+            self.fail(
+                f"timeout waiting for interface state {state_type!r},"
+                f" current state is {app.interface_state!r}"
+            )
         self.assertIsInstance(app.interface_state, state_type)
 
     def assertReachesNetworkState(self, app, state_type):
-        wait_until_state(app.network_state_machine, state_type)
+        if not wait_until_state(app.network_state_machine, state_type):
+            self.fail(
+                f"timeout waiting for network state {state_type!r},"
+                f" current state is {app.network_state!r}"
+            )
         self.assertIsInstance(app.network_state, state_type)
