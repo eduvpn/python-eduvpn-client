@@ -3,7 +3,10 @@ from unittest.mock import patch
 from time import sleep
 from eduvpn.interface import state as interface_state
 from eduvpn import network as network_state
-from .utils import remove_existing_config, create_test_app
+from .utils import (
+    remove_existing_config, create_test_app,
+    skip_if_network_manager_not_supported,
+)
 from .state_utils import StateTestCaseMixin
 
 
@@ -42,6 +45,7 @@ class TestOAuthResponse:
 
 
 class FlowTests(StateTestCaseMixin, TestCase):
+    @skip_if_network_manager_not_supported
     def test_first_start(self):
         remove_existing_config()
         app = create_test_app()
