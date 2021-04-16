@@ -9,8 +9,7 @@ from unittest.mock import Mock
 
 from eduvpn.state_machine import (
     ENTER, EXIT, StateMachine, transition_callback, transition_edge_callback,
-    InvalidStateTransition)
-from tests.mock_config import mock_config_dict
+)
 
 
 class StateMachineTests(unittest.TestCase):
