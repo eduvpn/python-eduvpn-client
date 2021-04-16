@@ -9,23 +9,13 @@ Read more about eduVPN on the eduVPN website http://eduvpn.org/.
 Installation
 ============
 
-The python eduVPN client is available on pypi:
+The recommended way to install the eduVPN client for Linux is using one of the packages for your Linux distribution.
+The online documentation at [http://python-eduvpn-client.readthedocs.io](http://python-eduvpn-client.readthedocs.io)
+contains detailed installation instructions.
+
+To directly install eduVPN from a checkout of this repository run:
 
 ```bash
-$ pip install python-eduvpn
+$ python3 -m venv
+$ venv/bin/pip install ".[gui]"
 ```
-
-Or to install the Graphical User Interface and/or the Network manager integration:
-
-```bash
-$ pip install "python-eduvpn[gui]"
-```
-
-For more detailed instruction you can find the full installation instructions [here](http://python-eduvpn-client.readthedocs.io/en/latest/introduction.html#installation) 
-or in the doc directory of the repository.
-
-Documentation
-=============
-
-You can find the documentation on [http://python-eduvpn-client.readthedocs.io](http://python-eduvpn-client.readthedocs.io).
-
