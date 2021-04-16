@@ -6,12 +6,17 @@
 Welcome to python-eduvpn-client's documentation!
 ================================================
 
+This is the documentation for the GNU/Linux desktop client and Python API for eduVPN. The Desktop client only works on
+Linux, but the command-line interface and most parts of the API are usable on other platforms also. Python 3.6+ is
+required.
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   introduction
-   API
+   installation
+   usage
    developer
 
 

@@ -51,15 +51,15 @@ How to make a release
 
 * Do a manual wheel upload using `twine <https://github.com/pypa/twine>`_:
 
-.. code-block::
+.. code-block:: console
 
-    # rm dist/*
+    $ rm dist/*
     $ python setup.py bdist_wheel sdist
     $ twine upload dist/*
 
 * Build packages to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_:
 
-.. code-block::
+.. code-block:: console
 
     on copr -> builds -> new build -> scm.
     clone URL: https://github.com/eduvpn/python-eduvpn-client

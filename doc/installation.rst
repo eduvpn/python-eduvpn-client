@@ -1,22 +1,18 @@
 ============
-Introduction
-============
-
-This is the GNU/Linux desktop client and Python API for eduVPN. The Desktop client only works on Linux, but most parts
-of the API are usable on other platforms also. Python 3.6+ is required.
-
 Installation
 ============
 
-It is recommended to use a package to install the eduVPN client, but you can also install using pip from py or directly
-from github. We distribute RPM packages for Fedora, and Deb packages for Debian and Ubuntu.
+The Desktop client only works on Linux, but the command-line interface and most parts of the API are usable on other
+platforms also. Python 3.6+ is required. It is recommended to use a deb or rpm package to install the eduVPN client.
+You can also install using pip from pypi or directly from Github. We distribute RPM packages for Fedora, and deb
+packages for Debian and Ubuntu.
 
 The eduVPN client has been tested with:
 
  * Debian 10 (Buster)
- * Ubuntu 20.04 LTS & 18.04 LTS
+ * Ubuntu 20.04 LTS and 18.04 LTS
  * CentOS 8
- * Fedora 32
+ * Fedora 33 and 34
 
 .. note::
 
@@ -26,126 +22,103 @@ The eduVPN client has been tested with:
 
 
 Debian and Ubuntu
------------------
+=================
 
 You can install the latest release on Debian or Ubuntu using the eduVPN packaging repository by running these commands:
 
-.. code-block:: bash
+.. code-block:: console
 
     $ sudo apt install apt-transport-https curl
     $ curl -L https://repo.eduvpn.org/debian/eduvpn.key | sudo apt-key add -
-    $ echo "deb https://repo.eduvpn.org/debian/ stretch main" | sudo tee -a /etc/apt/sources.list.d/eduvpn.list
+    $ echo "deb https://repo.eduvpn.org/debian/ stable main" | sudo tee -a /etc/apt/sources.list.d/eduvpn.list
     $ sudo apt update
     $ sudo apt install eduvpn-client
 
 
-Fedora
-------
+Fedora and CentOS
+=================
 
-You can install the latest release of the eduVPN client on Fedora by running these commands as root or using sudo:
+You can install the latest release of the eduVPN client on Fedora or CentOS by running these commands :
 
-.. code-block:: bash
+.. code-block:: console
 
-    $ dnf install dnf-plugins-core
-    $ dnf copr enable gijzelaerr/eduvpn-client
-    $ dnf install eduvpn-client
-
-More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
-
-
-Centos
-------
-
-You can install the latest release of the eduVPN client on Centos 8 by running these commands as root or using sudo:
-
-.. code-block:: bash
-
-    $ yum install yum-plugin-copr
-    $ yum copr enable gijzelaerr/eduvpn-client
-    $ yum install eduvpn-client
+    $ sudo dnf install dnf-plugins-core
+    $ sudo dnf copr enable gijzelaerr/eduvpn-client
+    $ sudo dnf install eduvpn-client
 
 More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
 
 
-Install the dependencies
-------------------------
+Manual source installation
+==========================
 
-This is needed for the sections Pip and Development below. It will install all needed packages.
+Dependencies
+------------
+
+To manually install the eduVPN package you first need to satisfy the build requirements.
 
 For Debian or Ubuntu:
 
-.. code-block:: bash
+.. code-block:: console
 
-    $ sudo apt install build-essential git
+    $ sudo apt install build-essential git make
 
 For fedora:
 
-.. code-block:: bash
+.. code-block:: console
 
     $ sudo dnf install git make
 
-Retrieve the code:
-
-.. code-block:: bash
-
-    $ git clone https://github.com/eduvpn/python-eduvpn-client.git
-    $ cd python-eduvpn-client
-
-
 For Debian or Ubuntu we made a make target to install the required debian packages:
 
-.. code-block:: bash
+.. code-block:: console
 
     $ sudo make deb
 
 For fedora we did the same:
 
-.. code-block:: bash
+.. code-block:: console
 
     $ sudo make dnf
 
 Pip
 ---
 
-Please follow the instructions in section 'Install the dependencies' first.
-
 You can install the client API from pypi:
 
-.. code-block:: bash
+.. code-block:: console
 
-    $ pip install python-eduvpn
-
+    $ pip install "python-eduvpn[gui]"
 
 Or, if you want to try out the bleeding edge development version:
 
-.. code-block:: bash
+.. code-block:: console
 
     $ pip install git+https://github.com/eduvpn/python-eduvpn-client.git
 
 You can install the dependencies for the user interface:
 
-.. code-block:: bash
-
-    $ pip install -e ".[gui]"
 
 
 Development version
 -------------------
 
-Please follow the instructions in section 'Install the dependencies' first.
+You first need to obtain the code:
+
+.. code-block:: console
+
+    $ git clone https://github.com/eduvpn/python-eduvpn-client.git
+    $ cd python-eduvpn-client
 
 
-Start eduVPN GUI:
+We've made various Makefile targets to quickly get started. For example to start the eduVPN GUI:
 
-.. code-block:: bash
+.. code-block:: console
 
     $ make eduvpn-gui
 
-Start Let's Connect GUI:
+Please have a look in the Makefile to find out the available targets.
 
-.. code-block:: bash
-
-    $ make letsconnect-gui
 
 Issues
 ======
@@ -155,8 +128,10 @@ If you experience any issues you could and should report them at our
 method of installation, eduVPN client version and instructions on how to reproduce the problem. If you have a problem
 enabling your VPN connection please also examine the `journalctl -u NetworkManager` logs.
 
+
 Source code
------------
+===========
+
 
 Development of this project takes place on `github <https://github.com/eduvpn/python-eduvpn-client>`_.  You
 can find the source code and all releases there.
@@ -166,4 +141,4 @@ Contributing
 
 Contributions are more than welcome! If you experience any problems let us know in the bug tracker. We accept patches
 in the form of github pull requests. Please make sure your code works with python3 and is pep8 compatible.
-Also make sure the test suite actually passes all tests. 
+Also make sure the test suite actually passes all tests. Translations are also welcome!

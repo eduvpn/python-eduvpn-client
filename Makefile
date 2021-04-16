@@ -2,7 +2,7 @@
 #       install the client.
 #
 
-.PHONY: all dockers
+.PHONY: all dockers doc
 
 VENV=./venv
 
