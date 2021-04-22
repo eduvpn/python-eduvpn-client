@@ -79,6 +79,8 @@ def list_servers(uri: str) -> List[Dict[str, Any]]:
 
 
 def get_full_info(base_uri: str) -> Dict[str, Any]:
+    if not base_uri.endswith('/'):
+        base_uri += '/'
     uri = base_uri + 'info.json'
     return request(uri)['api']['http://eduvpn.org/api#2']
 
