@@ -83,6 +83,15 @@ def make_verifiers() -> List[VerifyKey]:
     return [VerifyKey(b64decode(k)[10:]) for k in VERIFY_KEYS]
 
 
+def verifier_to_str(verifier: VerifyKey) -> str:
+    try:
+        return str(verifier)
+    except AttributeError:
+        # Workaround for a bug in older versions of NaCL
+        # https://github.com/pyca/pynacl/issues/205
+        return str(verifier.__bytes__())
+
+
 def validate(signature: str, content: bytes) -> bytes:
     decoded = b64decode(signature)[10:]
     verifiers = make_verifiers()
@@ -91,10 +100,10 @@ def validate(signature: str, content: bytes) -> bytes:
     for f in verifiers:
         try:
             message = f.verify(smessage=content, signature=decoded)
-            logger.debug(f"Used signature {f}")
+            logger.debug(f"Used signature {verifier_to_str(f)}")
             return message
         except BadSignatureError:
-            logger.debug(f"Skipping signature {f}")
+            logger.debug(f"Skipping signature {verifier_to_str(f)}")
     raise BadSignatureError
 
 
