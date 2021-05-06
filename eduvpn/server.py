@@ -1,5 +1,6 @@
 from typing import Union, Optional, Iterable, List, Dict
 import os
+from urllib.parse import quote_plus
 from eduvpn import remote
 from eduvpn import storage
 from eduvpn.i18n import extract_translation, retrieve_country_name
@@ -45,6 +46,9 @@ class InstituteAccessServer:
     def oauth_login_url(self):
         return self.base_url
 
+    def authentication_url(self, oauth_url: str) -> str:
+        return oauth_url
+
 
 class SecureInternetServer:
     """
@@ -85,6 +89,17 @@ class SecureInternetServer:
     @property
     def oauth_login_url(self):
         return self.base_url
+
+    def authentication_url(
+        self,
+        organisation: 'OrganisationServer',
+        oauth_url: str,
+    ) -> str:
+        if self.authentication_url_template is None:
+            return oauth_url
+        return (self.authentication_url_template
+                .replace('@ORG_ID@', quote_plus(organisation.org_id))
+                .replace('@RETURN_TO@', quote_plus(oauth_url)))
 
 
 class OrganisationServer:
@@ -144,6 +159,9 @@ class CustomServer:
     def oauth_login_url(self):
         return custom_server_oauth_url(self.address)
 
+    def authentication_url(self, oauth_url: str) -> str:
+        return oauth_url
+
 
 class ServerInfo:
     def __init__(self, api_base_uri, token_endpoint, auth_endpoint):
@@ -199,6 +217,9 @@ class SecureInternetLocation:
     def oauth_login_url(self):
         assert self.server.oauth_login_url == self.location.oauth_login_url
         return self.server.oauth_login_url
+
+    def authentication_url(self, oauth_url: str) -> str:
+        return self.location.authentication_url(self.server, oauth_url)
 
 
 # typing aliases
