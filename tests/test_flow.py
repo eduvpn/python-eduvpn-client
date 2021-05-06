@@ -64,16 +64,27 @@ class FlowTests(StateTestCaseMixin, TestCase):
         server = app.interface_state.results[0]
 
         # perform the oauth login
-        with patch('eduvpn.oauth2.get_oauth_at_port') as oauth_func:
-            oauth_session = TestOAuthSession()
+        with patch('eduvpn.oauth2.run_challenge_in_background') as oauth_func:
+            with patch('webbrowser.open') as webbrowser_open:
+                url = 'test-url'
+                webserver = object()
+                callback = None
 
-            def oauth_login(*args, **kwargs):
-                sleep(.01)
-                return oauth_session
+                def oauth_challenge(token_endpoint, auth_endpoint, cb):
+                    nonlocal callback
+                    callback = cb
+                    return webserver, url
 
-            oauth_func.side_effect = oauth_login
-            app.interface_transition('connect_to_server', server)
-            self.assertReachesInterfaceState(app, interface_state.ChooseProfile)
+                oauth_func.side_effect = oauth_challenge
+                app.interface_transition('connect_to_server', server)
+                self.assertReachesInterfaceState(app, interface_state.OAuthSetup)
+                self.assertIs(app.interface_state.oauth_web_server, webserver)
+                webbrowser_open.assert_called_once_with(url)
+
+        self.assertIsNotNone(callback)
+        oauth_session = TestOAuthSession()
+        callback(oauth_session)
+        self.assertReachesInterfaceState(app, interface_state.ChooseProfile)
 
         self.assertEqual(
             list(map(str, app.interface_state.profiles)),
