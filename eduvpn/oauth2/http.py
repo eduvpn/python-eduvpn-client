@@ -118,4 +118,3 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write(build_response_page())
-
