@@ -11,14 +11,14 @@ class TestCli(TestCase):
     @patch('eduvpn.actions.create_keypair')
     @patch('eduvpn.actions.get_config')
     @patch('eduvpn.actions.list_profiles')
-    @patch('eduvpn.actions.get_oauth')
+    @patch('eduvpn.actions.oauth2.run_challenge')
     @patch('eduvpn.actions.get_info')
     @patch('eduvpn.actions.get_client')
     def test_start(
             self,
             get_client: MagicMock,
             get_info: MagicMock,
-            get_oauth: MagicMock,
+            run_challenge: MagicMock,
             list_profiles: MagicMock,
             get_config: MagicMock,
             create_keypair: MagicMock,
