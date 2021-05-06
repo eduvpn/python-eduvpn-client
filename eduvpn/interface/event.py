@@ -1,5 +1,6 @@
 from typing import Optional
 import logging
+import webbrowser
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2.rfc6749.errors import (
     InvalidGrantError as InvalidOauthGrantError)
@@ -8,7 +9,7 @@ from .. import nm
 from .. import actions
 from .. import remote
 from .. import crypto
-from ..oauth2 import OAuthWebServer
+from .. import oauth2
 from ..app import Application
 from ..server import (
     AnyServer, ConfiguredServer, InstituteAccessServer,
@@ -38,12 +39,10 @@ def on_setup_oauth(app: Application, server: AnyServer):
             # to do that here.
             pass
 
-    web_server = OAuthWebServer.start(
-        server_info.token_endpoint,
-        server_info.auth_endpoint,
-        oauth_token_callback,
-    )
-    app.interface_transition_threadsafe('ready_for_oauth_setup', web_server)
+    webserver, browser_url = oauth2.run_challenge_in_background(server_info.token_endpoint, server_info.auth_endpoint, oauth_token_callback)
+    logger.info(f"opening browser with {browser_url}")
+    webbrowser.open(browser_url)
+    app.interface_transition_threadsafe('ready_for_oauth_setup', webserver)
 
 
 @run_in_background_thread('oauth-refresh')
