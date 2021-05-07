@@ -1,7 +1,7 @@
 from typing import Optional, Iterable, Callable, List, Dict
 import enum
 from functools import lru_cache
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, Pango
 from eduvpn.server import (
     AnyServer as Server, InstituteAccessServer,
     OrganisationServer, SecureInternetLocation, CustomServer)
@@ -119,6 +119,7 @@ def show_group_tree(builder, group: ServerGroup, show: bool):
 def init_server_search(builder):
     "Initialize the search page components."
     text_cell = Gtk.CellRendererText()
+    text_cell.props.ellipsize = Pango.EllipsizeMode.END
     text_cell.set_property("size-points", 14)
     for group in group_tree_component:
         component_name = group_tree_component[group]
