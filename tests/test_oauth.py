@@ -21,7 +21,7 @@ class TestOauth(TestCase):
         webserver_run.return_value = {'code': ["test"], 'state': ['state']}
         fetch_token.return_value = "token"
 
-        run_challenge(authorization_endpoint="https://test", token_endpoint="https://test", variant=EDUVPN)
+        run_challenge(authorization_endpoint="https://test", token_endpoint="https://test", app_variant=EDUVPN)
 
     def test_stringify_image(self):
         with self.assertRaises(FileNotFoundError):
