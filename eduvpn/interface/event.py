@@ -39,7 +39,8 @@ def on_setup_oauth(app: Application, server: AnyServer):
             # to do that here.
             pass
 
-    webserver, browser_url = oauth2.run_challenge_in_background(server_info.token_endpoint, server_info.auth_endpoint, oauth_token_callback)
+    webserver, browser_url = oauth2.run_challenge_in_background(
+        server_info.token_endpoint, server_info.auth_endpoint, app.variant, oauth_token_callback)
     if isinstance(server, OrganisationServer):
         secure_internet = app.server_db.get_secure_internet_server(server.secure_internet_home)
         browser_url = secure_internet.authentication_url(server, browser_url)

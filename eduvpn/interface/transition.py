@@ -20,6 +20,8 @@ def go_to_main_state(app: Application) -> state.InterfaceState:
     If any servers have been configured, show the main state to select one.
     Otherwise, allow the user to configure a new server.
     """
+    if not app.variant.use_configured_servers:
+        return state.ConfigurePredefinedServer()
     configured_servers = list(app.server_db.all_configured())
     if configured_servers:
         return state.MainState(servers=configured_servers)

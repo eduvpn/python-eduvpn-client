@@ -4,8 +4,8 @@ from functools import partial
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 import requests
-from eduvpn.settings import get_brand
-from eduvpn.utils import run_in_background_thread
+from ..variants import ApplicationVariant
+from ..utils import run_in_background_thread
 
 
 logger = logging.getLogger(__name__)
@@ -53,16 +53,16 @@ def stringify_image(logo: str) -> str:
     return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
 
 
-def build_response_page() -> bytes:
-    logo, brand = get_brand(lets_connect=False)
-    logo = stringify_image(logo)
-    return landing_page.format(logo=logo, brand=brand).encode('utf-8')
+def build_response_page(app_variant) -> bytes:
+    logo = stringify_image(app_variant.icon)
+    return landing_page.format(logo=logo, brand=app_variant.name).encode('utf-8')
 
 
 class OAuthWebServer:
     scheme = 'http'
 
-    def __init__(self):
+    def __init__(self, app_variant: ApplicationVariant):
+        self.app_variant = app_variant
         handler = partial(RequestHandler, oauth_web_server=self)
         self.server = HTTPServer((HTTP_HOST, 0), handler)
         self._completed = False
@@ -117,4 +117,5 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
-        self.wfile.write(build_response_page())
+        page = build_response_page(self._oauth_web_server.app_variant)
+        self.wfile.write(page)

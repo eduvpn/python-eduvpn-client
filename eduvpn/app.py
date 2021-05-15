@@ -2,6 +2,7 @@ import logging
 from .server import ServerDatabase
 from . import nm
 from . import storage
+from .variants import ApplicationVariant
 from .crypto import Validity
 from .state_machine import StateMachine, InvalidStateTransition
 from .utils import run_in_background_thread
@@ -11,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class Application:
-    def __init__(self, make_func_threadsafe):
+    def __init__(self, variant: ApplicationVariant, make_func_threadsafe):
+        self.variant = variant
         self.make_func_threadsafe = make_func_threadsafe
         from .network import InitialNetworkState
         from .interface.state import InitialInterfaceState
@@ -22,7 +24,8 @@ class Application:
 
     def initialize(self):
         self.initialize_network()
-        self.initialize_server_db()
+        if self.variant.use_predefined_servers:
+            self.initialize_server_db()
 
     def initialize_network(self):
         """

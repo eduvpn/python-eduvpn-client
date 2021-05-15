@@ -1,4 +1,3 @@
-from typing import Tuple
 from pathlib import Path
 from eduvpn.utils import get_prefix
 
@@ -36,16 +35,3 @@ LETS_CONNECT_LOGO = LC_IMAGE_PREFIX + "letsconnect.png"
 SERVER_ILLUSTRATION = LC_IMAGE_PREFIX + "server-illustration.png"
 LETS_CONNECT_ICON = prefix + "/share/icons/hicolor/128x128/apps/letsconnect-client.png"
 LETS_CONNECT_NAME = "Let's Connect!"
-
-
-def get_brand(lets_connect: bool) -> Tuple[str, str]:
-    """
-    args:
-        lets_connect: Set true if we are let's connect, otherwise eduVPN
-    returns:
-        logo, name
-    """
-    if lets_connect:
-        return LETS_CONNECT_ICON, LETS_CONNECT_NAME
-    else:
-        return EDUVPN_ICON, EDUVPN_NAME

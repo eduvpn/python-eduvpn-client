@@ -10,6 +10,7 @@ from eduvpn.nm import activate_connection_with_mainloop, get_cert_key, get_clien
 from eduvpn import oauth2
 from eduvpn.remote import get_info, check_certificate, create_keypair, get_config, list_profiles
 from eduvpn.settings import CLIENT_ID
+from eduvpn.variants import EDUVPN
 from eduvpn.storage import get_storage, get_current_metadata, update_token, get_uuid, get_all_metadatas
 
 _logger = getLogger(__file__)
@@ -28,7 +29,7 @@ def refresh():
         token = oauth.refresh_token(token_url=token_endpoint)
     except InvalidGrantError as e:
         _logger.warning(f"token invalid: {e}")
-        oauth = oauth2.run_challenge(token_endpoint, auth_endpoint)
+        oauth = oauth2.run_challenge(token_endpoint, auth_endpoint, EDUVPN)
 
     api_base_uri, token_endpoint, auth_endpoint = get_info(auth_url)
     client = get_client()
@@ -68,13 +69,13 @@ def fetch_token(auth_url: str) -> Tuple[str, OAuth2Session, str, str]:
     else:
         _logger.info("fetching token")
         api_url, token_endpoint, auth_endpoint = get_info(auth_url)
-        oauth = oauth2.run_challenge(token_endpoint, auth_endpoint)
+        oauth = oauth2.run_challenge(token_endpoint, auth_endpoint, EDUVPN)
 
     try:
         oauth.refresh_token(token_url=token_endpoint)
     except InvalidGrantError as e:
         _logger.warning(f"token invalid: {e}")
-        oauth = oauth2.run_challenge(token_endpoint, auth_endpoint)
+        oauth = oauth2.run_challenge(token_endpoint, auth_endpoint, EDUVPN)
 
     return api_url, oauth, token_endpoint, auth_endpoint
 

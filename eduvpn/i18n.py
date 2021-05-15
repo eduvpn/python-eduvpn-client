@@ -4,6 +4,7 @@ import locale
 import gettext
 from typing import Union, Dict
 from eduvpn.settings import COUNTRY, LANGUAGE, COUNTRY_MAP
+from eduvpn.variants import ApplicationVariant
 from eduvpn.utils import get_logger
 
 logger = get_logger(__name__)
@@ -11,11 +12,11 @@ logger = get_logger(__name__)
 country_mapping = None
 
 
-def init(lets_connect: bool, prefix: str):
+def init(app_variant: ApplicationVariant, prefix: str):
     """
     Init locale and gettext, returns text domain
     """
-    domain = 'LetConnect' if lets_connect else 'eduVPN'
+    domain = app_variant.translation_domain
     directory = os.path.join(prefix, 'share/locale')
 
     locale.setlocale(locale.LC_ALL, '')
