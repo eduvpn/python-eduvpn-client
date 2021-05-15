@@ -70,7 +70,7 @@ class FlowTests(StateTestCaseMixin, TestCase):
                 webserver = object()
                 callback = None
 
-                def oauth_challenge(token_endpoint, auth_endpoint, cb):
+                def oauth_challenge(token_endpoint, auth_endpoint, app_variant, cb):
                     nonlocal callback
                     callback = cb
                     return webserver, url
