@@ -43,7 +43,9 @@ def on_setup_oauth(app: Application, server: AnyServer):
         server_info.token_endpoint, server_info.auth_endpoint, app.variant, oauth_token_callback)
     if isinstance(server, OrganisationServer):
         secure_internet = app.server_db.get_secure_internet_server(server.secure_internet_home)
-        browser_url = secure_internet.authentication_url(server, browser_url)
+        if secure_internet:
+            logger.warning(f"missing 'secure internet server' for {server!r}")
+            browser_url = secure_internet.authentication_url(server, browser_url)
     logger.info(f"opening browser with {browser_url}")
     webbrowser.open(browser_url)
     app.interface_transition_threadsafe('ready_for_oauth_setup', webserver)
