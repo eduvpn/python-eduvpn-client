@@ -2,6 +2,7 @@ import webbrowser
 from typing import Optional, Callable, Tuple
 from requests_oauthlib import OAuth2Session
 from ..settings import CLIENT_ID, SCOPE, CODE_CHALLENGE_METHOD
+from ..variants import ApplicationVariant
 from ..crypto import gen_code_verifier, gen_code_challenge
 from .http import OAuthWebServer
 
@@ -39,8 +40,9 @@ def create_challenge(
 def setup_challenge(
     token_endpoint: str,
     authorization_endpoint: str,
+    app_variant: ApplicationVariant,
 ) -> Tuple[OAuthChallenge, OAuthWebServer]:
-    webserver = OAuthWebServer()
+    webserver = OAuthWebServer(app_variant)
     challenge = create_challenge(
         webserver.success_url,
         token_endpoint,
@@ -64,8 +66,10 @@ def perform_challenge(
 def run_challenge(
     token_endpoint: str,
     authorization_endpoint: str,
+    app_variant: ApplicationVariant,
 ) -> Optional[OAuth2Session]:
-    challenge, webserver = setup_challenge(token_endpoint, authorization_endpoint)
+    challenge, webserver = setup_challenge(
+        token_endpoint, authorization_endpoint, app_variant)
     webbrowser.open(challenge.url)
     return perform_challenge(challenge, webserver)
 
@@ -89,9 +93,11 @@ def perform_challenge_in_background(
 def run_challenge_in_background(
     token_endpoint: str,
     authorization_endpoint: str,
+    app_variant: ApplicationVariant,
     callback: Callable[[Optional[OAuth2Session]], None],
 ):
-    challenge, webserver = setup_challenge(token_endpoint, authorization_endpoint)
+    challenge, webserver = setup_challenge(
+        token_endpoint, authorization_endpoint, app_variant)
     perform_challenge_in_background(challenge, webserver, callback)
     return webserver, challenge.url
 

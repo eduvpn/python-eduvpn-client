@@ -1,4 +1,5 @@
 from unittest import mock, TestCase
+from eduvpn.variants import EDUVPN
 from eduvpn.oauth2.challenge import run_challenge, OAuth2Session, OAuthWebServer
 from eduvpn.oauth2.http import stringify_image
 
@@ -20,7 +21,7 @@ class TestOauth(TestCase):
         webserver_run.return_value = {'code': ["test"], 'state': ['state']}
         fetch_token.return_value = "token"
 
-        run_challenge(authorization_endpoint="https://test", token_endpoint="https://test")
+        run_challenge(authorization_endpoint="https://test", token_endpoint="https://test", app_variant=EDUVPN)
 
     def test_stringify_image(self):
         with self.assertRaises(FileNotFoundError):

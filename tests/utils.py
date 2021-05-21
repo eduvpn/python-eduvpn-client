@@ -2,6 +2,7 @@ from shutil import rmtree
 import unittest
 from eduvpn import settings
 import eduvpn.nm
+from eduvpn.variants import EDUVPN
 from eduvpn.app import Application
 
 
@@ -10,7 +11,8 @@ def remove_existing_config():
 
 
 def create_test_app() -> Application:
-    app = Application(make_func_threadsafe=lambda x: x)
+    variant = EDUVPN
+    app = Application(variant, make_func_threadsafe=lambda x: x)
     app.initialize()
     return app
 

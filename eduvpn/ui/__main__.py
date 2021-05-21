@@ -9,6 +9,7 @@ import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 from gi.repository import Gtk
 from eduvpn import __version__
+from eduvpn.variants import EDUVPN, LETS_CONNECT
 
 logger = logging.getLogger(__name__)
 log_format = format_ = (
@@ -54,7 +55,7 @@ def signal_handler(*_, **__):
     exit(0)
 
 
-def main_loop(args=None, lets_connect=False):
+def main_loop(args=None, app_variant=EDUVPN):
     if args is None:
         args = argv[1:]
     loglevel = parse_args(args)
@@ -70,7 +71,7 @@ def main_loop(args=None, lets_connect=False):
         # import this later so the logging is properly configured
         from eduvpn.ui.ui import EduVpnGui
 
-        edu_vpn_gui = EduVpnGui(lets_connect)
+        edu_vpn_gui = EduVpnGui(app_variant)
         edu_vpn_gui.run()
     except Exception as e:
         fatal_reason = f"Caught exception: {e}"
@@ -87,11 +88,11 @@ def main_loop(args=None, lets_connect=False):
 
 
 def eduvpn(args=None):
-    main_loop(args)
+    main_loop(args, app_variant=EDUVPN)
 
 
 def letsconnect(args=None):
-    main_loop(args, lets_connect=True)
+    main_loop(args, app_variant=LETS_CONNECT)
 
 
 if __name__ == '__main__':

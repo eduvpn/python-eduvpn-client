@@ -123,6 +123,7 @@ def connect(app: Application) -> NetworkState:
     Estabilish a connection to the server.
     """
     client = nm.get_client()
+    assert app.current_network_uuid is not None
     nm.activate_connection(
         client,
         app.current_network_uuid,
@@ -139,6 +140,7 @@ def disconnect(app: Application, *, update_state=True) -> NetworkState:
     callback = None
     if update_state:
         callback = partial(on_any_update_callback, app)
+    assert app.current_network_uuid is not None
     nm.deactivate_connection(
         client,
         app.current_network_uuid,
