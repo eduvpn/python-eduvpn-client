@@ -26,7 +26,6 @@ LC_IMAGE_PREFIX = prefix + "/share/letsconnect/images/"
 # format: base64(<signature_algorithm> || <key_id> || <public_key>)
 VERIFY_KEYS = [
     "RWRtBSX1alxyGX+Xn3LuZnWUT0w//B6EmTJvgaAxBMYzlQeI+jdrO6KF",
-    "RWQ68Y5/b8DED0TJ41B1LE7yAvkmavZWjDwCBUuC+Z2pP9HaSawzpEDA",
     "RWQKqtqvd0R7rUDp0rWzbtYPA3towPWcLDCl7eY9pBMMI/ohCmrS0WiM"
 ]
 EDUVPN_ICON = prefix + "/share/icons/hicolor/128x128/apps/eduvpn-client.png"
