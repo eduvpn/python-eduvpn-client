@@ -82,7 +82,7 @@ class ConnectTests(StateTestCaseMixin, unittest.TestCase):
             userPass=test_server['password'],
             _form_auth_redirect_to=url,
         ))
-        if 'The credentials you provided were not correct.'in response.text:
+        if 'The credentials you provided were not correct.' in response.text:
             self.fail("invalid credentials for test server")
         self.assertIn('<h1>Approve Application</h1>', response.text)
 
