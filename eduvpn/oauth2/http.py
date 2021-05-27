@@ -3,6 +3,7 @@ from typing import Optional, Callable
 from functools import partial
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
+from gettext import gettext as _
 import requests
 from ..variants import ApplicationVariant
 from ..utils import run_in_background_thread
@@ -21,7 +22,7 @@ landing_page = """
 <html lang=en>
 <head>
 <meta charset=utf-8>
-<title>{brand} - bye</title>
+<title>{brand}</title>
 <style>
 .center {{
     font-family: arial;
@@ -41,7 +42,7 @@ landing_page = """
 
 <div class="center">
 <img src="data:image/png;base64,{logo}" width="150">
-<p>You can now close this window.</p>
+<p>{message}</p>
 </div>
 </body>
 </html>
@@ -55,7 +56,8 @@ def stringify_image(logo: str) -> str:
 
 def build_response_page(app_variant) -> bytes:
     logo = stringify_image(app_variant.icon)
-    return landing_page.format(logo=logo, brand=app_variant.name).encode('utf-8')
+    message = _("You can now close this window.")
+    return landing_page.format(logo=logo, brand=app_variant.name, message=message).encode('utf-8')
 
 
 class OAuthWebServer:
