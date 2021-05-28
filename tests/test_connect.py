@@ -39,6 +39,8 @@ class ConnectTests(StateTestCaseMixin, unittest.TestCase):
         from eduvpn.interface import state as interface_state
         from eduvpn import network as network_state
 
+        if not os.environ[TEST_SERVER_ENV_VAR]:
+            self.fail(f'empty value for {TEST_SERVER_ENV_VAR}')
         test_server = re.match(
             r'(?P<username>.+):(?P<password>.+)@(?P<address>.+)',
             os.environ[TEST_SERVER_ENV_VAR])
