@@ -25,4 +25,4 @@ ADD . /code
 WORKDIR /code
 RUN python3 setup.py install
 RUN apt list --installed
-RUN pytest-3
+CMD pytest-3

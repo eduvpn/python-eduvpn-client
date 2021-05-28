@@ -28,7 +28,5 @@ WORKDIR /code
 
 RUN python3 setup.py sdist
 RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
-RUN rpmbuild -bs eduvpn.spec
-RUN rpmbuild -bb eduvpn.spec
 
-
+CMD rpmbuild -bs eduvpn.spec && rpmbuild -bb eduvpn.spec
