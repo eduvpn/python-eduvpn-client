@@ -8,4 +8,5 @@ include share/eduvpn/images/*
 include share/eduvpn/letsconnect/*
 include share/eduvpn/images/flags/png/*
 include doc/*
+include tests/*
 
