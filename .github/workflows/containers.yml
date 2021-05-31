@@ -27,3 +27,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Build container
         run: docker build . -t ${{ matrix.dist }} -f docker/${{ matrix.dist }}.docker
+      - name: Run container
+        env:
+          TEST_SERVER: ${{ secrets.TEST_SERVER }}
+        run: docker run -e TEST_SERVER=$TEST_SERVER ${{ matrix.dist }}

@@ -15,4 +15,4 @@ ADD . /code
 WORKDIR /code
 RUN mkdir -p /usr/local/lib/python3.6/site-packages/
 RUN python3 setup.py install
-RUN python3 setup.py test
+CMD python3 setup.py test
