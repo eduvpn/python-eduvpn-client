@@ -58,7 +58,7 @@ for dir in glob('share/locale/*/LC_MESSAGES'):
 setup(
     name="eduvpn_client",
     version=__version__,
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     data_files=data_files,
     install_requires=install_requires,
     extras_require=extras_require,
