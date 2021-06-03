@@ -16,8 +16,8 @@ _metadata_path = CONFIG_PREFIX / "metadata.json"
 
 
 class ConnectionType(str, Enum):
-    INSTITUTE = "INSTITUTE",
-    SECURE = "SECURE",
+    INSTITUTE = "INSTITUTE"
+    SECURE = "SECURE"
     OTHER = "OTHER"
 
 
