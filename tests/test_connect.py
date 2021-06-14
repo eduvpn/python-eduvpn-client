@@ -32,15 +32,13 @@ def get_form_action(html):
 class ConnectTests(StateTestCaseMixin, unittest.TestCase):
     @skip_if_network_manager_not_supported
     @unittest.skipUnless(
-        TEST_SERVER_ENV_VAR in os.environ,
+        os.environ.get(TEST_SERVER_ENV_VAR),
         f"No test server given in environment variable {TEST_SERVER_ENV_VAR}",
     )
     def test_connect(self):
         from eduvpn.interface import state as interface_state
         from eduvpn import network as network_state
 
-        if not os.environ[TEST_SERVER_ENV_VAR]:
-            self.fail(f'empty value for {TEST_SERVER_ENV_VAR}')
         test_server = re.match(
             r'(?P<username>.+):(?P<password>.+)@(?P<address>.+)',
             os.environ[TEST_SERVER_ENV_VAR])
