@@ -13,6 +13,8 @@ RUN docker-apt-install \
     python3-pip \
     python3-venv \
     make
+RUN python3 -m pip install types-pkg_resources types-requests
+
 
 ADD . /code
 WORKDIR /code
