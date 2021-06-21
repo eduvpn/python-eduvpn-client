@@ -22,8 +22,10 @@ def create_test_app():
     variant = EDUVPN
     app = Application(variant, make_func_threadsafe=run_in_main_gtk_thread)
     app.initialize()
-    yield app
-    event_loop.quit()
+    try:
+        yield app
+    finally:
+        event_loop.quit()
 
 
 platform_supports_network_manager = eduvpn.nm.NM is not None
