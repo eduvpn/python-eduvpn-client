@@ -51,7 +51,8 @@ landing_page = """
 
 def stringify_image(logo: str) -> str:
     import base64
-    return base64.b64encode(open(logo, 'rb').read()).decode('ascii')
+    with open(logo, 'rb') as logo_file:
+        return base64.b64encode(logo_file.read()).decode('ascii')
 
 
 def build_response_page(app_variant) -> bytes:
