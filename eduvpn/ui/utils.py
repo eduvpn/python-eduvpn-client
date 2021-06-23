@@ -48,3 +48,16 @@ def link_markup(link: str) -> str:
         return link
     else:
         return f'<a href="{link}">{rest}</a>'
+
+
+def show_error_dialog(builder, name: str, title: str, message: str):
+    dialog = Gtk.MessageDialog(  # type: ignore
+        parent=builder.get_object('applicationWindow'),
+        type=Gtk.MessageType.INFO,  # type: ignore
+        buttons=Gtk.ButtonsType.OK,  # type: ignore
+        title=name,
+        message_format=title)
+    dialog.format_secondary_text(message)  # type: ignore
+    dialog.show()  # type: ignore
+    dialog.run()  # type: ignore
+    dialog.destroy()  # type: ignore
