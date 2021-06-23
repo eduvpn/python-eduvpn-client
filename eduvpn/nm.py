@@ -3,7 +3,6 @@ import time
 from functools import lru_cache
 from pathlib import Path
 from shutil import rmtree
-from sys import modules
 from tempfile import mkdtemp
 from typing import Any, Optional, Tuple, Callable
 
@@ -46,13 +45,14 @@ def nm_available() -> bool:
     """
     check if Network Manager is available
     """
-    if bool('gi.repository.NM' in modules):
-        try:
-            get_client()
-            return True
-        except Exception:
-            ...
-    return False
+    if NM is None:
+        return False
+    try:
+        get_client()
+    except Exception:
+        return True
+    else:
+        return True
 
 
 def get_existing_configuration_uuid() -> Optional[str]:
