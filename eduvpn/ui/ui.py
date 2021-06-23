@@ -24,10 +24,11 @@ from ..app import Application
 from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
 from ..crypto import Validity
+from ..nm import nm_available
 from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
 from ..i18n import init as i18n_init
 from . import search
-from .utils import show_ui_component, link_markup
+from .utils import show_ui_component, link_markup, show_error_dialog
 
 logger = logging.getLogger(__name__)
 
@@ -188,6 +189,13 @@ class EduVpnGui:
         self.show_component('applicationWindow', True)
         self.app.connect_state_transition_callbacks(self)
         self.app.initialize()
+
+        if not nm_available():
+            show_error_dialog(
+                self.builder,
+                name=_("Error"),
+                title=_("NetworkManager not available"),
+                message=_("The application will not be able to configure the network."))
 
     # ui functions
 
