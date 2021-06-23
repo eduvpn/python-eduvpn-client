@@ -30,6 +30,25 @@ Flow schema
    :alt: The application flow
 
 
+Running the tests
+-----------------
+
+To run the automated tests,
+use the following command from the root of the project.
+
+.. code-block:: console
+
+    $ pytest
+
+To include integration tests against an actual server,
+you'll need to provide the address and login credentials
+in an environment variable.
+
+.. code-block:: console
+
+    $ TEST_SERVER=username:password@example.com pytest
+
+
 How to make a release
 ---------------------
 

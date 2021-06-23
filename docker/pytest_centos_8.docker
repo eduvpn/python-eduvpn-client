@@ -21,4 +21,4 @@ WORKDIR /code
 
 RUN pip3 install --upgrade setuptools pip
 RUN pip3 install .
-RUN pytest-3 -vv
+CMD pytest-3 -vv
