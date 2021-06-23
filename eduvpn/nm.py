@@ -50,7 +50,7 @@ def nm_available() -> bool:
     try:
         get_client()
     except Exception:
-        return True
+        return False
     else:
         return True
 
