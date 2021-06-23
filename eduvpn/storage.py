@@ -65,6 +65,23 @@ def _set_setting(what: str, value: str):
 Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[datetime], Optional[datetime]]
 
 
+def serialize_datetime(dt: datetime) -> str:
+    return dt.isoformat()
+
+
+def deserialize_datetime(value: str) -> datetime:
+    if hasattr(datetime, 'fromisoformat'):
+        return datetime.fromisoformat(value)
+    else:
+        # Python < 3.7.
+        format = '%Y-%m-%dT%H:%M:%S'
+        if '.' in value:
+            format += '.%f'
+        if '+' in value or value.count('-') > 2:
+            format += '%z'
+        return datetime.strptime(value, format)
+
+
 def get_current_metadata(auth_url: str) -> Optional[Metadata]:
     """
     Return the metadata for current connection from storage.
@@ -74,10 +91,10 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
         v = storage[auth_url]
         created = v.get('certificate_created')
         if created is not None:
-            created = datetime.fromisoformat(created)
+            created = deserialize_datetime(created)
         expiry = v.get('certificate_expiry')
         if expiry is not None:
-            expiry = datetime.fromisoformat(expiry)
+            expiry = deserialize_datetime(expiry)
         return (
             OAuth2Token(v['token']),
             v['token_endpoint'],
@@ -116,11 +133,11 @@ def set_metadata(
     if certificate_created is None:
         created_str = None
     else:
-        created_str = certificate_created.isoformat()
+        created_str = serialize_datetime(certificate_created)
     if certificate_expiry is None:
         expiry_str = None
     else:
-        expiry_str = certificate_expiry.isoformat()
+        expiry_str = serialize_datetime(certificate_expiry)
     storage[auth_url] = {
         'token': token,
         'api_base_uri': auth_url,
