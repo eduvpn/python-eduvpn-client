@@ -175,7 +175,7 @@ class Profile:
                  profile_id: str,
                  display_name: str,
                  two_factor: bool,
-                 default_gateway: bool):
+                 default_gateway: Optional[bool] = None):
         self.profile_id = profile_id
         self.display_name = display_name
         self.two_factor = two_factor

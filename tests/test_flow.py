@@ -30,13 +30,11 @@ class TestOAuthResponse:
                     profile_id='t1',
                     display_name=PROFILE_NAME_1,
                     two_factor=False,
-                    default_gateway=True,
                 ),
                 dict(
                     profile_id='t2',
                     display_name=PROFILE_NAME_2,
                     two_factor=False,
-                    default_gateway=True,
                 ),
             ]},
         )
