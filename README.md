@@ -16,6 +16,6 @@ contains detailed installation instructions.
 To directly install eduVPN from a checkout of this repository run:
 
 ```bash
-$ python3 -m venv
+$ python3 -m venv venv
 $ venv/bin/pip install ".[gui]"
 ```
