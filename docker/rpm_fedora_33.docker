@@ -19,7 +19,8 @@ RUN dnf install -y	\
     python3-cryptography \
     python3-pycodestyle \
     python3-mypy \
-    NetworkManager-libnm
+    NetworkManager-libnm \
+    desktop-file-utils
 
 RUN rpmdev-setuptree
 

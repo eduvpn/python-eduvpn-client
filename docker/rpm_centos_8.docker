@@ -20,7 +20,8 @@ RUN yum install -y	\
     python3-dateutil \
     python3-cryptography \
     python3-pycodestyle \
-    NetworkManager-libnm
+    NetworkManager-libnm \
+    desktop-file-utils
 
 
 
