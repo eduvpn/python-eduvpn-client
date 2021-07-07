@@ -1,4 +1,4 @@
-from typing import Union, Optional, List
+from typing import Optional, List, Callable
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
@@ -7,9 +7,11 @@ from ..app import Application
 from ..server import (
     AnyServer, PredefinedServer, ConfiguredServer,
     SecureInternetServer, OrganisationServer, CustomServer, Profile)
-from .error import translate_error
 from . import event
 from . import transition
+
+
+Transition = Callable[[Application], 'InterfaceState']
 
 
 class InterfaceState(BaseState):
@@ -27,10 +29,10 @@ class InterfaceState(BaseState):
 
     def encountered_exception(self,
                               app: Application,
-                              message: Union[str, Exception],
-                              next_state: Optional['InterfaceState'] = None,
+                              message: str,
+                              next_transition: Optional[Transition] = None,
                               ) -> 'InterfaceState':
-        return ErrorState(message, next_state)
+        return ErrorState(message, next_transition)
 
 
 class InitialInterfaceState(InterfaceState):
@@ -388,14 +390,13 @@ class ErrorState(InterfaceState):
     An error has occured.
     """
 
-    def __init__(self, message: Union[str, Exception], next_state: Optional[InterfaceState] = None):
-        if isinstance(message, Exception):
-            message = translate_error(message)
+    def __init__(self,
+                 message: str,
+                 next_transition: Optional[Transition] = None,
+                 ):
         self.message = message
-        self.next_state = next_state
+        self.next_transition = next_transition
 
     def acknowledge_error(self, app: Application) -> InterfaceState:
-        if self.next_state is None:
-            return transition.go_to_main_state(app)
-        else:
-            return self.next_state
+        assert self.next_transition is not None
+        return self.next_transition(app)

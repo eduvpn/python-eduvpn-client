@@ -543,10 +543,11 @@ class EduVpnGui:
         self.show_component('messageText', True)
         self.set_text('messageLabel', _("Error"))
         self.set_text('messageText', new_state.message)
-        self.show_component('messageButton', True)
-        self.builder.get_object('messageButton').set_label(_("Ok"))
-        button = self.builder.get_object('messageButton')
-        button.connect("clicked", self.on_acknowledge_error)
+        if new_state.next_transition is not None:
+            self.show_component('messageButton', True)
+            self.builder.get_object('messageButton').set_label(_("Ok"))
+            button = self.builder.get_object('messageButton')
+            button.connect("clicked", self.on_acknowledge_error)
 
     @transition_edge_callback(EXIT, interface_state.ErrorState)
     def exit_ErrorState(self, old_state, new_state):
