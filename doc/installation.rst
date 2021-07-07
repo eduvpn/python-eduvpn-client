@@ -88,7 +88,7 @@ You can install the client API from pypi:
 
 .. code-block:: console
 
-    $ pip install "python-eduvpn[gui]"
+    $ pip install "eduvpn-client[gui]"
 
 Or, if you want to try out the bleeding edge development version:
 
