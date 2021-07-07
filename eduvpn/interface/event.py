@@ -15,6 +15,7 @@ from ..server import (
     AnyServer, ConfiguredServer, InstituteAccessServer,
     SecureInternetServer, OrganisationServer, CustomServer,
     SecureInternetLocation, Profile)
+from .error import get_error_message
 from ..utils import run_in_background_thread
 
 
@@ -184,7 +185,9 @@ def on_chosen_profile(app: Application,
 
 
 def enter_error_state(app: Application, error: Exception):
-    app.interface_transition('encountered_exception', error)
+    message = get_error_message(error)
+    from .transition import go_to_main_state
+    app.interface_transition('encountered_exception', message, go_to_main_state)
 
 
 def enter_error_state_threadsafe(app: Application, error: Exception):
