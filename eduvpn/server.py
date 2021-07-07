@@ -1,6 +1,7 @@
 from typing import Union, Optional, Iterable, List, Dict
 import os
 from urllib.parse import quote_plus
+import nacl.exceptions
 from eduvpn import remote
 from eduvpn import storage
 from eduvpn.i18n import extract_translation, retrieve_country_name
@@ -248,6 +249,11 @@ def is_search_match(server: PredefinedServer, query: str) -> bool:
         return False
 
 
+class ServerSignatureError(Exception):
+    def __init__(self, uri: str):
+        self.uri = uri
+
+
 class ServerDatabase:
     def __init__(self):
         # TODO load the servers from a cache
@@ -262,8 +268,14 @@ class ServerDatabase:
         This method must be thread-safe.
         """
         new_servers = []
-        server_list = remote.list_servers(SERVER_URI)
-        organisation_list = remote.list_organisations(ORGANISATION_URI)
+        try:
+            server_list = remote.list_servers(SERVER_URI)
+        except nacl.exceptions.BadSignatureError:
+            raise ServerSignatureError(SERVER_URI)
+        try:
+            organisation_list = remote.list_organisations(ORGANISATION_URI)
+        except nacl.exceptions.BadSignatureError:
+            raise ServerSignatureError(ORGANISATION_URI)
         for server_data in server_list:
             server_type = server_data.pop('server_type')
             if server_type == 'institute_access':

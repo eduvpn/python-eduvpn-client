@@ -5,6 +5,8 @@ from pathlib import Path
 from sys import exit
 from typing import List, Dict, Optional, Tuple, Any
 
+import nacl.exceptions
+
 from eduvpn.i18n import extract_translation
 from eduvpn.nm import nm_available, save_connection_with_mainloop
 from eduvpn.remote import list_servers, list_organisations
@@ -175,7 +177,11 @@ def interactive(args: Namespace) -> Tuple[str, str, Optional[str], Optional[Serv
     if isinstance(search_term, str) and search_term.lower().startswith('https://'):
         return search_term, search_term, None, None
 
-    servers = list_servers(SERVER_URI)
+    try:
+        servers = list_servers(SERVER_URI)
+    except nacl.exceptions.BadSignatureError:
+        print(f"Received a bad signature from server {SERVER_URI}")
+        exit(1)
     secure_internets = [s for s in servers if s['server_type'] == 'secure_internet']
     institute_access = [s for s in servers if s['server_type'] == 'institute_access']
     orgs = list_organisations(ORGANISATION_URI)
