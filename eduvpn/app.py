@@ -1,5 +1,6 @@
 import logging
-from .server import ServerDatabase
+from gettext import gettext as _
+from .server import ServerDatabase, ServerSignatureError
 from . import nm
 from . import storage
 from .variants import ApplicationVariant
@@ -77,8 +78,14 @@ class Application:
         """
         Load the lists of organisations and servers.
         """
-        self.server_db.update()
-        self.interface_transition_threadsafe('server_db_finished_loading')
+        try:
+            self.server_db.update()
+        except ServerSignatureError as e:
+            self.interface_transition_threadsafe(
+                'encountered_exception',
+                _("Received a bad signature from server {server}").format(server=e.uri))
+        else:
+            self.interface_transition_threadsafe('server_db_finished_loading')
 
     @property
     def network_state(self):
