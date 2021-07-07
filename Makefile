@@ -37,6 +37,7 @@ deb:
 	apt install -y \
 		gir1.2-gtk-3.0 \
 		gir1.2-notify-0.7 \
+		gir1.2-nm-1.0 \
 		python3-gi \
 		python3-requests-oauthlib \
 		python3-cryptography \
