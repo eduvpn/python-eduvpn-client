@@ -96,8 +96,11 @@ Or, if you want to try out the bleeding edge development version:
 
     $ pip install git+https://github.com/eduvpn/python-eduvpn-client.git
 
-You can install the dependencies for the user interface:
+.. note::
 
+    This requires the installation of system packages
+    using your distributions package manager.
+    Consult the `Makefile`_ for the complete list.
 
 
 Development version
@@ -117,7 +120,7 @@ We've made various Makefile targets to quickly get started. For example to start
 
     $ make eduvpn-gui
 
-Please have a look in the Makefile to find out the available targets.
+Please have a look in the `Makefile`_ to find out the available targets.
 
 
 Issues
@@ -140,5 +143,8 @@ Contributing
 ============
 
 Contributions are more than welcome! If you experience any problems let us know in the bug tracker. We accept patches
-in the form of github pull requests. Please make sure your code works with python3 and is pep8 compatible.
+in the form of github pull requests. Please make sure your code works with python3 and is pycodestyle (formerly pep8) compatible.
 Also make sure the test suite actually passes all tests. Translations are also welcome!
+
+
+.. _Makefile: https://github.com/eduvpn/python-eduvpn-client/blob/master/Makefile
