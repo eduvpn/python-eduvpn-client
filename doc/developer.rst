@@ -4,22 +4,18 @@ Developer notes
 Notes about code
 ----------------
 
-Use ``eduvpn.util.thread_helper(lambda: func(arg='arg')`` to schedule long running actions from the UI (main) thread.
+Use the decorator ``eduvpn.utils.run_in_background_thread`` to schedule long running action
+in the background to avoid blocking the main thread.
 
-
-Use ``GLib.idle_add(lambda: func(arg='arg')`` to schedule UI updates back on the main thread.
-
-Never call GTK functions directly from the background thread.
+Never call GTK functions directly from a background thread,
+use ``eduvpn.utils.run_in_main_gtk_thread`` to decorate functions
+that must run on the main thread (eg. UI updates).
 
 
 ``eduvpn.actions`` are the entrypoints to the application and are triggered from the main menu or a VPN status
 change.
 
-``eduvpn.steps`` contains all the various steps in the application flow.
-
 ``eduvpn.remote`` contains all remote requests.
-
-```eduvpn.other_nm`` is a fork of the python NetworkManager wrapper.
 
 
 Flow schema
