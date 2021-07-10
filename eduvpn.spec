@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        2.0.0
+Version:        2.1.0
 Release:        1%{?dist}
 Summary:        %{sum}
 
@@ -24,7 +24,7 @@ BuildRequires: python3-devel
 BuildRequires: python3-wheel
 BuildRequires: python3-pip
 BuildRequires: python3-pycodestyle
-
+BuildRequires: desktop-file-utils
 
 %description
 The eduVPN client.
@@ -74,7 +74,7 @@ Let's Connect! desktop client
 
 %install
 %py3_install
-
+desktop-file-install %{buildroot}/%{_datadir}/applications/eduvpn-client.desktop
 
 %check
 %{__python3} setup.py test

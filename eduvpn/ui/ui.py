@@ -27,6 +27,7 @@ from ..crypto import Validity
 from ..nm import nm_available
 from ..utils import get_prefix, run_in_main_gtk_thread, run_periodically
 from ..i18n import init as i18n_init
+from .. import notify
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 
@@ -186,6 +187,7 @@ class EduVpnGui:
 
     def run(self):
         logger.info("starting ui")
+        notify.initialize(self.app.variant)
         self.show_component('applicationWindow', True)
         self.app.connect_state_transition_callbacks(self)
         self.app.initialize()
@@ -235,6 +237,16 @@ class EduVpnGui:
     def default_network_transition_callback(self, old_state, new_state):
         if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
             self.update_connection_status()
+
+    @transition_edge_callback(ENTER, network_state.CertificateExpiredState)
+    def enter_CertificateExpiredState(self, old_state, new_state):
+        notification = notify.Notification(self.app.variant)
+        notification.show(
+            title=_("Your session has expired"),
+            message=_(
+                "Renew the session "
+                "to continue using this connection."),
+        )
 
     def update_connection_server(self):
         server = self.app.interface_state.server

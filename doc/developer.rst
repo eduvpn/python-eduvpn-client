@@ -4,22 +4,18 @@ Developer notes
 Notes about code
 ----------------
 
-Use ``eduvpn.util.thread_helper(lambda: func(arg='arg')`` to schedule long running actions from the UI (main) thread.
+Use the decorator ``eduvpn.utils.run_in_background_thread`` to schedule long running action
+in the background to avoid blocking the main thread.
 
-
-Use ``GLib.idle_add(lambda: func(arg='arg')`` to schedule UI updates back on the main thread.
-
-Never call GTK functions directly from the background thread.
+Never call GTK functions directly from a background thread,
+use ``eduvpn.utils.run_in_main_gtk_thread`` to decorate functions
+that must run on the main thread (eg. UI updates).
 
 
 ``eduvpn.actions`` are the entrypoints to the application and are triggered from the main menu or a VPN status
 change.
 
-``eduvpn.steps`` contains all the various steps in the application flow.
-
 ``eduvpn.remote`` contains all remote requests.
-
-```eduvpn.other_nm`` is a fork of the python NetworkManager wrapper.
 
 
 Flow schema
@@ -52,6 +48,9 @@ in an environment variable.
 How to make a release
 ---------------------
 
+Prepare the code
+^^^^^^^^^^^^^^^^
+
 * Determine version number (for example 1.0.2)
 
 * Compose a list of changes (check issue tracker)
@@ -68,23 +67,42 @@ How to make a release
 
 * Check if github actions builds.
 
-* Do a manual wheel upload using `twine <https://github.com/pypa/twine>`_:
+Upload to pypi
+^^^^^^^^^^^^^^
+
+do a manual wheel upload using `twine <https://github.com/pypa/twine>`_:
 
 .. code-block:: console
 
     $ rm dist/*
     $ python setup.py bdist_wheel sdist
     $ twine upload dist/*
+    
+Build on copr for RPMs
+^^^^^^^^^^^^^^^^^^^^^^
 
-* Build packages to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_:
+Build packages to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_:
+
+  * on copr -> builds -> new build -> scm.
+  * for clone URL field: https://github.com/eduvpn/python-eduvpn-client
+  * Committish: the tag / version of the build
+  * for spec file use: eduvpn.spec
+  * Build for all supported/configured platforms
+
+You can also trigger this build from the cli. First fetch your token from the `COPR api <https://copr.fedorainfracloud.org/api/>`_ page and dump this in `~/.config/copr`. Next, you install the copr cli and trigger the build with:
 
 .. code-block:: console
 
-    on copr -> builds -> new build -> scm.
-    clone URL: https://github.com/eduvpn/python-eduvpn-client
-    Committish: branch or tag
-    spec file: eduvpn.spec
-    Build for all supported/configured platforms
-    at the moment they are centos8, fedora 33 and fedora 34.
+   $ venv/bin/pip install copr-cli
+   $ copr-cli buildscm \
+      --clone-url https://github.com/edupvn/python-eduvpn-client \
+      --commit <version> \
+      --spec eduvpn.spec
+      @eduvpn/eduvpn-client 
 
+where `<version>` is the tag/version of the release.
+
+Build Debian packages
+^^^^^^^^^^^^^^^^^^^^^
+   
 * Update the debian package using the `eduVPN Debian meta files <https://github.com/eduvpn-debian/packaging>`_.

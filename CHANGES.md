@@ -1,3 +1,31 @@
+2.1
+===
+
+Bugfixes
+--------
+
+* #386  Connexion still load details server  
+* #384  Can't select my Organisation a second time
+* #380  My VPN stopped working - unable to use eduvpn to re-setup network manager 
+* #367  long institute/secure internet expand the scroll list vertically too much 
+* #362  Bug in NaCL VerifyKey.__unicode__ 
+* #360  command line config not working in GUI mode
+* #310  oauthlib deprication warning on Ubuntu 20.04 
+* #370  GTK app icon not set (only used in some edge cases)
+* #358  eduVPN 2.0 package should depend on gir1.2-nm-1.0 
+
+Enhancements
+------------
+
+* #340  Show notifications for session expiry   
+* #332  Provide test coverage     
+* #331  Create the "Let's Connect" variant of the app   
+* #241  New UI: show an early warning when there is no NetworkManager active 
+* #236  Implement "Skip WAYF"
+* #231  Add internationalisation 
+* #257  Improve documentation
+
+
 2.0
 ===
 
