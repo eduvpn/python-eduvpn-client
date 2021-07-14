@@ -12,10 +12,10 @@ class TestNm(TestCase):
         nm_available()
 
     def test_import_ovpn(self):
-        simple_connection = import_ovpn(mock_config, mock_key, mock_cert)
+        import_ovpn(mock_config, mock_key, mock_cert)
 
     def test_get_mainloop(self):
-        main_loop = get_mainloop()
+        get_mainloop()
 
     def test_get_add_connection(self):
         client = get_client()
@@ -23,11 +23,11 @@ class TestNm(TestCase):
         add_connection(client, simple_connection)
 
     def test_get_uuid(self):
-        uuid = get_uuid()
+        get_uuid()
 
     def test_activate_connection(self):
-        client = get_client()
-        uuid = get_uuid()
+        get_client()
+        get_uuid()
         # activate_connection(client, uuid)
         # get_cert_key(client, uuid)
         # connection_status(client, uuid)
