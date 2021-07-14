@@ -1,6 +1,6 @@
 from typing import (
     TypeVar, Generic, Any, Union, Optional, Callable,
-    Type, Iterable, Tuple, Dict, Set)
+    Type, Tuple, List, Dict, Set, Generator)
 import enum
 
 
@@ -19,15 +19,21 @@ class TransitionEdge(enum.Enum):
 ENTER = TransitionEdge.enter
 EXIT = TransitionEdge.exit
 
+ANY_TRANSITION = object()
+LEVEL_CONTEXT = object()
+
 
 # typing aliases
 State = TypeVar('State')
 StateType = Type[State]
-Callback = Callable[[State, State], None]
-StateTargets = Union[StateType, Iterable[StateType]]
-CallbackRegistry = Dict[
+StateTargets = Union[StateType, Tuple[StateType, ...]]
+TransitionCallback = Callable[[State, State], None]
+LevelContext = Generator[None, None, None]
+LevelCallback = Callable[[State], LevelContext]
+TransitionCallbackRegistry = Dict[
     Optional[Tuple[StateType, TransitionEdge]],
-    Set[Callback]]
+    Set[TransitionCallback]]
+LevelCallbackRegistry = Dict[StateType, Set[LevelCallback]]
 
 
 TRANSITION_CALLBACK_MARKER = '__transition_callback_for_state'
@@ -42,6 +48,14 @@ def setattr_list_item(obj, attr, item):
     list_attr.append(item)
 
 
+def normalise_state_targets(state_targets: StateTargets) -> Tuple[StateType, ...]:
+    "Normalise state targets argument to tuple."
+    if not isinstance(state_targets, tuple):
+        return (state_targets, )
+    else:
+        return state_targets
+
+
 def transition_callback(state_targets: StateTargets):
     """
     Decorator factory to mark a method as a
@@ -52,15 +66,13 @@ def transition_callback(state_targets: StateTargets):
     Without this, there would be no way to know which
     state machine this callback targets.
     """
-    if not isinstance(state_targets, tuple):
-        # Normalise argument to tuple.
-        state_targets = (state_targets, )  # type: ignore
+    state_targets = normalise_state_targets(state_targets)
 
-    def decorator(func: Callback):
+    def decorator(func: TransitionCallback):
         for state_type in state_targets:
             setattr_list_item(func,
                               TRANSITION_CALLBACK_MARKER,
-                              (None, state_type))
+                              (ANY_TRANSITION, state_type))
         return func
 
     return decorator
@@ -72,15 +84,30 @@ def transition_edge_callback(edge: TransitionEdge,
     Decorator factory to mark a method as a transition callback
     for specific state transition edges.
     """
-    if not isinstance(state_targets, tuple):
-        # Normalise argument to tuple.
-        state_targets = (state_targets, )  # type: ignore
+    state_targets = normalise_state_targets(state_targets)
 
-    def decorator(func: Callback):
+    def decorator(func: TransitionCallback):
         for state_type in state_targets:
             setattr_list_item(func,
                               TRANSITION_CALLBACK_MARKER,
                               (edge, state_type))
+        return func
+
+    return decorator
+
+
+def transition_level_callback(state_targets: StateTargets):
+    """
+    Decorator factory to mark a method as a level callback
+    for specific state contexts.
+    """
+    state_targets = normalise_state_targets(state_targets)
+
+    def decorator(func: LevelCallback):
+        for state_type in state_targets:
+            setattr_list_item(func,
+                              TRANSITION_CALLBACK_MARKER,
+                              (LEVEL_CONTEXT, state_type))
         return func
 
     return decorator
@@ -94,9 +121,9 @@ def _find_transition_callbacks(obj: Any, base_state_type: Type[State]):
         except AttributeError:
             pass
         else:
-            for edge, state_type in registrations:
+            for trigger, state_type in registrations:
                 if issubclass(state_type, base_state_type):
-                    yield callback, edge, state_type
+                    yield callback, trigger, state_type
 
 
 class InvalidStateTransition(Exception):
@@ -111,7 +138,9 @@ class StateMachine(Generic[State]):
 
     def __init__(self, initial_state: State):
         self._state = initial_state
-        self._callbacks: CallbackRegistry = {}
+        self._transition_callbacks: TransitionCallbackRegistry = {}
+        self._level_callbacks: LevelCallbackRegistry = {}
+        self._active_contexts: List[LevelContext] = []
 
     @property
     def state(self) -> State:
@@ -137,26 +166,44 @@ class StateMachine(Generic[State]):
         except AttributeError as e:
             raise InvalidStateTransition(transition) from e
         new_state = transition_func(*args, **kwargs)
+        self._exit_contexts()
         self._call_edge_callbacks(EXIT, old_state, new_state)
         self._state = new_state
         self._call_generic_callbacks(old_state, new_state)
         self._call_edge_callbacks(ENTER, old_state, new_state)
+        self._enter_contexts(new_state)
         return new_state
 
-    def register_generic_callback(self, callback: Callback):
+    def register_generic_callback(self, callback: TransitionCallback):
         """
         Register a callback for all transitions.
         """
-        self._callbacks.setdefault(None, set()).add(callback)
+        self._transition_callbacks.setdefault(None, set()).add(callback)
 
     def register_edge_callback(self,
                                state_type: Type[State],
                                edge: TransitionEdge,
-                               callback: Callback):
+                               callback: TransitionCallback):
         """
         Register a callback for specific transition edges.
         """
-        self._callbacks.setdefault((state_type, edge), set()).add(callback)
+        self._transition_callbacks.setdefault((state_type, edge), set()).add(callback)
+
+    def register_level_callback(self,
+                                state_type: Type[State],
+                                context: LevelCallback):
+        """
+        Register a context function for specific state.
+
+        The function must return a generator that yields once
+        to capture the life of a state.
+        similar to contextlib.contextmanager,
+        The returned generator is executed up to the yield
+        when the state is entered,
+        Then, when the state is exited, the generator is resumed
+        and is required to stop.
+        """
+        self._level_callbacks.setdefault(state_type, set()).add(context)
 
     def connect_object_callbacks(self, obj, base_state_type: Type[State]):
         """
@@ -171,16 +218,21 @@ class StateMachine(Generic[State]):
         will be connected.
         """
         iterator = _find_transition_callbacks(obj, base_state_type)
-        for callback, edge, state_type in iterator:
-            if edge is None:
+        for callback, trigger, state_type in iterator:
+            if trigger is ANY_TRANSITION:
                 # This callback targets all events.
                 self.register_generic_callback(callback)
-            else:
+            elif trigger is LEVEL_CONTEXT:
+                # This callback targets a state context.
+                self.register_level_callback(state_type, callback)
+            elif isinstance(trigger, TransitionEdge):
                 # This callback targets a specific state edge.
-                self.register_edge_callback(state_type, edge, callback)
+                self.register_edge_callback(state_type, trigger, callback)
+            else:
+                raise TypeError(trigger)
 
     def _call_generic_callbacks(self, old_state: State, new_state: State):
-        for callback in self._callbacks.get(None, []):
+        for callback in self._transition_callbacks.get(None, []):
             callback(old_state, new_state)
 
     def _call_edge_callbacks(self,
@@ -188,8 +240,29 @@ class StateMachine(Generic[State]):
                              old_state: State,
                              new_state: State):
         state = new_state if edge is ENTER else old_state
-        for callback in self._callbacks.get((state.__class__, edge), []):
+        for callback in self._transition_callbacks.get((state.__class__, edge), []):
             callback(old_state, new_state)
+
+    def _enter_contexts(self, state: State):
+        for callback in self._level_callbacks.get(state.__class__, []):
+            generator = callback(state)
+            try:
+                next(generator)
+            except StopIteration:
+                # The generator is expected to yield exactly once.
+                raise RuntimeError("generator didn't yield")
+            self._active_contexts.append(generator)
+
+    def _exit_contexts(self):
+        while self._active_contexts:
+            generator = self._active_contexts.pop()
+            try:
+                next(generator)
+            except StopIteration:
+                # The generator is expected to stop after it has yielded once.
+                pass
+            else:
+                raise RuntimeError("generator didn't stop")
 
 
 class BaseState:
