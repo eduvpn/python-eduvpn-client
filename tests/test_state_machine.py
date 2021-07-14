@@ -9,6 +9,7 @@ from unittest.mock import Mock
 
 from eduvpn.state_machine import (
     ENTER, EXIT, StateMachine, transition_callback, transition_edge_callback,
+    transition_level_callback,
 )
 
 
@@ -74,7 +75,49 @@ class StateMachineTests(unittest.TestCase):
         exit_final_callback.assert_not_called()
         other_callback.assert_not_called()
 
-    def test_connect_object_callbacks(self):
+    def test_level_callback(self):
+        class InitialState:
+            def enter_target_state(self):
+                return target_state
+
+        class TargetState:
+            def exit_target_state(self):
+                return final_state
+
+        class FinalState:
+            pass
+
+        class OtherState:
+            pass
+
+        initial_state = InitialState()
+        target_state = TargetState()
+        final_state = FinalState()
+
+        context_state = 'before'
+
+        def level_callback(state):
+            nonlocal context_state
+            self.assertIs(state, target_state)
+            context_state = 'during'
+            yield
+            context_state = 'after'
+
+        other_callback = Mock()
+
+        sm = StateMachine(initial_state)
+        sm.register_level_callback(TargetState, level_callback)
+        sm.register_level_callback(OtherState, other_callback)
+
+        self.assertEqual(context_state, 'before')
+        sm.transition('enter_target_state')
+        self.assertEqual(context_state, 'during')
+        sm.transition('exit_target_state')
+        self.assertEqual(context_state, 'after')
+
+        other_callback.assert_not_called()
+
+    def test_connect_object_transition_callbacks(self):
         class BaseState:
             pass
 
@@ -108,7 +151,7 @@ class StateMachineTests(unittest.TestCase):
                 self.calls.add(('exit_initial', old, new))
 
             @transition_callback(OtherBaseState)
-            def other(self, old, new):
+            def other_base(self, old, new):
                 # This callback targets another state machine.
                 raise AssertionError
 
@@ -120,3 +163,57 @@ class StateMachineTests(unittest.TestCase):
             ('any', initial_state, final_state),
             ('exit_initial', initial_state, final_state),
         })
+
+    def test_connect_object_level_callbacks(self):
+        class BaseState:
+            pass
+
+        class InitialState(BaseState):
+            def enter_target_state(self):
+                return target_state
+
+        class TargetState(BaseState):
+            def exit_target_state(self):
+                return final_state
+
+        class FinalState(BaseState):
+            pass
+
+        class OtherState(BaseState):
+            pass
+
+        class OtherBaseState:
+            pass
+
+        initial_state = InitialState()
+        target_state = TargetState()
+        final_state = FinalState()
+
+        class Connector:
+            def __init__(self):
+                self.context_state = 'before'
+
+            @transition_level_callback(TargetState)
+            def target_context(this, state):
+                self.assertIs(state, target_state)
+                this.context_state = 'during'
+                yield
+                this.context_state = 'after'
+
+            @transition_level_callback(OtherState)
+            def other(self, old, new):
+                raise AssertionError
+
+            @transition_level_callback(OtherBaseState)
+            def other_base(self, old, new):
+                # This callback targets another state machine.
+                raise AssertionError
+
+        connector = Connector()
+        sm = StateMachine(initial_state)
+        sm.connect_object_callbacks(connector, BaseState)
+        self.assertEqual(connector.context_state, 'before')
+        sm.transition('enter_target_state')
+        self.assertEqual(connector.context_state, 'during')
+        sm.transition('exit_target_state')
+        self.assertEqual(connector.context_state, 'after')
