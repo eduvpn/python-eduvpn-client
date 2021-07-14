@@ -1,6 +1,5 @@
 from unittest import TestCase
 from unittest.mock import patch
-from time import sleep
 from .utils import (
     remove_existing_config, create_test_app,
     skip_if_network_manager_not_supported,
