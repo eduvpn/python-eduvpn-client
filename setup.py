@@ -17,6 +17,7 @@ install_requires = [
 tests_require = [
     'pytest',
     'pycodestyle',
+    'pylama',
 ]
 
 mypy_require = [

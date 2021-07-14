@@ -15,6 +15,7 @@ jobs:
           - mypy
           - doc
           - pep8
+          - pylama
           - pytest_centos_8
           - pytest_debian_buster
           - pytest_fedora_33
