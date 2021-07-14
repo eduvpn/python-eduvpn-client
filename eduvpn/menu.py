@@ -218,7 +218,7 @@ def match_term(
         if not exact:
             if search_term.lower() in extract_translation(i['display_name']).lower():
                 institute_matches.append((x, i))
-        if exact:
+        else:
             if search_term.lower() == extract_translation(i['display_name']).lower():
                 institute_matches.append((x, i))
 
@@ -228,7 +228,7 @@ def match_term(
             if search_term.lower() in extract_translation(i['display_name']).lower() \
                     or 'keyword_list' in i and search_term in i['keyword_list']:
                 org_matches.append((x, i))
-        if exact:
+        else:
             if search_term.lower() == extract_translation(i['display_name']).lower():
                 org_matches.append((x, i))
     return institute_matches, org_matches
