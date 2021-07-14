@@ -1,8 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from argparse import Namespace
 from eduvpn.actions import fetch_token, refresh, activate, deactivate
-from tests.mock_config import mock_server, mock_org
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
 
