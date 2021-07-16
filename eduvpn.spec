@@ -6,7 +6,7 @@ Version:        2.1.0
 Release:        1%{?dist}
 Summary:        %{sum}
 
-License:        MIT
+License:        GPLv3+
 URL:            https://pypi.python.org/pypi/%{srcname}
 Source0:        https://files.pythonhosted.org/packages/source/e/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
