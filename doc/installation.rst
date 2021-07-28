@@ -43,10 +43,10 @@ You can install the latest release of the eduVPN client on Fedora or CentOS by r
 .. code-block:: console
 
     $ sudo dnf install dnf-plugins-core
-    $ sudo dnf copr enable gijzelaerr/eduvpn-client
+    $ sudo dnf copr enable @eduvpn/eduvpn-client
     $ sudo dnf install eduvpn-client
 
-More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_.
+More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/g/eduvpn/eduvpn-client/>`_.
 
 
 Manual source installation

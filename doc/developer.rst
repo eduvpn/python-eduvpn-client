@@ -81,7 +81,7 @@ do a manual wheel upload using `twine <https://github.com/pypa/twine>`_:
 Build on copr for RPMs
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Build packages to the `COPR repository <https://copr.fedorainfracloud.org/coprs/gijzelaerr/eduvpn-client/>`_:
+Build packages to the `COPR repository <https://copr.fedorainfracloud.org/coprs/g/eduvpn/eduvpn-client/>`_:
 
   * on copr -> builds -> new build -> scm.
   * for clone URL field: https://github.com/eduvpn/python-eduvpn-client
