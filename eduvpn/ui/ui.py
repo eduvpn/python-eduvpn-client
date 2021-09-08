@@ -480,7 +480,8 @@ class EduVpnGui:
         location_list_model.clear()
         for location in new_state.locations:
             if location.flag_path is None:
-                continue  # TODO
+                logger.warning(f"No flag found for country code {location.country_code}")
+                flag = None
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(location.flag_path)
             location_list_model.append([location.country_name, flag, location])
