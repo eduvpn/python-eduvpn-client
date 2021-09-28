@@ -29,9 +29,9 @@ from .. import notify
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 
-logger = logging.getLogger(__name__)
+GtkTemplate = Gtk.Template  # type: ignore
 
-builder_files = ['mainwindow.ui']
+logger = logging.getLogger(__name__)
 
 
 UPDATE_EXIPRY_INTERVAL = 1.  # seconds
@@ -71,79 +71,79 @@ def allow_certificate_renewal(validity: Optional[Validity]):
     return datetime.utcnow() >= validity.fraction(RENEWAL_ALLOW_FRACTION)
 
 
-@Gtk.Template(filename="share/eduvpn/builder/mainwindow.ui")
+@GtkTemplate(filename="share/eduvpn/builder/mainwindow.ui")
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
 
     # child elements
 
-    app_logo = Gtk.Template.Child('appLogo')
+    app_logo = GtkTemplate.Child('appLogo')
 
-    settings_button = Gtk.Template.Child('settingsButton')
-    back_button_container = Gtk.Template.Child('backButtonEventBox')
+    settings_button = GtkTemplate.Child('settingsButton')
+    back_button_container = GtkTemplate.Child('backButtonEventBox')
 
-    server_list_container = Gtk.Template.Child('serverListContainer')
+    server_list_container = GtkTemplate.Child('serverListContainer')
 
-    institute_list_header = Gtk.Template.Child('instituteAccessHeader')
-    secure_internet_list_header = Gtk.Template.Child('secureInternetHeader')
-    other_server_list_header = Gtk.Template.Child('otherServersHeader')
+    institute_list_header = GtkTemplate.Child('instituteAccessHeader')
+    secure_internet_list_header = GtkTemplate.Child('secureInternetHeader')
+    other_server_list_header = GtkTemplate.Child('otherServersHeader')
 
-    institute_list = Gtk.Template.Child('instituteTreeView')
-    secure_internet_list = Gtk.Template.Child('secureInternetTreeView')
-    other_server_list = Gtk.Template.Child('otherServersTreeView')
+    institute_list = GtkTemplate.Child('instituteTreeView')
+    secure_internet_list = GtkTemplate.Child('secureInternetTreeView')
+    other_server_list = GtkTemplate.Child('otherServersTreeView')
 
-    choose_profile_page = Gtk.Template.Child('chooseProfilePage')
-    choose_location_page = Gtk.Template.Child('chooseLocationPage')
-    location_list = Gtk.Template.Child('locationTreeView')
-    profile_list = Gtk.Template.Child('profileTreeView')
+    choose_profile_page = GtkTemplate.Child('chooseProfilePage')
+    choose_location_page = GtkTemplate.Child('chooseLocationPage')
+    location_list = GtkTemplate.Child('locationTreeView')
+    profile_list = GtkTemplate.Child('profileTreeView')
 
-    find_server_page = Gtk.Template.Child('findServerPage')
-    find_server_search_form = Gtk.Template.Child('findServerSearchForm')
-    find_server_search_input = Gtk.Template.Child('findServerSearchInput')
-    find_server_image = Gtk.Template.Child('findServerImage')
-    find_server_label = Gtk.Template.Child('findServerLabel')
+    find_server_page = GtkTemplate.Child('findServerPage')
+    find_server_search_form = GtkTemplate.Child('findServerSearchForm')
+    find_server_search_input = GtkTemplate.Child('findServerSearchInput')
+    find_server_image = GtkTemplate.Child('findServerImage')
+    find_server_label = GtkTemplate.Child('findServerLabel')
 
-    add_custom_server_button_container = Gtk.Template.Child('addCustomServerRow')
-    add_other_server_button_container = Gtk.Template.Child('addOtherServerRow')
+    add_custom_server_button_container = GtkTemplate.Child('addCustomServerRow')
+    add_other_server_button_container = GtkTemplate.Child('addOtherServerRow')
 
-    connection_page = Gtk.Template.Child('connectionPage')
-    connection_status_image = Gtk.Template.Child('connectionStatusImage')
-    connection_status_label = Gtk.Template.Child('connectionStatusLabel')
-    connection_status_sub_label = Gtk.Template.Child('connectionStatusSubLabel')
-    connection_switch = Gtk.Template.Child('connectionSwitch')
-    connection_sub_page = Gtk.Template.Child('currentConnectionSubPage')
+    connection_page = GtkTemplate.Child('connectionPage')
+    connection_status_image = GtkTemplate.Child('connectionStatusImage')
+    connection_status_label = GtkTemplate.Child('connectionStatusLabel')
+    connection_status_sub_label = GtkTemplate.Child('connectionStatusSubLabel')
+    connection_switch = GtkTemplate.Child('connectionSwitch')
+    connection_sub_page = GtkTemplate.Child('currentConnectionSubPage')
 
-    server_image = Gtk.Template.Child('serverImage')
-    server_label = Gtk.Template.Child('serverLabel')
-    server_support_label = Gtk.Template.Child('supportLabel')
+    server_image = GtkTemplate.Child('serverImage')
+    server_label = GtkTemplate.Child('serverLabel')
+    server_support_label = GtkTemplate.Child('supportLabel')
 
-    renew_session_button = Gtk.Template.Child('renewSessionButton')
+    renew_session_button = GtkTemplate.Child('renewSessionButton')
 
-    oauth_page = Gtk.Template.Child('openBrowserPage')
-    oauth_cancel_button = Gtk.Template.Child('cancelBrowserButton')
+    oauth_page = GtkTemplate.Child('openBrowserPage')
+    oauth_cancel_button = GtkTemplate.Child('cancelBrowserButton')
 
-    settings_page = Gtk.Template.Child('settingsPage')
+    settings_page = GtkTemplate.Child('settingsPage')
 
-    loading_page = Gtk.Template.Child('loadingPage')
-    loading_title = Gtk.Template.Child('loadingTitle')
-    loading_message = Gtk.Template.Child('loadingMessage')
+    loading_page = GtkTemplate.Child('loadingPage')
+    loading_title = GtkTemplate.Child('loadingTitle')
+    loading_message = GtkTemplate.Child('loadingMessage')
 
-    error_page = Gtk.Template.Child('errorPage')
-    error_text = Gtk.Template.Child('errorText')
-    error_acknowledge_button = Gtk.Template.Child('errorAcknowledgeButton')
+    error_page = GtkTemplate.Child('errorPage')
+    error_text = GtkTemplate.Child('errorText')
+    error_acknowledge_button = GtkTemplate.Child('errorAcknowledgeButton')
 
-    def __init__(self, *, application: Application):
+    def __init__(self, *, application: Application):  # type: ignore
         # Fix the cwd for the image paths in the interface template to resolve.
         os.chdir('share/eduvpn/builder')
 
-        super().__init__(application=application)
-        self.app = application.app
+        super().__init__(application=application)  # type: ignore
+        self.app = application.app  # type: ignore
 
         # TODO implement settings page (issue #334)
         self.settings_button.hide()
 
-        self.set_title(self.app.variant.name)
-        self.set_icon_from_file(self.app.variant.icon)
+        self.set_title(self.app.variant.name)  # type: ignore
+        self.set_icon_from_file(self.app.variant.icon)  # type: ignore
         if self.app.variant.logo:
             self.app_logo.set_from_file(self.app.variant.logo)
         if self.app.variant.server_image:
@@ -482,27 +482,27 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # ui callbacks
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_configure_settings(self, widget, event):
         logger.debug("clicked on configure settings")
         self.app.interface_transition('toggle_settings')
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_get_help(self, widget, event):
         logger.debug("clicked on get help")
         webbrowser.open(HELP_URL)
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_go_back(self, widget, event):
         logger.debug("clicked on go back")
         self.app.interface_transition('go_back')
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_add_other_server(self, button) -> None:
         logger.debug("clicked on add other server")
         self.app.interface_transition('configure_new_server')
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_add_custom_server(self, button) -> None:
         logger.debug("clicked on add custom server")
         server = CustomServer(self.app.interface_state.address)
@@ -520,12 +520,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             logger.debug(f"selected server: {server!r}")
             self.app.interface_transition('connect_to_server', server)
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
         self.app.interface_transition('oauth_setup_cancel')
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_search_changed(self, _=None):
         query = self.find_server_search_input.get_text()
         logger.debug(f"entered server search query: {query}")
@@ -538,12 +538,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.app.interface_transition(
                 'enter_custom_address', address=query)
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_search_activate(self, _=None):
         logger.debug("activated server search")
         # TODO
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_switch_connection_state(self, switch, state):
         logger.debug("clicked on switch connection state")
         if state:
@@ -552,7 +552,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.app.interface_transition('deactivate_connection')
         return True
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_profile_selection_changed(self, selection):
         logger.debug("selected profile")
         (model, tree_iter) = selection.get_selected()
@@ -565,7 +565,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             logger.debug(f"selected profile: {profile!r}")
             self.app.interface_transition('select_profile', profile)
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_location_selection_changed(self, selection):
         logger.debug("selected location")
         (model, tree_iter) = selection.get_selected()
@@ -578,17 +578,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             logger.debug(f"selected location: {location!r}")
             self.app.interface_transition('select_secure_internet_location', location)
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")
         self.app.interface_transition('acknowledge_error')
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew certificate")
         self.app.network_transition('renew_certificate')
 
-    @Gtk.Template.Callback()
+    @GtkTemplate.Callback()
     def on_close_window(self, window, event):
         logger.debug("clicked on close window")
         self.hide()
