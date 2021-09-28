@@ -4,7 +4,6 @@ from .server import ServerDatabase, ServerSignatureError
 from . import nm
 from . import storage
 from .variants import ApplicationVariant
-from .crypto import Validity
 from .state_machine import StateMachine, InvalidStateTransition
 from .utils import run_in_background_thread
 
@@ -48,11 +47,7 @@ class Application:
                 if status in [nm.NM.ActiveConnectionState.ACTIVATED,
                               nm.NM.ActiveConnectionState.ACTIVATING]:
                     assert uuid == status_uuid
-                    *_, start, end = storage.get_current_metadata(server.oauth_login_url)
-                    if start is not None and end is not None:
-                        validity = Validity(start, end)
-                    else:
-                        validity = None
+                    validity = storage.get_current_validity(server.oauth_login_url)
                     transition = 'found_active_connection'
                     kwargs['server'] = server
                     kwargs['validity'] = validity

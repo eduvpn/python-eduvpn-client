@@ -9,6 +9,7 @@ import json
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 from eduvpn.settings import CONFIG_PREFIX
 from eduvpn.utils import get_logger
+from eduvpn.crypto import Validity
 
 logger = get_logger(__name__)
 
@@ -110,6 +111,16 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
         )
     else:
         return None
+
+
+def get_current_validity(auth_url: str) -> Optional[Validity]:
+    metadata = get_current_metadata(auth_url)
+    if metadata is None:
+        return None
+    *_, start, end = metadata
+    if start is None or end is None:
+        return None
+    return Validity(start, end)
 
 
 def set_metadata(
