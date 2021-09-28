@@ -24,5 +24,5 @@ class Notification:
 
     def hide(self):
         if self.is_shown:
-            self.notification.hide()
+            self.notification.close()
             self.is_shown = False
