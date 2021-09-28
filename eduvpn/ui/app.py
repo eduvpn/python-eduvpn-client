@@ -8,7 +8,7 @@ from gi.repository import GLib, Gio, Gtk
 from .. import i18n
 from .. import notify
 from ..utils import run_in_main_gtk_thread
-from ..state_machine import ENTER, EXIT, transition_edge_callback
+from ..state_machine import ENTER, transition_edge_callback
 from ..variants import ApplicationVariant
 from ..app import Application
 from .. import network as network_state
