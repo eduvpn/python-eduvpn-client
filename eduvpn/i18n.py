@@ -1,18 +1,28 @@
 import json
 import os
+import logging
 import locale
 import gettext
 from typing import Union, Dict
 from eduvpn.settings import COUNTRY, LANGUAGE, COUNTRY_MAP
 from eduvpn.variants import ApplicationVariant
-from eduvpn.utils import get_logger
+from eduvpn.utils import get_prefix
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 country_mapping = None
 
 
-def init(app_variant: ApplicationVariant, prefix: str):
+def initialize(app_variant: ApplicationVariant):
+    prefix = get_prefix()
+    try:
+        setup(app_variant, prefix)
+        logger.debug(u"i18n successfully initialized")
+    except Exception as e:
+        logger.error(f"i18n initialization failed: {e}")
+
+
+def setup(app_variant: ApplicationVariant, prefix: str):
     """
     Init locale and gettext, returns text domain
     """

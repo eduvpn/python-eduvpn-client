@@ -3,7 +3,7 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <!-- interface-local-resource-path ../images -->
-  <object class="GtkApplicationWindow" id="applicationWindow">
+  <template class="ApplicationWindow" parent="GtkApplicationWindow">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">eduVPN</property>
     <property name="default_width">440</property>
@@ -11,10 +11,7 @@
     <property name="icon">../../icons/hicolor/128x128/apps/eduvpn-client.png</property>
     <property name="has_resize_grip">True</property>
     <property name="show_menubar">False</property>
-    <signal name="delete-event" handler="delete_window" swapped="no"/>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
+    <signal name="delete-event" handler="on_close_window" swapped="no"/>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -38,11 +35,11 @@
                 <child>
                   <object class="GtkEventBox" id="backButtonEventBox">
                     <property name="width_request">30</property>
-                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <signal name="button-press-event" handler="on_back_button_released" swapped="no"/>
+                    <signal name="button-press-event" handler="on_go_back" swapped="no"/>
                     <child>
                       <object class="GtkImage" id="backButton">
+                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="pixbuf">../images/back.png</property>
                       </object>
@@ -82,7 +79,7 @@
                   <placeholder/>
                 </child>
                 <child>
-                  <object class="GtkImage" id="logoImage">
+                  <object class="GtkImage" id="appLogo">
                     <property name="width_request">120</property>
                     <property name="height_request">36</property>
                     <property name="visible">True</property>
@@ -114,7 +111,7 @@
                   <object class="GtkEventBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <signal name="button-press-event" handler="on_settings_button_released" swapped="no"/>
+                    <signal name="button-press-event" handler="on_configure_settings" swapped="no"/>
                     <child>
                       <object class="GtkImage" id="settingsButton">
                         <property name="visible">True</property>
@@ -133,7 +130,7 @@
                   <object class="GtkEventBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <signal name="button-release-event" handler="on_help_button_released" swapped="no"/>
+                    <signal name="button-release-event" handler="on_get_help" swapped="no"/>
                     <child>
                       <object class="GtkImage" id="helpButton">
                         <property name="visible">True</property>
@@ -171,28 +168,83 @@
             <property name="show_tabs">False</property>
             <property name="show_border">False</property>
             <child>
-              <object class="GtkBox" id="findYourInstitutePage">
-                <property name="visible">True</property>
+              <object class="GtkBox" id="findServerPage">
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
                 <child>
-                  <object class="GtkFixed" id="findYourInstituteSpacer">
-                    <property name="height_request">100</property>
-                    <property name="visible">True</property>
+                  <object class="GtkBox" id="findServerSearchForm">
                     <property name="can_focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkImage" id="findYourInstituteImage">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="pixbuf">../images/institute.png</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkFixed" id="findServerSpacer">
+                        <property name="height_request">100</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkImage" id="findServerImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="pixbuf">../images/institute.png</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="findServerLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Find your institute</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="spacing">10</property>
+                        <child>
+                          <object class="GtkSearchEntry" id="findServerSearchInput">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="primary_icon_name">edit-find-symbolic</property>
+                            <property name="primary_icon_activatable">False</property>
+                            <property name="primary_icon_sensitive">False</property>
+                            <property name="placeholder_text" translatable="yes">Search for your institute...</property>
+                            <signal name="activate" handler="on_search_activate" swapped="no"/>
+                            <signal name="search-changed" handler="on_search_changed" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -201,63 +253,18 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="findYourInstituteLabel">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Find your institute</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="spacing">10</property>
-                    <child>
-                      <object class="GtkSearchEntry" id="findYourInstituteSearch">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="primary_icon_name">edit-find-symbolic</property>
-                        <property name="primary_icon_activatable">False</property>
-                        <property name="primary_icon_sensitive">False</property>
-                        <property name="placeholder_text" translatable="yes">Search for your institute...</property>
-                        <signal name="activate" handler="on_activate_changed" swapped="no"/>
-                        <signal name="search-changed" handler="on_search_changed" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkBox" id="addOtherServerRow">
-                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkButton" id="addOtherServerButton">
-                        <property name="label" translatable="yes">Add Other Server</property>
                         <property name="visible">True</property>
+                        <property name="label" translatable="yes">Add Other Server</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
-                        <signal name="clicked" handler="on_add_other_server_button_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_add_other_server" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -274,7 +281,6 @@
                 </child>
                 <child>
                   <object class="GtkBox" id="addCustomServerRow">
-                    <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
@@ -285,7 +291,7 @@
                         <property name="receives_default">True</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
-                        <signal name="clicked" handler="on_add_custom_server_button_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_add_custom_server" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -301,8 +307,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScrolledWindow" id="findYourInstituteScrolledWindow">
-                    <property name="visible">True</property>
+                  <object class="GtkScrolledWindow" id="serverListContainer">
                     <property name="can_focus">True</property>
                     <property name="shadow_type">in</property>
                     <child>
@@ -317,7 +322,6 @@
                             <property name="spacing">10</property>
                             <child>
                               <object class="GtkBox" id="instituteAccessHeader">
-                                <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="spacing">15</property>
                                 <child>
@@ -356,7 +360,6 @@
                             </child>
                             <child>
                               <object class="GtkTreeView" id="instituteTreeView">
-                                <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="vexpand">True</property>
@@ -365,7 +368,9 @@
                                 <property name="search_column">0</property>
                                 <property name="enable_grid_lines">horizontal</property>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection"/>
+                                  <object class="GtkTreeSelection">
+                                    <signal name="changed" handler="on_select_server" swapped="no"/>
+                                  </object>
                                 </child>
                               </object>
                               <packing>
@@ -429,14 +434,15 @@
                             </child>
                             <child>
                               <object class="GtkTreeView" id="secureInternetTreeView">
-                                <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="headers_visible">False</property>
                                 <property name="enable_search">False</property>
                                 <property name="search_column">0</property>
                                 <property name="enable_grid_lines">horizontal</property>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection"/>
+                                  <object class="GtkTreeSelection">
+                                    <signal name="changed" handler="on_select_server" swapped="no"/>
+                                  </object>
                                 </child>
                               </object>
                               <packing>
@@ -486,14 +492,15 @@
                             </child>
                             <child>
                               <object class="GtkTreeView" id="otherServersTreeView">
-                                <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="headers_visible">False</property>
                                 <property name="enable_search">False</property>
                                 <property name="search_column">0</property>
                                 <property name="enable_grid_lines">horizontal</property>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection"/>
+                                  <object class="GtkTreeSelection">
+                                    <signal name="changed" handler="on_select_server" swapped="no"/>
+                                  </object>
                                 </child>
                               </object>
                               <packing>
@@ -533,7 +540,6 @@
             </child>
             <child>
               <object class="GtkBox" id="settingsPage">
-                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -570,7 +576,6 @@
             </child>
             <child>
               <object class="GtkBox" id="chooseProfilePage">
-                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -600,7 +605,9 @@
                     <property name="search_column">0</property>
                     <property name="enable_grid_lines">horizontal</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection">
+                        <signal name="changed" handler="on_profile_selection_changed" swapped="no"/>
+                      </object>
                     </child>
                   </object>
                   <packing>
@@ -627,7 +634,6 @@
             </child>
             <child>
               <object class="GtkBox" id="chooseLocationPage">
-                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -657,7 +663,9 @@
                     <property name="search_column">0</property>
                     <property name="enable_grid_lines">horizontal</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection">
+                        <signal name="changed" handler="on_location_selection_changed" swapped="no"/>
+                      </object>
                     </child>
                   </object>
                   <packing>
@@ -684,7 +692,6 @@
             </child>
             <child>
               <object class="GtkBox" id="openBrowserPage">
-                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -770,7 +777,7 @@ have completed the authorization</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <signal name="clicked" handler="on_cancel_browser_button_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_cancel_oauth_setup" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -792,7 +799,6 @@ have completed the authorization</property>
             </child>
             <child>
               <object class="GtkBox" id="loadingPage">
-                <property name="visible">False</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -870,7 +876,6 @@ have completed the authorization</property>
             </child>
             <child>
               <object class="GtkBox" id="connectionPage">
-                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -1019,7 +1024,7 @@ have completed the authorization</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="connectionSubStatus">
+                  <object class="GtkLabel" id="connectionStatusSubLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
@@ -1037,7 +1042,7 @@ have completed the authorization</property>
                     <property name="show_border">False</property>
                     <child>
                       <object class="GtkBox" id="profilesSubPage">
-                        <property name="visible">True</property>
+                        <property name="visible">False</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
@@ -1067,8 +1072,7 @@ have completed the authorization</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkTreeView" id="profilesTreeView">
-                            <property name="visible">True</property>
+                          <object class="GtkTreeView" id="connectionProfilesTreeView">
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="vexpand">True</property>
@@ -1077,7 +1081,9 @@ have completed the authorization</property>
                             <property name="search_column">0</property>
                             <property name="enable_grid_lines">horizontal</property>
                             <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
+                              <object class="GtkTreeSelection">
+                                <signal name="changed" handler="on_change_connection_profile" swapped="no"/>
+                              </object>
                             </child>
                           </object>
                           <packing>
@@ -1126,7 +1132,7 @@ have completed the authorization</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="halign">center</property>
-                                    <signal name="state-set" handler="on_connection_switch_state_set" swapped="no"/>
+                                    <signal name="state-set" handler="on_switch_connection_state" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -1240,7 +1246,6 @@ have completed the authorization</property>
                 </child>
                 <child>
                   <object class="GtkBox" id="connectionSubPage">
-                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
@@ -1530,8 +1535,7 @@ have completed the authorization</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="messagePage">
-                <property name="visible">True</property>
+              <object class="GtkBox" id="errorPage">
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -1548,7 +1552,7 @@ have completed the authorization</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="messageLabel">
+                  <object class="GtkLabel" id="errorLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Error</property>
@@ -1575,7 +1579,7 @@ have completed the authorization</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="messageText">
+                  <object class="GtkLabel" id="errorText">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">General failure, please quit</property>
@@ -1608,11 +1612,12 @@ have completed the authorization</property>
                       <placeholder/>
                     </child>
                     <child type="center">
-                      <object class="GtkButton" id="messageButton">
-                        <property name="label" translatable="yes">Quit</property>
+                      <object class="GtkButton" id="errorAcknowledgeButton">
+                        <property name="label" translatable="yes">Ok</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <signal name="clicked" handler="on_acknowledge_error" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -1647,5 +1652,5 @@ have completed the authorization</property>
         </child>
       </object>
     </child>
-  </object>
+  </template>
 </interface>

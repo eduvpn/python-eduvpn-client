@@ -5,6 +5,7 @@ from . import settings
 class ApplicationVariant:
     def __init__(
         self,
+        app_id: str,
         name: str,
         icon: str,
         translation_domain: str,
@@ -13,6 +14,7 @@ class ApplicationVariant:
         use_predefined_servers: bool = True,
         use_configured_servers: bool = True,
     ):
+        self.app_id = app_id
         self.name = name
         self.icon = icon
         self.logo = logo
@@ -23,12 +25,14 @@ class ApplicationVariant:
 
 
 EDUVPN = ApplicationVariant(
+    app_id='org.eduvpn.client',
     name=settings.EDUVPN_NAME,
     icon=settings.EDUVPN_ICON,
     translation_domain='eduVPN',
 )
 
 LETS_CONNECT = ApplicationVariant(
+    app_id='org.letsconnect-vpn.client',
     name=settings.LETS_CONNECT_NAME,
     icon=settings.LETS_CONNECT_ICON,
     logo=settings.LETS_CONNECT_LOGO,

@@ -15,34 +15,16 @@ class ServerGroup(enum.Enum):
 
 
 group_tree_component = {
-    ServerGroup.INSTITUTE_ACCESS: 'instituteTreeView',
-    ServerGroup.SECURE_INTERNET: 'secureInternetTreeView',
-    ServerGroup.OTHER: 'otherServersTreeView',
+    ServerGroup.INSTITUTE_ACCESS: 'institute_list',
+    ServerGroup.SECURE_INTERNET: 'secure_internet_list',
+    ServerGroup.OTHER: 'other_server_list',
 }
 
 group_header_component = {
-    ServerGroup.INSTITUTE_ACCESS: 'instituteAccessHeader',
-    ServerGroup.SECURE_INTERNET: 'secureInternetHeader',
-    ServerGroup.OTHER: 'otherServersHeader',
+    ServerGroup.INSTITUTE_ACCESS: 'institute_list_header',
+    ServerGroup.SECURE_INTERNET: 'secure_internet_list_header',
+    ServerGroup.OTHER: 'other_server_list_header',
 }
-
-gtk_results_components = [
-    # These are the components that need
-    # to be shown on all server list pages.
-    'findYourInstitutePage',
-    'instituteTreeView',
-    'secureInternetTreeView',
-    'otherServersTreeView',
-]
-
-gtk_search_components = [
-    # These are the components that need
-    # to be shown on all search pages.
-    'findYourInstituteSpacer',
-    'findYourInstituteImage',
-    'findYourInstituteLabel',
-    'findYourInstituteSearch',
-]
 
 
 # typing aliases
@@ -61,27 +43,31 @@ def server_to_model_data(server: Server) -> list:
     return [str(server), server]
 
 
-def show_result_components(builder, show: bool):
+def show_result_components(window, show: bool):
     """
     Set the visibility of essential server list related components.
     """
-    for name in gtk_results_components:
-        show_ui_component(builder, name, show)
+    show_ui_component(window.find_server_page, show)
+    show_ui_component(window.institute_list, show)
+    show_ui_component(window.secure_internet_list, show)
+    show_ui_component(window.other_server_list, show)
 
 
-def show_search_components(builder, show: bool):
+def show_search_components(window, show: bool):
     """
     Set the visibility of essential search related components.
     """
-    for name in gtk_search_components:
-        show_ui_component(builder, name, show)
+    show_ui_component(window.find_server_search_form, show)
+    show_ui_component(window.find_server_image, show)
+    show_ui_component(window.find_server_label, show)
+    show_ui_component(window.find_server_search_input, show)
 
 
-def show_search_resuls(builder, show: bool):
+def show_search_resuls(window, show: bool):
     """
     Set the visibility of the tree of the search result component in the UI.
     """
-    show_ui_component(builder, 'findYourInstituteScrolledWindow', show)
+    show_ui_component(window.server_list_container, show)
 
 
 def group_servers(
@@ -106,24 +92,26 @@ def group_servers(
     return groups
 
 
-def show_group_tree(builder, group: ServerGroup, show: bool):
+def show_group_tree(window, group: ServerGroup, show: bool):
     """
     Set the visibility of the tree of result for a server type.
     """
     tree_component_name = group_tree_component[group]
-    show_ui_component(builder, tree_component_name, show)
+    tree_component = getattr(window, tree_component_name)
+    show_ui_component(tree_component, show)
     header_component_name = group_header_component[group]
-    show_ui_component(builder, header_component_name, show)
+    header_component = getattr(window, header_component_name)
+    show_ui_component(header_component, show)
 
 
-def init_server_search(builder):
+def init_server_search(window):
     "Initialize the search page components."
     text_cell = Gtk.CellRendererText()
     text_cell.props.ellipsize = Pango.EllipsizeMode.END
     text_cell.set_property("size-points", 14)
     for group in group_tree_component:
         component_name = group_tree_component[group]
-        tree_view = builder.get_object(component_name)
+        tree_view = getattr(window, component_name)
         if len(tree_view.get_columns()) == 0:
             # Only add this column once.
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
@@ -132,32 +120,32 @@ def init_server_search(builder):
         tree_view.set_model(model)
 
 
-def exit_server_search(builder):
+def exit_server_search(window):
     "Hide the search page components."
     for group in group_tree_component:
-        show_group_tree(builder, group, False)
-    show_search_resuls(builder, False)
+        show_group_tree(window, group, False)
+    show_search_resuls(window, False)
 
 
-def connect_selection_handlers(builder, select_callback: Callable):
+def connect_selection_handlers(window, select_callback: Callable):
     "Connect the selection callback handlers for each server type."
     for group in group_tree_component:
         component_name = group_tree_component[group]
-        tree_view = builder.get_object(component_name)
+        tree_view = getattr(window, component_name)
         selection = tree_view.get_selection()
         selection.connect("changed", select_callback)
 
 
-def disconnect_selection_handlers(builder, select_callback: Callable):
+def disconnect_selection_handlers(window, select_callback: Callable):
     "Disconnect the selection callback handlers for each server type."
     for group in group_tree_component:
         component_name = group_tree_component[group]
-        tree_view = builder.get_object(component_name)
+        tree_view = getattr(window, component_name)
         selection = tree_view.get_selection()
         selection.disconnect_by_func(select_callback)
 
 
-def update_search_results_for_type(builder,
+def update_search_results_for_type(window,
                                    group: ServerGroup,
                                    servers: Iterable[Server]):
     """
@@ -173,21 +161,21 @@ def update_search_results_for_type(builder,
         model.append(model_data)  # type: ignore
     # Update the UI.
     model_has_results = len(model) > 0  # type: ignore
-    show_group_tree(builder, group, show=model_has_results)
+    show_group_tree(window, group, show=model_has_results)
 
 
-def update_results(builder, servers: Optional[Iterable[Server]]):
+def update_results(window, servers: Optional[Iterable[Server]]):
     """
     Update the UI with the search results.
     """
     if servers is None:
-        show_search_resuls(builder, False)
+        show_search_resuls(window, False)
         return
     server_map = group_servers(servers)
     for group in group_tree_component:
         update_search_results_for_type(
-            builder,
+            window,
             group,
             server_map.get(group, []),
         )
-    show_search_resuls(builder, True)
+    show_search_resuls(window, True)
