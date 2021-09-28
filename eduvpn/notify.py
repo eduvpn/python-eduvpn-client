@@ -24,10 +24,10 @@ class Notification:
     def show(self, title: str, message: str):
         if self.notification is None:
             self.notification = self._build()
-        self.notification.update(title, message)
-        self.notification.show()
+        self.notification.update(title, message)  # type: ignore
+        self.notification.show()  # type: ignore
 
     def hide(self):
         if self.notification is not None:
-            self.notification.close()
+            self.notification.close()  # type: ignore
             self.notification = None

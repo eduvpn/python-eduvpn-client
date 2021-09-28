@@ -26,10 +26,10 @@ LOG_FORMAT = format_ = (
 
 class EduVpnGtkApplication(Gtk.Application):
     def __init__(self, *args, app_variant: ApplicationVariant, **kwargs):
-        super().__init__(
+        super().__init__(  # type: ignore
             *args,
             application_id=app_variant.app_id,
-            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,  # type: ignore
             **kwargs
         )
 
@@ -37,19 +37,19 @@ class EduVpnGtkApplication(Gtk.Application):
         # Only allow a single window and track it on the app.
         self.window = None
 
-        self.add_main_option(
+        self.add_main_option(  # type: ignore
             'version',
             ord('v'),
-            GLib.OptionFlags.NONE,
-            GLib.OptionArg.NONE,
+            GLib.OptionFlags.NONE,  # type: ignore
+            GLib.OptionArg.NONE,  # type: ignore
             "print version and exit",
             None,
         )
-        self.add_main_option(
+        self.add_main_option(  # type: ignore
             'debug',
             ord('d'),
-            GLib.OptionFlags.NONE,
-            GLib.OptionArg.NONE,
+            GLib.OptionFlags.NONE,  # type: ignore
+            GLib.OptionArg.NONE,  # type: ignore
             "enable debug logging",
             None,
         )
