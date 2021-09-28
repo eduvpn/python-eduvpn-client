@@ -188,7 +188,7 @@ def enter_unknown_state(app: Application) -> NetworkState:
                 return
             _, status = nm.connection_status(nm.get_client())
             logger.debug(f"polling network state: {status}")
-        handle_active_connection_status(app, status)
+        app.make_func_threadsafe(handle_active_connection_status)(app, status)
 
     determine_network_state_thread()
     return UnknownState()
