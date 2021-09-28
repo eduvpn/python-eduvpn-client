@@ -2,7 +2,7 @@ import logging
 from gettext import gettext as _
 
 import gi
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import GLib, Gio, Gtk
 
 from .. import i18n
