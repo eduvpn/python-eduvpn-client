@@ -587,3 +587,15 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew certificate")
         self.app.network_transition('renew_certificate')
+
+    @Gtk.Template.Callback()
+    def on_close_window(self, window, event):
+        logger.debug("clicked on close window")
+        self.hide()
+        self.get_application().on_window_closed()
+        return True
+
+    def on_reopen_window(self):
+        self.app.interface_transition('restart')
+        self.show()
+        self.present()

@@ -67,7 +67,9 @@ class EduVpnGtkApplication(Gtk.Application):
         logger.debug('activate')
         if not self.window:
             self.window = EduVpnGtkWindow(application=self)
-        self.window.present()
+            self.window.present()
+        else:
+            self.window.on_reopen_window()
 
     def do_command_line(self, command_line):
         logger.debug(f'command line: {command_line}')
@@ -92,3 +94,7 @@ class EduVpnGtkApplication(Gtk.Application):
     def on_quit(self, action, param):
         logger.debug('quit')
         self.quit()
+
+    def on_window_closed(self):
+        logger.debug('window closed')
+        # TODO if connection not active, quit

@@ -34,6 +34,20 @@ class InterfaceState(BaseState):
                               ) -> 'InterfaceState':
         return ErrorState(message, next_transition)
 
+    def restart(self, app: Application):
+        from .. import network as network_state
+        if isinstance(app.network_state, network_state.InitialNetworkState):
+            return InitialInterfaceState()
+        elif isinstance(app.network_state, network_state.UnconnectedState):
+            return transition.go_to_main_state(app)
+        else:
+            server = app.server_db.get_single_configured()
+            if server is None:
+                return transition.go_to_main_state(app)
+            from .. import storage
+            validity = storage.get_current_validity(server.oauth_login_url)
+            return ConnectionStatus(server, validity)
+
 
 class InitialInterfaceState(InterfaceState):
     """
