@@ -8,8 +8,10 @@ from gi.repository import GLib, Gio, Gtk
 from .. import i18n
 from .. import notify
 from ..utils import run_in_main_gtk_thread
+from ..state_machine import ENTER, EXIT, transition_edge_callback
 from ..variants import ApplicationVariant
 from ..app import Application
+from .. import network as network_state
 from .ui import EduVpnGtkWindow
 
 
@@ -57,10 +59,13 @@ class EduVpnGtkApplication(Gtk.Application):
         Gtk.Application.do_startup(self)
         i18n.initialize(self.app.variant)
         notify.initialize(self.app.variant)
+        self.connection_notification = notify.Notification(self.app.variant)
+        self.app.connect_state_transition_callbacks(self)
         self.app.initialize()
 
     def do_shutdown(self):
         logger.debug('shutdown')
+        self.connection_notification.hide()
         Gtk.Application.do_shutdown(self)
 
     def do_activate(self):
@@ -98,3 +103,46 @@ class EduVpnGtkApplication(Gtk.Application):
     def on_window_closed(self):
         logger.debug('window closed')
         # TODO if connection not active, quit
+
+    @transition_edge_callback(ENTER, network_state.ConnectingState)
+    def enter_ConnectingState(self, old_state, new_state):
+        self.connection_notification.show(
+            title=_("Connecting"),
+            message=_(
+                "The connection is being established. "
+                "This should only take a moment."
+            ))
+
+    @transition_edge_callback(ENTER, network_state.ConnectedState)
+    def enter_ConnectedState(self, old_state, new_state):
+        self.connection_notification.show(
+            title=_("Connected"),
+            message=_("You are currently connected to your server."))
+
+    @transition_edge_callback(ENTER, network_state.ReconnectingState)
+    def enter_ReconnectingState(self, old_state, new_state):
+        self.connection_notification.show(
+            title=_("Connecting"),
+            message=_(
+                "The connection is being established. "
+                "This should only take a moment."
+            ))
+
+    @transition_edge_callback(ENTER, network_state.DisconnectedState)
+    def enter_DisconnectedState(self, old_state, new_state):
+        self.connection_notification.hide()
+
+    @transition_edge_callback(ENTER, network_state.CertificateExpiredState)
+    def enter_CertificateExpiredState(self, old_state, new_state):
+        self.connection_notification.show(
+            title=_("Session expired"),
+            message=_("You are no longer connected since the session has expired."))
+
+    @transition_edge_callback(ENTER, network_state.ConnectionErrorState)
+    def enter_ConnectionErrorState(self, old_state, new_state):
+        message = _("An error occured")
+        if new_state.error:
+            message = f"{message}: {new_state.error}"
+        self.connection_notification.show(
+            title=_("Connection Error"),
+            message=message)
