@@ -25,7 +25,7 @@ LOG_FORMAT = format_ = (
 
 
 class EduVpnGtkApplication(Gtk.Application):
-    def __init__(self, *args, app_variant, **kwargs):
+    def __init__(self, *args, app_variant: ApplicationVariant, **kwargs):
         super().__init__(
             *args,
             application_id=app_variant.app_id,
