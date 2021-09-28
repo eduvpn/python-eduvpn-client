@@ -96,7 +96,7 @@ class Application:
         """
         return self.interface_state_machine.state
 
-    def connect_state_transition_callbacks(self, obj):
+    def connect_state_transition_callbacks(self, obj, *, initialize=False):
         """
         Register all state transition callback methods decorated with
         `@transition_callback()` and `@transition_edge_callback()`
@@ -107,6 +107,9 @@ class Application:
         from .interface.state import InterfaceState
         self.interface_state_machine.connect_object_callbacks(
             obj, InterfaceState)
+        if initialize:
+            self.network_state_machine.trigger_initial_callbacks()
+            self.interface_state_machine.trigger_initial_callbacks()
 
     def network_transition(self, transition, *args, **kwargs):
         """

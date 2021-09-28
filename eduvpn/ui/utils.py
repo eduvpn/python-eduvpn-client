@@ -3,11 +3,10 @@ gi.require_version('Gtk', '3.0')  # noqa: E402
 from gi.repository import Gtk
 
 
-def show_ui_component(builder, component: str, show: bool):
+def show_ui_component(component, show: bool):
     """
     Set the visibility of a UI component.
     """
-    component = builder.get_object(component)
     if show:
         component.show()  # type: ignore
     else:
@@ -25,9 +24,9 @@ def link_markup(link: str) -> str:
         return f'<a href="{link}">{rest}</a>'
 
 
-def show_error_dialog(builder, name: str, title: str, message: str):
+def show_error_dialog(parent, name: str, title: str, message: str):
     dialog = Gtk.MessageDialog(  # type: ignore
-        parent=builder.get_object('applicationWindow'),
+        parent=parent,
         type=Gtk.MessageType.INFO,  # type: ignore
         buttons=Gtk.ButtonsType.OK,  # type: ignore
         title=name,

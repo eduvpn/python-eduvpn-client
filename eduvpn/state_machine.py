@@ -2,6 +2,7 @@ from typing import (
     TypeVar, Generic, Any, Union, Optional, Callable,
     Type, Tuple, List, Dict, Set, Generator)
 import enum
+from contextlib import contextmanager
 
 
 class TransitionEdge(enum.Enum):
@@ -115,7 +116,11 @@ def transition_level_callback(state_targets: StateTargets):
 
 def _find_transition_callbacks(obj: Any, base_state_type: Type[State]):
     for attr in dir(obj):
-        callback = getattr(obj, attr)
+        try:
+            callback = getattr(obj, attr)
+        except Exception:
+            # Gtk raises RuntimeError for some attributes.
+            continue
         try:
             registrations = getattr(callback, TRANSITION_CALLBACK_MARKER)
         except AttributeError:
@@ -137,6 +142,7 @@ class StateMachine(Generic[State]):
     """
 
     def __init__(self, initial_state: State):
+        self.initial_state = initial_state
         self._state = initial_state
         self._transition_callbacks: TransitionCallbackRegistry = {}
         self._level_callbacks: LevelCallbackRegistry = {}
@@ -166,13 +172,24 @@ class StateMachine(Generic[State]):
         except AttributeError as e:
             raise InvalidStateTransition(transition) from e
         new_state = transition_func(*args, **kwargs)
+        with self.trigger_callbacks(old_state, new_state):
+            self._state = new_state
+        return new_state
+
+    @contextmanager
+    def trigger_callbacks(self, old_state: State, new_state: State):
         self._exit_contexts()
         self._call_edge_callbacks(EXIT, old_state, new_state)
-        self._state = new_state
-        self._call_generic_callbacks(old_state, new_state)
-        self._call_edge_callbacks(ENTER, old_state, new_state)
-        self._enter_contexts(new_state)
-        return new_state
+        try:
+            yield
+        finally:
+            self._call_generic_callbacks(old_state, new_state)
+            self._call_edge_callbacks(ENTER, old_state, new_state)
+            self._enter_contexts(new_state)
+
+    def trigger_initial_callbacks(self):
+        with self.trigger_callbacks(self.initial_state, self.state):
+            pass
 
     def register_generic_callback(self, callback: TransitionCallback):
         """
