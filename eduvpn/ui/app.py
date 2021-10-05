@@ -24,6 +24,12 @@ LOG_FORMAT = format_ = (
 )
 
 
+NO_WINDOW_QUIT_NETWORK_STATES = (
+    network_state.UnconnectedState,
+    network_state.DisconnectedState,
+)
+
+
 class EduVpnGtkApplication(Gtk.Application):
     def __init__(self, *args, app_variant: ApplicationVariant, **kwargs):
         super().__init__(  # type: ignore
@@ -96,13 +102,16 @@ class EduVpnGtkApplication(Gtk.Application):
         self.activate()
         return 0
 
-    def on_quit(self, action, param):
+    def on_quit(self, action=None, param=None):
         logger.debug('quit')
         self.quit()
 
     def on_window_closed(self):
         logger.debug('window closed')
-        # TODO if connection not active, quit
+        if isinstance(self.app.network_state, NO_WINDOW_QUIT_NETWORK_STATES):
+            # Quit the app if no connection is active on window close.
+            logger.debug("window closed while no active connection")
+            self.on_quit()
 
     @transition_edge_callback(ENTER, network_state.ConnectingState)
     def enter_ConnectingState(self, old_state, new_state):
