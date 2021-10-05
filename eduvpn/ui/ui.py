@@ -154,6 +154,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.app.connect_state_transition_callbacks(self, initialize=True)
 
+        # We track the switch state so we can distinguish
+        # the switch being set by the ui from the user toggling it.
+        self.connection_switch_state: Optional[bool] = None
+
         if not nm_available():
             show_error_dialog(
                 self,
@@ -176,6 +180,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def hide_loading_page(self):
         self.loading_page.hide()
+
+    def set_connection_switch_state(self, state: bool):
+        self.connection_switch_state = state
+        self.connection_switch.set_state(True)
 
     # network state transition callbacks
 
@@ -234,11 +242,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if hasattr(self.app.network_state, 'reconnect'):
             self.connection_sub_page.show()
             self.connection_switch.show()
-            self.connection_switch.set_state(False)
+            self.set_connection_switch_state(False)
         elif hasattr(self.app.network_state, 'disconnect'):
             self.connection_sub_page.show()
             self.connection_switch.show()
-            self.connection_switch.set_state(True)
+            self.set_connection_switch_state(True)
         else:
             self.connection_sub_page.hide()
             self.connection_switch.hide()
@@ -546,10 +554,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_switch_connection_state(self, switch, state):
         logger.debug("clicked on switch connection state")
-        if state:
-            self.app.interface_transition('activate_connection')
-        else:
-            self.app.interface_transition('deactivate_connection')
+        if state is not self.set_connection_switch_state:
+            # The user has toggled the connection switch,
+            # as opposed to the ui itself setting it.
+            if state:
+                self.app.interface_transition('activate_connection')
+            else:
+                self.app.interface_transition('deactivate_connection')
         return True
 
     @GtkTemplate.Callback()
