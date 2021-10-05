@@ -22,7 +22,7 @@ from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback)
-from ..crypto import Validity
+from ..session import Validity
 from ..nm import nm_available
 from ..utils import run_in_main_gtk_thread, run_periodically
 from .. import notify

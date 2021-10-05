@@ -2,7 +2,7 @@ from typing import Optional, List, Callable
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
-from ..crypto import Validity
+from ..session import Validity
 from ..app import Application
 from ..server import (
     AnyServer, PredefinedServer, ConfiguredServer,

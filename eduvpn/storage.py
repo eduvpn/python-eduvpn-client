@@ -9,7 +9,7 @@ import json
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 from eduvpn.settings import CONFIG_PREFIX
 from eduvpn.utils import get_logger
-from eduvpn.crypto import Validity
+from eduvpn.session import Validity
 
 logger = get_logger(__name__)
 
