@@ -21,11 +21,12 @@ from .. import network as network_state
 from ..server import CustomServer
 from ..app import Application
 from ..state_machine import (
-    ENTER, EXIT, transition_callback, transition_edge_callback)
+    ENTER, EXIT, transition_callback, transition_edge_callback,
+    transition_level_callback)
 from ..session import Validity
 from ..nm import nm_available
-from ..utils import run_in_main_gtk_thread, run_periodically
-from .. import notify
+from ..utils import (
+    run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 
@@ -63,12 +64,6 @@ def get_validity_text(validity: Optional[Validity]) -> str:
         hstr = ngettext(" and <b>{0} hour</b>",
                         " and <b>{0} hours</b>", hours).format(hours)
         return dstr + hstr
-
-
-def allow_certificate_renewal(validity: Optional[Validity]):
-    if validity is None:
-        return True
-    return datetime.utcnow() >= validity.fraction(RENEWAL_ALLOW_FRACTION)
 
 
 @GtkTemplate(filename="share/eduvpn/builder/mainwindow.ui")
@@ -192,16 +187,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
             self.update_connection_status()
 
-    @transition_edge_callback(ENTER, network_state.CertificateExpiredState)
-    def enter_CertificateExpiredState(self, old_state, new_state):
-        notification = notify.Notification(self.app.variant)
-        notification.show(
-            title=_("Your session has expired"),
-            message=_(
-                "Renew the session "
-                "to continue using this connection."),
-        )
-
     def update_connection_server(self):
         server = self.app.interface_state.server
         self.server_label.set_text(str(server))
@@ -224,14 +209,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         expiry_text = get_validity_text(self.app.interface_state.validity)
         self.connection_status_sub_label.set_markup(expiry_text)
 
-        if (hasattr(self.app.network_state, 'renew_certificate') and (
-                isinstance(self.app.network_state, network_state.CertificateExpiredState) or (
-                allow_certificate_renewal(self.app.interface_state.validity)))):
-            self.connection_sub_page.show()
-            self.renew_session_button.show()
-        else:
-            self.renew_session_button.hide()
-
     def update_connection_status(self):
         self.connection_status_label.set_text(self.app.network_state.status_label)
         self.connection_status_image.set_from_file(self.app.network_state.status_image.path)
@@ -251,6 +228,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.connection_sub_page.hide()
             self.connection_switch.hide()
 
+        if (hasattr(self.app.network_state, 'renew_session') and
+                not isinstance(self.app.network_state, network_state.ConnectedState)):
+            self.connection_sub_page.show()
+            self.renew_session_button.show()
+        else:
+            self.renew_session_button.hide()
+
     # interface state transition callbacks
 
     @transition_callback(interface_state.InterfaceState)
@@ -269,8 +253,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(ENTER, interface_state.configure_server_states)
     def enter_search(self, old_state, new_state):
-        if not new_state.search_query:
-            self.set_search_text('')
         if not isinstance(old_state, interface_state.configure_server_states):
             self.find_server_search_input.grab_focus()
             search.show_result_components(self, True)
@@ -445,37 +427,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.update_connection_server()
         self.update_connection_status()
 
-        if hasattr(self, '_cancel_validity_updates'):
-            # Cancel any previous threads, as they might have been cancelled
-            # and there shouln't be multiple threads running.
-            self._cancel_validity_updates()
-
-        def update_connection_validity():
-            # This function runs in a background thread.
-            state = self.app.interface_state
-            if not isinstance(state, interface_state.ConnectionStatus):
-                # cancel this thread
-                return False
-            run_in_main_gtk_thread(self.update_connection_validity)()
-            if datetime.utcnow() < state.validity.end:
-                return True
-            else:
-                self.app.network_transition_threadsafe('set_certificate_expired')
-                return False
-
-        self._cancel_validity_updates = run_periodically(
-            update_connection_validity,
-            UPDATE_EXIPRY_INTERVAL,
-            'update-validity',
-        )
-
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.connection_page.hide()
 
-        if hasattr(self, '_cancel_validity_updates'):
-            self._cancel_validity_updates()
-            del self._cancel_validity_updates
+    @transition_level_callback(interface_state.ConnectionStatus)
+    def context_ConnectionStatus(self, state):
+        return cancel_at_context_end(run_periodically(
+            run_in_main_gtk_thread(self.update_connection_validity),
+            UPDATE_EXIPRY_INTERVAL,
+            'update-validity',
+        ))
 
     @transition_edge_callback(ENTER, interface_state.ErrorState)
     def enter_ErrorState(self, old_state, new_state):
@@ -596,8 +558,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @GtkTemplate.Callback()
     def on_renew_session_clicked(self, event):
-        logger.debug("clicked on renew certificate")
-        self.app.network_transition('renew_certificate')
+        logger.debug("clicked on renew session")
+        self.app.network_transition('renew_session')
 
     @GtkTemplate.Callback()
     def on_close_window(self, window, event):
