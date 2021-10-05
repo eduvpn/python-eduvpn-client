@@ -228,8 +228,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.connection_sub_page.hide()
             self.connection_switch.hide()
 
-        if (hasattr(self.app.network_state, 'renew_session') and
-                not isinstance(self.app.network_state, network_state.ConnectedState)):
+        if (hasattr(self.app.network_state, 'renew_session') and (
+                not isinstance(self.app.network_state, network_state.ConnectedState))):
             self.connection_sub_page.show()
             self.renew_session_button.show()
         else:

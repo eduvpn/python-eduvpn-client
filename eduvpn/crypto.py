@@ -2,7 +2,6 @@ from base64 import urlsafe_b64encode, b64decode
 import hashlib
 import random
 import logging
-from datetime import datetime
 from typing import Optional, List
 from functools import lru_cache
 from cryptography.x509.oid import NameOID
