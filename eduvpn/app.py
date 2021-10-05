@@ -115,7 +115,7 @@ class Application:
         """
         Perform a transition on the network state.
         """
-        logger.info(
+        logger.debug(
             f'network transitioning: '
             f'{self.network_state} -> {transition}')
         try:
@@ -126,7 +126,7 @@ class Application:
                 f'invalid network state transition: '
                 f'{self.network_state} -> {transition}')
         else:
-            logger.info(
+            logger.debug(
                 f'network transitioned: '
                 f'{transition} -> {self.network_state}')
 
@@ -134,7 +134,7 @@ class Application:
         """
         Perform a transition on the interface state.
         """
-        logger.info(
+        logger.debug(
             f'interface transitioning: '
             f'{self.interface_state} -> {transition}')
         try:
@@ -145,7 +145,7 @@ class Application:
                 f'invalid interface state transition: '
                 f'{self.interface_state} -> {transition}')
         else:
-            logger.info(
+            logger.debug(
                 f'interface transitioned: '
                 f'{transition} -> {self.interface_state}')
 
