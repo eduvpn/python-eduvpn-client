@@ -11,6 +11,7 @@ from cryptography.hazmat.backends import default_backend
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 from eduvpn.settings import VERIFY_KEYS
+from eduvpn.session import Validity
 
 
 logger = logging.getLogger(__name__)
@@ -105,19 +106,6 @@ def validate(signature: str, content: bytes) -> bytes:
         except BadSignatureError:
             logger.debug(f"Skipping signature {verifier_to_str(f)}")
     raise BadSignatureError
-
-
-class Validity:
-    def __init__(self, start: datetime, end: datetime):
-        self.start = start
-        self.end = end
-
-    @property
-    def duration(self):
-        return self.end - self.start
-
-    def fraction(self, fraction: float) -> datetime:
-        return self.start + self.duration * fraction
 
 
 def get_certificate_validity(certificate_text: str) -> Optional[Validity]:

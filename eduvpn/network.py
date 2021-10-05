@@ -5,7 +5,7 @@ from functools import partial
 from time import sleep
 from gettext import gettext
 from . import nm
-from .crypto import Validity
+from .session import Validity
 from . import settings
 from .state_machine import BaseState
 from .app import Application
