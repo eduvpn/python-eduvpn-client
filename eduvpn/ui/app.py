@@ -1,5 +1,6 @@
 import logging
 from gettext import gettext as _
+from datetime import datetime
 
 import gi
 gi.require_version("Gtk", "3.0")  # noqa: E402
@@ -7,12 +8,14 @@ from gi.repository import GLib, Gio, Gtk
 
 from .. import i18n
 from .. import notify
-from ..utils import run_in_main_gtk_thread
-from ..state_machine import ENTER, transition_edge_callback
+from ..utils import run_in_main_gtk_thread, run_delayed, cancel_at_context_end
+from ..state_machine import ENTER, transition_edge_callback, transition_level_callback
 from ..variants import ApplicationVariant
 from ..app import Application
 from .. import network as network_state
 from .ui import EduVpnGtkWindow
+from .. import storage
+from .. import session
 
 
 logger = logging.getLogger(__name__)
@@ -128,6 +131,15 @@ class EduVpnGtkApplication(Gtk.Application):
             title=_("Connected"),
             message=_("You are currently connected to your server."))
 
+    @transition_edge_callback(ENTER, network_state.PendingSessionExpiryState)
+    def enter_PendingSessionExpiryState(self, old_state, new_state):
+        self.connection_notification.show(
+            title=_("Connected"),
+            message=_(
+                "Your session is about to expire. "
+                "Renew the session to remain connected."
+            ))
+
     @transition_edge_callback(ENTER, network_state.ReconnectingState)
     def enter_ReconnectingState(self, old_state, new_state):
         self.connection_notification.show(
@@ -141,8 +153,8 @@ class EduVpnGtkApplication(Gtk.Application):
     def enter_DisconnectedState(self, old_state, new_state):
         self.connection_notification.hide()
 
-    @transition_edge_callback(ENTER, network_state.CertificateExpiredState)
-    def enter_CertificateExpiredState(self, old_state, new_state):
+    @transition_edge_callback(ENTER, network_state.SessionExpiredState)
+    def enter_SessionExpiredState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Session expired"),
             message=_("You are no longer connected since the session has expired."))
@@ -155,3 +167,32 @@ class EduVpnGtkApplication(Gtk.Application):
         self.connection_notification.show(
             title=_("Connection Error"),
             message=message)
+
+    @transition_level_callback(network_state.ConnectedState)
+    def context_ConnectedState(self, state):
+        server = self.app.server_db.get_single_configured()
+        if server is None:
+            return
+
+        validity = storage.get_current_validity(server.oauth_login_url)
+        expiry_time = session.pending_expiry_time(validity)
+        expiry_duration = (expiry_time - datetime.utcnow()).total_seconds()
+
+        def on_session_expired():
+            self.app.network_transition_threadsafe('session_expiry_pending')
+
+        return cancel_at_context_end(run_delayed(on_session_expired, expiry_duration))
+
+    @transition_level_callback(network_state.PendingSessionExpiryState)
+    def context_PendingSessionExpiryState(self, state):
+        server = self.app.server_db.get_single_configured()
+        if server is None:
+            return
+
+        validity = storage.get_current_validity(server.oauth_login_url)
+        expiry_duration = (validity.end - datetime.utcnow()).total_seconds()
+
+        def on_session_expired():
+            self.app.network_transition_threadsafe('set_session_expired')
+
+        return cancel_at_context_end(run_delayed(on_session_expired, expiry_duration))

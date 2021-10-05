@@ -60,8 +60,8 @@ class NetworkState(BaseState):
     def set_error(self, app: Application, message: Optional[str] = None) -> 'NetworkState':
         return ConnectionErrorState(message)
 
-    def set_certificate_expired(self, app: Application) -> 'NetworkState':
-        return CertificateExpiredState()
+    def set_session_expired(self, app: Application) -> 'NetworkState':
+        return SessionExpiredState()
 
 
 class InitialNetworkState(NetworkState):
@@ -157,8 +157,8 @@ def reconnect(app: Application) -> NetworkState:
     return ReconnectingState()
 
 
-def renew_certificate(app: Application) -> NetworkState:
-    app.interface_transition('renew_certificate')
+def renew_session(app: Application) -> NetworkState:
+    app.interface_transition('renew_session')
     return ConnectedState()
 
 
@@ -279,11 +279,17 @@ class ConnectedState(NetworkState):
     def disconnect(self, app: Application) -> NetworkState:
         return disconnect(app)
 
-    def renew_certificate(self, app: Application) -> NetworkState:
+    def session_expiry_pending(self, app: Application) -> NetworkState:
+        """
+        The session is about the expire.
+        """
+        return PendingSessionExpiryState()
+
+    def renew_session(self, app: Application) -> NetworkState:
         """
         Re-estabilish a connection to the server.
         """
-        return renew_certificate(app)
+        return renew_session(app)
 
 
 class DisconnectedState(NetworkState):
@@ -315,19 +321,45 @@ class ReconnectingState(NetworkState):
         return connect(app)
 
 
-class CertificateExpiredState(NetworkState):
+class PendingSessionExpiryState(NetworkState):
     """
-    The network could not connect because the certifcate has expired.
+    The network is currently connected to a server,
+    but the session is about to expire
+    and the user is advised to renew it
     """
 
-    status_label = translated_property("Certificate expired")
-    status_image = StatusImage.NOT_CONNECTED
+    status_label = translated_property("Connection active")
+    status_image = StatusImage.CONNECTED
 
-    def renew_certificate(self, app: Application) -> NetworkState:
+    def start_new_connection(self,
+                             app: Application,
+                             server: Server,
+                             ) -> NetworkState:
+        return reconnect(app)
+
+    def disconnect(self, app: Application) -> NetworkState:
+        return disconnect(app)
+
+    def renew_session(self, app: Application) -> NetworkState:
         """
         Re-estabilish a connection to the server.
         """
-        return renew_certificate(app)
+        return renew_session(app)
+
+
+class SessionExpiredState(NetworkState):
+    """
+    The network could not connect because the session has expired.
+    """
+
+    status_label = translated_property("Session expired")
+    status_image = StatusImage.NOT_CONNECTED
+
+    def renew_session(self, app: Application) -> NetworkState:
+        """
+        Re-estabilish a connection to the server.
+        """
+        return renew_session(app)
 
 
 class ConnectionErrorState(NetworkState):
