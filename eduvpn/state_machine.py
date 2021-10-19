@@ -172,8 +172,9 @@ class StateMachine(Generic[State]):
         except AttributeError as e:
             raise InvalidStateTransition(transition) from e
         new_state = transition_func(*args, **kwargs)
-        with self.trigger_callbacks(old_state, new_state):
-            self._state = new_state
+        if new_state is not old_state:
+            with self.trigger_callbacks(old_state, new_state):
+                self._state = new_state
         return new_state
 
     @contextmanager

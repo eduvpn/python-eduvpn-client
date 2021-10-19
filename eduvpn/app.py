@@ -1,11 +1,12 @@
 import logging
+from datetime import datetime
 from gettext import gettext as _
 from .server import ServerDatabase, ServerSignatureError
 from . import nm
 from . import storage
 from .variants import ApplicationVariant
 from .state_machine import StateMachine, InvalidStateTransition
-from .utils import run_in_background_thread
+from .utils import run_in_background_thread, run_delayed, cancel_at_context_end
 
 
 logger = logging.getLogger(__name__)
@@ -16,11 +17,17 @@ class Application:
         self.variant = variant
         self.make_func_threadsafe = make_func_threadsafe
         from .network import InitialNetworkState
+        from .session import InitialSessionState, SessionActiveState, SessionPendingExpiryState
         from .interface.state import InitialInterfaceState
         self.network_state_machine = StateMachine(InitialNetworkState())
+        self.session_state_machine = StateMachine(InitialSessionState())
         self.interface_state_machine = StateMachine(InitialInterfaceState())
         self.server_db = ServerDatabase()
         self.current_network_uuid = None
+        self.session_state_machine.register_level_callback(
+            SessionActiveState, self.context_session_active)
+        self.session_state_machine.register_level_callback(
+            SessionPendingExpiryState, self.context_session_pending_expiry)
 
     def initialize(self):
         self.initialize_network()
@@ -33,7 +40,6 @@ class Application:
         """
         # Check if a previous network configuration exists.
         uuid = nm.get_existing_configuration_uuid()
-        kwargs = {}
         if uuid:
             self.current_network_uuid = uuid
             # Check what server corresponds to the configuration.
@@ -41,22 +47,12 @@ class Application:
             if server is None:
                 # There is a network configuration,
                 # but no record of what server corresponds to it.
-                transition = 'no_previous_connection_found'
+                self.session_transition('no_previous_session_found')
             else:
-                status_uuid, status = nm.connection_status(nm.get_client())
-                if status in [nm.NM.ActiveConnectionState.ACTIVATED,
-                              nm.NM.ActiveConnectionState.ACTIVATING]:
-                    assert uuid == status_uuid
-                    validity = storage.get_current_validity(server.oauth_login_url)
-                    transition = 'found_active_connection'
-                    kwargs['server'] = server
-                    kwargs['validity'] = validity
-                else:
-                    transition = 'found_previous_connection'
-                    kwargs['server'] = server
+                validity = storage.get_current_validity(server.oauth_login_url)
+                self.session_transition('found_active_session', server, validity)
         else:
-            transition = 'no_previous_connection_found'
-        self.network_transition(transition, **kwargs)
+            self.session_transition('no_previous_session_found')
 
         def on_network_update_callback(state, reason):
             network.on_status_update_callback(self, state)
@@ -90,6 +86,13 @@ class Application:
         return self.network_state_machine.state
 
     @property
+    def session_state(self):
+        """
+        Get the current state of the session.
+        """
+        return self.session_state_machine.state
+
+    @property
     def interface_state(self):
         """
         Get the current state of the interface.
@@ -104,50 +107,71 @@ class Application:
         """
         from .network import NetworkState
         self.network_state_machine.connect_object_callbacks(obj, NetworkState)
+        from .session import SessionState
+        self.session_state_machine.connect_object_callbacks(
+            obj, SessionState)
         from .interface.state import InterfaceState
         self.interface_state_machine.connect_object_callbacks(
             obj, InterfaceState)
         if initialize:
             self.network_state_machine.trigger_initial_callbacks()
+            self.session_state_machine.trigger_initial_callbacks()
             self.interface_state_machine.trigger_initial_callbacks()
+
+    def _base_transition(self, state_machine, state_machine_name, transition, *args, **kwargs):
+        """
+        Perform a transition on a state machine.
+        """
+        logger.debug(
+            f'{state_machine_name} transitioning: '
+            f'{state_machine.state} -> {transition}')
+        try:
+            state_machine.transition(
+                transition, self, *args, **kwargs)
+        except InvalidStateTransition:
+            logger.error(
+                f'invalid {state_machine_name} state transition: '
+                f'{state_machine.state} -> {transition}')
+        else:
+            logger.debug(
+                f'{state_machine_name} transitioned: '
+                f'{transition} -> {state_machine.state}')
 
     def network_transition(self, transition, *args, **kwargs):
         """
         Perform a transition on the network state.
         """
-        logger.debug(
-            f'network transitioning: '
-            f'{self.network_state} -> {transition}')
-        try:
-            self.network_state_machine.transition(
-                transition, self, *args, **kwargs)
-        except InvalidStateTransition:
-            logger.error(
-                f'invalid network state transition: '
-                f'{self.network_state} -> {transition}')
-        else:
-            logger.debug(
-                f'network transitioned: '
-                f'{transition} -> {self.network_state}')
+        self._base_transition(
+            self.network_state_machine,
+            'network',
+            transition,
+            *args,
+            **kwargs,
+        )
+
+    def session_transition(self, transition, *args, **kwargs):
+        """
+        Perform a transition on the network state.
+        """
+        self._base_transition(
+            self.session_state_machine,
+            'session',
+            transition,
+            *args,
+            **kwargs,
+        )
 
     def interface_transition(self, transition, *args, **kwargs):
         """
         Perform a transition on the interface state.
         """
-        logger.debug(
-            f'interface transitioning: '
-            f'{self.interface_state} -> {transition}')
-        try:
-            self.interface_state_machine.transition(
-                transition, self, *args, **kwargs)
-        except InvalidStateTransition:
-            logger.error(
-                f'invalid interface state transition: '
-                f'{self.interface_state} -> {transition}')
-        else:
-            logger.debug(
-                f'interface transitioned: '
-                f'{transition} -> {self.interface_state}')
+        self._base_transition(
+            self.interface_state_machine,
+            'interface',
+            transition,
+            *args,
+            **kwargs,
+        )
 
     def network_transition_threadsafe(self, transition, *args, **kwargs):
         """
@@ -156,9 +180,32 @@ class Application:
         transit = self.make_func_threadsafe(self.network_transition)
         transit(transition, *args, **kwargs)
 
+    def session_transition_threadsafe(self, transition, *args, **kwargs):
+        """
+        Threadsafe version of `session_transition()`.
+        """
+        transit = self.make_func_threadsafe(self.session_transition)
+        transit(transition, *args, **kwargs)
+
     def interface_transition_threadsafe(self, transition, *args, **kwargs):
         """
         Threadsafe version of `network_transition()`.
         """
         transit = self.make_func_threadsafe(self.interface_transition)
         transit(transition, *args, **kwargs)
+
+    def context_session_active(self, state):
+        expiry_duration = (state.validity.pending_expiry_time - datetime.utcnow()).total_seconds()
+
+        def on_session_pending_expiry():
+            self.session_transition_threadsafe('pending_expiry')
+
+        return cancel_at_context_end(run_delayed(on_session_pending_expiry, expiry_duration))
+
+    def context_session_pending_expiry(self, state):
+        expiry_duration = (state.validity.end - datetime.utcnow()).total_seconds()
+
+        def on_session_expired():
+            self.session_transition_threadsafe('has_expired')
+
+        return cancel_at_context_end(run_delayed(on_session_expired, expiry_duration))

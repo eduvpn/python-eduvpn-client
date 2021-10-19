@@ -9,8 +9,8 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
+import eduvpn
 from eduvpn.settings import VERIFY_KEYS
-from eduvpn.session import Validity
 
 
 logger = logging.getLogger(__name__)
@@ -107,13 +107,14 @@ def validate(signature: str, content: bytes) -> bytes:
     raise BadSignatureError
 
 
-def get_certificate_validity(certificate_text: str) -> Optional[Validity]:
+def get_certificate_validity(certificate_text: str) -> Optional['eduvpn.session.Validity']:
     try:
         certificate_bytes = certificate_text.encode('ascii')
     except UnicodeEncodeError:
         logger.error(f"non-ascii certificate: {certificate_text!r}")
         return None
     certificate = x509.load_pem_x509_certificate(certificate_bytes, default_backend())
+    from .session import Validity
     return Validity(
         start=certificate.not_valid_before,
         end=certificate.not_valid_after,
