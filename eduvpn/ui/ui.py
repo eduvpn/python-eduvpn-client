@@ -24,6 +24,7 @@ from ..state_machine import (
     ENTER, EXIT, transition_callback, transition_edge_callback,
     transition_level_callback)
 from ..session import Validity
+from .. import session as session_state
 from ..nm import nm_available
 from ..utils import (
     run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
@@ -178,7 +179,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def set_connection_switch_state(self, state: bool):
         self.connection_switch_state = state
-        self.connection_switch.set_state(True)
+        self.connection_switch.set_state(state)
 
     # network state transition callbacks
 
@@ -188,7 +189,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.update_connection_status()
 
     def update_connection_server(self):
-        server = self.app.interface_state.server
+        if isinstance(self.app.session_state,
+                      (session_state.InitialSessionState,
+                       session_state.NoSessionState)):
+            self.server_label.set_text('')
+            self.server_image.hide()
+            self.server_support_label.hide()
+            return
+        else:
+            server = self.app.session_state.server
+
         self.server_label.set_text(str(server))
 
         server_image_path = getattr(server, 'image_path', None)
@@ -206,8 +216,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.server_support_label.hide()
 
     def update_connection_validity(self):
-        expiry_text = get_validity_text(self.app.interface_state.validity)
-        self.connection_status_sub_label.set_markup(expiry_text)
+        if isinstance(self.app.session_state,
+                      (session_state.InitialSessionState,
+                       session_state.NoSessionState)):
+            self.connection_status_sub_label.hide()
+        else:
+            expiry_text = get_validity_text(self.app.session_state.validity)
+            self.connection_status_sub_label.show()
+            self.connection_status_sub_label.set_markup(expiry_text)
 
     def update_connection_status(self):
         self.connection_status_label.set_text(self.app.network_state.status_label)
@@ -215,12 +231,15 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.update_connection_validity()
 
-        assert not (hasattr(self.app.network_state, 'reconnect') and hasattr(self.app.network_state, 'disconnect'))
-        if hasattr(self.app.network_state, 'reconnect'):
+        assert not (self.app.network_state.has_transition('reconnect') and self.app.network_state.has_transition('disconnect'))
+        if self.app.network_state.has_transition('reconnect'):
             self.connection_sub_page.show()
-            self.connection_switch.show()
-            self.set_connection_switch_state(False)
-        elif hasattr(self.app.network_state, 'disconnect'):
+            if self.app.session_state.is_active:
+                self.connection_switch.show()
+                self.set_connection_switch_state(False)
+            else:
+                self.connection_switch.hide()
+        elif self.app.network_state.has_transition('disconnect'):
             self.connection_sub_page.show()
             self.connection_switch.show()
             self.set_connection_switch_state(True)
@@ -228,12 +247,22 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.connection_sub_page.hide()
             self.connection_switch.hide()
 
-        if (hasattr(self.app.network_state, 'renew_session') and (
-                not isinstance(self.app.network_state, network_state.ConnectedState))):
-            self.connection_sub_page.show()
-            self.renew_session_button.show()
+        if self.app.session_state.has_transition('renew'):
+            if isinstance(self.app.session_state, session_state.SessionExpiredState) and not isinstance(self.app.network_state, network_state.DisconnectedState):
+                # The user needs to disconnect first.
+                self.renew_session_button.hide()
+            else:
+                self.connection_sub_page.show()
+                self.renew_session_button.show()
         else:
             self.renew_session_button.hide()
+
+    # session state transition callbacks
+
+    @transition_callback(session_state.SessionState)
+    def default_session_transition_callback(self, old_state, new_state):
+        if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
+            self.update_connection_status()
 
     # interface state transition callbacks
 
@@ -559,7 +588,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
-        self.app.network_transition('renew_session')
+        self.app.session_transition('renew')
 
     @GtkTemplate.Callback()
     def on_close_window(self, window, event):

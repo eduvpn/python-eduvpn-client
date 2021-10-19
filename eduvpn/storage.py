@@ -7,9 +7,9 @@ from os import PathLike
 from datetime import datetime
 import json
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
+import eduvpn
 from eduvpn.settings import CONFIG_PREFIX
 from eduvpn.utils import get_logger
-from eduvpn.session import Validity
 
 logger = get_logger(__name__)
 
@@ -113,13 +113,14 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
         return None
 
 
-def get_current_validity(auth_url: str) -> Optional[Validity]:
+def get_current_validity(auth_url: str) -> Optional['eduvpn.session.Validity']:
     metadata = get_current_metadata(auth_url)
     if metadata is None:
         return None
     *_, start, end = metadata
     if start is None or end is None:
         return None
+    from .session import Validity
     return Validity(start, end)
 
 

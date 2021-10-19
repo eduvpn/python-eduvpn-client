@@ -5,7 +5,6 @@ from functools import partial
 from time import sleep
 from gettext import gettext
 from . import nm
-from .session import Validity
 from . import settings
 from .state_machine import BaseState
 from .app import Application
@@ -60,9 +59,6 @@ class NetworkState(BaseState):
     def set_error(self, app: Application, message: Optional[str] = None) -> 'NetworkState':
         return ConnectionErrorState(message)
 
-    def set_session_expired(self, app: Application) -> 'NetworkState':
-        return SessionExpiredState()
-
 
 class InitialNetworkState(NetworkState):
     """
@@ -72,28 +68,16 @@ class InitialNetworkState(NetworkState):
     the actual network state is obtained.
     """
 
-    def found_active_connection(self,
-                                app: Application,
-                                server: Server,
-                                validity: Optional[Validity],
-                                ) -> NetworkState:
-        """
-        An already active connection was found.
-        """
-        app.interface_transition('found_active_connection', server, validity)
-        return ConnectedState()
-
-    def found_previous_connection(self,
-                                  app: Application,
-                                  server: Server,
-                                  ) -> NetworkState:
+    def found_previous_connection(self, app: Application) -> NetworkState:
         """
         A previously established connection was found.
-
-        This will be the default connection to start.
         """
-        app.interface_transition('no_active_connection_found')
-        return DisconnectedState()
+        state = get_network_state(app)
+        if isinstance(state, (DisconnectedState, UnknownState)):
+            app.interface_transition('no_active_connection_found')
+        else:
+            app.interface_transition('found_active_connection')
+        return state
 
     def no_previous_connection_found(self, app: Application) -> NetworkState:
         """
@@ -155,11 +139,6 @@ def reconnect(app: Application) -> NetworkState:
     """
     disconnect(app, update_state=False)
     return ReconnectingState()
-
-
-def renew_session(app: Application) -> NetworkState:
-    app.interface_transition('renew_session')
-    return ConnectedState()
 
 
 UNKNOWN_STATE_MAX_RETRIES = 5
@@ -227,6 +206,21 @@ def on_any_update_callback(app: Application):
         handle_active_connection_status(app, status)
 
 
+def get_network_state(app: Application) -> NetworkState:
+    _, status = nm.connection_status(nm.get_client())
+    if status is nm.NM.ActiveConnectionState.ACTIVATING:
+        return ConnectingState()
+    elif status is nm.NM.ActiveConnectionState.ACTIVATED:
+        return ConnectedState()
+    elif status in [nm.NM.ActiveConnectionState.DEACTIVATED,
+                    nm.NM.ActiveConnectionState.DEACTIVATING]:
+        return DisconnectedState()
+    elif status is nm.NM.ActiveConnectionState.UNKNOWN or status is None:
+        return enter_unknown_state(app)
+    else:
+        raise ValueError(status)
+
+
 def handle_active_connection_status(app: Application, status: nm.NM.ActiveConnectionState):
     if status is nm.NM.ActiveConnectionState.ACTIVATING:
         app.network_transition('set_connecting')
@@ -279,18 +273,6 @@ class ConnectedState(NetworkState):
     def disconnect(self, app: Application) -> NetworkState:
         return disconnect(app)
 
-    def session_expiry_pending(self, app: Application) -> NetworkState:
-        """
-        The session is about the expire.
-        """
-        return PendingSessionExpiryState()
-
-    def renew_session(self, app: Application) -> NetworkState:
-        """
-        Re-estabilish a connection to the server.
-        """
-        return renew_session(app)
-
 
 class DisconnectedState(NetworkState):
     """
@@ -319,47 +301,6 @@ class ReconnectingState(NetworkState):
 
     def set_disconnected(self, app: Application) -> NetworkState:
         return connect(app)
-
-
-class PendingSessionExpiryState(NetworkState):
-    """
-    The network is currently connected to a server,
-    but the session is about to expire
-    and the user is advised to renew it
-    """
-
-    status_label = translated_property("Connection active")
-    status_image = StatusImage.CONNECTED
-
-    def start_new_connection(self,
-                             app: Application,
-                             server: Server,
-                             ) -> NetworkState:
-        return reconnect(app)
-
-    def disconnect(self, app: Application) -> NetworkState:
-        return disconnect(app)
-
-    def renew_session(self, app: Application) -> NetworkState:
-        """
-        Re-estabilish a connection to the server.
-        """
-        return renew_session(app)
-
-
-class SessionExpiredState(NetworkState):
-    """
-    The network could not connect because the session has expired.
-    """
-
-    status_label = translated_property("Session expired")
-    status_image = StatusImage.NOT_CONNECTED
-
-    def renew_session(self, app: Application) -> NetworkState:
-        """
-        Re-estabilish a connection to the server.
-        """
-        return renew_session(app)
 
 
 class ConnectionErrorState(NetworkState):

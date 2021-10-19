@@ -2,7 +2,6 @@ from typing import Optional, List, Callable
 from requests_oauthlib import OAuth2Session
 from ..state_machine import BaseState
 from ..oauth2 import OAuthWebServer
-from ..session import Validity
 from ..app import Application
 from ..server import (
     AnyServer, PredefinedServer, ConfiguredServer,
@@ -41,12 +40,10 @@ class InterfaceState(BaseState):
         elif isinstance(app.network_state, network_state.UnconnectedState):
             return transition.go_to_main_state(app)
         else:
-            server = app.server_db.get_single_configured()
-            if server is None:
-                return transition.go_to_main_state(app)
-            from .. import storage
-            validity = storage.get_current_validity(server.oauth_login_url)
-            return ConnectionStatus(server, validity)
+            return ConnectionStatus()
+
+    def renew_session(self, app: Application, server: ConfiguredServer) -> 'InterfaceState':
+        return transition.connect_to_server(app, server, renew=True)
 
 
 class InitialInterfaceState(InterfaceState):
@@ -57,15 +54,11 @@ class InitialInterfaceState(InterfaceState):
     the actual first state has been determined.
     """
 
-    def found_active_connection(self,
-                                app: Application,
-                                server: ConfiguredServer,
-                                validity: Optional[Validity],
-                                ) -> InterfaceState:
+    def found_active_connection(self, app: Application) -> InterfaceState:
         """
         An connection is already active, show its details.
         """
-        return ConnectionStatus(server, validity)
+        return ConnectionStatus()
 
     def no_active_connection_found(self, app: Application) -> InterfaceState:
         """
@@ -354,23 +347,14 @@ class ConfiguringConnection(InterfaceState):
     def __init__(self, server: AnyServer):
         self.server = server
 
-    def finished_configuring_connection(self,
-                                        app: Application,
-                                        validity: Optional[Validity],
-                                        ) -> InterfaceState:
-        return ConnectionStatus(self.server, validity)
+    def finished_configuring_connection(self, app: Application) -> InterfaceState:
+        return ConnectionStatus()
 
 
 class ConnectionStatus(InterfaceState):
     """
     Show info on the active connection status.
     """
-
-    def __init__(self,
-                 server: AnyServer,
-                 validity: Optional[Validity]):
-        self.server = server
-        self.validity = validity
 
     def go_back(self, app: Application) -> InterfaceState:
         return transition.go_to_main_state(app)
@@ -382,9 +366,6 @@ class ConnectionStatus(InterfaceState):
     def deactivate_connection(self, app: Application) -> InterfaceState:
         app.network_transition('disconnect')
         return self
-
-    def renew_certificate(self, app: Application) -> InterfaceState:
-        return transition.connect_to_server(app, self.server, renew=True)
 
 
 class ConfigureSettings(InterfaceState):
