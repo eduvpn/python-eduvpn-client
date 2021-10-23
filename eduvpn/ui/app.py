@@ -165,3 +165,10 @@ class EduVpnGtkApplication(Gtk.Application):
         self.connection_notification.show(
             title=_("Connection Error"),
             message=message)
+
+    @transition_edge_callback(ENTER, NO_WINDOW_QUIT_NETWORK_STATES)
+    def enter_NoActiveConnection(self, old_state, new_state):
+        if not self.window.is_visible():
+            # Quit the app if no window is open when the connection is deactivated.
+            logger.debug("connection deactivated while window closed")
+            self.on_quit()
