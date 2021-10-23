@@ -545,7 +545,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_switch_connection_state(self, switch, state):
         logger.debug("clicked on switch connection state")
-        if state is not self.set_connection_switch_state:
+        if state is not self.connection_switch_state:
+            self.connection_switch_state = state
             # The user has toggled the connection switch,
             # as opposed to the ui itself setting it.
             if state:
