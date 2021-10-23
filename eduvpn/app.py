@@ -16,9 +16,15 @@ class Application:
     def __init__(self, variant: ApplicationVariant, make_func_threadsafe):
         self.variant = variant
         self.make_func_threadsafe = make_func_threadsafe
-        from .network import InitialNetworkState
-        from .session import InitialSessionState, SessionActiveState, SessionPendingExpiryState
-        from .interface.state import InitialInterfaceState
+        from .network import NetworkState, InitialNetworkState
+        from .session import (
+            SessionState, InitialSessionState,
+            SessionActiveState, SessionPendingExpiryState,
+        )
+        from .interface.state import InterfaceState, InitialInterfaceState
+        self.network_state_machine: StateMachine[NetworkState]
+        self.session_state_machine: StateMachine[SessionState]
+        self.interface_state_machine: StateMachine[InterfaceState]
         self.network_state_machine = StateMachine(InitialNetworkState())
         self.session_state_machine = StateMachine(InitialSessionState())
         self.interface_state_machine = StateMachine(InitialInterfaceState())
