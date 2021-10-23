@@ -155,7 +155,7 @@ class EduVpnGtkApplication(Gtk.Application):
     def enter_SessionExpiredState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Session expired"),
-            message=_("You are no longer connected since the session has expired."))
+            message=_("Your session has expired."))
 
     @transition_edge_callback(ENTER, network_state.ConnectionErrorState)
     def enter_ConnectionErrorState(self, old_state, new_state):
