@@ -61,3 +61,5 @@ class Configuration:
         if value != self.settings[name]:
             self.settings[name] = value
             self.save()
+
+    force_tcp = SettingDescriptor[bool]()

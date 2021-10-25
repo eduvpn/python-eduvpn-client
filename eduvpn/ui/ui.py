@@ -119,6 +119,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     oauth_cancel_button = GtkTemplate.Child('cancelBrowserButton')
 
     settings_page = GtkTemplate.Child('settingsPage')
+    setting_config_force_tcp = GtkTemplate.Child('settingConfigForceTCP')
 
     loading_page = GtkTemplate.Child('loadingPage')
     loading_title = GtkTemplate.Child('loadingTitle')
@@ -489,6 +490,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if self.page_stack.get_visible_child() is self.settings_page:
             self.page_stack.set_visible_child(self.current_shown_page)
         else:
+            self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
             self.page_stack.set_visible_child(self.settings_page)
 
     @GtkTemplate.Callback()
@@ -595,6 +597,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
         self.app.session_transition('renew')
+
+    @GtkTemplate.Callback()
+    def on_config_force_tcp(self, switch, state: bool):
+        logger.debug("clicked on setting: 'force tcp'")
+        self.app.config.force_tcp = state
 
     @GtkTemplate.Callback()
     def on_close_window(self, window, event):
