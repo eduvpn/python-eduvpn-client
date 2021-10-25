@@ -22,10 +22,6 @@ class InterfaceState(BaseState):
         # Loading the server db doesn't normally change the interface state.
         return self
 
-    def toggle_settings(self, app: Application) -> 'InterfaceState':
-        # Toggling the settings page normally shows the settings page.
-        return ConfigureSettings(self)
-
     def encountered_exception(self,
                               app: Application,
                               message: str,
@@ -366,18 +362,6 @@ class ConnectionStatus(InterfaceState):
     def deactivate_connection(self, app: Application) -> InterfaceState:
         app.network_transition('disconnect')
         return self
-
-
-class ConfigureSettings(InterfaceState):
-    """
-    Allow the user to configure the application settings.
-    """
-
-    def __init__(self, previous_state):
-        self.previous_state = previous_state
-
-    def toggle_settings(self, app: Application) -> InterfaceState:
-        return self.previous_state
 
 
 class ErrorState(InterfaceState):

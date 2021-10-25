@@ -6,6 +6,7 @@ from . import nm
 from . import storage
 from .variants import ApplicationVariant
 from .state_machine import StateMachine, InvalidStateTransition
+from .config import Configuration
 from .utils import run_in_background_thread, run_delayed, cancel_at_context_end
 
 
@@ -39,6 +40,7 @@ class Application:
         self.initialize_network()
         if self.variant.use_predefined_servers:
             self.initialize_server_db()
+        self.config = Configuration.load()
 
     def initialize_network(self):
         """
