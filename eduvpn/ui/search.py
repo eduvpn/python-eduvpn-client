@@ -47,7 +47,7 @@ def show_result_components(window, show: bool):
     """
     Set the visibility of essential server list related components.
     """
-    show_ui_component(window.find_server_page, show)
+    window.show_page(window.find_server_page)
     show_ui_component(window.institute_list, show)
     show_ui_component(window.secure_internet_list, show)
     show_ui_component(window.other_server_list, show)
