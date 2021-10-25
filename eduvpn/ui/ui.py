@@ -135,9 +135,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         super().__init__(application=application)  # type: ignore
         self.app = application.app  # type: ignore
 
-        # TODO implement settings page (issue #334)
-        self.settings_button.hide()
-
         self.set_title(self.app.variant.name)  # type: ignore
         self.set_icon_from_file(self.app.variant.icon)  # type: ignore
         if self.app.variant.logo:
@@ -147,6 +144,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
             self.find_server_search_input.set_placeholder_text(_("Enter the server address"))
+
+        # Track the currently shown page so we can return to it
+        # when the settings page is closed.
+        self.current_shown_page = None
 
         self.app.connect_state_transition_callbacks(self, initialize=True)
 
@@ -186,12 +187,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         Show a collection of pages.
         """
         self.page_stack.set_visible_child(page)
+        self.current_shown_page = page
 
     def hide_page(self, page):
         """
         Show a collection of pages.
         """
-        pass  # TODO
+        self.current_shown_page = None
 
     # network state transition callbacks
 
@@ -279,14 +281,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # Only show the 'go back' button if
         # the corresponding transition is available.
         self.show_back_button(new_state.has_transition('go_back'))
-
-    @transition_edge_callback(ENTER, interface_state.ConfigureSettings)
-    def enter_ConfigureSettings(self, old_state, new_state):
-        self.settings_page.show()
-
-    @transition_edge_callback(EXIT, interface_state.ConfigureSettings)
-    def exit_ConfigureSettings(self, old_state, new_state):
-        self.settings_page.hide()
 
     @transition_edge_callback(ENTER, interface_state.configure_server_states)
     def enter_search(self, old_state, new_state):
@@ -492,7 +486,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_configure_settings(self, widget, event):
         logger.debug("clicked on configure settings")
-        self.app.interface_transition('toggle_settings')
+        if self.page_stack.get_visible_child() is self.settings_page:
+            self.page_stack.set_visible_child(self.current_shown_page)
+        else:
+            self.page_stack.set_visible_child(self.settings_page)
 
     @GtkTemplate.Callback()
     def on_get_help(self, widget, event):
