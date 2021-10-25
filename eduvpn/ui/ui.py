@@ -75,6 +75,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     app_logo = GtkTemplate.Child('appLogo')
 
+    page_stack = GtkTemplate.Child('pageStack')
     settings_button = GtkTemplate.Child('settingsButton')
     back_button_container = GtkTemplate.Child('backButtonEventBox')
 
@@ -170,16 +171,28 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.find_server_search_input.set_text(text)
 
     def show_loading_page(self, title: str, message: str):
-        self.loading_page.show()
+        self.show_page(self.loading_page)
         self.loading_title.set_text(title)
         self.loading_message.set_text(message)
 
     def hide_loading_page(self):
-        self.loading_page.hide()
+        self.hide_page(self.loading_page)
 
     def set_connection_switch_state(self, state: bool):
         self.connection_switch_state = state
         self.connection_switch.set_state(state)
+
+    def show_page(self, page):
+        """
+        Show a collection of pages.
+        """
+        self.page_stack.set_visible_child(page)
+
+    def hide_page(self, page):
+        """
+        Show a collection of pages.
+        """
+        pass  # TODO
 
     # network state transition callbacks
 
@@ -344,14 +357,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @transition_edge_callback(ENTER, interface_state.OAuthSetupPending)
     @transition_edge_callback(ENTER, interface_state.OAuthSetup)
     def enter_oauth_setup(self, old_state, new_state):
-        self.oauth_page.show()
+        self.show_page(self.oauth_page)
         in_setup_state = isinstance(new_state, interface_state.OAuthSetup)
         show_ui_component(self.oauth_cancel_button, in_setup_state)
 
     @transition_edge_callback(EXIT, interface_state.OAuthSetupPending)
     @transition_edge_callback(EXIT, interface_state.OAuthSetup)
     def exit_oauth_setup(self, old_state, new_state):
-        self.oauth_page.hide()
+        self.hide_page(self.oauth_page)
         self.oauth_cancel_button.hide()
 
     @transition_edge_callback(ENTER, interface_state.OAuthRefreshToken)
@@ -378,7 +391,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(ENTER, interface_state.ChooseProfile)
     def enter_ChooseProfile(self, old_state, new_state):
-        self.choose_profile_page.show()
+        self.show_page(self.choose_profile_page)
         self.profile_list.show()
 
         profile_tree_view = self.profile_list
@@ -400,12 +413,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(EXIT, interface_state.ChooseProfile)
     def exit_ChooseProfile(self, old_state, new_state):
-        self.choose_profile_page.hide()
+        self.hide_page(self.choose_profile_page)
         self.profile_list.hide()
 
     @transition_edge_callback(ENTER, interface_state.ChooseSecureInternetLocation)
     def enter_ChooseSecureInternetLocation(self, old_state, new_state):
-        self.choose_location_page.show()
+        self.show_page(self.choose_location_page)
         self.location_list.show()
 
         location_tree_view = self.location_list
@@ -436,7 +449,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(EXIT, interface_state.ChooseSecureInternetLocation)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
-        self.choose_location_page.hide()
+        self.hide_page(self.choose_location_page)
         self.location_list.hide()
 
     @transition_edge_callback(ENTER, interface_state.ConfiguringConnection)
@@ -452,13 +465,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(ENTER, interface_state.ConnectionStatus)
     def enter_ConnectionStatus(self, old_state, new_state):
-        self.connection_page.show()
+        self.show_page(self.connection_page)
         self.update_connection_server()
         self.update_connection_status()
 
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
-        self.connection_page.hide()
+        self.hide_page(self.connection_page)
 
     @transition_level_callback(interface_state.ConnectionStatus)
     def context_ConnectionStatus(self, state):
@@ -470,14 +483,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(ENTER, interface_state.ErrorState)
     def enter_ErrorState(self, old_state, new_state):
-        self.error_page.show()
+        self.show_page(self.error_page)
         self.error_text.set_text(new_state.message)
         has_next_transition = new_state.next_transition is not None
         show_ui_component(self.error_acknowledge_button, has_next_transition)
 
     @transition_edge_callback(EXIT, interface_state.ErrorState)
     def exit_ErrorState(self, old_state, new_state):
-        self.error_page.hide()
+        self.hide_page(self.error_page)
 
     # ui callbacks
 
