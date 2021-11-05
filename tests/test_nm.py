@@ -2,6 +2,7 @@ from unittest import TestCase, skipIf
 
 from eduvpn.nm import (nm_available, add_connection,
                        import_ovpn, get_client, get_mainloop)
+from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid
 from tests.mock_config import mock_config, mock_key, mock_cert
 
@@ -12,14 +13,16 @@ class TestNm(TestCase):
         nm_available()
 
     def test_import_ovpn(self):
-        import_ovpn(mock_config, mock_key, mock_cert)
+        ovpn = Ovpn(mock_config)
+        import_ovpn(ovpn, mock_key, mock_cert)
 
     def test_get_mainloop(self):
         get_mainloop()
 
     def test_get_add_connection(self):
         client = get_client()
-        simple_connection = import_ovpn(mock_config, mock_key, mock_cert)
+        ovpn = Ovpn(mock_config)
+        simple_connection = import_ovpn(ovpn, mock_key, mock_cert)
         add_connection(client, simple_connection)
 
     def test_get_uuid(self):
@@ -32,4 +35,4 @@ class TestNm(TestCase):
         # get_cert_key(client, uuid)
         # connection_status(client, uuid)
         # deactivate_connection(client, uuid)
-        # save_connection(client, mock_config, mock_key, mock_cert)
+        # save_connection_with_config(client, ovpn, mock_key, mock_cert)

@@ -16,6 +16,7 @@ from ..server import (
     SecureInternetServer, OrganisationServer, CustomServer,
     SecureInternetLocation, Profile)
 from .error import get_error_message
+from ..ovpn import Ovpn
 from ..utils import run_in_background_thread
 
 
@@ -151,12 +152,13 @@ def on_chosen_profile(app: Application,
             raise TypeError(server)
 
     try:
-        config, private_key, certificate = actions.get_config_and_keycert(
+        ovpn_content, private_key, certificate = actions.get_config_and_keycert(
             oauth_session, api_url, profile.id)
     except Exception as e:
         logger.error("error getting config and keycert", exc_info=True)
         enter_error_state_threadsafe(app, e)
         return
+    ovpn = Ovpn(ovpn_content)
     validity = crypto.get_certificate_validity(certificate)
     if validity is None:
         validity_start = validity_end = None
@@ -169,6 +171,10 @@ def on_chosen_profile(app: Application,
         validity_start, validity_end)
     storage.set_auth_url(auth_url)
 
+    # Apply the users settings to the ovpn file.
+    if app.config.force_tcp:
+        ovpn.force_tcp()
+
     def finished_saving_config_callback(result):
         logger.info(f"Finished saving network manager config: {result}")
         app.session_transition('new_session', server, validity)
@@ -179,7 +185,7 @@ def on_chosen_profile(app: Application,
 
     @app.make_func_threadsafe
     def save_connection():
-        nm.save_connection(nm.get_client(), config, private_key, certificate,
+        nm.save_connection(nm.get_client(), ovpn, private_key, certificate,
                            callback=finished_saving_config_callback)
 
     save_connection()
