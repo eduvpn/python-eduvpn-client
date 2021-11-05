@@ -4,6 +4,7 @@ from eduvpn.utils import get_prefix
 prefix = get_prefix()
 
 CONFIG_PREFIX = Path("~/.config/eduvpn/").expanduser().resolve()
+CONFIG_DIR_MODE = 0o700
 CONFIG_JSON_PREFIX = "2.0_"
 
 DISCO_URI = 'https://disco.eduvpn.org/v2/'
