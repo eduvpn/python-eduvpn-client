@@ -23,11 +23,23 @@ class ConnectionType(str, Enum):
     OTHER = "OTHER"
 
 
+def is_config_dir_permissions_correct() -> bool:
+    return CONFIG_PREFIX.stat().st_mode & 0o777 == CONFIG_DIR_MODE
+
+
+def check_config_dir_permissions():
+    if not is_config_dir_permissions_correct():
+        logger.warning(
+            f"The permissions for the config dir ({CONFIG_PREFIX}) "
+            f"are not as expected, it may be world readable!")
+
+
 def ensure_config_dir_exists():
     """
     Ensure the config directory exists with the correct permissions.
     """
     CONFIG_PREFIX.mkdir(parents=True, exist_ok=True, mode=CONFIG_DIR_MODE)
+    check_config_dir_permissions()
 
 
 def get_all_metadatas() -> dict:
