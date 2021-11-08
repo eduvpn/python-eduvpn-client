@@ -9,6 +9,7 @@ import json
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import eduvpn
 from eduvpn.settings import CONFIG_PREFIX, CONFIG_DIR_MODE
+from eduvpn.ovpn import Ovpn
 from eduvpn.utils import get_logger
 
 logger = get_logger(__name__)
@@ -216,9 +217,17 @@ def write_config(config: str, private_key: str, certificate: str, target: PathLi
     """
     Write the configuration to target.
     """
+    ovpn = Ovpn(config)
+    write_ovpn(ovpn, private_key, certificate, target)
+
+
+def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike):
+    """
+    Write the OVPN configuration file to target.
+    """
     logger.info(f"Writing configuration to {target}")
     with open(target, mode='w+t') as f:
-        f.writelines(config)
+        ovpn.write(f)
         f.writelines(f"\n<key>\n{private_key}\n</key>\n")
         f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
 

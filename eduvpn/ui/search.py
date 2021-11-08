@@ -47,7 +47,7 @@ def show_result_components(window, show: bool):
     """
     Set the visibility of essential server list related components.
     """
-    show_ui_component(window.find_server_page, show)
+    window.show_page(window.find_server_page)
     show_ui_component(window.institute_list, show)
     show_ui_component(window.secure_internet_list, show)
     show_ui_component(window.other_server_list, show)
@@ -63,7 +63,7 @@ def show_search_components(window, show: bool):
     show_ui_component(window.find_server_search_input, show)
 
 
-def show_search_resuls(window, show: bool):
+def show_search_results(window, show: bool):
     """
     Set the visibility of the tree of the search result component in the UI.
     """
@@ -124,7 +124,7 @@ def exit_server_search(window):
     "Hide the search page components."
     for group in group_tree_component:
         show_group_tree(window, group, False)
-    show_search_resuls(window, False)
+    show_search_results(window, False)
 
 
 def connect_selection_handlers(window, select_callback: Callable):
@@ -169,7 +169,7 @@ def update_results(window, servers: Optional[Iterable[Server]]):
     Update the UI with the search results.
     """
     if servers is None:
-        show_search_resuls(window, False)
+        show_search_results(window, False)
         return
     server_map = group_servers(servers)
     for group in group_tree_component:
@@ -178,4 +178,4 @@ def update_results(window, servers: Optional[Iterable[Server]]):
             group,
             server_map.get(group, []),
         )
-    show_search_resuls(window, True)
+    show_search_results(window, True)

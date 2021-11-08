@@ -6,7 +6,9 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from typing import Any, Optional, Tuple, Callable
 
-from eduvpn.storage import set_uuid, get_uuid, write_config
+from .config import Configuration
+from .ovpn import Ovpn
+from .storage import set_uuid, get_uuid, write_ovpn
 
 _logger = logging.getLogger(__name__)
 
@@ -81,13 +83,13 @@ def nm_ovpn_import(target: Path) -> Optional['NM.Connection']:
     return conn
 
 
-def import_ovpn(config: str, private_key: str, certificate: str) -> 'NM.SimpleConnection':
+def import_ovpn(ovpn: Ovpn, private_key: str, certificate: str) -> 'NM.SimpleConnection':
     """
     Import the OVPN string into Network Manager.
     """
     target_parent = Path(mkdtemp())
     target = target_parent / "eduVPN.ovpn"
-    write_config(config, private_key, certificate, target)
+    write_ovpn(ovpn, private_key, certificate, target)
     connection = nm_ovpn_import(target)
     rmtree(target_parent)
     return connection
@@ -131,9 +133,9 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callba
                                  user_data=callback)
 
 
-def save_connection(client: 'NM.Client', config, private_key, certificate, callback=None):
+def save_connection(client: 'NM.Client', ovpn: Ovpn, private_key, certificate, callback=None):
     _logger.info("writing configuration to Network Manager")
-    new_con = import_ovpn(config, private_key, certificate)
+    new_con = import_ovpn(ovpn, private_key, certificate)
     uuid = get_uuid()
     if uuid:
         old_con = client.get_connection_by_uuid(uuid)
@@ -141,6 +143,19 @@ def save_connection(client: 'NM.Client', config, private_key, certificate, callb
             update_connection(old_con, new_con, callback)
             return
     add_connection(client=client, connection=new_con, callback=callback)
+
+
+def save_connection_with_config(client: 'NM.Client',
+                                config,
+                                private_key,
+                                certificate,
+                                callback=None,
+                                ):
+    ovpn = Ovpn(config)
+    settings = Configuration.load()
+    if settings.force_tcp:
+        ovpn.force_tcp()
+    return save_connection(client, ovpn, private_key, certificate, callback)
 
 
 def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
@@ -288,7 +303,7 @@ def action_with_mainloop(action: Callable):
 
 def save_connection_with_mainloop(config, private_key, certificate):
     action_with_mainloop(
-        action=lambda callback: save_connection(get_client(), config, private_key, certificate, callback))
+        action=lambda callback: save_connection_with_config(get_client(), config, private_key, certificate, callback))
 
 
 def activate_connection_with_mainloop(uuid):

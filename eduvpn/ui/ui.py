@@ -75,6 +75,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     app_logo = GtkTemplate.Child('appLogo')
 
+    page_stack = GtkTemplate.Child('pageStack')
     settings_button = GtkTemplate.Child('settingsButton')
     back_button_container = GtkTemplate.Child('backButtonEventBox')
 
@@ -105,9 +106,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     connection_page = GtkTemplate.Child('connectionPage')
     connection_status_image = GtkTemplate.Child('connectionStatusImage')
     connection_status_label = GtkTemplate.Child('connectionStatusLabel')
-    connection_status_sub_label = GtkTemplate.Child('connectionStatusSubLabel')
+    connection_session_label = GtkTemplate.Child('connectionSessionLabel')
     connection_switch = GtkTemplate.Child('connectionSwitch')
-    connection_sub_page = GtkTemplate.Child('currentConnectionSubPage')
 
     server_image = GtkTemplate.Child('serverImage')
     server_label = GtkTemplate.Child('serverLabel')
@@ -119,6 +119,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     oauth_cancel_button = GtkTemplate.Child('cancelBrowserButton')
 
     settings_page = GtkTemplate.Child('settingsPage')
+    setting_config_force_tcp = GtkTemplate.Child('settingConfigForceTCP')
 
     loading_page = GtkTemplate.Child('loadingPage')
     loading_title = GtkTemplate.Child('loadingTitle')
@@ -135,9 +136,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         super().__init__(application=application)  # type: ignore
         self.app = application.app  # type: ignore
 
-        # TODO implement settings page (issue #334)
-        self.settings_button.hide()
-
         self.set_title(self.app.variant.name)  # type: ignore
         self.set_icon_from_file(self.app.variant.icon)  # type: ignore
         if self.app.variant.logo:
@@ -147,6 +145,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
             self.find_server_search_input.set_placeholder_text(_("Enter the server address"))
+
+        # Track the currently shown page so we can return to it
+        # when the settings page is closed.
+        self.current_shown_page = None
 
         self.app.connect_state_transition_callbacks(self, initialize=True)
 
@@ -170,16 +172,29 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.find_server_search_input.set_text(text)
 
     def show_loading_page(self, title: str, message: str):
-        self.loading_page.show()
+        self.show_page(self.loading_page)
         self.loading_title.set_text(title)
         self.loading_message.set_text(message)
 
     def hide_loading_page(self):
-        self.loading_page.hide()
+        self.hide_page(self.loading_page)
 
     def set_connection_switch_state(self, state: bool):
         self.connection_switch_state = state
         self.connection_switch.set_state(state)
+
+    def show_page(self, page):
+        """
+        Show a collection of pages.
+        """
+        self.page_stack.set_visible_child(page)
+        self.current_shown_page = page
+
+    def hide_page(self, page):
+        """
+        Show a collection of pages.
+        """
+        self.current_shown_page = None
 
     # network state transition callbacks
 
@@ -219,11 +234,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if isinstance(self.app.session_state,
                       (session_state.InitialSessionState,
                        session_state.NoSessionState)):
-            self.connection_status_sub_label.hide()
+            self.connection_session_label.hide()
         else:
             expiry_text = get_validity_text(self.app.session_state.validity)
-            self.connection_status_sub_label.show()
-            self.connection_status_sub_label.set_markup(expiry_text)
+            self.connection_session_label.show()
+            self.connection_session_label.set_markup(expiry_text)
 
     def update_connection_status(self):
         self.connection_status_label.set_text(self.app.network_state.status_label)
@@ -233,18 +248,15 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         assert not (self.app.network_state.has_transition('reconnect') and self.app.network_state.has_transition('disconnect'))
         if self.app.network_state.has_transition('reconnect'):
-            self.connection_sub_page.show()
             if self.app.session_state.is_active:
                 self.connection_switch.show()
                 self.set_connection_switch_state(False)
             else:
                 self.connection_switch.hide()
         elif self.app.network_state.has_transition('disconnect'):
-            self.connection_sub_page.show()
             self.connection_switch.show()
             self.set_connection_switch_state(True)
         else:
-            self.connection_sub_page.hide()
             self.connection_switch.hide()
 
         if self.app.session_state.has_transition('renew'):
@@ -252,7 +264,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 # The user needs to disconnect first.
                 self.renew_session_button.hide()
             else:
-                self.connection_sub_page.show()
                 self.renew_session_button.show()
         else:
             self.renew_session_button.hide()
@@ -271,14 +282,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # Only show the 'go back' button if
         # the corresponding transition is available.
         self.show_back_button(new_state.has_transition('go_back'))
-
-    @transition_edge_callback(ENTER, interface_state.ConfigureSettings)
-    def enter_ConfigureSettings(self, old_state, new_state):
-        self.settings_page.show()
-
-    @transition_edge_callback(EXIT, interface_state.ConfigureSettings)
-    def exit_ConfigureSettings(self, old_state, new_state):
-        self.settings_page.hide()
 
     @transition_edge_callback(ENTER, interface_state.configure_server_states)
     def enter_search(self, old_state, new_state):
@@ -344,14 +347,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @transition_edge_callback(ENTER, interface_state.OAuthSetupPending)
     @transition_edge_callback(ENTER, interface_state.OAuthSetup)
     def enter_oauth_setup(self, old_state, new_state):
-        self.oauth_page.show()
+        self.show_page(self.oauth_page)
         in_setup_state = isinstance(new_state, interface_state.OAuthSetup)
         show_ui_component(self.oauth_cancel_button, in_setup_state)
 
     @transition_edge_callback(EXIT, interface_state.OAuthSetupPending)
     @transition_edge_callback(EXIT, interface_state.OAuthSetup)
     def exit_oauth_setup(self, old_state, new_state):
-        self.oauth_page.hide()
+        self.hide_page(self.oauth_page)
         self.oauth_cancel_button.hide()
 
     @transition_edge_callback(ENTER, interface_state.OAuthRefreshToken)
@@ -378,7 +381,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(ENTER, interface_state.ChooseProfile)
     def enter_ChooseProfile(self, old_state, new_state):
-        self.choose_profile_page.show()
+        self.show_page(self.choose_profile_page)
         self.profile_list.show()
 
         profile_tree_view = self.profile_list
@@ -400,12 +403,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(EXIT, interface_state.ChooseProfile)
     def exit_ChooseProfile(self, old_state, new_state):
-        self.choose_profile_page.hide()
+        self.hide_page(self.choose_profile_page)
         self.profile_list.hide()
 
     @transition_edge_callback(ENTER, interface_state.ChooseSecureInternetLocation)
     def enter_ChooseSecureInternetLocation(self, old_state, new_state):
-        self.choose_location_page.show()
+        self.show_page(self.choose_location_page)
         self.location_list.show()
 
         location_tree_view = self.location_list
@@ -436,7 +439,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(EXIT, interface_state.ChooseSecureInternetLocation)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
-        self.choose_location_page.hide()
+        self.hide_page(self.choose_location_page)
         self.location_list.hide()
 
     @transition_edge_callback(ENTER, interface_state.ConfiguringConnection)
@@ -452,13 +455,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(ENTER, interface_state.ConnectionStatus)
     def enter_ConnectionStatus(self, old_state, new_state):
-        self.connection_page.show()
+        self.show_page(self.connection_page)
         self.update_connection_server()
         self.update_connection_status()
 
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
-        self.connection_page.hide()
+        self.hide_page(self.connection_page)
 
     @transition_level_callback(interface_state.ConnectionStatus)
     def context_ConnectionStatus(self, state):
@@ -470,21 +473,25 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @transition_edge_callback(ENTER, interface_state.ErrorState)
     def enter_ErrorState(self, old_state, new_state):
-        self.error_page.show()
+        self.show_page(self.error_page)
         self.error_text.set_text(new_state.message)
         has_next_transition = new_state.next_transition is not None
         show_ui_component(self.error_acknowledge_button, has_next_transition)
 
     @transition_edge_callback(EXIT, interface_state.ErrorState)
     def exit_ErrorState(self, old_state, new_state):
-        self.error_page.hide()
+        self.hide_page(self.error_page)
 
     # ui callbacks
 
     @GtkTemplate.Callback()
     def on_configure_settings(self, widget, event):
         logger.debug("clicked on configure settings")
-        self.app.interface_transition('toggle_settings')
+        if self.page_stack.get_visible_child() is self.settings_page:
+            self.page_stack.set_visible_child(self.current_shown_page)
+        else:
+            self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
+            self.page_stack.set_visible_child(self.settings_page)
 
     @GtkTemplate.Callback()
     def on_get_help(self, widget, event):
@@ -590,6 +597,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
         self.app.session_transition('renew')
+
+    @GtkTemplate.Callback()
+    def on_config_force_tcp(self, switch, state: bool):
+        logger.debug("clicked on setting: 'force tcp'")
+        self.app.config.force_tcp = state
 
     @GtkTemplate.Callback()
     def on_close_window(self, window, event):
