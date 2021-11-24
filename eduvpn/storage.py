@@ -8,7 +8,7 @@ from datetime import datetime
 import json
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import eduvpn
-from eduvpn.settings import CONFIG_PREFIX
+from eduvpn.settings import CONFIG_PREFIX, CONFIG_DIR_MODE
 from eduvpn.ovpn import Ovpn
 from eduvpn.utils import get_logger
 
@@ -21,6 +21,25 @@ class ConnectionType(str, Enum):
     INSTITUTE = "INSTITUTE",
     SECURE = "SECURE",
     OTHER = "OTHER"
+
+
+def is_config_dir_permissions_correct() -> bool:
+    return CONFIG_PREFIX.stat().st_mode & 0o777 == CONFIG_DIR_MODE
+
+
+def check_config_dir_permissions():
+    if not is_config_dir_permissions_correct():
+        logger.warning(
+            f"The permissions for the config dir ({CONFIG_PREFIX}) "
+            f"are not as expected, it may be world readable!")
+
+
+def ensure_config_dir_exists():
+    """
+    Ensure the config directory exists with the correct permissions.
+    """
+    CONFIG_PREFIX.mkdir(parents=True, exist_ok=True, mode=CONFIG_DIR_MODE)
+    check_config_dir_permissions()
 
 
 def get_all_metadatas() -> dict:
@@ -42,7 +61,7 @@ def _write_metadatas(storage: dict) -> None:
     """
     try:
         dump = json.dumps(storage)
-        _metadata_path.parent.mkdir(parents=True, exist_ok=True)
+        ensure_config_dir_exists()
         with open(_metadata_path, 'w') as f:
             f.write(dump)
     except Exception as e:
@@ -59,7 +78,7 @@ def _get_setting(what: str) -> Optional[str]:
 
 def _set_setting(what: str, value: str):
     p = (CONFIG_PREFIX / what).expanduser()
-    p.parent.mkdir(parents=True, exist_ok=True)
+    ensure_config_dir_exists()
     with open(p, 'w') as f:
         f.write(value)
 
