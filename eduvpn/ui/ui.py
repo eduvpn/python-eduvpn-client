@@ -150,11 +150,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # when the settings page is closed.
         self.current_shown_page = None
 
-        self.app.connect_state_transition_callbacks(self, initialize=True)
-
         # We track the switch state so we can distinguish
         # the switch being set by the ui from the user toggling it.
         self.connection_switch_state: Optional[bool] = None
+
+    def initialize(self):
+        self.app.connect_state_transition_callbacks(self)
 
         if not nm_available():
             show_error_dialog(
