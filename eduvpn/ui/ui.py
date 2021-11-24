@@ -197,6 +197,20 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         """
         self.current_shown_page = None
 
+    def is_on_settings_page(self) -> bool:
+        return self.page_stack.get_visible_child() is self.settings_page
+
+    def enter_settings_page(self):
+        assert not self.is_on_settings_page()
+        self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
+        self.page_stack.set_visible_child(self.settings_page)
+        self.show_back_button(True)
+
+    def leave_settings_page(self):
+        assert self.is_on_settings_page()
+        self.page_stack.set_visible_child(self.current_shown_page)
+        self.show_back_button(self.app.interface_state.has_transition('go_back'))
+
     # network state transition callbacks
 
     @transition_callback(network_state.NetworkState)
@@ -488,11 +502,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_configure_settings(self, widget, event):
         logger.debug("clicked on configure settings")
-        if self.page_stack.get_visible_child() is self.settings_page:
-            self.page_stack.set_visible_child(self.current_shown_page)
+        if self.is_on_settings_page():
+            self.leave_settings_page()
         else:
-            self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
-            self.page_stack.set_visible_child(self.settings_page)
+            self.enter_settings_page()
 
     @GtkTemplate.Callback()
     def on_get_help(self, widget, event):
@@ -502,7 +515,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_go_back(self, widget, event):
         logger.debug("clicked on go back")
-        self.app.interface_transition('go_back')
+        if self.is_on_settings_page():
+            self.leave_settings_page()
+        else:
+            self.app.interface_transition('go_back')
 
     @GtkTemplate.Callback()
     def on_add_other_server(self, button) -> None:
