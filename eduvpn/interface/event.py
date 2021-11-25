@@ -185,6 +185,7 @@ def on_chosen_profile(app: Application,
         app.interface_transition('finished_configuring_connection')
         app.current_network_uuid = storage.get_uuid()
         assert app.current_network_uuid is not None
+        nm.set_default_gateway(profile.use_as_default_gateway)
         app.network_transition('start_new_connection', server)
 
     @app.make_func_threadsafe
