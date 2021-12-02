@@ -8,7 +8,7 @@ on:
 
 jobs:
   containers:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         dist:
@@ -18,11 +18,11 @@ jobs:
           - pylama
           - pytest_centos_8
           - pytest_debian_buster
-          - pytest_fedora_33
+          - pytest_fedora_35
           - pytest_ubuntu_bionic
           - pytest_ubuntu_focal
           - rpm_centos_8
-          - rpm_fedora_33
+          - rpm_fedora_35
     steps:
       - name: Checkout
         uses: actions/checkout@v2
