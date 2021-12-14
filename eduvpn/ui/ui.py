@@ -27,7 +27,7 @@ from ..session import Validity
 from .. import session as session_state
 from ..nm import nm_available
 from ..utils import (
-    run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
+    get_prefix, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 
@@ -67,7 +67,11 @@ def get_validity_text(validity: Optional[Validity]) -> str:
         return dstr + hstr
 
 
-@GtkTemplate(filename="share/eduvpn/builder/mainwindow.ui")
+def get_template_path(filename: str) -> str:
+    return os.path.join(get_prefix(), 'share/eduvpn/builder', filename)
+
+
+@GtkTemplate(filename=get_template_path('mainwindow.ui'))
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
 
