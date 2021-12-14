@@ -1,6 +1,5 @@
 import logging
 import time
-import subprocess
 from functools import lru_cache
 from pathlib import Path
 from shutil import rmtree
@@ -244,20 +243,22 @@ def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.Vp
 def set_default_gateway(enable: bool):
     "If True, make the VPN connection the default gateway."
     _logger.debug(f"setting default gateway: {enable}")
+    client = get_client()
     uuid = get_uuid()
-    assert uuid is not None
-    command = [
-        'nmcli',
-        'connection',
-        'modify',
-        uuid,
-        'ipv4.never-default',
-        # Note the boolean is inverted because
-        # the setting defines the opposite.
-        'false' if enable else 'true',
-    ]
-    _logger.debug(f"command: {command}")
-    subprocess.run(command, check=True, timeout=1)
+    connection = client.get_connection_by_uuid(uuid)
+    ipv4_setting = connection.get_setting_ip4_config()
+
+    def callback(connection, task):
+        connection.commit_changes_finish(task)
+        _logger.info("finished setting default gateway")
+
+    ipv4_setting.set_property('never-default', enable)
+
+    connection.commit_changes_async(
+        save_to_disk=True,
+        cancellable=None,
+        callback=callback,
+    )
 
 
 @lru_cache(maxsize=1)
