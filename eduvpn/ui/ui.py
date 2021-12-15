@@ -67,11 +67,23 @@ def get_validity_text(validity: Optional[Validity]) -> str:
         return dstr + hstr
 
 
-def get_template_path(filename: str) -> str:
-    return os.path.join(get_prefix(), 'share/eduvpn/builder', filename)
+def get_template(filename: str) -> str:
+    path = os.path.join(get_prefix(), 'share/eduvpn/builder', filename)
+    relpath = os.path.relpath(
+        os.path.join(get_prefix(), 'share/eduvpn'),
+        os.getcwd(),
+    )
+    with open(path) as f:
+        return f.read().replace(
+            '<property name="pixbuf">../images',
+            f'<property name="pixbuf">{relpath}/images',
+        ).replace(
+            '<property name="icon">../',
+            f'<property name="icon">{relpath}/',
+        )
 
 
-@GtkTemplate(filename=get_template_path('mainwindow.ui'))
+@GtkTemplate(string=get_template('mainwindow.ui'))
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
 
