@@ -118,3 +118,11 @@ clean:
 	find  . -name *.pyc -delete
 	find  . -name __pycache__ -delete
 
+sdist: $(VENV)
+	$(VENV)/bin/python setup.py sdist
+
+rpmbuild: sdist
+	mkdir -p ~/rpmbuild/SOURCES/.
+	cp dist/*.tar.gz ~/rpmbuild/SOURCES/.
+	rpmbuild eduvpn.spec
+
