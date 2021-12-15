@@ -124,5 +124,5 @@ sdist: $(VENV)
 rpmbuild: sdist
 	mkdir -p ~/rpmbuild/SOURCES/.
 	cp dist/*.tar.gz ~/rpmbuild/SOURCES/.
-	rpmbuild eduvpn.spec
+	rpmbuild -bb geduvpn.spec
 
