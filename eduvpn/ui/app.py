@@ -68,7 +68,6 @@ class EduVpnGtkApplication(Gtk.Application):
         notify.initialize(self.app.variant)
         self.connection_notification = notify.Notification(self.app.variant)
         self.app.connect_state_transition_callbacks(self)
-        self.app.initialize()
 
     def do_shutdown(self):
         logger.debug('shutdown')
@@ -79,7 +78,9 @@ class EduVpnGtkApplication(Gtk.Application):
         logger.debug('activate')
         if not self.window:
             self.window = EduVpnGtkWindow(application=self)
+            self.window.initialize()
             self.window.present()
+            self.app.initialize()
         else:
             self.window.on_reopen_window()
 
