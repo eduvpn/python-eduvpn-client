@@ -2,7 +2,7 @@ from typing import Optional, Callable
 import threading
 from functools import lru_cache, partial, wraps
 from logging import getLogger
-from os import path
+from os import path, environ
 from sys import prefix
 
 logger = getLogger(__file__)
@@ -28,6 +28,10 @@ def get_prefix() -> str:
         if path.isfile(path.join(option, target)):
             return option
     raise Exception("Can't find eduVPN installation")
+
+
+def get_config_dir() -> str:
+    return environ.get("XDG_CONFIG_HOME", "~/.config")
 
 
 def custom_server_oauth_url(address):
