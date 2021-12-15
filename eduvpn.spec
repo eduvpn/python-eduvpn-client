@@ -74,7 +74,7 @@ Let's Connect! desktop client
 
 %install
 %py3_install
-desktop-file-install %{buildroot}/%{_datadir}/applications/eduvpn-client.desktop
+desktop-file-install %{buildroot}/%{_datadir}/applications/org.eduvpn.client.desktop
 
 %check
 %{__python3} setup.py test
@@ -90,14 +90,14 @@ desktop-file-install %{buildroot}/%{_datadir}/applications/eduvpn-client.desktop
 %doc README.md
 %{_bindir}/eduvpn-cli
 %{_bindir}/eduvpn-gui
-%{_datarootdir}/applications/eduvpn-client.desktop
+%{_datarootdir}/applications/org.eduvpn.client.desktop
 %{_datarootdir}/eduvpn/eduvpn.png
 %{_datarootdir}/eduvpn/country_codes.json
 %{_datarootdir}/eduvpn/builder/mainwindow.ui
-%{_datarootdir}/icons/hicolor/128x128/apps/eduvpn-client.png
-%{_datarootdir}/icons/hicolor/256x256/apps/eduvpn-client.png
-%{_datarootdir}/icons/hicolor/48x48/apps/eduvpn-client.png
-%{_datarootdir}/icons/hicolor/512x512/apps/eduvpn-client.png
+%{_datarootdir}/icons/hicolor/128x128/apps/org.eduvpn.client.png
+%{_datarootdir}/icons/hicolor/256x256/apps/org.eduvpn.client.png
+%{_datarootdir}/icons/hicolor/48x48/apps/org.eduvpn.client.png
+%{_datarootdir}/icons/hicolor/512x512/apps/org.eduvpn.client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
 %{_datarootdir}/locale/*/LC_MESSAGES/eduVPN.mo
@@ -107,13 +107,13 @@ desktop-file-install %{buildroot}/%{_datadir}/applications/eduvpn-client.desktop
 %doc README.md
 %{_bindir}/letsconnect-cli
 %{_bindir}/letsconnect-gui
-%{_datarootdir}/applications/letsconnect-client.desktop
+%{_datarootdir}/applications/org.letsconnect.client.desktop
 %{_datarootdir}/eduvpn/builder/mainwindow.ui
 %{_datarootdir}/eduvpn/country_codes.json
-%{_datarootdir}/icons/hicolor/128x128/apps/letsconnect-client.png
-%{_datarootdir}/icons/hicolor/256x256/apps/letsconnect-client.png
-%{_datarootdir}/icons/hicolor/48x48/apps/letsconnect-client.png
-%{_datarootdir}/icons/hicolor/512x512/apps/letsconnect-client.png
+%{_datarootdir}/icons/hicolor/128x128/apps/org.letsconnect.client.png
+%{_datarootdir}/icons/hicolor/256x256/apps/org.letsconnect.client.png
+%{_datarootdir}/icons/hicolor/48x48/apps/org.letsconnect.client.png
+%{_datarootdir}/icons/hicolor/512x512/apps/org.letsconnect.client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
 %{_datarootdir}/letsconnect/images/*.png
