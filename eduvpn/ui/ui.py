@@ -27,7 +27,7 @@ from ..session import Validity
 from .. import session as session_state
 from ..nm import nm_available
 from ..utils import (
-    run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
+    get_prefix, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 
@@ -67,7 +67,11 @@ def get_validity_text(validity: Optional[Validity]) -> str:
         return dstr + hstr
 
 
-@GtkTemplate(filename="share/eduvpn/builder/mainwindow.ui")
+def get_template_path(filename: str) -> str:
+    return os.path.join(get_prefix(), 'share/eduvpn/builder', filename)
+
+
+@GtkTemplate(filename=get_template_path('mainwindow.ui'))
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "ApplicationWindow"
 
@@ -150,11 +154,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # when the settings page is closed.
         self.current_shown_page = None
 
-        self.app.connect_state_transition_callbacks(self, initialize=True)
-
         # We track the switch state so we can distinguish
         # the switch being set by the ui from the user toggling it.
         self.connection_switch_state: Optional[bool] = None
+
+    def initialize(self):
+        self.app.connect_state_transition_callbacks(self)
 
         if not nm_available():
             show_error_dialog(
@@ -195,6 +200,20 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         Show a collection of pages.
         """
         self.current_shown_page = None
+
+    def is_on_settings_page(self) -> bool:
+        return self.page_stack.get_visible_child() is self.settings_page
+
+    def enter_settings_page(self):
+        assert not self.is_on_settings_page()
+        self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
+        self.page_stack.set_visible_child(self.settings_page)
+        self.show_back_button(True)
+
+    def leave_settings_page(self):
+        assert self.is_on_settings_page()
+        self.page_stack.set_visible_child(self.current_shown_page)
+        self.show_back_button(self.app.interface_state.has_transition('go_back'))
 
     # network state transition callbacks
 
@@ -487,11 +506,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_configure_settings(self, widget, event):
         logger.debug("clicked on configure settings")
-        if self.page_stack.get_visible_child() is self.settings_page:
-            self.page_stack.set_visible_child(self.current_shown_page)
+        if self.is_on_settings_page():
+            self.leave_settings_page()
         else:
-            self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
-            self.page_stack.set_visible_child(self.settings_page)
+            self.enter_settings_page()
 
     @GtkTemplate.Callback()
     def on_get_help(self, widget, event):
@@ -501,7 +519,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @GtkTemplate.Callback()
     def on_go_back(self, widget, event):
         logger.debug("clicked on go back")
-        self.app.interface_transition('go_back')
+        if self.is_on_settings_page():
+            self.leave_settings_page()
+        else:
+            self.app.interface_transition('go_back')
 
     @GtkTemplate.Callback()
     def on_add_other_server(self, button) -> None:

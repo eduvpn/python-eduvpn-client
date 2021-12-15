@@ -107,24 +107,21 @@ class Application:
         """
         return self.interface_state_machine.state
 
-    def connect_state_transition_callbacks(self, obj, *, initialize=False):
+    def connect_state_transition_callbacks(self, obj):
         """
         Register all state transition callback methods decorated with
         `@transition_callback()` and `@transition_edge_callback()`
         of an object.
         """
         from .network import NetworkState
-        self.network_state_machine.connect_object_callbacks(obj, NetworkState)
+        self.network_state_machine.connect_object_callbacks(
+            obj, NetworkState)
         from .session import SessionState
         self.session_state_machine.connect_object_callbacks(
             obj, SessionState)
         from .interface.state import InterfaceState
         self.interface_state_machine.connect_object_callbacks(
             obj, InterfaceState)
-        if initialize:
-            self.network_state_machine.trigger_initial_callbacks()
-            self.session_state_machine.trigger_initial_callbacks()
-            self.interface_state_machine.trigger_initial_callbacks()
 
     def _base_transition(self, state_machine, state_machine_name, transition, *args, **kwargs):
         """

@@ -1,9 +1,9 @@
 from pathlib import Path
-from eduvpn.utils import get_prefix
+from eduvpn.utils import get_prefix, get_config_dir
 
 prefix = get_prefix()
 
-CONFIG_PREFIX = Path("~/.config/eduvpn/").expanduser().resolve()
+CONFIG_PREFIX = (Path(get_config_dir()).expanduser() / "eduvpn").resolve()
 CONFIG_DIR_MODE = 0o700
 CONFIG_JSON_PREFIX = "2.0_"
 

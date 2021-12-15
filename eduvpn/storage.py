@@ -229,7 +229,7 @@ def write_config(config: str, private_key: str, certificate: str, target: PathLi
     """
     Write the configuration to target.
     """
-    ovpn = Ovpn(config)
+    ovpn = Ovpn.parse(config)
     write_ovpn(ovpn, private_key, certificate, target)
 
 

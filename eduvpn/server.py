@@ -192,6 +192,13 @@ class Profile:
     def __repr__(self):
         return f"<Profile id={self.id!r} {str(self)!r}>"
 
+    @property
+    def use_as_default_gateway(self) -> bool:
+        if self.default_gateway is None:
+            return False
+        else:
+            return self.default_gateway
+
 
 class SecureInternetLocation:
     def __init__(self,
