@@ -134,9 +134,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     error_acknowledge_button = GtkTemplate.Child('errorAcknowledgeButton')
 
     def __init__(self, *, application: Application):  # type: ignore
-        # Fix the cwd for the image paths in the interface template to resolve.
-        os.chdir('share/eduvpn/builder')
-
         super().__init__(application=application)  # type: ignore
         self.app = application.app  # type: ignore
 

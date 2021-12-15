@@ -36,7 +36,7 @@
                   <object class="GtkImage" id="backButton">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="pixbuf">../images/back.png</property>
+                    <property name="pixbuf">share/eduvpn/images/back.png</property>
                   </object>
                 </child>
               </object>
@@ -54,7 +54,7 @@
                 <property name="can_focus">False</property>
                 <property name="margin_left">10</property>
                 <property name="margin_right">10</property>
-                <property name="pixbuf">../images/edu-vpn-logo.png</property>
+                <property name="pixbuf">share/eduvpn/images/edu-vpn-logo.png</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -77,7 +77,7 @@
                       <object class="GtkImage" id="settingsButton">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="pixbuf">../images/settings.png</property>
+                        <property name="pixbuf">share/eduvpn/images/settings.png</property>
                       </object>
                     </child>
                   </object>
@@ -96,7 +96,7 @@
                       <object class="GtkImage" id="helpButton">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="pixbuf">../images/question-icon.png</property>
+                        <property name="pixbuf">share/eduvpn/images/question-icon.png</property>
                       </object>
                     </child>
                   </object>
@@ -136,7 +136,7 @@
                       <object class="GtkImage" id="findServerImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="pixbuf">../images/institute.png</property>
+                        <property name="pixbuf">share/eduvpn/images/institute.png</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -259,7 +259,7 @@
                                   <object class="GtkImage">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="pixbuf">../images/institute-icon.png</property>
+                                    <property name="pixbuf">share/eduvpn/images/institute-icon.png</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -319,7 +319,7 @@
                                   <object class="GtkImage">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="pixbuf">../images/earth-icon.png</property>
+                                    <property name="pixbuf">share/eduvpn/images/earth-icon.png</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -391,7 +391,7 @@
                                   <object class="GtkImage">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="pixbuf">../images/server-icon.png</property>
+                                    <property name="pixbuf">share/eduvpn/images/server-icon.png</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -725,7 +725,7 @@
                   <object class="GtkImage" id="connectionStatusImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="pixbuf">../images/desktop-default.png</property>
+                    <property name="pixbuf">share/eduvpn/images/desktop-default.png</property>
                   </object>
                   <packing>
                     <property name="expand">True</property>
