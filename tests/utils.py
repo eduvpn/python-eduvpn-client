@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from unittest.mock import patch
 import threading
 from shutil import rmtree
 import unittest
@@ -11,6 +12,13 @@ from eduvpn.app import Application
 
 def remove_existing_config():
     rmtree(settings.CONFIG_PREFIX, ignore_errors=True)
+
+
+@contextmanager
+def patch_remote_api(server_list, org_list):
+    with patch('eduvpn.remote.list_servers', lambda uri: server_list):
+        with patch('eduvpn.remote.list_organisations', lambda uri: org_list):
+            yield
 
 
 @contextmanager
