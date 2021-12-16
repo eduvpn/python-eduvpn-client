@@ -135,7 +135,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def __init__(self, *, application: Application):  # type: ignore
         # Fix the cwd for the image paths in the interface template to resolve.
-        os.chdir('share/eduvpn/builder')
+        os.chdir(os.path.join(get_prefix(), 'share/eduvpn/builder'))
 
         super().__init__(application=application)  # type: ignore
         self.app = application.app  # type: ignore
