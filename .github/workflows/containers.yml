@@ -18,6 +18,7 @@ jobs:
           - pylama
           - pytest_centos_8
           - pytest_debian_buster
+          - pytest_debian_bullseye
           - pytest_fedora_35
           - pytest_ubuntu_bionic
           - pytest_ubuntu_focal

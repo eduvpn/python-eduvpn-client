@@ -7,4 +7,3 @@ ADD . /code
 WORKDIR /code
 RUN pip3 install ".[test]"
 RUN pylama --ignore C901 eduvpn tests
-
