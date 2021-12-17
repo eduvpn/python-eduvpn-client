@@ -107,13 +107,13 @@ desktop-file-install %{buildroot}/%{_datadir}/applications/org.eduvpn.client.des
 %doc README.md
 %{_bindir}/letsconnect-cli
 %{_bindir}/letsconnect-gui
-%{_datarootdir}/applications/org.letsconnect.client.desktop
+%{_datarootdir}/applications/org.letsconnect-vpn.client.desktop
 %{_datarootdir}/eduvpn/builder/mainwindow.ui
 %{_datarootdir}/eduvpn/country_codes.json
-%{_datarootdir}/icons/hicolor/128x128/apps/org.letsconnect.client.png
-%{_datarootdir}/icons/hicolor/256x256/apps/org.letsconnect.client.png
-%{_datarootdir}/icons/hicolor/48x48/apps/org.letsconnect.client.png
-%{_datarootdir}/icons/hicolor/512x512/apps/org.letsconnect.client.png
+%{_datarootdir}/icons/hicolor/128x128/apps/org.letsconnect-vpn.client.png
+%{_datarootdir}/icons/hicolor/256x256/apps/org.letsconnect-vpn.client.png
+%{_datarootdir}/icons/hicolor/48x48/apps/org.letsconnect-vpn.client.png
+%{_datarootdir}/icons/hicolor/512x512/apps/org.letsconnect-vpn.client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
 %{_datarootdir}/letsconnect/images/*.png
