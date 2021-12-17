@@ -12,7 +12,7 @@ The eduVPN client has been tested with:
  * Debian 10 (Buster)
  * Ubuntu 20.04 LTS and 18.04 LTS
  * CentOS 8
- * Fedora 33 and 34
+ * Fedora 34 and 35
 
 .. note::
 

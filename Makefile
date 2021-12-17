@@ -73,10 +73,18 @@ doc:  $(VENV)/
 
 srpm:
 	docker build -t rpm_centos_8 -f docker/rpm_centos_8.docker .
-	docker build -t rpm_fedora_33 -f docker/rpm_fedora_33.docker .
-	mkdir dist || true
+	docker build -t rpm_fedora_35 -f docker/rpm_fedora_35.docker .
+	mkdir -p dist
 	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
-	docker run -v `pwd`/dist:/dist:rw rpm_fedora_33 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
+	docker run -v `pwd`/dist:/dist:rw rpm_fedora_35 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
+
+rpm:
+	docker build -t rpm_centos_8 -f docker/rpm_centos_8.docker .
+	docker build -t rpm_fedora_35 -f docker/rpm_fedora_35.docker .
+	mkdir -p dist
+	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
+	docker run -v `pwd`/dist:/dist:rw rpm_fedora_35 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
+
 
 $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
@@ -109,4 +117,13 @@ clean:
 	rm -rf $(VENV) dist .eggs eduvpn_client.egg-info .pytest_cache tests/__pycache__/
 	find  . -name *.pyc -delete
 	find  . -name __pycache__ -delete
+
+sdist: $(VENV)
+	$(VENV)/bin/python setup.py sdist
+
+rpmbuild: sdist
+	mkdir -p ~/rpmbuild/SOURCES/.
+	cp dist/*.tar.gz ~/rpmbuild/SOURCES/.
+	rpmbuild -bs eduvpn.spec
+	rpmbuild -bb eduvpn.spec
 

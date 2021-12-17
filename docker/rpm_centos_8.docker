@@ -24,13 +24,12 @@ RUN yum install -y	\
     desktop-file-utils
 
 
-
 RUN rpmdev-setuptree
 
 ADD . /code
 WORKDIR /code
 
 RUN python3 setup.py sdist
-RUN cp dist/*.tar.gz /root/rpmbuild/SOURCES/.
-
-CMD rpmbuild -bs eduvpn.spec && rpmbuild -bb eduvpn.spec
+RUN cp dist/*.tar.gz ~/rpmbuild/SOURCES/.
+RUN rpmbuild -bs eduvpn.spec
+RUN rpmbuild -bb eduvpn.spec
