@@ -242,24 +242,18 @@ def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.Vp
 
 def set_default_gateway(enable: bool):
     "If True, make the VPN connection the default gateway."
-    _logger.debug(f"setting default gateway: {enable}")
+    _logger.info(f"setting default gateway: {enable}")
     client = get_client()
     uuid = get_uuid()
     connection = client.get_connection_by_uuid(uuid)
     ipv4_setting = connection.get_setting_ip4_config()
-
-    def callback(connection, task):
-        connection.commit_changes_finish(task)
-        _logger.info("finished setting default gateway")
-
-    ipv4_setting.set_property('never-default', enable)
-
-    connection.commit_changes_async(
+    ipv6_setting = connection.get_setting_ip6_config()
+    ipv4_setting.set_property('never-default', not enable)
+    ipv6_setting.set_property('never-default', not enable)
+    connection.commit_changes(
         save_to_disk=True,
         cancellable=None,
-        callback=callback,
     )
-
 
 @lru_cache(maxsize=1)
 def get_dbus() -> Optional['dbus.SystemBus']:
