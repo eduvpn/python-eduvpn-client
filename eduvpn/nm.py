@@ -255,6 +255,7 @@ def set_default_gateway(enable: bool):
         cancellable=None,
     )
 
+
 @lru_cache(maxsize=1)
 def get_dbus() -> Optional['dbus.SystemBus']:
     """

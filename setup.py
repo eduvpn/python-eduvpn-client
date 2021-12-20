@@ -23,6 +23,8 @@ tests_require = [
 mypy_require = [
     'mypy',
     'PyGObject-stubs',
+    'types-requests',
+    'types-setuptools',
 ]
 
 gui_require = [
