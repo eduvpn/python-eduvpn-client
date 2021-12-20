@@ -29,7 +29,7 @@ eduvpn-cli: $(VENV)/bin/eduvpn-cli
 	$(VENV)/bin/eduvpn-cli interactive
 
 dockers:
-	for i in `ls docker/*.docker`; do echo "*** $$i"; docker build . -f $$i; done
+	for i in `ls docker/*.docker`; do echo "*** $$i"; docker build --progress=plain . -f $$i; done
 
 # install all required binary packages on a debian based system
 deb:
@@ -71,20 +71,21 @@ doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt
 	$(VENV)/bin/python -msphinx doc doc/_build
 
-srpm:
-	docker build -t rpm_centos_8 -f docker/rpm_centos_8.docker .
-	docker build -t rpm_fedora_35 -f docker/rpm_fedora_35.docker .
+srpm-fedora:
+	rm dist/*.src.rpm
+	docker build --progress=plain -t rpm_fedora_35 -f docker/rpm_fedora_35.docker .
 	mkdir -p dist
-	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_35 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
 
-rpm:
-	docker build -t rpm_centos_8 -f docker/rpm_centos_8.docker .
-	docker build -t rpm_fedora_35 -f docker/rpm_fedora_35.docker .
+rpm-fedora:
+	docker build --progress=plain -t rpm_fedora_35 -f docker/rpm_fedora_35.docker .
 	mkdir -p dist
-	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_35 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
 
+rpm-centos:
+	docker build --progress=plain -t rpm_centos_8 -f docker/rpm_centos_8.docker .
+	mkdir -p dist
+	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
 
 $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
@@ -119,7 +120,12 @@ clean:
 	find  . -name __pycache__ -delete
 
 sdist: $(VENV)
+	rm dist/*.tar.gz
 	$(VENV)/bin/python setup.py sdist
+
+bdist_wheel: $(VENV)
+	rm dist/*.whl
+	$(VENV)/bin/python setup.py bdist_wheel
 
 rpmbuild: sdist
 	mkdir -p ~/rpmbuild/SOURCES/.
@@ -127,3 +133,14 @@ rpmbuild: sdist
 	rpmbuild -bs eduvpn.spec
 	rpmbuild -bb eduvpn.spec
 
+$(VENV)/bin/copr-cli: $(VENV)
+	$(VENV)/bin/pip install copr-cli
+
+$(VENV)/bin/twine: $(VENV)
+	$(VENV)/bin/pip install twine
+
+copr-upload: srpm-fedora $(VENV)/bin/copr-cli
+	$(VENV)/bin/copr-cli build @eduvpn/eduvpn-client dist/*.src.rpm
+
+twine-upload: sdist bdist_wheel $(VENV)/bin/twine
+	$(VENV)/bin/twine upload dist/*.tar.gz dist/*.whl
