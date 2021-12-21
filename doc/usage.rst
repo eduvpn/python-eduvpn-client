@@ -32,5 +32,5 @@ For example, to refresh your configured configuration and certicates one can run
 .. code-block:: bash
 
     $ eduvpn-cli refresh
-    INFO:eduvpn.remote:Requesting https://demo.eduvpn.nl/info.json
+    INFO:eduvpn.remote:Requesting https://demo.eduvpn.nl/.well-known/vpn-user-portal
     INFO:eduvpn.storage:updating token for https://demo.eduvpn.nl/
