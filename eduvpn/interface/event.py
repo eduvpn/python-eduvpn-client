@@ -50,8 +50,8 @@ def on_setup_oauth(app: Application, server: AnyServer):
         else:
             logger.warning(f"missing 'secure internet server' for {server!r}")
     logger.info(f"opening browser with {browser_url}")
-    webbrowser.open(browser_url)
     app.interface_transition_threadsafe('ready_for_oauth_setup', webserver)
+    webbrowser.open(browser_url)
 
 
 @run_in_background_thread('oauth-refresh')
