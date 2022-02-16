@@ -74,14 +74,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def __new__(cls, application: Application):
         builder = Gtk.Builder()
-        builder.add_from_file(get_template_path('mainwindow.ui'))
-        window = builder.get_object('eduvpn')
-        window.setup(builder, application)
-        window.set_application(application)
+        builder.add_from_file(get_template_path('mainwindow.ui'))  # type: ignore
+        window = builder.get_object('eduvpn')  # type: ignore
+        window.setup(builder, application)  # type: ignore
+        window.set_application(application)  # type: ignore
         return window
 
     def setup(self, builder, application: Application):
-        self.app = application.app
+        self.app = application.app  # type: ignore
         handlers = {
             "on_configure_settings": self.on_configure_settings,
             "on_get_help": self.on_get_help,
