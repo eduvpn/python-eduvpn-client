@@ -25,7 +25,7 @@ from ..state_machine import (
     transition_level_callback)
 from ..session import Validity
 from .. import session as session_state
-from ..nm import nm_available
+from ..nm import nm_available, nm_managed
 from ..utils import (
     get_prefix, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
 from . import search
@@ -184,7 +184,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self,
                 name=_("Error"),
                 title=_("NetworkManager not available"),
-                message=_("The application will not be able to configure the network."))
+                message=_("The application will not be able to configure the network. Please install and set up NetworkManager."))
+        elif not nm_managed():
+            show_error_dialog(
+                self,
+                name=_("Error"),
+                title=_("NetworkManager not managing device"),
+                message=_("The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."))
 
     # ui functions
 

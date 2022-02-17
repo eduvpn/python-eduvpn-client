@@ -57,6 +57,22 @@ def nm_available() -> bool:
         return True
 
 
+def nm_managed() -> bool:
+    """
+    check if any device of the primary connection is managed by Network Manager
+    """
+    client = get_client()
+    active_connection = client.get_primary_connection()
+    if active_connection is None:
+        return False
+
+    master_devices = active_connection.get_devices()
+    if master_devices is None:
+        return False
+
+    return any(d.get_managed() for d in master_devices)
+
+
 def get_existing_configuration_uuid() -> Optional[str]:
     uuid = get_uuid()
     if uuid is None:
