@@ -3,7 +3,7 @@ from glob import glob
 
 from setuptools import setup, find_packages
 
-__version__ = "2.2.0"
+__version__ = "2.2.1"
 
 
 install_requires = [
