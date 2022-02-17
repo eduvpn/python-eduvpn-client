@@ -1,3 +1,39 @@
+2.2.1
+===
+
+Bugfixes
+--------
+* #440  Fix authorization for the Pale Moon browser by @jwijenbergh
+* #448  Fix backwards compatibility with older GTK versions (e.g. Ubuntu 18.04) by @jwijenbergh
+
+Enhancements
+------------
+* #437  Switch from /info.json to /.well-known/vpn-user-portal by @fkooman
+* #443  Use the vault archive for CentOS 8 in the CI by @jwijenbergh
+* #449  Add an error popup if no device of the primary connection is managed by NetworkManager by @jwijenbergh
+* #450  Add missing gir1.2 nm package for Debian based systems to the Makefile by @jwijenbergh
+
+2.2
+===
+
+Bugfixes
+--------
+* #408  Fix issue with missing country flags by @alvra
+* #416  Fix config directory permissions by @alvra
+* #420  RPM icon issue by @gijzelaerr
+* #431  Fix os.chdir by @fkooman
+* #436  Fix split tunnel by @fkooman
+
+Enhancements
+------------
+* #400  Various improvements by @alvra
+* #401  Update license references to GPLv3+ by @fkooman
+* #409  Allow the window to remain open by @alvra
+* #414  Implement settings page by @alvra
+* #419  Updates by @alvra
+* #427  Allow user defined config directory using $XDG_CONFIG_HOME by @Jesse-Bakker
+
+
 2.1
 ===
 
