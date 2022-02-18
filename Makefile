@@ -73,7 +73,7 @@ doc:  $(VENV)/
 	$(VENV)/bin/python -msphinx doc doc/_build
 
 srpm-fedora:
-	rm dist/*.src.rpm
+	rm -f dist/*.src.rpm
 	docker build --progress=plain -t rpm_fedora_35 -f docker/rpm_fedora_35.docker .
 	mkdir -p dist
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_35 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
@@ -121,11 +121,11 @@ clean:
 	find  . -name __pycache__ -delete
 
 sdist: $(VENV)
-	rm dist/*.tar.gz
+	rm -f dist/*.tar.gz
 	$(VENV)/bin/python setup.py sdist
 
 bdist_wheel: $(VENV)
-	rm dist/*.whl
+	rm -f dist/*.whl
 	$(VENV)/bin/python setup.py bdist_wheel
 
 rpmbuild: sdist
