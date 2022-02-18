@@ -12,6 +12,8 @@ Enhancements
 * #443  Use the vault archive for CentOS 8 in the CI by @jwijenbergh
 * #449  Add an error popup if no device of the primary connection is managed by NetworkManager by @jwijenbergh
 * #450  Add missing gir1.2 nm package for Debian based systems to the Makefile by @jwijenbergh
+* #452  Move from CentOS 8 in the CI to CentOS stream 8 by @jwijenbergh
+* #453  Remove change location button by @jwijenbergh
 
 2.2
 ===
