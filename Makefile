@@ -84,9 +84,9 @@ rpm-fedora:
 	docker run -v `pwd`/dist:/dist:rw rpm_fedora_35 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
 
 rpm-centos:
-	docker build --progress=plain -t rpm_centos_8 -f docker/rpm_centos_8.docker .
+	docker build --progress=plain -t rpm_centos_stream8 -f docker/rpm_centos_stream8.docker .
 	mkdir -p dist
-	docker run -v `pwd`/dist:/dist:rw rpm_centos_8 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
+	docker run -v `pwd`/dist:/dist:rw rpm_centos_stream8 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
 
 $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
