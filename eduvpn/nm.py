@@ -44,6 +44,73 @@ def get_mainloop():
     return GLib.MainLoop()
 
 
+def get_iface() -> Optional[str]:
+    """
+    Get the interface as a string if there is a master device
+    """
+    client = get_client()
+    active_connection = client.get_primary_connection()
+    if not active_connection:
+        return None
+
+    master = active_connection.get_master()
+    if not master:
+        return None
+
+    return master.get_ip_iface()
+
+
+def get_ipv4() -> Optional[str]:
+    """
+    Get the ipv4 address as a string if there is one
+    """
+    client = get_client()
+    active_connection = client.get_primary_connection()
+    if not active_connection:
+        return None
+
+    ip4_config = active_connection.get_ip4_config()
+    addresses = ip4_config.get_addresses()
+    if not addresses:
+        return None
+    return addresses[0].get_address()
+
+
+def get_ipv6() -> Optional[str]:
+    """
+    Get the ipv6 address as a string if there is one
+    """
+    client = get_client()
+    active_connection = client.get_primary_connection()
+    if not active_connection:
+        return None
+
+    ip6_config = active_connection.get_ip6_config()
+    addresses = ip6_config.get_addresses()
+    if not addresses:
+        return None
+    return addresses[0].get_address()
+
+
+def get_timestamp() -> Optional[int]:
+    """
+    Get the timestamp the connection was last activated
+    """
+    client = get_client()
+    active_connection = client.get_primary_connection()
+    if not active_connection:
+        return None
+
+    connection = active_connection.get_connection()
+    if not connection:
+        return None
+
+    setting_connection = connection.get_settings()
+    if not setting_connection:
+        return None
+    return setting_connection[0].get_timestamp()
+
+
 def nm_available() -> bool:
     """
     check if Network Manager is available

@@ -4,6 +4,7 @@ import threading
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 from functools import lru_cache, partial, wraps
+from gettext import gettext
 from logging import getLogger
 from os import path, environ
 from sys import prefix
@@ -169,3 +170,25 @@ def parse_http_date_header(date: str) -> datetime:
 
 
 parse_http_expires_header = parse_http_date_header
+
+
+def get_human_readable_bytes(total_bytes: int) -> str:
+    """
+    Helper function to calculate the human readable bytes.
+    E.g. B, kB, MB, GB, TB.
+    """
+    suffix = ""
+    hr_bytes = float(total_bytes)
+    for suffix in ["B", "kB", "MB", "GB", "TB"]:
+        if hr_bytes < 1024.0:
+            break
+        if suffix != "TB":
+            hr_bytes /= 1024.0
+
+    if suffix == "B":
+        return f"{int(hr_bytes)} {suffix}"
+    return f"{hr_bytes:.2f} {suffix}"
+
+
+def translated_property(text):
+    return property(lambda self: gettext(text))  # type: ignore

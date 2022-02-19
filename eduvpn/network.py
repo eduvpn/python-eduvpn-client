@@ -3,19 +3,14 @@ import logging
 import enum
 from functools import partial
 from time import sleep
-from gettext import gettext
 from . import nm
 from . import settings
 from .state_machine import BaseState
 from .app import Application
 from .server import ConfiguredServer as Server
-from .utils import run_in_background_thread
+from .utils import run_in_background_thread, translated_property
 
 logger = logging.getLogger(__name__)
-
-
-def translated_property(text):
-    return property(lambda self: gettext(text))  # type: ignore
 
 
 class StatusImage(enum.Enum):
