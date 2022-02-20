@@ -6,9 +6,6 @@ from oauthlib.oauth2.rfc6749.errors import (
     InvalidGrantError as InvalidOauthGrantError)
 from .. import storage
 from .. import nm
-from .. import actions
-from .. import remote
-from .. import crypto
 from .. import oauth2
 from ..app import Application
 from ..server import (
@@ -16,7 +13,7 @@ from ..server import (
     SecureInternetServer, OrganisationServer, CustomServer,
     SecureInternetLocation, Profile)
 from .error import get_error_message
-from ..ovpn import Ovpn, InvalidOVPN
+from ..session import active_session_states
 from ..utils import run_in_background_thread
 
 
@@ -42,7 +39,7 @@ def on_setup_oauth(app: Application, server: AnyServer):
             pass
 
     webserver, browser_url = oauth2.run_challenge_in_background(
-        server_info.token_endpoint, server_info.auth_endpoint, app.variant, oauth_token_callback)
+        server_info.token_endpoint, server_info.authorization_endpoint, app.variant, oauth_token_callback)
     if isinstance(server, OrganisationServer):
         secure_internet = app.server_db.get_secure_internet_server(server.secure_internet_home)
         if secure_internet:
@@ -84,7 +81,7 @@ def on_start_connection(app: Application,
         logger.error("error getting server info", exc_info=True)
         enter_error_state_threadsafe(app, e)
         return
-    api_url = server_info.api_base_uri
+    profile_server_info = server_info
     profile_server: ConfiguredServer
 
     if isinstance(server, OrganisationServer):
@@ -101,14 +98,25 @@ def on_start_connection(app: Application,
                 logger.error("error getting server info", exc_info=True)
                 enter_error_state_threadsafe(app, e)
                 return
-            api_url = location_info.api_base_uri
+            profile_server_info = location_info
             profile_server = SecureInternetLocation(server, location)
     else:
         profile_server = server
 
-    profiles = [Profile(**data) for data in remote.list_profiles(oauth_session, api_url)]
+    all_profiles = profile_server_info.list_profiles(oauth_session)
+    # Only show profiles with a supported protocol
+    supported_profiles = [
+        profile for profile in all_profiles
+        if profile.has_supported_protocol
+    ]
+    if not supported_profiles:
+        message = "no profile with suppored protocol"
+        logger.error(message, exc_info=False)
+        enter_error_state_threadsafe(app, Exception(message))
+        return
+
     app.interface_transition_threadsafe(
-        'choose_profile', profile_server, oauth_session, profiles)
+        'choose_profile', profile_server, oauth_session, supported_profiles)
 
 
 @run_in_background_thread('configure-connection')
@@ -126,7 +134,8 @@ def on_chosen_profile(app: Application,
             enter_error_state_threadsafe(app, e)
             return
         auth_url = server.server.oauth_login_url
-        api_url = location_info.api_base_uri
+        api_url = location_info.api_endpoint
+        connect_server_info = location_info
         country_code = server.location.country_code
         con_type = storage.ConnectionType.SECURE
         display_name = str(server.server)
@@ -138,7 +147,8 @@ def on_chosen_profile(app: Application,
             logger.error("error getting server info", exc_info=True)
             enter_error_state_threadsafe(app, e)
             return
-        api_url = server_info.api_base_uri
+        api_url = server_info.api_endpoint
+        connect_server_info = server_info
         auth_url = server.oauth_login_url
         country_code = None
         display_name = str(server)
@@ -152,34 +162,28 @@ def on_chosen_profile(app: Application,
             raise TypeError(server)
 
     try:
-        ovpn_content, private_key, certificate = actions.get_config_and_keycert(
-            oauth_session, api_url, profile.id)
+        connection = connect_server_info.connect(profile, oauth_session)
     except Exception as e:
-        logger.error("error getting config and keycert", exc_info=True)
+        logger.error("error connecting", exc_info=True)
         enter_error_state_threadsafe(app, e)
         return
-    ovpn = Ovpn.parse(ovpn_content)
-    validity = crypto.get_certificate_validity(certificate)
-    if validity is None:
-        validity_start = validity_end = None
-    else:
-        validity_start, validity_end = validity.start, validity.end
+    validity = connection.validity
     storage.set_metadata(
         auth_url, oauth_session.token, server_info.token_endpoint,
-        server_info.auth_endpoint, api_url, display_name,
+        server_info.authorization_endpoint, api_url, display_name,
         support_contact, profile.id, con_type, country_code,
-        validity_start, validity_end)
+        validity.start, validity.end)
     storage.set_auth_url(auth_url)
 
     # Apply the users settings to the ovpn file.
     if app.config.force_tcp:
         try:
-            ovpn.force_tcp()
-        except InvalidOVPN as e:
+            connection.force_tcp()
+        except Exception as e:
             enter_error_state_threadsafe(app, e)
             return
 
-    def finished_saving_config_callback(result):
+    def connected_callback(result):
         logger.info(f"Finished saving network manager config: {result}")
         app.session_transition('new_session', server, validity)
         app.interface_transition('finished_configuring_connection')
@@ -189,11 +193,20 @@ def on_chosen_profile(app: Application,
         app.network_transition('start_new_connection', server)
 
     @app.make_func_threadsafe
-    def save_connection():
-        nm.save_connection(nm.get_client(), ovpn, private_key, certificate,
-                           callback=finished_saving_config_callback)
+    def connect():
+        connection.connect(connected_callback)
 
-    save_connection()
+    connect()
+
+
+@run_in_background_thread('stop-connection')
+def on_disconnect(app: Application):
+    if isinstance(app.session_state, active_session_states):
+        oauth_session = storage.get_oauth_session()
+        if oauth_session:
+            server = app.session_state.server
+            server_info = app.server_db.get_server_info(server)
+            server_info.disconnect(oauth_session)
 
 
 def enter_error_state(app: Application, error: Exception):

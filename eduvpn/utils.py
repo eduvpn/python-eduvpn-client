@@ -1,5 +1,8 @@
+import sys
 from typing import Optional, Callable
 import threading
+from datetime import datetime
+from email.utils import parsedate_to_datetime
 from functools import lru_cache, partial, wraps
 from logging import getLogger
 from os import path, environ
@@ -149,3 +152,20 @@ def cancel_at_context_end(cancel_callback: Callable[[], None]):
         yield
     finally:
         cancel_callback()
+
+
+if sys.version_info < (3, 9):
+    # Backported from Python 3.10
+    # https://github.com/python/cpython/blob/3.10/Lib/functools.py#L651
+    def cache(func):
+        from functools import lru_cache
+        return lru_cache(maxsize=None)(func)
+else:
+    from functools import cache
+
+
+def parse_http_date_header(date: str) -> datetime:
+    return parsedate_to_datetime(date)
+
+
+parse_http_expires_header = parse_http_date_header

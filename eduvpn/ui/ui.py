@@ -7,7 +7,6 @@ from typing import Optional
 import os
 import webbrowser
 import logging
-from datetime import datetime
 from gettext import gettext as _, ngettext
 
 import gi
@@ -42,11 +41,9 @@ RENEWAL_ALLOW_FRACTION = .8
 def get_validity_text(validity: Optional[Validity]) -> str:
     if validity is None:
         return _("Valid for <b>unknown</b>")
-    expiry = validity.end
-    now = datetime.utcnow()
-    if expiry <= now:
+    if validity.is_expired:
         return _("This session has expired")
-    delta = expiry - now
+    delta = validity.remaining
     days = delta.days
     hours = delta.seconds // 3600
     if days == 0:

@@ -2,6 +2,7 @@ from base64 import urlsafe_b64encode, b64decode
 import hashlib
 import random
 import logging
+from datetime import timezone
 from typing import Optional, List
 from functools import lru_cache
 from cryptography.x509.oid import NameOID
@@ -116,6 +117,6 @@ def get_certificate_validity(certificate_text: str) -> Optional['eduvpn.session.
     certificate = x509.load_pem_x509_certificate(certificate_bytes, default_backend())
     from .session import Validity
     return Validity(
-        start=certificate.not_valid_before,
-        end=certificate.not_valid_after,
+        start=certificate.not_valid_before.replace(tzinfo=timezone.utc),
+        end=certificate.not_valid_after.replace(tzinfo=timezone.utc),
     )

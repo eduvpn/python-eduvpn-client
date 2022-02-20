@@ -1,13 +1,55 @@
 from typing import Union, Optional, Iterable, List, Dict
+from enum import Enum
 import os
 from urllib.parse import quote_plus
+from requests_oauthlib import OAuth2Session
 import nacl.exceptions
+import eduvpn
 from eduvpn import remote
 from eduvpn import storage
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX
 from .utils import custom_server_oauth_url
 
+
+TranslatedStr = Union[str, Dict[str, str]]
+
+
+class Protocol(Enum):
+    OPENVPN = 'openvpn'
+    WIREGUARD = 'wireguard'
+
+    @property
+    def is_supported(self) -> bool:
+        if self.value == 'wireguard':
+            from .nm import is_wireguard_supported
+            return is_wireguard_supported()
+        else:
+            return True
+
+    @property
+    def config_type(self) -> str:
+        return protocol_connection_config_mime_type[self]
+
+    @classmethod
+    def get_by_config_type(cls, config_type: str) -> 'Protocol':
+        return connection_config_mime_type_protocol[config_type]
+
+
+protocol_connection_config_mime_type = {
+    # NOTE: Each protocol must have a unique type
+    #       because the server ultimately decides on
+    #       the protocol and the client uses the type
+    #       to determine which one was actually chosen.
+    Protocol.OPENVPN: 'application/x-openvpn-profile',
+    Protocol.WIREGUARD: 'application/x-wireguard-profile',
+}
+
+connection_config_mime_type_protocol = dict(
+    (proto, config_type)
+    for (config_type, proto)
+    in protocol_connection_config_mime_type.items()
+)
 
 class InstituteAccessServer:
     """
@@ -17,7 +59,7 @@ class InstituteAccessServer:
 
     def __init__(self,
                  base_url: str,
-                 display_name: Union[str, Dict[str, str]],
+                 display_name: TranslatedStr,
                  support_contact: List[str] = [],
                  keyword_list: Optional[Union[str, List[str]]] = None):
         self.base_url = base_url
@@ -110,7 +152,7 @@ class OrganisationServer:
 
     def __init__(self,
                  secure_internet_home: str,
-                 display_name: Union[str, Dict[str, str]],
+                 display_name: TranslatedStr,
                  org_id: str,
                  keyword_list: Dict[str, str] = {}):
         self.secure_internet_home = secure_internet_home
@@ -165,32 +207,75 @@ class CustomServer:
 
 
 class ServerInfo:
-    def __init__(self, api_base_uri, token_endpoint, auth_endpoint):
-        self.api_base_uri = api_base_uri
+    def __init__(self, api_endpoint, token_endpoint, authorization_endpoint):
+        self.api_endpoint = api_endpoint
         self.token_endpoint = token_endpoint
-        self.auth_endpoint = auth_endpoint
+        self.authorization_endpoint = authorization_endpoint
+
+    def api_call_endpoint(self, call: str) -> str:
+        return self.api_endpoint + '/' + call
+
+    def list_profiles(self, session: OAuth2Session) -> Iterable['Profile']:
+        # https://github.com/eduvpn/documentation/blob/v3/API.md#info
+        response = session.get(self.api_call_endpoint('info'))
+        remote.check_response(response)
+        profiles = response.json()['info']['profile_list']
+        return [Profile(**data) for data in profiles]
+
+    def connect(self, profile: 'Profile', session: OAuth2Session) -> 'eduvpn.connection.Connection':
+        # https://github.com/eduvpn/documentation/blob/v3/API.md#connect
+        accept_types = ', '.join(
+            proto.config_type
+            for proto in profile.vpn_proto_list
+            if proto.is_supported
+        )
+        response = session.post(
+            self.api_call_endpoint('connect'),
+            data=dict(
+                profile_id=profile.id,
+                # TODO public_key
+                # TODO prefer_tcp
+            ),
+            headers={'Accept': accept_types},
+        )
+        remote.check_response(response)
+        from .connection import Connection
+        connection = Connection.parse(response)
+        return connection
+
+    def disconnect(self, session: OAuth2Session):
+        # https://github.com/eduvpn/documentation/blob/v3/API.md#disconnect
+        session.post(self.api_call_endpoint('disconnect'))
+        # NOTE: No need to check the response as,
+        #       according to the API specification,
+        #       this is a "best-effort" call.
 
 
 class Profile:
     def __init__(self,
                  profile_id: str,
-                 display_name: str,
-                 two_factor: bool,
-                 default_gateway: Optional[bool] = None):
+                 display_name: TranslatedStr,
+                 default_gateway: Optional[bool] = None,
+                 vpn_proto_list: Iterable[str] = frozenset('openvpn'),
+                 ):
         self.profile_id = profile_id
         self.display_name = display_name
-        self.two_factor = two_factor
         self.default_gateway = default_gateway
+        self.vpn_proto_list = frozenset(map(Protocol, vpn_proto_list))
 
     @property
     def id(self):
         return self.profile_id
 
     def __str__(self):
-        return self.display_name
+        return extract_translation(self.display_name)
 
     def __repr__(self):
         return f"<Profile id={self.id!r} {str(self)!r}>"
+
+    @property
+    def has_supported_protocol(self) -> bool:
+        return any(proto.is_supported for proto in self.vpn_proto_list)
 
     @property
     def use_as_default_gateway(self) -> bool:
@@ -359,5 +444,10 @@ class ServerDatabase:
             yield from self.all()
 
     def get_server_info(self, server) -> ServerInfo:
-        info = remote.get_info(server.oauth_login_url)
-        return ServerInfo(*info)
+        base_uri = server.oauth_login_url
+        if not base_uri.endswith('/'):
+            base_uri += '/'
+        uri = base_uri + '.well-known/vpn-user-portal'
+        json_data = remote.request(uri)
+        info = json_data['api']['http://eduvpn.org/api#3']
+        return ServerInfo(**info)
