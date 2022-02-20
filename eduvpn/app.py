@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from gettext import gettext as _
 from .server import ServerDatabase, ServerSignatureError
 from . import nm
@@ -200,7 +199,7 @@ class Application:
         transit(transition, *args, **kwargs)
 
     def context_session_active(self, state):
-        expiry_duration = (state.validity.pending_expiry_time - datetime.utcnow()).total_seconds()
+        expiry_duration = state.validity.pending_remaining.total_seconds()
 
         def on_session_pending_expiry():
             self.session_transition_threadsafe('pending_expiry')
@@ -208,7 +207,7 @@ class Application:
         return cancel_at_context_end(run_delayed(on_session_pending_expiry, expiry_duration))
 
     def context_session_pending_expiry(self, state):
-        expiry_duration = (state.validity.end - datetime.utcnow()).total_seconds()
+        expiry_duration = state.validity.remaining.total_seconds()
 
         def on_session_expired():
             self.session_transition_threadsafe('has_expired')

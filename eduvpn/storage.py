@@ -4,11 +4,12 @@ This module contains code to maintain a simple metadata storage in ~/.config/edu
 from typing import Optional, Tuple, List
 from enum import Enum
 from os import PathLike
-from datetime import datetime
+from datetime import datetime, timezone
 import json
+from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2.rfc6749.tokens import OAuth2Token
 import eduvpn
-from eduvpn.settings import CONFIG_PREFIX, CONFIG_DIR_MODE
+from eduvpn.settings import CONFIG_PREFIX, CONFIG_DIR_MODE, CLIENT_ID
 from eduvpn.ovpn import Ovpn
 from eduvpn.utils import get_logger
 
@@ -87,12 +88,13 @@ Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[d
 
 
 def serialize_datetime(dt: datetime) -> str:
+    assert dt.tzinfo is not None
     return dt.isoformat()
 
 
 def deserialize_datetime(value: str) -> datetime:
     if hasattr(datetime, 'fromisoformat'):
-        return datetime.fromisoformat(value)
+        dt = datetime.fromisoformat(value)
     else:
         # Python < 3.7.
         format = '%Y-%m-%dT%H:%M:%S'
@@ -100,7 +102,13 @@ def deserialize_datetime(value: str) -> datetime:
             format += '.%f'
         if '+' in value or value.count('-') > 2:
             format += '%z'
-        return datetime.strptime(value, format)
+        dt = datetime.strptime(value, format)
+    # NOTE: Older versions stored session validities
+    #       as they appeared on the certificate; without a timezone.
+    #       In the future, we can assume all dates include a timezone.
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 def get_current_metadata(auth_url: str) -> Optional[Metadata]:
@@ -281,3 +289,15 @@ def update_token(token: OAuth2Token):
     if 'auth_url' in metadatas:
         metadatas[auth_url]['token'] = token
         _write_metadatas(metadatas)
+
+
+def get_oauth_session() -> Optional[OAuth2Session]:
+    """
+    Refreshes an active configuration. The token is refreshed if expired, and a new token is obtained if the token
+    is invalid.
+    """
+    uuid, auth_url, metadata = get_storage(check=False)
+    if metadata is None:
+        return None
+    token, token_endpoint, *_ = metadata
+    return OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)

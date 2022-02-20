@@ -47,16 +47,21 @@ def request(uri: str, verify: bool = False) -> dict:
     return response.json()
 
 
+def check_response(response: requests.Response):
+    if response.status_code != 200:
+        uri = response.history[0].url
+        msg = f"Got error code {response.status_code} requesting {uri}"
+        logger.error(msg)
+        raise IOError(msg)
+
+
 def oauth_request(oauth: OAuth2Session, uri: str, method: str = 'get'):
     """
     Do an oauth request and check if there are no issues
     """
     call = getattr(oauth, method)
     response = call(uri)
-    if response.status_code != 200:
-        msg = f"Got error code {response.status_code} requesting {uri}"
-        logger.error(msg)
-        raise IOError(msg)
+    check_response(response)
     return response
 
 

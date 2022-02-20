@@ -1,12 +1,18 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from . import settings
 from .state_machine import BaseState
 from .app import Application
 from .server import ConfiguredServer as Server
 
 
+def now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 class Validity:
     def __init__(self, start: datetime, end: datetime):
+        assert start.tzinfo is not None
+        assert end.tzinfo is not None
         self.start = start
         self.end = end
 
@@ -16,6 +22,20 @@ class Validity:
         Return the duration of this validity.
         """
         return self.end - self.start
+
+    @property
+    def remaining(self) -> timedelta:
+        """
+        Return the duration from now until expiry.
+        """
+        return self.end - now()
+
+    @property
+    def pending_remaining(self) -> timedelta:
+        """
+        Return the duration from now until pending expiry.
+        """
+        return self.pending_expiry_time - now()
 
     def fraction(self, fraction: float) -> datetime:
         return self.start + self.duration * fraction
@@ -36,14 +56,14 @@ class Validity:
         """
         Return True if the validity is pending expiry or has already expired.
         """
-        return datetime.utcnow() >= self.pending_expiry_time
+        return now() >= self.pending_expiry_time
 
     @property
     def is_expired(self) -> bool:
         """
         Return True if the validity has expired.
         """
-        return datetime.utcnow() >= self.end
+        return now() >= self.end
 
 
 class SessionState(BaseState):
@@ -125,6 +145,12 @@ class SessionPendingExpiryState(SessionState):
     def renew(self, app: Application) -> SessionState:
         app.interface_transition('renew_session', self.server)
         return self
+
+
+active_session_states = (
+    SessionActiveState,
+    SessionPendingExpiryState,
+)
 
 
 class SessionExpiredState(SessionState):
