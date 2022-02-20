@@ -161,7 +161,7 @@ if sys.version_info < (3, 9):
         from functools import lru_cache
         return lru_cache(maxsize=None)(func)
 else:
-    from functools import cache
+    from functools import cache  # noqa: W0611
 
 
 def parse_http_date_header(date: str) -> datetime:
