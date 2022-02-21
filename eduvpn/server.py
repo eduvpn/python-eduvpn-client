@@ -51,6 +51,7 @@ connection_config_mime_type_protocol = dict(
     in protocol_connection_config_mime_type.items()
 )
 
+
 class InstituteAccessServer:
     """
     A record from: https://disco.eduvpn.org/v2/server_list.json
