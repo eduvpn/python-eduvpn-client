@@ -1,4 +1,4 @@
-2.2.1
+2.2.1 (2022-02-18)
 ===
 
 Bugfixes
@@ -15,7 +15,7 @@ Enhancements
 * #452  Move from CentOS 8 in the CI to CentOS stream 8 by @jwijenbergh
 * #453  Remove change location button by @jwijenbergh
 
-2.2
+2.2 (2022-12-20)
 ===
 
 Bugfixes
@@ -36,7 +36,7 @@ Enhancements
 * #427  Allow user defined config directory using $XDG_CONFIG_HOME by @Jesse-Bakker
 
 
-2.1
+2.1 (2021-07-07)
 ===
 
 Bugfixes
@@ -64,7 +64,7 @@ Enhancements
 * #257  Improve documentation
 
 
-2.0
+2.0 (2021-04-09)
 ===
 
 This is a complete rewrite of the code base.
