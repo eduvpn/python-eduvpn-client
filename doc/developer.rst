@@ -67,6 +67,9 @@ Prepare the code
 
 * Check if github actions builds.
 
+* The release will trigger a build on readthedocs, but the active version still needs to be set manually here:
+  https://readthedocs.org/projects/python-eduvpn-client/versions/
+
 Upload to pypi
 ^^^^^^^^^^^^^^
 
@@ -77,6 +80,12 @@ do a manual wheel upload using `twine <https://github.com/pypa/twine>`_:
     $ rm dist/*
     $ python setup.py bdist_wheel sdist
     $ twine upload dist/*
+    
+There is also a make shortcut:
+
+.. code-block:: console
+
+    $ make twine-upload
     
 Build on copr for RPMs
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -101,6 +110,12 @@ You can also trigger this build from the cli. First fetch your token from the `C
       @eduvpn/eduvpn-client 
 
 where `<version>` is the tag/version of the release.
+
+There is also a make shortcut:
+
+.. code-block:: console
+
+    $ make copr-upload
 
 Build Debian packages
 ^^^^^^^^^^^^^^^^^^^^^
