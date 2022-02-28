@@ -89,6 +89,9 @@ Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[d
 
 def serialize_datetime(dt: datetime) -> str:
     assert dt.tzinfo is not None
+    if not hasattr(datetime, 'fromisoformat'):
+        # Python < 3.7.
+        dt = dt.astimezone(timezone.utc)
     return dt.isoformat()
 
 
@@ -102,6 +105,9 @@ def deserialize_datetime(value: str) -> datetime:
             format += '.%f'
         if '+' in value or value.count('-') > 2:
             format += '%z'
+            if value[-3] == ':':
+                # Fix issue #462; Python3.6 does not accept the colon (bpo-31800).
+                value = value[:-3] + value[-2:]
         dt = datetime.strptime(value, format)
     # NOTE: Older versions stored session validities
     #       as they appeared on the certificate; without a timezone.
