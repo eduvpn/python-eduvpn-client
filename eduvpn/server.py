@@ -7,6 +7,7 @@ import nacl.exceptions
 import eduvpn
 from eduvpn import remote
 from eduvpn import storage
+from eduvpn import crypto
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX
 from .utils import custom_server_oauth_url
@@ -230,18 +231,23 @@ class ServerInfo:
             for proto in profile.vpn_proto_list
             if proto.is_supported
         )
+        data = dict(profile_id=profile.id)
+
+        keypair = None
+        if Protocol.WIREGUARD in profile.vpn_proto_list:
+            keypair = crypto.generate_wireguard_keys()
+            data['public_key'] = keypair.public
+
         response = session.post(
             self.api_call_endpoint('connect'),
-            data=dict(
-                profile_id=profile.id,
-                # TODO public_key
-                # TODO prefer_tcp
-            ),
+            data=data,
             headers={'Accept': accept_types},
         )
         remote.check_response(response)
         from .connection import Connection
         connection = Connection.parse(response)
+        if keypair:
+            connection.set_secret_key(keypair.secret)
         return connection
 
     def disconnect(self, session: OAuth2Session):
