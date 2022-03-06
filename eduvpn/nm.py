@@ -1,15 +1,20 @@
 import logging
 import time
+import uuid
 from functools import lru_cache
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 from typing import Any, Optional, Tuple, Callable
+from ipaddress import ip_network, ip_address
+from socket import AF_INET, AF_INET6
+from configparser import ConfigParser
 
 from .config import Configuration
 from .ovpn import Ovpn
 from .storage import set_uuid, get_uuid, write_ovpn
 from .utils import cache
+from .crypto import SecretKey
 
 _logger = logging.getLogger(__name__)
 
@@ -267,6 +272,76 @@ def start_openvpn_connection(ovpn: Ovpn, *, callback=None):
     set_connection(client, new_con, callback)
 
 
+def start_wireguard_connection(
+    config: ConfigParser,
+    *,
+    secret_key: SecretKey,
+    callback=None,
+):
+    client = get_client()
+    _logger.info("writing wireguard configuration to Network Manager")
+
+    ipv4s = []
+    ipv6s = []
+    for ip in config['Interface']['Address'].split(','):
+        parsed = ip_network(ip.strip(), strict=False)
+        if parsed.version == 4:
+            ipv4s.append(NM.IPAddress(AF_INET, str(parsed.network_address), parsed.prefixlen))
+        elif parsed.version == 6:
+            ipv6s.append(NM.IPAddress(AF_INET6, str(parsed.network_address), parsed.prefixlen))
+
+    dns4 = []
+    dns6 = []
+    for ip in config['Interface']['DNS'].split(','):
+        parsed = ip_address(ip.strip())
+        if parsed.version == 4:
+            dns4.append(str(parsed))
+        elif parsed.version == 6:
+            dns6.append(str(parsed))
+
+    profile = NM.SimpleConnection.new()
+    s_con = NM.SettingConnection.new()
+    s_con.set_property(NM.SETTING_CONNECTION_ID, "wireguard")
+    s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
+    s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
+    s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, "wireguard")
+
+    # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
+    peer = NM.WireGuardPeer.new()
+    peer.set_endpoint(config['Peer']['Endpoint'], allow_invalid=False)
+    peer.set_public_key(config['Peer']['PublicKey'], accept_invalid=False)
+    for ip in config['Peer']['AllowedIPs'].split(','):
+        peer.append_allowed_ip(ip.strip(), accept_invalid=False)
+
+    s_ip4 = NM.SettingIP4Config.new()
+    s_ip6 = NM.SettingIP6Config.new()
+
+    for i in dns4:
+        s_ip4.add_dns(i)
+    for i in dns6:
+        s_ip6.add_dns(i)
+
+    s_ip4.set_property(NM.SETTING_IP_CONFIG_METHOD, "manual")
+    s_ip6.set_property(NM.SETTING_IP_CONFIG_METHOD, "manual")
+
+    for i in ipv4s:
+        s_ip4.add_address(i)
+    for i in ipv6s:
+        s_ip6.add_address(i)
+
+    # https://lazka.github.io/pgi-docs/NM-1.0/classes/SettingWireGuard.html
+    w_con = NM.SettingWireGuard.new()
+    w_con.append_peer(peer)
+    w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, secret_key)
+
+    profile.add_setting(s_ip4)
+    profile.add_setting(s_ip6)
+    profile.add_setting(s_con)
+    profile.add_setting(w_con)
+
+    set_connection(client, profile, callback)
+
+
 def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
     try:
         connection = client.get_connection_by_uuid(uuid)
@@ -441,4 +516,4 @@ def deactivate_connection_with_mainloop(uuid):
 
 @cache
 def is_wireguard_supported() -> bool:
-    return False  # TODO
+    return True  # TODO

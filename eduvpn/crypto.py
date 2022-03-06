@@ -1,15 +1,16 @@
-from base64 import urlsafe_b64encode, b64decode
+from base64 import urlsafe_b64encode, b64encode, b64decode
 import hashlib
 import random
 import logging
 from datetime import timezone
-from typing import Optional, List
+from typing import Optional, List, NewType
 from functools import lru_cache
 from cryptography.x509.oid import NameOID
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
+import nacl.bindings
 import eduvpn
 from eduvpn.settings import VERIFY_KEYS
 
@@ -120,3 +121,20 @@ def get_certificate_validity(certificate_text: str) -> Optional['eduvpn.session.
         start=certificate.not_valid_before.replace(tzinfo=timezone.utc),
         end=certificate.not_valid_after.replace(tzinfo=timezone.utc),
     )
+
+
+SecretKey = NewType('SecretKey', str)
+PulbicKey = NewType('PulbicKey', str)
+
+
+class KeyPair:
+    def __init__(self, public: PulbicKey, secret: SecretKey):
+        self.public = public
+        self.secret = secret
+
+
+def generate_wireguard_keys() -> KeyPair:
+    public_key, secret_key = nacl.bindings.crypto_box_keypair()
+    public_key = b64encode(public_key).decode('ascii')
+    secret_key = b64encode(secret_key).decode('ascii')
+    return KeyPair(public_key, secret_key)

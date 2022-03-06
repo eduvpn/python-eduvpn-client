@@ -175,6 +175,8 @@ def on_chosen_profile(app: Application,
         validity.start, validity.end)
     storage.set_auth_url(auth_url)
 
+    logger.debug(f"starting connection: {connection!r}")
+
     # Apply the users settings to the ovpn file.
     if app.config.force_tcp:
         try:

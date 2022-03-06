@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
-from typing import List, Type
+from configparser import ConfigParser
+from typing import Optional, List, Type
 from . import nm
 from .ovpn import Ovpn
 from .server import Protocol
 from .session import Validity
+from .crypto import SecretKey
 from .utils import parse_http_date_header, parse_http_expires_header
 
 
@@ -28,6 +30,9 @@ class Connection:
         protocol = Protocol.get_by_config_type(response.headers['Content-Type'])
         connection_type = protocol_to_connection_type[protocol]
         return connection_type.parse(response)
+
+    def set_secret_key(self, secret_key: SecretKey):
+        pass
 
     def force_tcp(self):
         raise NotImplementedError
@@ -69,9 +74,34 @@ class OpenVPNConnection(Connection):
 class WireGuardConnection(Connection):
     protocol = Protocol.WIREGUARD
 
+    def __init__(self, validity: Validity, config: ConfigParser):
+        self.config = config
+        self.secret_key: Optional[SecretKey] = None
+        super().__init__(validity)
+
     @classmethod
     def parse(cls, response) -> 'WireGuardConnection':
-        raise NotImplementedError  # TODO
+        expiry = parse_http_expires_header(response.headers['Expires'])
+        created = get_response_date(response)
+        validity = Validity(created, expiry)
+        config = ConfigParser()
+        config.read_string(response.text)
+        return cls(validity=validity, config=config)
+
+    def set_secret_key(self, secret_key: SecretKey):
+        assert self.secret_key is None
+        self.secret_key = secret_key
+
+    def force_tcp(self):
+        pass  # TODO
+
+    def connect(self, callback):
+        assert self.secret_key is not None
+        nm.start_wireguard_connection(
+            self.config,
+            secret_key=self.secret_key,
+            callback=callback,
+        )
 
 
 connection_types: List[Type[Connection]] = [
