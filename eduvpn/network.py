@@ -188,7 +188,8 @@ def on_state_update_callback(app: Application, state: nm.ConnectionState):
 
 def on_any_update_callback(app: Application):
     """
-    Callback for whenever a connection state might have changed.
+    Callback for whenever a connection state might have changed,
+    where the new state is unknown.
     """
     state = nm.get_connection_state()
     on_state_update_callback(app, state)
