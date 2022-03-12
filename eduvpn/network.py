@@ -150,7 +150,7 @@ def enter_unknown_state(app: Application) -> NetworkState:
             if counter > UNKNOWN_STATE_MAX_RETRIES:
                 # After a number of retries, assume we've disconnected
                 # so the user can try to connect again.
-                state = nm.ActiveConnectionState.DISCONNECTED
+                state = nm.ConnectionState.DISCONNECTED
                 logger.debug(
                     "network state has been unknown for too long,"
                     " fall back to disconnected state"
