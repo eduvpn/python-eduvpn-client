@@ -93,7 +93,8 @@ class WireGuardConnection(Connection):
         self.secret_key = secret_key
 
     def force_tcp(self):
-        pass  # TODO
+        # WireGuard cannot be forced over TCP.
+        pass
 
     def connect(self, callback):
         assert self.secret_key is not None
