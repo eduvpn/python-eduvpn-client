@@ -61,8 +61,8 @@ class Application:
         else:
             self.session_transition('no_previous_session_found')
 
-        def on_network_update_callback(state, reason):
-            network.on_status_update_callback(self, state)
+        def on_network_update_callback(state):
+            network.on_state_update_callback(self, state)
 
         from . import network
         if not nm.subscribe_to_status_changes(on_network_update_callback):

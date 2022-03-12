@@ -1,6 +1,7 @@
 import logging
 import time
 import uuid
+import enum
 from functools import lru_cache
 from pathlib import Path
 from shutil import rmtree
@@ -404,6 +405,47 @@ def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
         _logger.info("No active connection to deactivate")
 
 
+class ConnectionState(enum.Enum):
+    CONNECTING = enum.auto()
+    CONNECTED = enum.auto()
+    DISCONNECTED = enum.auto()
+    FAILED = enum.auto()
+    UNKNOWN = enum.auto()
+
+    @classmethod
+    def from_vpn_state(cls, state: 'NM.VpnConnectionState'):
+        if state in [NM.VpnConnectionState.CONNECT,
+                     NM.VpnConnectionState.IP_CONFIG_GET,
+                     NM.VpnConnectionState.PREPARE]:
+            return cls.CONNECTING
+        elif state is NM.VpnConnectionState.ACTIVATED:
+            return cls.CONNECTED
+        elif state is NM.VpnConnectionState.DISCONNECTED:
+            return cls.DISCONNECTED
+        elif state is NM.VpnConnectionState.FAILED:
+            return cls.FAILED
+        elif state is NM.VpnConnectionState.NEED_AUTH:
+            return cls.FAILED
+        elif state is NM.VpnConnectionState.UNKNOWN:
+            return cls.UNKNOWN
+        else:
+            raise ValueError(state)
+
+    @classmethod
+    def from_active_state(cls, state: 'NM.ActiveConnectionState'):
+        if state is NM.ActiveConnectionState.ACTIVATING:
+            return cls.CONNECTING
+        elif state is NM.ActiveConnectionState.ACTIVATED:
+            return cls.CONNECTED
+        elif state in [NM.ActiveConnectionState.DEACTIVATED,
+                       NM.ActiveConnectionState.DEACTIVATING]:
+            return cls.DISCONNECTED
+        elif state is NM.ActiveConnectionState.UNKNOWN:
+            return cls.UNKNOWN
+        else:
+            raise ValueError(state)
+
+
 def connection_status(client: 'NM.Client') -> Tuple[Optional[str], Optional['NM.ActiveConnectionState']]:
     con = client.get_primary_connection()
     if type(con) != NM.VpnConnection:
@@ -411,6 +453,15 @@ def connection_status(client: 'NM.Client') -> Tuple[Optional[str], Optional['NM.
     uuid = con.get_uuid()
     status = con.get_state()
     return uuid, status
+
+
+def get_connection_state() -> ConnectionState:
+    client = get_client()
+    connection = client.get_primary_connection()
+    if type(connection) != NM.VpnConnection:
+        return ConnectionState.UNKNOWN
+    state = connection.get_state()
+    return ConnectionState.from_active_state(state)
 
 
 def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.VpnConnectionStateReason']:
@@ -462,7 +513,7 @@ def get_dbus() -> Optional['dbus.SystemBus']:
 
 
 def subscribe_to_status_changes(
-    callback: Callable[['NM.VpnConnectionState', 'NM.VpnConnectionStateReason'], Any],
+    callback: Callable[[ConnectionState], Any],
 ) -> bool:
     """
     Subscribe to all network status changes via DBus.
@@ -476,15 +527,23 @@ def subscribe_to_status_changes(
     if bus is None:
         return False
 
-    def wrapped_callback(state_code: 'dbus.UInt32', reason_code: 'dbus.UInt32'):
+    def wrapped_callback_vpn(state_code: 'dbus.UInt32', reason_code: 'dbus.UInt32'):
         state = NM.VpnConnectionState(state_code)
-        reason = NM.VpnConnectionStateReason(reason_code)
-        callback(state, reason)
+        callback(ConnectionState.from_vpn_state(state))
+
+    def wrapped_callback_wg(state_code: 'dbus.UInt32', reason_code: 'dbus.UInt32'):
+        state = NM.ActiveConnectionState(state_code)
+        callback(ConnectionState.from_active_state(state))
 
     bus.add_signal_receiver(
-        handler_function=wrapped_callback,
+        handler_function=wrapped_callback_vpn,
         dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
         signal_name='VpnStateChanged',
+    )
+    bus.add_signal_receiver(
+        handler_function=wrapped_callback_wg,
+        dbus_interface='org.freedesktop.NetworkManager.Connection.Active',
+        signal_name='StateChanged',
     )
     return True
 
