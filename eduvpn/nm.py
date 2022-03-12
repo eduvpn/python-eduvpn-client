@@ -383,6 +383,20 @@ def activate_connection(client: 'NM.Client', uuid: str, callback=None):
 
 
 def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
+    connection = client.get_connection_by_uuid(uuid)
+    if connection is None:
+        _logger.warning(f"no connection to deactivate of uuid {uuid}")
+        return
+    type = connection.get_connection_type()
+    if type == 'vpn':
+        deactivate_connection_vpn(client, uuid, callback)
+    elif type == 'wireguard':
+        deactivate_connection_wg(client, uuid, callback)
+    else:
+        _logger.warning(f"unexpected connection type {type} of {uuid}")
+
+
+def deactivate_connection_vpn(client: 'NM.Client', uuid: str, callback=None):
     con = client.get_primary_connection()
     _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
@@ -403,6 +417,34 @@ def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
             client.deactivate_connection_async(active=con, callback=on_deactivate_connection, user_data=callback)
     else:
         _logger.info("No active connection to deactivate")
+
+
+def deactivate_connection_wg(client: 'NM.Client', uuid: str, callback=None):
+    devices = [
+        device for device in client.get_all_devices()
+        if device.get_type_description() == 'wireguard' and uuid in
+        {conn.get_uuid() for conn in device.get_available_connections()}
+    ]
+    if not devices:
+        _logger.warning("No WireGuard device to disconnect")
+        return
+
+    assert len(devices) == 1
+    device = devices[0]
+
+    def on_disconnect(a_device: 'NM.DeviceWireGuard', res, callback=None):
+        try:
+            result = a_device.disconnect_finish(res)
+        except Exception as e:
+            _logger.error(e)
+        else:
+            _logger.info(F"disconnect_async result: {result}")
+        finally:
+            if callback:
+                callback()
+
+    _logger.debug(f"disconnect uuid: {uuid}")
+    device.disconnect_async(callback=on_disconnect, user_data=callback)
 
 
 class ConnectionState(enum.Enum):
