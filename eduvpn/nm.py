@@ -285,20 +285,20 @@ def start_wireguard_connection(
     ipv4s = []
     ipv6s = []
     for ip in config['Interface']['Address'].split(','):
-        parsed = ip_network(ip.strip(), strict=False)
-        if parsed.version == 4:
-            ipv4s.append(NM.IPAddress(AF_INET, str(parsed.network_address), parsed.prefixlen))
-        elif parsed.version == 6:
-            ipv6s.append(NM.IPAddress(AF_INET6, str(parsed.network_address), parsed.prefixlen))
+        network = ip_network(ip.strip(), strict=False)
+        if network.version == 4:
+            ipv4s.append(NM.IPAddress(AF_INET, str(network.network_address), network.prefixlen))
+        elif network.version == 6:
+            ipv6s.append(NM.IPAddress(AF_INET6, str(network.network_address), network.prefixlen))
 
     dns4 = []
     dns6 = []
     for ip in config['Interface']['DNS'].split(','):
-        parsed = ip_address(ip.strip())
-        if parsed.version == 4:
-            dns4.append(str(parsed))
-        elif parsed.version == 6:
-            dns6.append(str(parsed))
+        address = ip_address(ip.strip())
+        if address.version == 4:
+            dns4.append(str(address))
+        elif address.version == 6:
+            dns6.append(str(address))
 
     profile = NM.SimpleConnection.new()
     s_con = NM.SettingConnection.new()
