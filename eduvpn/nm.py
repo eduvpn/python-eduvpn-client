@@ -499,11 +499,22 @@ def connection_status(client: 'NM.Client') -> Tuple[Optional[str], Optional['NM.
 
 def get_connection_state() -> ConnectionState:
     client = get_client()
-    connection = client.get_primary_connection()
-    if type(connection) != NM.VpnConnection:
+    uuid = get_uuid()
+    connections = [connection for connection
+                   in client.get_active_connections()
+                   if connection.get_uuid() == uuid]
+    if len(connections) == 1:
+        connection = connections[0]
+    else:
+        return ConnectionState.DISCONNECTED
+    connection_type = connection.get_connection_type()
+    if connection_type == 'vpn':
+        return ConnectionState.from_vpn_state(connection.get_vpn_state())
+    elif connection_type == 'wireguard':
+        return ConnectionState.from_active_state(connection.get_state())
+    else:
+        _logger.warning(f"connection of unknown type {connection_type}")
         return ConnectionState.UNKNOWN
-    state = connection.get_state()
-    return ConnectionState.from_active_state(state)
 
 
 def get_vpn_status(client: 'NM.Client') -> Tuple['NM.VpnConnectionState', 'NM.VpnConnectionStateReason']:
