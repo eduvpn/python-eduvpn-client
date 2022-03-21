@@ -107,7 +107,7 @@ def on_start_connection(app: Application,
     # Only show profiles with a supported protocol
     supported_profiles = [
         profile for profile in all_profiles
-        if profile.has_supported_protocol
+        if profile.has_supported_protocol and profile.supports_config(app.config)
     ]
     if not supported_profiles:
         message = "no profile with suppored protocol"
@@ -162,7 +162,7 @@ def on_chosen_profile(app: Application,
             raise TypeError(server)
 
     try:
-        connection = connect_server_info.connect(profile, oauth_session)
+        connection = connect_server_info.connect(app, profile, oauth_session)
     except Exception as e:
         logger.error("error connecting", exc_info=True)
         enter_error_state_threadsafe(app, e)

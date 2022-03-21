@@ -28,6 +28,13 @@ class Protocol(Enum):
         else:
             return True
 
+    def supports_config(self, config: 'eduvpn.config.Configuration') -> bool:
+        if config.force_tcp:
+            if self is Protocol.WIREGUARD:
+                # WireGuard cannot be forced over TCP.
+                return False
+        return True
+
     @property
     def config_type(self) -> str:
         return protocol_connection_config_mime_type[self]
@@ -224,12 +231,12 @@ class ServerInfo:
         profiles = response.json()['info']['profile_list']
         return [Profile(**data) for data in profiles]
 
-    def connect(self, profile: 'Profile', session: OAuth2Session) -> 'eduvpn.connection.Connection':
+    def connect(self, app, profile: 'Profile', session: OAuth2Session) -> 'eduvpn.connection.Connection':
         # https://github.com/eduvpn/documentation/blob/v3/API.md#connect
         accept_types = ', '.join(
             proto.config_type
             for proto in profile.vpn_proto_list
-            if proto.is_supported
+            if proto.is_supported and proto.supports_config(app.config)
         )
         data = dict(profile_id=profile.id)
 
@@ -283,6 +290,9 @@ class Profile:
     @property
     def has_supported_protocol(self) -> bool:
         return any(proto.is_supported for proto in self.vpn_proto_list)
+
+    def supports_config(self, config: 'eduvpn.config.Configuration') -> bool:
+        return any(proto.supports_config(config) for proto in self.vpn_proto_list)
 
     @property
     def use_as_default_gateway(self) -> bool:
