@@ -7,7 +7,7 @@ from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 from typing import Any, Optional, Tuple, Callable
-from ipaddress import ip_network, ip_address
+from ipaddress import ip_interface, ip_address
 from socket import AF_INET, AF_INET6
 from configparser import ConfigParser
 
@@ -285,11 +285,11 @@ def start_wireguard_connection(
     ipv4s = []
     ipv6s = []
     for ip in config['Interface']['Address'].split(','):
-        network = ip_network(ip.strip(), strict=False)
-        if network.version == 4:
-            ipv4s.append(NM.IPAddress(AF_INET, str(network.network_address), network.prefixlen))
-        elif network.version == 6:
-            ipv6s.append(NM.IPAddress(AF_INET6, str(network.network_address), network.prefixlen))
+        addr = ip_interface(ip.strip())
+        if addr.version == 4:
+            ipv4s.append(NM.IPAddress(AF_INET, str(addr.ip), addr.network.prefixlen))
+        elif addr.version == 6:
+            ipv6s.append(NM.IPAddress(AF_INET6, str(addr.ip), addr.network.prefixlen))
 
     dns4 = []
     dns6 = []
