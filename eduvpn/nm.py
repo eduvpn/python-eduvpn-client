@@ -302,10 +302,10 @@ def start_wireguard_connection(
 
     profile = NM.SimpleConnection.new()
     s_con = NM.SettingConnection.new()
-    s_con.set_property(NM.SETTING_CONNECTION_ID, "wireguard")
+    s_con.set_property(NM.SETTING_CONNECTION_ID, "eduvpn-wireguard")
     s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
     s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
-    s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, "wireguard")
+    s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, "EduVPN-WG")
 
     # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
     peer = NM.WireGuardPeer.new()
