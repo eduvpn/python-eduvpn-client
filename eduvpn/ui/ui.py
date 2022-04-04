@@ -631,7 +631,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             return
 
         def update_connection_info_callback():
-            assert self.connection_info_stats
+            # Do nothing if we have no stats object
+            if not self.connection_info_stats:
+                return
             download = self.connection_info_stats.download
             upload = self.connection_info_stats.upload
             ipv4 = self.connection_info_stats.ipv4
