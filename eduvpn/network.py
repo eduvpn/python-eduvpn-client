@@ -264,6 +264,9 @@ class ConnectingState(NetworkState):
     status_label = translated_property("Preparing to connect")
     status_image = StatusImage.CONNECTING
 
+    def set_connecting(self, app: Application) -> 'NetworkState':
+        return self
+
     def start_new_connection(self,
                              app: Application,
                              server: Server,
@@ -285,6 +288,9 @@ class ConnectedState(NetworkState):
     status_label = translated_property("Connection active")
     status_image = StatusImage.CONNECTED
 
+    def set_connected(self, app: Application) -> 'NetworkState':
+        return self
+
     def start_new_connection(self,
                              app: Application,
                              server: Server,
@@ -303,6 +309,9 @@ class DisconnectedState(NetworkState):
 
     status_label = translated_property("Disconnected")
     status_image = StatusImage.NOT_CONNECTED
+
+    def set_disconnected(self, app: Application) -> 'NetworkState':
+        return self
 
     def reconnect(self, app: Application) -> NetworkState:
         return connect(app)
