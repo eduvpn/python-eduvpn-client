@@ -172,7 +172,7 @@ def on_chosen_profile(app: Application,
         auth_url, oauth_session.token, server_info.token_endpoint,
         server_info.authorization_endpoint, api_url, display_name,
         support_contact, profile.id, con_type, country_code,
-        validity.start, validity.end)
+        validity.start, validity.end, connection.protocol)
     storage.set_auth_url(auth_url)
 
     logger.debug(f"starting connection: {connection!r}")

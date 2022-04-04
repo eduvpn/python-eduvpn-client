@@ -1,3 +1,4 @@
+from typing import Optional
 import logging
 from gettext import gettext as _
 from .server import ServerDatabase, ServerSignatureError
@@ -29,7 +30,7 @@ class Application:
         self.session_state_machine = StateMachine(InitialSessionState())
         self.interface_state_machine = StateMachine(InitialInterfaceState())
         self.server_db = ServerDatabase()
-        self.current_network_uuid = None
+        self.current_network_uuid: Optional[str] = None
         self.session_state_machine.register_level_callback(
             SessionActiveState, self.context_session_active)
         self.session_state_machine.register_level_callback(

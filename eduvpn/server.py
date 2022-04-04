@@ -231,6 +231,14 @@ class ServerInfo:
         profiles = response.json()['info']['profile_list']
         return [Profile(**data) for data in profiles]
 
+    def get_profile(self, session: OAuth2Session, id: str) -> Optional['Profile']:
+        profiles = [profile for profile in self.list_profiles(session)
+                    if profile.id == id]
+        if len(profiles) == 1:
+            return profiles[0]
+        else:
+            return None
+
     def connect(self, app, profile: 'Profile', session: OAuth2Session) -> 'eduvpn.connection.Connection':
         # https://github.com/eduvpn/documentation/blob/v3/API.md#connect
         accept_types = ', '.join(
