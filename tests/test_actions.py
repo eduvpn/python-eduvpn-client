@@ -54,7 +54,7 @@ class TestCli(TestCase):
         create_keypair.return_value = "key", "cert"
         check_certificate.return_value = False
         get_cert_key.return_value = "cert", "key"
-        get_storage.return_value = "uuid", "auth_url", ({}, "", "", "", "", "", "", "", "", None, None)
+        get_storage.return_value = "uuid", "auth_url", ({}, "", "", "", "", "", "", "", "", None, None, None)
         get_info.return_value = "api_base_uri", "token_endpoint", "auth_endpoint"
         refresh()
 
@@ -83,7 +83,7 @@ class TestCli(TestCase):
         create_keypair.return_value = "key", "cert"
         check_certificate.return_value = False
         get_cert_key.return_value = "cert", "key"
-        get_storage.return_value = "uuid", "auth_url", ({}, "", "", "", "", "", "", "", "", None, None)
+        get_storage.return_value = "uuid", "auth_url", ({}, "", "", "", "", "", "", "", "", None, None, None)
         get_info.return_value = "api_base_uri", "token_endpoint", "auth_endpoint"
         refresh()
 

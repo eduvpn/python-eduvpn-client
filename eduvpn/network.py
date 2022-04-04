@@ -5,9 +5,10 @@ from functools import partial
 from time import sleep
 from . import nm
 from . import settings
+from . import storage
 from .state_machine import BaseState
 from .app import Application
-from .server import ConfiguredServer as Server
+from .server import ConfiguredServer as Server, Protocol
 from .utils import run_in_background_thread, translated_property
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class NetworkState(BaseState):
                              app: Application,
                              server: Server,
                              ) -> 'NetworkState':
-        return connect(app)
+        return connect_initial(app)
 
     def set_connecting(self, app: Application) -> 'NetworkState':
         return ConnectingState()
@@ -97,9 +98,9 @@ class UnconnectedState(NetworkState):
     status_label = translated_property("Disconnected")
 
 
-def connect(app: Application) -> NetworkState:
+def connect_initial(app: Application) -> NetworkState:
     """
-    Estabilish a connection to the server.
+    Estabilish an initial connection to the server.
     """
     client = nm.get_client()
     assert app.current_network_uuid is not None
@@ -108,6 +109,47 @@ def connect(app: Application) -> NetworkState:
         app.current_network_uuid,
         partial(on_any_update_callback, app),
     )
+    return ConnectingState()
+
+
+def connect(app: Application) -> NetworkState:
+    """
+    Estabilish a connection to the server.
+    """
+    client = nm.get_client()
+    assert app.current_network_uuid is not None
+
+    server = app.session_state.server
+    if storage.get_connection_protocol(server) is Protocol.WIREGUARD:
+        from eduvpn.interface.event import on_start_connection, on_chosen_profile
+        oauth_session = storage.load_oauth_session(server)
+        server_info = app.server_db.get_server_info(server)
+        metadata = storage.get_current_metadata(server.oauth_login_url)
+        assert metadata is not None
+        profile_id = metadata[6]
+        profile = server_info.get_profile(oauth_session, profile_id)
+        if profile is None:
+            # Profile was removed, redo profile choice.
+            on_start_connection(
+                app,
+                server,
+                oauth_session,
+            )
+        else:
+            on_chosen_profile(
+                app,
+                server,
+                oauth_session,
+                profile,
+            )
+        return DisconnectedState()
+    else:
+        nm.activate_connection(
+            client,
+            app.current_network_uuid,
+            partial(on_any_update_callback, app),
+        )
+
     return ConnectingState()
 
 
@@ -276,10 +318,10 @@ class ReconnectingState(NetworkState):
     status_image = StatusImage.CONNECTING
 
     def set_unknown(self, app: Application) -> NetworkState:
-        return connect(app)
+        return connect_initial(app)
 
     def set_disconnected(self, app: Application) -> NetworkState:
-        return connect(app)
+        return connect_initial(app)
 
 
 class ConnectionErrorState(NetworkState):

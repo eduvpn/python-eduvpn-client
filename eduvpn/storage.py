@@ -84,7 +84,7 @@ def _set_setting(what: str, value: str):
         f.write(value)
 
 
-Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[datetime], Optional[datetime]]
+Metadata = Tuple[OAuth2Token, str, str, str, str, str, str, str, str, Optional[datetime], Optional[datetime], 'eduvpn.server.Protocol']
 
 
 def serialize_datetime(dt: datetime) -> str:
@@ -130,6 +130,10 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
         expiry = v.get('certificate_expiry')
         if expiry is not None:
             expiry = deserialize_datetime(expiry)
+        protocol = v.get('protocol')
+        from eduvpn.server import Protocol
+        if protocol is None:
+            protocol = Protocol.OPENVPN
         return (
             OAuth2Token(v['token']),
             v['token_endpoint'],
@@ -142,6 +146,7 @@ def get_current_metadata(auth_url: str) -> Optional[Metadata]:
             v['country_id'],
             created,
             expiry,
+            Protocol(protocol),
         )
     else:
         return None
@@ -151,7 +156,7 @@ def get_current_validity(auth_url: str) -> Optional['eduvpn.session.Validity']:
     metadata = get_current_metadata(auth_url)
     if metadata is None:
         return None
-    *_, start, end = metadata
+    *_, start, end, _ = metadata
     if start is None or end is None:
         return None
     from .session import Validity
@@ -171,6 +176,7 @@ def set_metadata(
         country_id: Optional[str],
         certificate_created: Optional[datetime] = None,
         certificate_expiry: Optional[datetime] = None,
+        protocol: 'eduvpn.server.Protocol' = None,
 ) -> None:
     """
     Set a configuration profile in storage
@@ -184,6 +190,9 @@ def set_metadata(
         expiry_str = None
     else:
         expiry_str = serialize_datetime(certificate_expiry)
+    from eduvpn.server import Protocol
+    if protocol is None:
+        protocol = Protocol.OPENVPN
     storage[auth_url] = {
         'token': token,
         'api_base_uri': auth_url,
@@ -197,6 +206,7 @@ def set_metadata(
         'country_id': country_id,
         'certificate_created': created_str,
         'certificate_expiry': expiry_str,
+        'protocol': protocol.value,
     }
     _write_metadatas(storage)
 
@@ -307,3 +317,26 @@ def get_oauth_session() -> Optional[OAuth2Session]:
         return None
     token, token_endpoint, *_ = metadata
     return OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
+
+
+def get_connection_protocol(server: 'eduvpn.server.AnyServer') -> 'eduvpn.server.Protocol':
+    oauth_login_url = server.oauth_login_url  # type: ignore
+    metadata = get_current_metadata(oauth_login_url)
+    if metadata is None:
+        from eduvpn.server import Protocol
+        return Protocol.OPENVPN
+    *_, protocol = metadata
+    return protocol
+
+
+def load_oauth_session(server: 'eduvpn.server.AnyServer') -> Optional[OAuth2Session]:
+    oauth_login_url = server.oauth_login_url  # type: ignore
+    metadata = get_current_metadata(oauth_login_url)
+    if metadata is None:
+        return None
+    token, token_endpoint, *_ = metadata
+    return OAuth2Session(
+        client_id=CLIENT_ID,
+        token=token,
+        auto_refresh_url=token_endpoint,
+    )
