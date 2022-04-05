@@ -253,7 +253,7 @@ def save_connection_with_config(client: 'NM.Client',
                                 certificate,
                                 callback=None,
                                 ):
-    ovpn = Ovpn(config)
+    ovpn = Ovpn.parse(config)
     settings = Configuration.load()
     if settings.force_tcp:
         ovpn.force_tcp()
