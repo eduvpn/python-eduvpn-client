@@ -52,7 +52,7 @@ def check_response(response: requests.Response):
         try:
             uri = response.history[0].url
         except IndexError:
-            url = '<empty>'
+            uri = '<empty>'
         msg = f"Got error code {response.status_code} requesting {uri}"
         logger.error(msg)
         raise IOError(msg)
