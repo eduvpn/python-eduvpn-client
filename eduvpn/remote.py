@@ -49,7 +49,10 @@ def request(uri: str, verify: bool = False) -> dict:
 
 def check_response(response: requests.Response):
     if response.status_code != 200:
-        uri = response.history[0].url
+        try:
+            uri = response.history[0].url
+        except IndexError:
+            url = '<empty>'
         msg = f"Got error code {response.status_code} requesting {uri}"
         logger.error(msg)
         raise IOError(msg)
