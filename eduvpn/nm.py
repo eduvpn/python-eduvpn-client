@@ -507,13 +507,12 @@ def get_connection_state() -> ConnectionState:
         connection = connections[0]
     else:
         return ConnectionState.DISCONNECTED
-    connection_type = connection.get_connection_type()
-    if connection_type == 'vpn':
+    if isinstance(connection, NM.VpnConnection):
         return ConnectionState.from_vpn_state(connection.get_vpn_state())
-    elif connection_type == 'wireguard':
+    elif isinstance(connection, NM.ActiveConnection):
         return ConnectionState.from_active_state(connection.get_state())
     else:
-        _logger.warning(f"connection of unknown type {connection_type}")
+        _logger.warning(f"connection of unknown type: {connection!r}")
         return ConnectionState.UNKNOWN
 
 
