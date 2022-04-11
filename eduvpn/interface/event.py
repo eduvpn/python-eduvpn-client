@@ -198,6 +198,10 @@ def on_chosen_profile(app: Application,
     def connect():
         connection.connect(connected_callback)
 
+    if app.network_state.has_transition('disconnect'):
+        app.network_transition('disconnect')
+        on_disconnect(app)
+
     connect()
 
 
