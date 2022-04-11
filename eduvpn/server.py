@@ -269,7 +269,7 @@ class ServerInfo:
         # https://github.com/eduvpn/documentation/blob/v3/API.md#disconnect
         try:
             session.post(self.api_call_endpoint('disconnect'), timeout=1)
-        except:
+        except:  # NOQA: ignore
             # NOTE: No need to check the response as,
             #       according to the API specification,
             #       this is a "best-effort" call.
