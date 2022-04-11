@@ -267,10 +267,13 @@ class ServerInfo:
 
     def disconnect(self, session: OAuth2Session):
         # https://github.com/eduvpn/documentation/blob/v3/API.md#disconnect
-        session.post(self.api_call_endpoint('disconnect'))
-        # NOTE: No need to check the response as,
-        #       according to the API specification,
-        #       this is a "best-effort" call.
+        try:
+            session.post(self.api_call_endpoint('disconnect'), timeout=1)
+        except:
+            # NOTE: No need to check the response as,
+            #       according to the API specification,
+            #       this is a "best-effort" call.
+            pass
 
 
 class Profile:
