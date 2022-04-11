@@ -201,14 +201,21 @@ def on_chosen_profile(app: Application,
     connect()
 
 
-@run_in_background_thread('stop-connection')
 def on_disconnect(app: Application):
     if isinstance(app.session_state, active_session_states):
-        oauth_session = storage.get_oauth_session()
-        if oauth_session:
-            server = app.session_state.server
-            server_info = app.server_db.get_server_info(server)
-            server_info.disconnect(oauth_session)
+        server = app.session_state.server
+    else:
+        return
+    oauth_session = storage.get_oauth_session()
+    if not oauth_session:
+        return
+
+    @run_in_background_thread('stop-connection')
+    def inner():
+        server_info = app.server_db.get_server_info(server)
+        server_info.disconnect(oauth_session)
+
+    inner()
 
 
 def enter_error_state(app: Application, error: Exception):
