@@ -7,6 +7,8 @@ from requests_oauthlib import OAuth2Session
 
 from eduvpn.crypto import common_name_from_cert
 from eduvpn.crypto import validate
+from eduvpn.utils import add_retry_adapter
+from eduvpn.settings import MAX_HTTP_RETRIES, MAX_HTTP_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,8 @@ def request(uri: str, verify: bool = False) -> dict:
     """
     logger.info(f"Requesting {uri}")
     try:
-        response = requests.get(uri)
+        with add_retry_adapter(requests.Session(), MAX_HTTP_RETRIES) as session:
+            response = session.get(uri, timeout=MAX_HTTP_TIMEOUT)
     except Exception as e:
         msg = f"Got exception {e} requesting {uri}"
         logger.debug(msg)

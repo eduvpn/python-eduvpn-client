@@ -8,6 +8,8 @@ from gettext import gettext
 from logging import getLogger
 from os import path, environ
 from sys import prefix
+from requests import Session
+from requests.adapters import HTTPAdapter, Retry
 
 logger = getLogger(__file__)
 
@@ -15,6 +17,11 @@ logger = getLogger(__file__)
 def get_logger(name_space: str):
     return getLogger(name_space)
 
+def add_retry_adapter(session: Session, retries: int):
+        adapter = HTTPAdapter(max_retries=Retry(total=retries))
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+        return session
 
 @lru_cache(maxsize=1)
 def get_prefix() -> str:

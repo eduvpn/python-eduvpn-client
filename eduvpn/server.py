@@ -9,8 +9,8 @@ from eduvpn import remote
 from eduvpn import storage
 from eduvpn import crypto
 from eduvpn.i18n import extract_translation, retrieve_country_name
-from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX
-from .utils import custom_server_oauth_url
+from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX, MAX_HTTP_RETRIES, MAX_HTTP_TIMEOUT
+from eduvpn.utils import custom_server_oauth_url, add_retry_adapter
 
 
 TranslatedStr = Union[str, Dict[str, str]]
@@ -253,11 +253,12 @@ class ServerInfo:
             keypair = crypto.generate_wireguard_keys()
             data['public_key'] = keypair.public
 
+        session = add_retry_adapter(session, MAX_HTTP_RETRIES)
         response = session.post(
             self.api_call_endpoint('connect'),
             data=data,
             headers={'Accept': accept_types},
-        )
+            timeout=MAX_HTTP_TIMEOUT)
         remote.check_response(response)
         from .connection import Connection
         connection = Connection.parse(response)
@@ -267,6 +268,7 @@ class ServerInfo:
 
     def disconnect(self, session: OAuth2Session):
         # https://github.com/eduvpn/documentation/blob/v3/API.md#disconnect
+        # We allow a timeout for 1 second here
         try:
             session.post(self.api_call_endpoint('disconnect'), timeout=1)
         except:  # NOQA: ignore
