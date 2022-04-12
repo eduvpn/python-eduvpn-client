@@ -125,6 +125,11 @@ def on_chosen_profile(app: Application,
                       oauth_session: OAuth2Session,
                       profile: Profile):
     country_code: Optional[str]
+
+    if app.network_state.has_transition('disconnect'):
+        app.network_transition('disconnect')
+        on_disconnect(app)
+
     if isinstance(server, SecureInternetLocation):
         try:
             server_info = app.server_db.get_server_info(server.server)
@@ -197,10 +202,6 @@ def on_chosen_profile(app: Application,
     @app.make_func_threadsafe
     def connect():
         connection.connect(connected_callback)
-
-    if app.network_state.has_transition('disconnect'):
-        app.network_transition('disconnect')
-        on_disconnect(app)
 
     connect()
 
