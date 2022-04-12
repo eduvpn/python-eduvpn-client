@@ -445,8 +445,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
             profile_tree_view.append_column(column)
 
-            profile_tree_view.set_model(profiles_list_model)
-
+        profile_tree_view.set_model(profiles_list_model)
         profiles_list_model.clear()
         for profile in new_state.profiles:
             profiles_list_model.append([str(profile), profile])
