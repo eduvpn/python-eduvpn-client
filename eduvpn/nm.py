@@ -68,7 +68,41 @@ def get_iface() -> Optional[str]:
 
 def get_ipv4() -> Optional[str]:
     """
-    Get the ipv4 address as a string if there is one
+    Get the ipv4 address for an openvpn or wireguard connection as a string if there is one
+    """
+    client = get_client()
+    uuid = get_uuid()
+    connection = client.get_connection_by_uuid(uuid)
+    if connection is None:
+        return None
+    type = connection.get_connection_type()
+    if type == 'vpn':
+        return get_ipv4_ovpn()
+    elif type == 'wireguard':
+        return get_ipv4_wg()
+    return None
+
+
+def get_ipv6() -> Optional[str]:
+    """
+    Get the ipv6 address for an openvpn or wireguard connection as a string if there is one
+    """
+    client = get_client()
+    uuid = get_uuid()
+    connection = client.get_connection_by_uuid(uuid)
+    if connection is None:
+        return None
+    type = connection.get_connection_type()
+    if type == 'vpn':
+        return get_ipv6_ovpn()
+    elif type == 'wireguard':
+        return get_ipv6_wg()
+    return None
+
+
+def get_ipv4_ovpn() -> Optional[str]:
+    """
+    Get the ipv4 address for an openvpn connection as a string if there is one
     """
     client = get_client()
     active_connection = client.get_primary_connection()
@@ -82,9 +116,9 @@ def get_ipv4() -> Optional[str]:
     return addresses[0].get_address()
 
 
-def get_ipv6() -> Optional[str]:
+def get_ipv6_ovpn() -> Optional[str]:
     """
-    Get the ipv6 address as a string if there is one
+    Get the ipv6 address for an openvpn connection as a string if there is one
     """
     client = get_client()
     active_connection = client.get_primary_connection()
@@ -96,6 +130,46 @@ def get_ipv6() -> Optional[str]:
     if not addresses:
         return None
     return addresses[0].get_address()
+
+
+def get_ipv4_wg() -> Optional[str]:
+    """
+    Get the ipv4 address for a wireguard connection as a string if there is one
+    """
+    uuid = get_uuid()
+    if uuid is None:
+        return None
+    client = get_client()
+    connection = client.get_connection_by_uuid(uuid)
+    if not connection:
+        return None
+    ip4_config = connection.get_setting_ip4_config()
+    if not ip4_config:
+        return None
+    if ip4_config.get_num_addresses() == 0:
+        return None
+    address = ip4_config.get_address(0)
+    return address.get_address()
+
+
+def get_ipv6_wg() -> Optional[str]:
+    """
+    Get the ipv6 address for a wireguard connection as a string if there is one
+    """
+    uuid = get_uuid()
+    if uuid is None:
+        return None
+    client = get_client()
+    connection = client.get_connection_by_uuid(uuid)
+    if not connection:
+        return None
+    ip6_config = connection.get_setting_ip6_config()
+    if not ip6_config:
+        return None
+    if ip6_config.get_num_addresses() == 0:
+        return None
+    address = ip6_config.get_address(0)
+    return address.get_address()
 
 
 def get_timestamp() -> Optional[int]:
