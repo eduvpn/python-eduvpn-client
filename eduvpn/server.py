@@ -1,5 +1,6 @@
 from typing import Union, Optional, Iterable, List, Dict
 from enum import Enum
+import logging
 import os
 from urllib.parse import quote_plus
 from requests_oauthlib import OAuth2Session
@@ -13,6 +14,7 @@ from eduvpn.settings import SERVER_URI, ORGANISATION_URI, FLAG_PREFIX, MAX_HTTP_
 from eduvpn.utils import custom_server_oauth_url, add_retry_adapter
 
 
+logger = logging.getLogger(__name__)
 TranslatedStr = Union[str, Dict[str, str]]
 
 
@@ -254,11 +256,17 @@ class ServerInfo:
             data['public_key'] = keypair.public
 
         session = add_retry_adapter(session, MAX_HTTP_RETRIES)
-        response = session.post(
-            self.api_call_endpoint('connect'),
-            data=data,
-            headers={'Accept': accept_types},
-            timeout=MAX_HTTP_TIMEOUT)
+        endpoint = self.api_call_endpoint('connect')
+        try:
+            response = session.post(
+                endpoint,
+                data=data,
+                headers={'Accept': accept_types},
+                timeout=MAX_HTTP_TIMEOUT)
+        except Exception as e:
+            msg = f"Got exception {e} requesting {endpoint}"
+            logger.debug(msg)
+            raise
         remote.check_response(response)
         from .connection import Connection
         connection = Connection.parse(response)
