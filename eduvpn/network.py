@@ -242,6 +242,16 @@ def get_network_state(app: Application) -> NetworkState:
     Get the network state that corresponds to the connection state.
     """
     state = nm.get_connection_state()
+    return get_corresponding_state(app, state)
+
+
+def get_corresponding_state(
+    app: Application,
+    state: nm.ConnectionState,
+) -> NetworkState:
+    """
+    Get the network state that corresponds to the connection state.
+    """
     if state is nm.ConnectionState.CONNECTING:
         return ConnectingState()
     elif state is nm.ConnectionState.CONNECTED:
@@ -254,6 +264,19 @@ def get_network_state(app: Application) -> NetworkState:
         return enter_unknown_state(app)
     else:
         raise ValueError(state)
+
+
+def check_network_state(app: Application):
+    state = nm.get_connection_state()
+    if state is not nm.ConnectionState.UNKNOWN:
+        network_state = get_corresponding_state(app, state)
+        if type(network_state) != type(app.network_state):  # NOQA
+            # If the state remains different for one second,
+            # update it in the app. This prevents
+            # confusing transitions around connect/disconnect.
+            sleep(1)
+            if nm.get_connection_state() is state:
+                app.make_func_threadsafe(on_state_update_callback)(app, state)
 
 
 class ConnectingState(NetworkState):
