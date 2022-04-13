@@ -14,7 +14,7 @@ from configparser import ConfigParser
 from .config import Configuration
 from .ovpn import Ovpn
 from .storage import set_uuid, get_uuid, write_ovpn
-from .utils import cache
+from .utils import cache, run_in_background_thread
 from .crypto import SecretKey
 
 _logger = logging.getLogger(__name__)
@@ -517,19 +517,20 @@ def deactivate_connection_wg(client: 'NM.Client', uuid: str, callback=None):
     assert len(devices) == 1
     device = devices[0]
 
-    def on_disconnect(a_device: 'NM.DeviceWireGuard', res, callback=None):
+    @run_in_background_thread('wg-disconnect')
+    def do_disconnect(a_device: 'NM.DeviceWireGuard', callback=None):
         try:
-            result = a_device.disconnect_finish(res)
+            result = a_device.disconnect()
         except Exception as e:
             _logger.error(e)
         else:
-            _logger.info(F"disconnect_async result: {result}")
+            _logger.info(F"disconnect result: {result}")
         finally:
             if callback:
                 callback()
 
     _logger.debug(f"disconnect uuid: {uuid}")
-    device.disconnect_async(callback=on_disconnect, user_data=callback)
+    do_disconnect(device, callback)
 
 
 class ConnectionState(enum.Enum):
