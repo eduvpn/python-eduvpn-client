@@ -383,6 +383,7 @@ def start_wireguard_connection(
 
     profile = NM.SimpleConnection.new()
     s_con = NM.SettingConnection.new()
+    s_con.set_property(NM.DEVICE_AUTOCONNECT, False)
     s_con.set_property(NM.SETTING_CONNECTION_ID, "eduvpn-wireguard")
     s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
     s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
