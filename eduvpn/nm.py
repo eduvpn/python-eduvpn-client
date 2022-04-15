@@ -176,12 +176,11 @@ def get_timestamp() -> Optional[int]:
     """
     Get the timestamp the connection was last activated
     """
-    client = get_client()
-    active_connection = client.get_primary_connection()
-    if not active_connection:
+    uuid = get_uuid()
+    if uuid is None:
         return None
-
-    connection = active_connection.get_connection()
+    client = get_client()
+    connection = client.get_connection_by_uuid(uuid)
     if not connection:
         return None
 
