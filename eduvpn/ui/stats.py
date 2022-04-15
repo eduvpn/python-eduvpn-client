@@ -14,6 +14,7 @@ LINUX_NET_FOLDER = Path("/sys/class/net")
 
 class NetworkStats:
 
+    _timestamp = None
     default_text = translated_property("N/A")
 
     # These properties define an LRU cache
@@ -60,9 +61,11 @@ class NetworkStats:
         return get_iface()
 
     @property  # type: ignore
-    @cache
     def timestamp(self) -> Optional[int]:
-        return get_timestamp()
+        # 0 or None, try again
+        if not self._timestamp:
+            self._timestamp = get_timestamp()
+        return self._timestamp
 
     @property
     def download(self) -> str:
@@ -93,7 +96,7 @@ class NetworkStats:
         """
         Get the duration of the connection, in "HH:MM:SS"
         """
-        if self.timestamp is None:
+        if not self.timestamp:
             logger.warning("Network Stats: failed to get timestamp")
             return self.default_text
         now_unix_seconds = int(time.time())
