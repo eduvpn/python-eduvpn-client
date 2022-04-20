@@ -4,7 +4,7 @@ from eduvpn.nm import (nm_available, add_connection,
                        import_ovpn, get_client, get_mainloop)
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid
-from tests.mock_config import mock_config, mock_key, mock_cert
+from tests.mock_config import mock_config
 
 
 @skipIf(not nm_available(), "Network manager not available")
