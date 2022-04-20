@@ -14,7 +14,7 @@ class TestNm(TestCase):
 
     def test_import_ovpn(self):
         ovpn = Ovpn.parse(mock_config)
-        import_ovpn(ovpn, mock_key, mock_cert)
+        import_ovpn(ovpn)
 
     def test_get_mainloop(self):
         get_mainloop()
@@ -22,7 +22,7 @@ class TestNm(TestCase):
     def test_get_add_connection(self):
         client = get_client()
         ovpn = Ovpn.parse(mock_config)
-        simple_connection = import_ovpn(ovpn, mock_key, mock_cert)
+        simple_connection = import_ovpn(ovpn)
         add_connection(client, simple_connection)
 
     def test_get_uuid(self):
