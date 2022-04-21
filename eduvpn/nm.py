@@ -184,10 +184,26 @@ def get_timestamp() -> Optional[int]:
     if not connection:
         return None
 
-    setting_connection = connection.get_settings()
-    if not setting_connection:
+    # Getting the setting connection and then getting the timestamp using get_timestamp is not reliable
+    # Use dbus directly instead
+    bus = get_dbus()
+    if not bus:
         return None
-    return setting_connection[0].get_timestamp()
+    connection_proxy = bus.get_object(NM.DBUS_INTERFACE, connection.get_path())
+    if not connection_proxy:
+        return None
+    connection_interface = dbus.Interface(connection_proxy, NM.DBUS_INTERFACE_SETTINGS_CONNECTION)
+    if not connection_interface:
+        return None
+    connection_settings = connection_interface.GetSettings()
+    if not connection_settings:
+        return None
+    try:
+        return int(connection_settings["connection"]["timestamp"])
+    except (ValueError, KeyError) as e:
+        # We log this because this would be unusual
+        _logger.warning("Failed getting timestamp with error", e)
+        return None
 
 
 def nm_available() -> bool:
