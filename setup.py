@@ -3,7 +3,10 @@ from glob import glob
 
 from setuptools import setup, find_packages
 
-__version__ = "2.2.1"
+__version__ = "2.3"
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 
 install_requires = [
@@ -67,6 +70,8 @@ setup(
     author="Gijs Molenaar",
     author_email="gijs@pythonic.nl",
     description="eduVPN client",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     license="GPL3",
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
