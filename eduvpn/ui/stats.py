@@ -1,10 +1,8 @@
 import logging
-import time
-from datetime import timedelta
 from pathlib import Path
 from typing import Optional, TextIO
 
-from ..nm import get_iface, get_ipv4, get_ipv6, get_timestamp
+from ..nm import get_iface, get_ipv4, get_ipv6
 from ..utils import cache, get_human_readable_bytes, translated_property
 
 logger = logging.getLogger(__name__)
@@ -14,7 +12,6 @@ LINUX_NET_FOLDER = Path("/sys/class/net")
 
 class NetworkStats:
 
-    _timestamp = None
     default_text = translated_property("N/A")
 
     # These properties define an LRU cache
@@ -60,13 +57,6 @@ class NetworkStats:
     def iface(self) -> Optional[str]:
         return get_iface()
 
-    @property  # type: ignore
-    def timestamp(self) -> Optional[int]:
-        # 0 or None, try again
-        if not self._timestamp:
-            self._timestamp = get_timestamp()
-        return self._timestamp
-
     @property
     def download(self) -> str:
         """
@@ -90,18 +80,6 @@ class NetworkStats:
         if file_bytes_upload <= self.start_bytes_upload:  # type: ignore
             return get_human_readable_bytes(0)
         return get_human_readable_bytes(file_bytes_upload - self.start_bytes_upload)  # type:ignore
-
-    @property
-    def duration(self) -> str:
-        """
-        Get the duration of the connection, in "HH:MM:SS"
-        """
-        if not self.timestamp:
-            logger.warning("Network Stats: failed to get timestamp")
-            return self.default_text
-        now_unix_seconds = int(time.time())
-        duration = now_unix_seconds - self.timestamp  # type: ignore
-        return str(timedelta(seconds=duration))
 
     def open_file(self, filename: str) -> Optional[TextIO]:
         """
