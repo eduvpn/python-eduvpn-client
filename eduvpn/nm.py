@@ -52,7 +52,24 @@ def get_mainloop():
 
 def get_iface() -> Optional[str]:
     """
-    Get the interface as a string if there is a master device
+    Get the interface as a string for an openvpn or wireguard connection if there is one
+    """
+    client = get_client()
+    uuid = get_uuid()
+    connection = client.get_connection_by_uuid(uuid)
+    if connection is None:
+        return None
+    type = connection.get_connection_type()
+    if type == 'vpn':
+        return get_iface_ovpn()
+    elif type == 'wireguard':
+        return get_iface_wg()
+    return None
+
+
+def get_iface_ovpn() -> Optional[str]:
+    """
+    Get the interface as a string if there is a master device for OpenVPN
     """
     client = get_client()
     active_connection = client.get_primary_connection()
@@ -64,6 +81,18 @@ def get_iface() -> Optional[str]:
         return None
 
     return master.get_ip_iface()
+
+
+def get_iface_wg() -> Optional[str]:
+    """
+    Get the interface as a string for wireguard
+    """
+    client = get_client()
+    uuid = get_uuid()
+    connection = client.get_connection_by_uuid(uuid)
+    if connection is None:
+        return None
+    return connection.get_interface_name()
 
 
 def get_ipv4() -> Optional[str]:
@@ -170,40 +199,6 @@ def get_ipv6_wg() -> Optional[str]:
         return None
     address = ip6_config.get_address(0)
     return address.get_address()
-
-
-def get_timestamp() -> Optional[int]:
-    """
-    Get the timestamp the connection was last activated
-    """
-    uuid = get_uuid()
-    if uuid is None:
-        return None
-    client = get_client()
-    connection = client.get_connection_by_uuid(uuid)
-    if not connection:
-        return None
-
-    # Getting the setting connection and then getting the timestamp using get_timestamp is not reliable
-    # Use dbus directly instead
-    bus = get_dbus()
-    if not bus:
-        return None
-    connection_proxy = bus.get_object(NM.DBUS_INTERFACE, connection.get_path())
-    if not connection_proxy:
-        return None
-    connection_interface = dbus.Interface(connection_proxy, NM.DBUS_INTERFACE_SETTINGS_CONNECTION)
-    if not connection_interface:
-        return None
-    connection_settings = connection_interface.GetSettings()
-    if not connection_settings:
-        return None
-    try:
-        return int(connection_settings["connection"]["timestamp"])
-    except (ValueError, KeyError) as e:
-        # We log this because this would be unusual
-        _logger.warning("Failed getting timestamp with error", e)
-        return None
 
 
 def nm_available() -> bool:

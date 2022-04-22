@@ -137,7 +137,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_session_label = builder.get_object('connectionSessionLabel')
         self.connection_switch = builder.get_object('connectionSwitch')
         self.connection_info_expander = builder.get_object('connectionInfoExpander')
-        self.connection_info_duration = builder.get_object('connectionInfoDurationText')
         self.connection_info_downloaded = builder.get_object('connectionInfoDownloadedText')
         self.connection_info_uploaded = builder.get_object('connectionInfoUploadedText')
         self.connection_info_ipv4address = builder.get_object('connectionInfoIpv4AddressText')
@@ -517,7 +516,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.hide_page(self.connection_page)
-        self.stop_connection_info()
+        self.pause_connection_info()
 
     @transition_level_callback(interface_state.ConnectionStatus)
     def context_ConnectionStatus(self, state):
@@ -615,11 +614,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.app.interface_transition('deactivate_connection')
         return True
 
-    def stop_connection_info(self):
+    def pause_connection_info(self):
         if self.connection_info_thread_cancel:
             self.connection_info_thread_cancel()
-            self.connection_info_thread = None
+            self.connection_info_thread_cancel = None
 
+    def stop_connection_info(self):
+        # Pause the thread
+        self.pause_connection_info()
+
+        # Further cleanup
         if self.connection_info_stats:
             self.connection_info_stats.cleanup()
             self.connection_info_stats = None
@@ -637,20 +641,19 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             upload = self.connection_info_stats.upload
             ipv4 = self.connection_info_stats.ipv4
             ipv6 = self.connection_info_stats.ipv6
-            duration = self.connection_info_stats.duration
             self.connection_info_downloaded.set_text(download)
             self.connection_info_uploaded.set_text(upload)
             self.connection_info_ipv4address.set_text(ipv4)
             self.connection_info_ipv6address.set_text(ipv6)
-            self.connection_info_duration.set_text(duration)
 
         if not self.connection_info_stats:
             self.connection_info_stats = NetworkStats()
 
-        # Run every second in the background
-        self.connection_info_thread_cancel = run_periodically(
-            update_connection_info_callback, 1
-        )
+        if not self.connection_info_thread_cancel:
+            # Run every second in the background
+            self.connection_info_thread_cancel = run_periodically(
+                update_connection_info_callback, 1
+            )
 
     def on_toggle_connection_info(self, _):
         logger.debug("clicked on connection info")
@@ -659,7 +662,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if not was_expanded:
             self.start_connection_info()
         else:
-            self.stop_connection_info()
+            self.pause_connection_info()
 
     def on_profile_selection_changed(self, selection):
         logger.debug("selected profile")
