@@ -1,3 +1,29 @@
+3.0.0 (2022-05-09)
+===
+
+This version of the client makes it API compatible with eduVPN server version 3. A notable addition that this brings is Wireguard support.
+
+Additions
+--------
+* #457 Update API to V3 by @alvra
+* #461 Add a connection info expander by @jwijenbergh
+* #466 WireGuard support by @alvra
+
+Bugfixes
+--------
+* #455  Update makefile centos paths by @jwijenbergh
+* #456  Makefile: do not fail rm if files do not exist by @jwijenbergh
+* #472  Fix OpenVPN parsing by @dahooz
+* #477  Make tests pass when running with NetworkManager by @jwijenbergh
+* #483  Correct version flag by @gijzelaerr
+
+Enhancements
+--------
+* #459  Add dates of releases by @fkooman
+* #475  Wireguard: Disable autoconnect to match OpenVPN behaviour by @jwijenbergh
+* #484  Add long description to pypi by @gijzelaerr
+
+
 2.2.1 (2022-02-18)
 ===
 
