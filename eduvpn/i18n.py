@@ -40,14 +40,20 @@ def setup(app_variant: ApplicationVariant, prefix: str):
 
 def country() -> str:
     try:
-        return locale.getlocale()[0].replace('_', '-')
+        locale_setting = locale.getlocale()[0]
+        if not locale_setting:
+            return COUNTRY
+        return locale_setting.replace('_', '-')
     except Exception:
         return COUNTRY
 
 
 def language() -> str:
     try:
-        return locale.getlocale()[0].split('_')[0]
+        locale_setting = locale.getlocale()[0]
+        if not locale_setting:
+            return LANGUAGE
+        return locale_setting.split('_')[0]
     except Exception:
         return LANGUAGE
 
