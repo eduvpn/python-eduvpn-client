@@ -11,6 +11,7 @@ from ..utils import run_in_main_gtk_thread
 from ..variants import ApplicationVariant
 from ..app import Application
 from .ui import EduVpnGtkWindow
+from eduvpncommon.main import EduVPN
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,8 @@ LOG_FORMAT = format_ = (
 
 
 class EduVpnGtkApplication(Gtk.Application):
-    def __init__(self, *args, app_variant: ApplicationVariant, **kwargs):
+    # TODO: Go type hint
+    def __init__(self, *args, app_variant: ApplicationVariant, common: EduVPN, **kwargs):
         super().__init__(  # type: ignore
             *args,
             application_id=app_variant.app_id,
@@ -32,6 +34,7 @@ class EduVpnGtkApplication(Gtk.Application):
         )
 
         self.app = Application(app_variant, run_in_main_gtk_thread)
+        self.common = common
         # Only allow a single window and track it on the app.
         self.window = None
 
@@ -96,6 +99,8 @@ class EduVpnGtkApplication(Gtk.Application):
 
     def on_quit(self, action=None, param=None):
         logger.debug('quit')
+        # Deregister the common library to save settings
+        self.common.deregister()
         self.quit()
 
     def on_window_closed(self):

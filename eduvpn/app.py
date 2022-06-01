@@ -23,7 +23,8 @@ class Application:
     def initialize(self):
         self.initialize_network()
         if self.variant.use_predefined_servers:
-            self.initialize_server_db()
+            # TODO: Go initialize server db?
+            pass
         self.config = Configuration.load()
 
     def initialize_network(self):

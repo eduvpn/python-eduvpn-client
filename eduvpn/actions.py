@@ -9,7 +9,7 @@ from eduvpn.nm import activate_connection_with_mainloop, get_cert_key, get_clien
     nm_available, connection_status, save_connection_with_mainloop, deactivate_connection_with_mainloop
 from eduvpn import oauth2
 from eduvpn.remote import get_info, check_certificate, create_keypair, get_config, list_profiles
-from eduvpn.settings import CLIENT_ID
+from eduvpn.settings import CLIENT_ID, REQUEST_TIMEOUT
 from eduvpn.variants import EDUVPN
 from eduvpn.storage import get_storage, get_current_metadata, update_token, get_uuid, get_all_metadatas
 
@@ -26,7 +26,7 @@ def refresh():
     oauth = OAuth2Session(client_id=CLIENT_ID, token=token, auto_refresh_url=token_endpoint)
 
     try:
-        token = oauth.refresh_token(token_url=token_endpoint)
+        token = oauth.refresh_token(token_url=token_endpoint, timeout=REQUEST_TIMEOUT)
     except InvalidGrantError as e:
         _logger.warning(f"token invalid: {e}")
         oauth = oauth2.run_challenge(token_endpoint, auth_endpoint, EDUVPN)

@@ -4,7 +4,7 @@ from functools import lru_cache
 from gi.repository import Gtk, GObject, Pango
 from eduvpn.server import (
     AnyServer as Server, InstituteAccessServer,
-    OrganisationServer, SecureInternetLocation, CustomServer)
+    OrganisationServer, SecureInternetServer, CustomServer)
 from .utils import show_ui_component
 
 
@@ -83,12 +83,13 @@ def group_servers(
     for server in servers:
         if isinstance(server, InstituteAccessServer):
             groups[ServerGroup.INSTITUTE_ACCESS].append(server)
-        elif isinstance(server, (OrganisationServer, SecureInternetLocation)):
+        elif isinstance(server, OrganisationServer):
             groups[ServerGroup.SECURE_INTERNET].append(server)
         elif isinstance(server, CustomServer):
             groups[ServerGroup.OTHER].append(server)
         else:
-            raise TypeError(server)
+            continue
+            #raise TypeError(server)
     return groups
 
 

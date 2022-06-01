@@ -7,6 +7,7 @@ from typing import Optional
 import os
 import webbrowser
 import logging
+import json
 from gettext import gettext as _, ngettext
 
 import gi
@@ -20,10 +21,11 @@ from ..server import CustomServer
 from ..app import Application
 from ..nm import nm_available, nm_managed
 from ..utils import (
-    get_prefix, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
+    get_prefix, run_in_background_thread, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 from .stats import NetworkStats
+import eduvpncommon.main as common
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +53,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def setup(self, builder, application: Application):
         self.app = application.app  # type: ignore
+        self.common = application.common
         handlers = {
             "on_configure_settings": self.on_configure_settings,
             "on_get_help": self.on_get_help,
@@ -58,13 +61,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_add_other_server": self.on_add_other_server,
             "on_add_custom_server": self.on_add_custom_server,
             "on_cancel_oauth_setup": self.on_cancel_oauth_setup,
-            "on_server_row_activated": self.on_server_row_activated,
+            "on_select_server": self.on_select_server,
             "on_search_changed": self.on_search_changed,
             "on_search_activate": self.on_search_activate,
             "on_switch_connection_state": self.on_switch_connection_state,
             "on_toggle_connection_info": self.on_toggle_connection_info,
-            "on_profile_row_activated": self.on_profile_row_activated,
-            "on_location_row_activated": self.on_location_row_activated,
+            "on_profile_selection_changed": self.on_profile_selection_changed,
+            "on_location_selection_changed": self.on_location_selection_changed,
             "on_acknowledge_error": self.on_acknowledge_error,
             "on_renew_session_clicked": self.on_renew_session_clicked,
             "on_config_force_tcp": self.on_config_force_tcp,
@@ -72,6 +75,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_close_window": self.on_close_window,
         }
         builder.connect_signals(handlers)
+
+        self.is_selected = False
 
         self.app_logo = builder.get_object('appLogo')
 
@@ -168,6 +173,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 name=_("Error"),
                 title=_("NetworkManager not managing device"),
                 message=_("The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."))
+        self.common.register_class_callbacks(self)
+        #self.common.set_thread_helper(GObject.idle_add)
+        self.common.register()
 
     # ui functions
 
@@ -207,7 +215,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def enter_settings_page(self):
         assert not self.is_on_settings_page()
-        self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
         self.setting_config_nm_system_wide.set_state(self.app.config.nm_system_wide)
         self.page_stack.set_visible_child(self.settings_page)
         self.show_back_button(True)
@@ -298,73 +305,67 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.show_back_button(new_state.has_transition('go_back'))
 
     # TODO: Implement with Go callback
-    def enter_search(self, old_state, new_state):
-        if not isinstance(old_state, interface_state.configure_server_states):
-            self.find_server_search_input.grab_focus()
-            search.show_result_components(self, True)
-            search.show_search_components(self, True)
-            search.init_server_search(self)
-            search.connect_activation_handlers(self, self.on_server_row_activated)
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Search_Server", common.StateType.Enter)
+    def enter_search(self, old_state: str, data: str):
+        self.find_server_search_input.grab_focus()
+        search.show_result_components(self, True)
+        search.show_search_components(self, True)
+        search.update_results(self, self.app.server_db.servers) 
+        search.init_server_search(self)
+        search.connect_selection_handlers(self, self.on_select_server)
 
     # TODO: Implement with Go callback
-    def exit_search(self, old_state, new_state):
-        if not isinstance(new_state, interface_state.configure_server_states):
-            search.show_result_components(self, False)
-            search.show_search_components(self, False)
-            search.exit_server_search(self)
-            search.disconnect_activation_handlers(self, self.on_server_row_activated)
-            self.set_search_text('')
-
-    # TODO: Implement with Go callback
-    def enter_PendingConfigurePredefinedServer(self, old_state, new_state):
-        search.update_results(self, [])
-        if not isinstance(old_state, interface_state.configure_server_states):
-            self.set_search_text(new_state.search_query)
-
-    # TODO: Implement with Go callback
-    def enter_ConfigurePredefinedServer(self, old_state, new_state):
-        search.update_results(self, new_state.results)
-        if not isinstance(old_state, interface_state.configure_server_states):
-            self.set_search_text(new_state.search_query)
-
-    # TODO: Implement with Go callback
-    def enter_ConfigureCustomServer(self, old_state, new_state):
-        if self.app.variant.use_predefined_servers:
-            search.update_results(self, [CustomServer(new_state.address)])
-            if not isinstance(old_state, interface_state.configure_server_states):
-                self.set_search_text(new_state.address)
-        else:
-            entered_address = len(new_state.address) > 0
-            show_ui_component(self.add_custom_server_button_container, entered_address)
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Search_Server", common.StateType.Leave)
+    def exit_search(self, new_state: str, data: str):
+        search.show_result_components(self, False)
+        search.show_search_components(self, False)
+        search.exit_server_search(self)
+        search.disconnect_selection_handlers(self, self.on_select_server)
+        self.set_search_text('')
 
     # TODO: Implement with Go callback
     def exit_ConfigureCustomServer(self, old_state, new_state):
         if not self.app.variant.use_predefined_servers:
             self.add_custom_server_button_container.hide()
 
-    # TODO: Implement with Go callback
-    def enter_MainState(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("No_Server", common.StateType.Enter)
+    def enter_MainState(self, old_state: str, servers: str):
         search.show_result_components(self, True)
+        self.app.server_db.disco_parse_organizations(self.common.get_disco_organizations())
+        self.app.server_db.disco_parse_servers(self.common.get_disco_servers())
+        self.app.server_db.parse_servers(servers)
         self.add_other_server_button_container.show()
-        search.update_results(self, new_state.servers)
+        search.update_results(self, self.app.server_db.configured) 
         search.init_server_search(self)
-        search.connect_activation_handlers(self, self.on_server_row_activated)
+        search.connect_selection_handlers(self, self.on_select_server)
 
-    # TODO: Implement with Go callback
+    @run_in_main_gtk_thread
+    @common.class_state_transition("No_Server", common.StateType.Leave)
     def exit_MainState(self, old_state, new_state):
         search.show_result_components(self, False)
         self.add_other_server_button_container.hide()
         search.exit_server_search(self)
-        search.disconnect_activation_handlers(self, self.on_server_row_activated)
+        search.disconnect_selection_handlers(self, self.on_select_server)
 
-    # TODO: Implement with Go callback
-    def enter_oauth_setup(self, old_state, new_state):
+    @run_in_background_thread('browser-open')
+    def open_browser(self, url):
+        webbrowser.open(url)
+
+    @run_in_main_gtk_thread
+    @common.class_state_transition("OAuth_Started", common.StateType.Enter)
+    def enter_oauth_setup(self, old_state, url):
+        print("HIER")
         self.show_page(self.oauth_page)
-        in_setup_state = isinstance(new_state, interface_state.OAuthSetup)
-        show_ui_component(self.oauth_cancel_button, in_setup_state)
+        self.open_browser(url)
 
     # TODO: Implement with Go callback
+    @run_in_main_gtk_thread
+    @common.class_state_transition("OAuth_Started", common.StateType.Leave)
     def exit_oauth_setup(self, old_state, new_state):
+        print("HIER")
         self.hide_page(self.oauth_page)
         self.oauth_cancel_button.hide()
 
@@ -470,6 +471,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.start_connection_info()
 
     # TODO: Implement with Go callback
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Has_Config", common.StateType.Enter)
     def enter_ConnectionStatus(self, old_state, new_state):
         self.show_page(self.connection_page)
         self.update_connection_server()
@@ -525,37 +528,49 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_add_other_server(self, button) -> None:
         logger.debug("clicked on add other server")
-        self.app.interface_transition('configure_new_server')
+        self.common.set_search_server()
+        #self.app.interface_transition('configure_new_server')
 
     def on_add_custom_server(self, button) -> None:
         logger.debug("clicked on add custom server")
         server = CustomServer(self.app.interface_state.address)
         self.app.interface_transition('connect_to_server', server)
 
-    def on_server_row_activated(self, widget, row, col):
-        model = widget.get_model()
-        server = model[row][1]
-        logger.debug(f"activated server: {server!r}")
-        self.app.interface_transition('connect_to_server', server)
+    def on_select_server(self, selection):
+        if self.is_selected:
+            return
+        logger.debug("selected server search result")
+        (model, tree_iter) = selection.get_selected()
+        selection.unselect_all()
+        if tree_iter is None:
+            logger.info("selection empty")
+        else:
+            self.is_selected = True
+            row = model[tree_iter]
+            server = row[1]
+            logger.debug(f"selected server: {server!r}")
+            self.app.server_db.connect(self.common, server)
+            #self.app.interface_transition('connect_to_server', server)
 
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
-        self.app.interface_transition('oauth_setup_cancel')
+        self.common.cancel_oauth()
 
     def on_search_changed(self, _=None):
         query = self.find_server_search_input.get_text()
         logger.debug(f"entered server search query: {query}")
         if self.app.variant.use_predefined_servers and query.count('.') < 2:
-            self.app.interface_transition(
-                'enter_search_query', search_query=query)
+            results = self.app.server_db.search_predefined(query)
+            search.update_results(self, results)
         else:
             # Anything with two periods is interpreted
             # as a custom server address.
-            self.app.interface_transition(
-                'enter_custom_address', address=query)
+            results = self.app.server_db.search_custom(query)
+            search.update_results(self, results)
 
     def on_search_activate(self, _=None):
         logger.debug("activated server search")
+        print("ACTIVATE")
         # TODO
 
     def on_switch_connection_state(self, switch, state):
@@ -620,17 +635,29 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.pause_connection_info()
 
-    def on_profile_row_activated(self, widget, row, col):
-        model = widget.get_model()
-        profile = model[row][1]
-        logger.debug(f"activated profile: {profile!r}")
-        self.app.interface_transition('select_profile', profile)
+    def on_profile_selection_changed(self, selection):
+        logger.debug("selected profile")
+        (model, tree_iter) = selection.get_selected()
+        selection.unselect_all()
+        if tree_iter is None:
+            logger.debug("selection empty")
+        else:
+            row = model[tree_iter]
+            profile = row[1]
+            logger.debug(f"selected profile: {profile!r}")
+            self.app.interface_transition('select_profile', profile)
 
-    def on_location_row_activated(self, widget, row, col):
-        model = widget.get_model()
-        location = model[row][2]
-        logger.debug(f"activated location: {location!r}")
-        self.app.interface_transition('select_secure_internet_location', location)
+    def on_location_selection_changed(self, selection):
+        logger.debug("selected location")
+        (model, tree_iter) = selection.get_selected()
+        selection.unselect_all()
+        if tree_iter is None:
+            logger.debug("selection empty")
+        else:
+            row = model[tree_iter]
+            location = row[2]
+            logger.debug(f"selected location: {location!r}")
+            self.app.interface_transition('select_secure_internet_location', location)
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")
