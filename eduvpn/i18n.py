@@ -83,18 +83,6 @@ def retrieve_country_name(country_code: str) -> str:
             return code[prefix]
     return country_code
 
-# def get_token(auth_url: str) -> Optional[Tuple[OAuth2Token, str, str]]:
-#     """
-#     Return the metadata from storage
-#     """
-#     storage = _read_tokens()
-#     if auth_url in storage:
-#         v = storage[auth_url]
-#         return OAuth2Token(v['token']), v['token_endpoint'], v['authorization_endpoint']
-#     else:
-#         return None
-
-
 def _read_country_map() -> dict:
     """
     Read the storage from disk, returns an empty dict in case of failure.

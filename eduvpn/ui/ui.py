@@ -15,15 +15,9 @@ gi.require_version('NM', '1.0')  # noqa: E402
 from gi.repository import Gtk, GObject, GdkPixbuf
 
 from ..settings import HELP_URL
-from ..interface import state as interface_state
 from .. import network as network_state
 from ..server import CustomServer
 from ..app import Application
-from ..state_machine import (
-    ENTER, EXIT, transition_callback, transition_edge_callback,
-    transition_level_callback)
-from ..session import Validity
-from .. import session as session_state
 from ..nm import nm_available, nm_managed
 from ..utils import (
     get_prefix, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
@@ -38,30 +32,7 @@ UPDATE_EXIPRY_INTERVAL = 1.  # seconds
 
 RENEWAL_ALLOW_FRACTION = .8
 
-
-def get_validity_text(validity: Optional[Validity]) -> str:
-    if validity is None:
-        return _("Valid for <b>unknown</b>")
-    if validity.is_expired:
-        return _("This session has expired")
-    delta = validity.remaining
-    days = delta.days
-    hours = delta.seconds // 3600
-    if days == 0:
-        if hours == 0:
-            minutes = delta.seconds // 60
-            return ngettext("Valid for <b>{0} minute</b>",
-                            "Valid for <b>{0} minutes</b>", minutes).format(minutes)
-        else:
-            return ngettext("Valid for <b>{0} hour</b>",
-                            "Valid for <b>{0} hours</b>", hours).format(hours)
-    else:
-        dstr = ngettext("Valid for <b>{0} day</b>",
-                        "Valid for <b>{0} days</b>", days).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>",
-                        " and <b>{0} hours</b>", hours).format(hours)
-        return dstr + hstr
-
+# TODO: Go, implement get_validity_text
 
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), 'share/eduvpn/builder', filename)
@@ -185,8 +156,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_switch_state: Optional[bool] = None
 
     def initialize(self):
-        self.app.connect_state_transition_callbacks(self)
-
         if not nm_available():
             show_error_dialog(
                 self,
@@ -246,25 +215,18 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def leave_settings_page(self):
         assert self.is_on_settings_page()
         self.page_stack.set_visible_child(self.current_shown_page)
-        self.show_back_button(self.app.interface_state.has_transition('go_back'))
+        # TODO: Implement show_back_button with Go
 
     # network state transition callbacks
 
-    @transition_callback(network_state.NetworkState)
+    # Implement with Go callback
     def default_network_transition_callback(self, old_state, new_state):
         if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
             self.update_connection_status()
 
     def update_connection_server(self):
-        if isinstance(self.app.session_state,
-                      (session_state.InitialSessionState,
-                       session_state.NoSessionState)):
-            self.server_label.set_text('')
-            self.server_image.hide()
-            self.server_support_label.hide()
-            return
-        else:
-            server = self.app.session_state.server
+        # TODO: Go, return early
+        server = self.app.session_state.server
 
         self.server_label.set_text(str(server))
 
@@ -288,7 +250,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                        session_state.NoSessionState)):
             self.connection_session_label.hide()
         else:
-            expiry_text = get_validity_text(self.app.session_state.validity)
+            expiry_text = "TODO: Implement"
             self.connection_session_label.show()
             self.connection_session_label.set_markup(expiry_text)
 
@@ -322,20 +284,20 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # session state transition callbacks
 
-    @transition_callback(session_state.SessionState)
+    # Implement with Go callback
     def default_session_transition_callback(self, old_state, new_state):
         if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
             self.update_connection_status()
 
     # interface state transition callbacks
 
-    @transition_callback(interface_state.InterfaceState)
+    # Implement with Go callback
     def default_interface_transition_callback(self, old_state, new_state):
         # Only show the 'go back' button if
         # the corresponding transition is available.
         self.show_back_button(new_state.has_transition('go_back'))
 
-    @transition_edge_callback(ENTER, interface_state.configure_server_states)
+    # TODO: Implement with Go callback
     def enter_search(self, old_state, new_state):
         if not isinstance(old_state, interface_state.configure_server_states):
             self.find_server_search_input.grab_focus()
@@ -344,7 +306,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             search.init_server_search(self)
             search.connect_activation_handlers(self, self.on_server_row_activated)
 
-    @transition_edge_callback(EXIT, interface_state.configure_server_states)
+    # TODO: Implement with Go callback
     def exit_search(self, old_state, new_state):
         if not isinstance(new_state, interface_state.configure_server_states):
             search.show_result_components(self, False)
@@ -353,20 +315,19 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             search.disconnect_activation_handlers(self, self.on_server_row_activated)
             self.set_search_text('')
 
-    @transition_edge_callback(
-        ENTER, interface_state.PendingConfigurePredefinedServer)
+    # TODO: Implement with Go callback
     def enter_PendingConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self, [])
         if not isinstance(old_state, interface_state.configure_server_states):
             self.set_search_text(new_state.search_query)
 
-    @transition_edge_callback(ENTER, interface_state.ConfigurePredefinedServer)
+    # TODO: Implement with Go callback
     def enter_ConfigurePredefinedServer(self, old_state, new_state):
         search.update_results(self, new_state.results)
         if not isinstance(old_state, interface_state.configure_server_states):
             self.set_search_text(new_state.search_query)
 
-    @transition_edge_callback(ENTER, interface_state.ConfigureCustomServer)
+    # TODO: Implement with Go callback
     def enter_ConfigureCustomServer(self, old_state, new_state):
         if self.app.variant.use_predefined_servers:
             search.update_results(self, [CustomServer(new_state.address)])
@@ -376,12 +337,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             entered_address = len(new_state.address) > 0
             show_ui_component(self.add_custom_server_button_container, entered_address)
 
-    @transition_edge_callback(EXIT, interface_state.ConfigureCustomServer)
+    # TODO: Implement with Go callback
     def exit_ConfigureCustomServer(self, old_state, new_state):
         if not self.app.variant.use_predefined_servers:
             self.add_custom_server_button_container.hide()
 
-    @transition_edge_callback(ENTER, interface_state.MainState)
+    # TODO: Implement with Go callback
     def enter_MainState(self, old_state, new_state):
         search.show_result_components(self, True)
         self.add_other_server_button_container.show()
@@ -389,49 +350,47 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.init_server_search(self)
         search.connect_activation_handlers(self, self.on_server_row_activated)
 
-    @transition_edge_callback(EXIT, interface_state.MainState)
+    # TODO: Implement with Go callback
     def exit_MainState(self, old_state, new_state):
         search.show_result_components(self, False)
         self.add_other_server_button_container.hide()
         search.exit_server_search(self)
         search.disconnect_activation_handlers(self, self.on_server_row_activated)
 
-    @transition_edge_callback(ENTER, interface_state.OAuthSetupPending)
-    @transition_edge_callback(ENTER, interface_state.OAuthSetup)
+    # TODO: Implement with Go callback
     def enter_oauth_setup(self, old_state, new_state):
         self.show_page(self.oauth_page)
         in_setup_state = isinstance(new_state, interface_state.OAuthSetup)
         show_ui_component(self.oauth_cancel_button, in_setup_state)
 
-    @transition_edge_callback(EXIT, interface_state.OAuthSetupPending)
-    @transition_edge_callback(EXIT, interface_state.OAuthSetup)
+    # TODO: Implement with Go callback
     def exit_oauth_setup(self, old_state, new_state):
         self.hide_page(self.oauth_page)
         self.oauth_cancel_button.hide()
 
-    @transition_edge_callback(ENTER, interface_state.OAuthRefreshToken)
+    # TODO: Implement with Go callback
     def enter_OAuthRefreshToken(self, old_state, new_state):
         self.show_loading_page(
             _("Finishing Authorization"),
             _("The authorization token is being finished."),
         )
 
-    @transition_edge_callback(EXIT, interface_state.OAuthRefreshToken)
+    # TODO: Implement with Go callback
     def exit_OAuthRefreshToken(self, old_state, new_state):
         self.hide_loading_page()
 
-    @transition_edge_callback(ENTER, interface_state.LoadingServerInformation)
+    # TODO: Implement with Go callback
     def enter_LoadingServerInformation(self, old_state, new_state):
         self.show_loading_page(
             _("Loading"),
             _("The server details are being loaded."),
         )
 
-    @transition_edge_callback(EXIT, interface_state.LoadingServerInformation)
+    # TODO: Implement with Go callback
     def exit_LoadingServerInformation(self, old_state, new_state):
         self.hide_loading_page()
 
-    @transition_edge_callback(ENTER, interface_state.ChooseProfile)
+    # TODO: Implement with Go callback
     def enter_ChooseProfile(self, old_state, new_state):
         self.show_page(self.choose_profile_page)
         self.profile_list.show()
@@ -452,12 +411,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         for profile in new_state.profiles:
             profiles_list_model.append([str(profile), profile])
 
-    @transition_edge_callback(EXIT, interface_state.ChooseProfile)
+    # TODO: Implement with Go callback
     def exit_ChooseProfile(self, old_state, new_state):
         self.hide_page(self.choose_profile_page)
         self.profile_list.hide()
 
-    @transition_edge_callback(ENTER, interface_state.ChooseSecureInternetLocation)
+    # TODO: Implement with Go callback
     def enter_ChooseSecureInternetLocation(self, old_state, new_state):
         self.show_page(self.choose_location_page)
         self.location_list.show()
@@ -488,40 +447,40 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 flag = GdkPixbuf.Pixbuf.new_from_file(location.flag_path)
             location_list_model.append([location.country_name, flag, location])
 
-    @transition_edge_callback(EXIT, interface_state.ChooseSecureInternetLocation)
+    # TODO: Implement with Go callback
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
         self.hide_page(self.choose_location_page)
         self.location_list.hide()
 
-    @transition_edge_callback(ENTER, interface_state.ConfiguringConnection)
+    # TODO: Implement with Go callback
     def enter_ConfiguringConnection(self, old_state, new_state):
         self.show_loading_page(
             _("Configuring"),
             _("Your connection is being configured."),
         )
 
-    @transition_edge_callback(EXIT, interface_state.ConfiguringConnection)
+    # TODO: Implement with Go callback
     def exit_ConfiguringConnection(self, old_state, new_state):
         self.hide_loading_page()
 
-    @transition_edge_callback(ENTER, network_state.ConnectedState)
+    # TODO: Implement with Go callback
     def enter_ConnectedState(self, old_state, new_state):
         is_expanded = self.connection_info_expander.get_expanded()
         if is_expanded:
             self.start_connection_info()
 
-    @transition_edge_callback(ENTER, interface_state.ConnectionStatus)
+    # TODO: Implement with Go callback
     def enter_ConnectionStatus(self, old_state, new_state):
         self.show_page(self.connection_page)
         self.update_connection_server()
         self.update_connection_status()
 
-    @transition_edge_callback(EXIT, interface_state.ConnectionStatus)
+    # TODO: Implement with Go callback
     def exit_ConnectionStatus(self, old_state, new_state):
         self.hide_page(self.connection_page)
         self.pause_connection_info()
 
-    @transition_level_callback(interface_state.ConnectionStatus)
+    # TODO: Implement with Go callback
     def context_ConnectionStatus(self, state):
         return cancel_at_context_end(run_periodically(
             run_in_main_gtk_thread(self.update_connection_validity),
@@ -529,18 +488,18 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             'update-validity',
         ))
 
-    @transition_edge_callback(ENTER, network_state.DisconnectedState)
+    # TODO: Implement with Go callback
     def enter_DisconnectedState(self, old_state, new_state):
         self.stop_connection_info()
 
-    @transition_edge_callback(ENTER, interface_state.ErrorState)
+    # TODO: Implement with Go callback
     def enter_ErrorState(self, old_state, new_state):
         self.show_page(self.error_page)
         self.error_text.set_text(new_state.message)
         has_next_transition = new_state.next_transition is not None
         show_ui_component(self.error_acknowledge_button, has_next_transition)
 
-    @transition_edge_callback(EXIT, interface_state.ErrorState)
+    # TODO: Implement with Go callback
     def exit_ErrorState(self, old_state, new_state):
         self.hide_page(self.error_page)
 

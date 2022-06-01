@@ -8,11 +8,8 @@ from gi.repository import GLib, Gio, Gtk
 from .. import i18n
 from .. import notify
 from ..utils import run_in_main_gtk_thread
-from ..state_machine import ENTER, transition_edge_callback
 from ..variants import ApplicationVariant
 from ..app import Application
-from .. import network as network_state
-from .. import session as session_state
 from .ui import EduVpnGtkWindow
 
 
@@ -22,12 +19,6 @@ logger = logging.getLogger(__name__)
 LOG_FORMAT = format_ = (
     '%(asctime)s - %(threadName)s - %(levelname)s - %(name)s'
     ' - %(filename)s:%(lineno)d - %(message)s'
-)
-
-
-NO_WINDOW_QUIT_NETWORK_STATES = (
-    network_state.UnconnectedState,
-    network_state.DisconnectedState,
 )
 
 
@@ -67,7 +58,6 @@ class EduVpnGtkApplication(Gtk.Application):
         i18n.initialize(self.app.variant)
         notify.initialize(self.app.variant)
         self.connection_notification = notify.Notification(self.app.variant)
-        self.app.connect_state_transition_callbacks(self)
 
     def do_shutdown(self):
         logger.debug('shutdown')
@@ -110,12 +100,10 @@ class EduVpnGtkApplication(Gtk.Application):
 
     def on_window_closed(self):
         logger.debug('window closed')
-        if isinstance(self.app.network_state, NO_WINDOW_QUIT_NETWORK_STATES):
-            # Quit the app if no connection is active on window close.
-            logger.debug("window closed while no active connection")
-            self.on_quit()
+        # TODO: Go, only quit while no active connection
+        self.on_quit()
 
-    @transition_edge_callback(ENTER, network_state.ConnectingState)
+    # TODO: Implement with Go callback
     def enter_ConnectingState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Connecting"),
@@ -124,13 +112,13 @@ class EduVpnGtkApplication(Gtk.Application):
                 "This should only take a moment."
             ))
 
-    @transition_edge_callback(ENTER, network_state.ConnectedState)
+    # TODO: Implement with Go callback
     def enter_ConnectedState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Connected"),
             message=_("You are now connected to your server."))
 
-    @transition_edge_callback(ENTER, session_state.SessionPendingExpiryState)
+    # TODO: Implement with Go callback
     def enter_SessionPendingExpiryState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Connected"),
@@ -139,7 +127,7 @@ class EduVpnGtkApplication(Gtk.Application):
                 "Renew the session to remain connected."
             ))
 
-    @transition_edge_callback(ENTER, network_state.ReconnectingState)
+    # TODO: Implement with Go callback
     def enter_ReconnectingState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Connecting"),
@@ -148,17 +136,17 @@ class EduVpnGtkApplication(Gtk.Application):
                 "This should only take a moment."
             ))
 
-    @transition_edge_callback(ENTER, network_state.DisconnectedState)
+    # TODO: Implement with Go callback
     def enter_DisconnectedState(self, old_state, new_state):
         self.connection_notification.hide()
 
-    @transition_edge_callback(ENTER, session_state.SessionExpiredState)
+    # TODO: Implement with Go callback
     def enter_SessionExpiredState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Session expired"),
             message=_("Your session has expired."))
 
-    @transition_edge_callback(ENTER, network_state.ConnectionErrorState)
+    # TODO: Implement with Go callback
     def enter_ConnectionErrorState(self, old_state, new_state):
         message = _("An error occured")
         if new_state.error:
@@ -167,7 +155,7 @@ class EduVpnGtkApplication(Gtk.Application):
             title=_("Connection Error"),
             message=message)
 
-    @transition_edge_callback(ENTER, NO_WINDOW_QUIT_NETWORK_STATES)
+    # TODO: Implement with Go callback
     def enter_NoActiveConnection(self, old_state, new_state):
         if not self.window.is_visible():
             # Quit the app if no window is open when the connection is deactivated.
