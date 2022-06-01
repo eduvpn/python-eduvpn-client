@@ -77,7 +77,7 @@ def run_in_main_gtk_thread(func):
 
     @wraps(func)
     def main_gtk_thread_func(*args, **kwargs):
-        GLib.idle_add(partial(func, *args, **kwargs))
+        GLib.idle_add(func, *args, **kwargs)
 
     return main_gtk_thread_func
 

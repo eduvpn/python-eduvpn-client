@@ -7,7 +7,9 @@ gi.require_version('Gtk', '3.0')  # noqa: E402
 from gi.repository import Gtk
 
 from ..variants import EDUVPN, LETS_CONNECT
+from ..settings import CLIENT_ID, CONFIG_PREFIX
 from ..ui.app import EduVpnGtkApplication
+import eduvpncommon.main as common
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +24,8 @@ def main_loop(args=None, app_variant=EDUVPN):
         args = sys.argv
 
     try:
-        app = EduVpnGtkApplication(app_variant=app_variant)
+        _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX))
+        app = EduVpnGtkApplication(app_variant=app_variant, common=_common)
         app.run(args)
     except Exception as e:
         message = "A fatal error occurred"

@@ -1,8 +1,12 @@
 from typing import Union, Optional, Iterable, List, Dict
 import logging
 import os
+import json
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import FLAG_PREFIX
+from functools import partial
+from .utils import (
+    get_prefix, thread_helper, run_in_background_thread, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
 
 
 logger = logging.getLogger(__name__)
@@ -162,37 +166,15 @@ class Profile:
             return self.default_gateway
 
 
-class SecureInternetLocation:
-    def __init__(self,
-                 server: OrganisationServer,
-                 location: SecureInternetServer):
-        self.server = server
-        self.location = location
-
-    def __str__(self):
-        return self.location.country_name
-
-    def __repr__(self):
-        return f"<SecureInternetLocation {self.server!r} {self.location!r}>"
-
-    @property
-    def image_path(self) -> Optional[str]:
-        return self.location.flag_path
-
-    @property
-    def support_contact(self) -> List[str]:
-        return self.location.support_contact
-
-
 # typing aliases
 PredefinedServer = Union[
     InstituteAccessServer,
     OrganisationServer,
+    SecureInternetServer,
     CustomServer,
 ]
 ConfiguredServer = Union[
     InstituteAccessServer,
-    SecureInternetLocation,
     CustomServer,
 ]
 AnyServer = Union[
@@ -214,15 +196,50 @@ class ServerDatabase:
     def __init__(self):
         # TODO load the servers from a cache
         self.servers = []
+        self.configured = []
 
-    def update(self):
-        """
-        Download the list of institute and secure internet servers,
-        and update this database.
+    @run_in_background_thread('connect')
+    def connect(self, eduvpn, server: AnyServer):
+        is_institute = True
+        if isinstance(server, InstituteAccessServer):
+            url = server.base_url
+        elif isinstance(server, OrganisationServer):
+            url = server.secure_internet_home
+            is_institute = False
+        elif isinstance(server, CustomServer):
+            url = server.address
+        if is_institute:
+            print(eduvpn.get_config_institute_access(url))
+        else:
+            eduvpn.get_config_secure_internet(url)
 
-        This method must be thread-safe.
-        """
-        # TODO: replace with Go
+    def disco_parse_organizations(self, _str):
+        # TODO: Only parse on actual update
+        # Reset organizations
+        self.organizations = []
+        json_organizations = json.loads(_str)
+
+        for organization in json_organizations:
+            server = OrganisationServer(**organization)
+            self.servers.append(server)
+
+    def disco_parse_servers(self, _str):
+        # TODO: Only parse on actual update
+        # Reset servers
+        self.servers = []
+        json_servers = json.loads(_str)
+
+        for server_data in json_servers:
+            server_type = server_data.pop('server_type')
+            if server_type == 'institute_access':
+                server = InstituteAccessServer(**server_data)
+                self.servers.append(server)
+            elif server_type == 'secure_internet':
+                server = SecureInternetServer(**server_data)
+                self.servers.append(server)
+
+    def parse_servers(self, _str):
+        #print("PARSE", _str)
         pass
 
     def all_configured(self) -> Iterable[ConfiguredServer]:
@@ -236,14 +253,9 @@ class ServerDatabase:
 
     def all(self) -> Iterable[PredefinedServer]:
         "Return all servers."
-        # TODO: replace with Go
-        pass
+        return self.servers
 
-    def get_secure_internet_server(self, base_url: str) -> Optional[SecureInternetServer]:
-        # TODO: replace with Go
-        pass
-
-    def search(self, query: str) -> Iterable[PredefinedServer]:
+    def search_predefined(self, query: str) -> Iterable[PredefinedServer]:
         "Return all servers that match the search query."
         if query:
             for server in self.all():
@@ -251,3 +263,6 @@ class ServerDatabase:
                     yield server
         else:
             yield from self.all()
+
+    def search_custom(self, query: str) -> Iterable[CustomServer]:
+        yield CustomServer(query)
