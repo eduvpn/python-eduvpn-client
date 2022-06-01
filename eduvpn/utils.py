@@ -1,8 +1,6 @@
 import sys
 from typing import Optional, Callable
 import threading
-from datetime import datetime
-from email.utils import parsedate_to_datetime
 from functools import lru_cache, partial, wraps
 from gettext import gettext
 from logging import getLogger
@@ -17,13 +15,6 @@ logger = getLogger(__file__)
 
 def get_logger(name_space: str):
     return getLogger(name_space)
-
-
-def add_retry_adapter(session: Session, retries: int):
-    adapter = HTTPAdapter(max_retries=Retry(total=retries))
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
-    return session
 
 
 @lru_cache(maxsize=1)
@@ -46,14 +37,6 @@ def get_prefix() -> str:
 
 def get_config_dir() -> str:
     return environ.get("XDG_CONFIG_HOME", "~/.config")
-
-
-def custom_server_oauth_url(address):
-    if not address.startswith(('http://', 'https://')):
-        address = f'https://{address}'
-    if not address.endswith('/'):
-        address += '/'
-    return address
 
 
 def thread_helper(func: Callable, *, name: Optional[str] = None) -> threading.Thread:
@@ -173,13 +156,6 @@ if sys.version_info < (3, 9):
         return lru_cache(maxsize=None)(func)
 else:
     from functools import cache  # noqa: W0611
-
-
-def parse_http_date_header(date: str) -> datetime:
-    return parsedate_to_datetime(date)
-
-
-parse_http_expires_header = parse_http_date_header
 
 
 def get_human_readable_bytes(total_bytes: int) -> str:

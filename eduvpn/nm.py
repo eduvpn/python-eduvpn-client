@@ -2,6 +2,7 @@ import logging
 import time
 import uuid
 import enum
+from os import PathLike
 from functools import lru_cache
 from pathlib import Path
 from shutil import rmtree
@@ -13,9 +14,7 @@ from configparser import ConfigParser
 
 from .config import Configuration
 from .ovpn import Ovpn
-from .storage import set_uuid, get_uuid, write_ovpn
 from .utils import cache, run_in_background_thread
-from .crypto import SecretKey
 
 _logger = logging.getLogger(__name__)
 
@@ -32,6 +31,33 @@ try:
     import dbus
 except ImportError:
     dbus = None
+
+# TODO: Move these back to a storage file?
+def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike):
+    """
+    Write the OVPN configuration file to target.
+    """
+    _logger.info(f"Writing configuration to {target}")
+    with open(target, mode='w+t') as f:
+        ovpn.write(f)
+        f.writelines(f"\n<key>\n{private_key}\n</key>\n")
+        f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
+
+
+def get_uuid() -> Optional[str]:
+    """
+    Read the UUID of the last generated eduVPN Network Manager connection.
+    """
+    # TODO: Implement with Go
+    return ""
+
+
+def set_uuid(uuid: str):
+    """
+    Write the eduVPN network manager connection UUID to disk.
+    """
+    # TODO: Implement with Go
+    pass
 
 
 @lru_cache()
@@ -287,7 +313,6 @@ def start_openvpn_connection(ovpn: Ovpn, *, callback=None):
 def start_wireguard_connection(
     config: ConfigParser,
     *,
-    secret_key: SecretKey,
     callback=None,
 ):
     client = get_client()
@@ -360,7 +385,7 @@ def start_wireguard_connection(
     # https://lazka.github.io/pgi-docs/NM-1.0/classes/SettingWireGuard.html
     w_con = NM.SettingWireGuard.new()
     w_con.append_peer(peer)
-    w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, secret_key)
+    w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, config['Interface']['PrivateKey'])
 
     profile.add_setting(s_ip4)
     profile.add_setting(s_ip6)
