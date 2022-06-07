@@ -9,6 +9,7 @@ import webbrowser
 import logging
 import json
 from gettext import gettext as _, ngettext
+import time
 
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
@@ -17,7 +18,7 @@ from gi.repository import Gtk, GObject, GdkPixbuf
 
 from ..settings import HELP_URL
 from .. import network as network_state
-from ..server import CustomServer
+from ..server import CustomServer, Profile
 from ..app import Application
 from ..nm import nm_available, nm_managed
 from ..utils import (
@@ -25,7 +26,7 @@ from ..utils import (
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 from .stats import NetworkStats
-import eduvpncommon.main as common
+import eduvpn_common.event as common
 
 logger = logging.getLogger(__name__)
 
@@ -261,39 +262,27 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.connection_session_label.show()
             self.connection_session_label.set_markup(expiry_text)
 
-    def update_connection_status(self):
-        self.connection_status_label.set_text(self.app.network_state.status_label)
-        self.connection_status_image.set_from_file(self.app.network_state.status_image.path)
-
-        self.update_connection_validity()
-
-        assert not (self.app.network_state.has_transition('reconnect') and self.app.network_state.has_transition('disconnect'))
-        if self.app.network_state.has_transition('reconnect'):
-            if self.app.session_state.is_active:
-                self.connection_switch.show()
-                self.set_connection_switch_state(False)
-            else:
-                self.connection_switch.hide()
-        elif self.app.network_state.has_transition('disconnect'):
-            self.connection_switch.show()
+    def update_connection_status(self, connected):
+        if connected:
+            # TODO: Proper text?
+            self.connection_status_label.set_text(_("Connected"))
+            # TODO: Uncomment this
+            #self.connection_status_image.set_from_file(self.app.network_state.status_image.path)
             self.set_connection_switch_state(True)
         else:
-            self.connection_switch.hide()
-
-        if self.app.session_state.has_transition('renew'):
-            if isinstance(self.app.session_state, session_state.SessionExpiredState) and not isinstance(self.app.network_state, network_state.DisconnectedState):
-                # The user needs to disconnect first.
-                self.renew_session_button.hide()
-            else:
-                self.renew_session_button.show()
-        else:
-            self.renew_session_button.hide()
+            # TODO: Proper text?
+            self.connection_status_label.set_text(_("Disconnected"))
+            # TODO: Uncomment this
+            #self.connection_status_image.set_from_file(self.app.network_state.status_image.path)
+            self.set_connection_switch_state(False)
 
     # session state transition callbacks
 
     # Implement with Go callback
-    def default_session_transition_callback(self, old_state, new_state):
-        if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Connected", common.StateType.Enter)
+    def default_session_transition_callback(self, old_state, data):
+        if old_state == "Has_Config":
             self.update_connection_status()
 
     # interface state transition callbacks
@@ -302,6 +291,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def default_interface_transition_callback(self, old_state, new_state):
         # Only show the 'go back' button if
         # the corresponding transition is available.
+        # TODO: Replace with Go
         self.show_back_button(new_state.has_transition('go_back'))
 
     # TODO: Implement with Go callback
@@ -357,42 +347,45 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @run_in_main_gtk_thread
     @common.class_state_transition("OAuth_Started", common.StateType.Enter)
     def enter_oauth_setup(self, old_state, url):
-        print("HIER")
         self.show_page(self.oauth_page)
         self.open_browser(url)
 
     # TODO: Implement with Go callback
     @run_in_main_gtk_thread
     @common.class_state_transition("OAuth_Started", common.StateType.Leave)
-    def exit_oauth_setup(self, old_state, new_state):
-        print("HIER")
+    def exit_oauth_setup(self, old_state, data):
         self.hide_page(self.oauth_page)
         self.oauth_cancel_button.hide()
 
-    # TODO: Implement with Go callback
-    def enter_OAuthRefreshToken(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Authorized", common.StateType.Enter)
+    def enter_OAuthRefreshToken(self, new_state, data):
         self.show_loading_page(
             _("Finishing Authorization"),
             _("The authorization token is being finished."),
         )
 
-    # TODO: Implement with Go callback
-    def exit_OAuthRefreshToken(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Authorized", common.StateType.Leave)
+    def exit_OAuthRefreshToken(self, old_state, data):
         self.hide_loading_page()
 
-    # TODO: Implement with Go callback
-    def enter_LoadingServerInformation(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Chosen_Server", common.StateType.Enter)
+    def enter_LoadingServerInformation(self, new_state, data):
         self.show_loading_page(
             _("Loading"),
             _("The server details are being loaded."),
         )
 
-    # TODO: Implement with Go callback
-    def exit_LoadingServerInformation(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Chosen_Server", common.StateType.Leave)
+    def exit_LoadingServerInformation(self, old_state, data):
         self.hide_loading_page()
 
-    # TODO: Implement with Go callback
-    def enter_ChooseProfile(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Ask_Profile", common.StateType.Enter)
+    def enter_ChooseProfile(self, new_state, profiles_json):
         self.show_page(self.choose_profile_page)
         self.profile_list.show()
 
@@ -409,11 +402,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         profile_tree_view.set_model(profiles_list_model)
         profiles_list_model.clear()
-        for profile in new_state.profiles:
+        profiles_parsed = json.loads(profiles_json)['info']['profile_list']
+        profiles = []
+        for profile in profiles_parsed:
+            profiles.append(Profile(**profile))
+        for profile in profiles:
             profiles_list_model.append([str(profile), profile])
 
-    # TODO: Implement with Go callback
-    def exit_ChooseProfile(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Ask_Profile", common.StateType.Leave)
+    def exit_ChooseProfile(self, old_state, data):
         self.hide_page(self.choose_profile_page)
         self.profile_list.hide()
 
@@ -465,7 +463,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.hide_loading_page()
 
     # TODO: Implement with Go callback
-    def enter_ConnectedState(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Connected", common.StateType.Enter)
+    def enter_ConnectedState(self, old_state, data):
         is_expanded = self.connection_info_expander.get_expanded()
         if is_expanded:
             self.start_connection_info()
@@ -478,7 +478,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.update_connection_server()
         self.update_connection_status()
 
-    # TODO: Implement with Go callback
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Has_Config", common.StateType.Leave)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.hide_page(self.connection_page)
         self.pause_connection_info()
@@ -645,7 +646,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             row = model[tree_iter]
             profile = row[1]
             logger.debug(f"selected profile: {profile!r}")
-            self.app.interface_transition('select_profile', profile)
+            self.common.set_profile(profile.id)
 
     def on_location_selection_changed(self, selection):
         logger.debug("selected location")

@@ -11,7 +11,7 @@ from ..utils import run_in_main_gtk_thread
 from ..variants import ApplicationVariant
 from ..app import Application
 from .ui import EduVpnGtkWindow
-from eduvpncommon.main import EduVPN
+from eduvpn_common.main import EduVPN
 
 
 logger = logging.getLogger(__name__)

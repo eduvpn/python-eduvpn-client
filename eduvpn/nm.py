@@ -44,20 +44,18 @@ def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike)
         f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
 
 
-def get_uuid() -> Optional[str]:
+def get_uuid(common) -> Optional[str]:
     """
     Read the UUID of the last generated eduVPN Network Manager connection.
     """
-    # TODO: Implement with Go
-    return ""
+    return common.get_identifier()
 
 
-def set_uuid(uuid: str):
+def set_uuid(common, uuid: str):
     """
     Write the eduVPN network manager connection UUID to disk.
     """
-    # TODO: Implement with Go
-    pass
+    common.set_identifier(uuid)
 
 
 @lru_cache()
@@ -226,28 +224,30 @@ def import_ovpn(ovpn: Ovpn) -> 'NM.SimpleConnection':
     return connection
 
 
-def add_connection_callback(client, result, callback=None):
+def add_connection_callback(client, result, data=(None, None)):
     new_con = client.add_connection_finish(result)
-    set_uuid(uuid=new_con.get_uuid())
-    _logger.info(f"Connection added for uuid: {get_uuid()}")
+    common, callback = data
+    set_uuid(common, uuid=new_con.get_uuid())
+    _logger.info(f"Connection added for uuid: {get_uuid(common)}")
     if callback is not None:
         callback(new_con is not None)
 
 
-def add_connection(client: 'NM.Client', connection: 'NM.Connection', callback=None):
+def add_connection(client: 'NM.Client', common, connection: 'NM.Connection', callback=None):
     _logger.info("Adding new connection")
     client.add_connection_async(connection=connection, save_to_disk=True, callback=add_connection_callback,
-                                user_data=callback)
+                                user_data=(common, callback))
 
 
-def update_connection_callback(remote_connection, result, callback=None):
+def update_connection_callback(remote_connection, result, data=(None, None)):
     res = remote_connection.commit_changes_finish(result)
-    _logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}, remote_con: {remote_connection}")
+    common, callback = data
+    _logger.debug(f"Connection updated for uuid: {get_uuid(common)}, result: {res}, remote_con: {remote_connection}")
     if callback is not None:
         callback(result)
 
 
-def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callback=None):
+def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', common, callback=None):
     """
     Update an existing Network Manager connection with the settings from another Network Manager connection
     """
@@ -261,7 +261,7 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callba
             setting.props.uuid = old_con.get_uuid()
     old_con.replace_settings_from_connection(new_con)
     old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback,
-                                 user_data=callback)
+                                 user_data=(common, callback))
 
 
 def set_connection(client, new_connection, callback, system_wide=False):
@@ -270,9 +270,9 @@ def set_connection(client, new_connection, callback, system_wide=False):
     if uuid:
         old_con = client.get_connection_by_uuid(uuid)
         if old_con:
-            update_connection(old_con, new_connection, callback)
+            update_connection(old_con, new_connection, common, callback)
             return
-    add_connection(client=client, connection=new_connection, callback=callback)
+    add_connection(client=client, common=common, connection=new_connection, callback=callback)
 
 
 def set_setting_ensure_permissions(con: 'NM.SimpleConnection', enable: bool) -> 'NM.SimpleConnection':
@@ -302,7 +302,7 @@ def save_connection_with_config(client: 'NM.Client',
     return save_connection(client, ovpn, private_key, certificate, callback, settings.nm_system_wide)
 
 
-def start_openvpn_connection(ovpn: Ovpn, *, callback=None):
+def start_openvpn_connection(ovpn: Ovpn, common, *, callback=None):
     client = get_client()
     _logger.info("writing ovpn configuration to Network Manager")
     new_con = import_ovpn(ovpn)
@@ -312,6 +312,7 @@ def start_openvpn_connection(ovpn: Ovpn, *, callback=None):
 
 def start_wireguard_connection(
     config: ConfigParser,
+    common,
     *,
     callback=None,
 ):
@@ -385,7 +386,8 @@ def start_wireguard_connection(
     # https://lazka.github.io/pgi-docs/NM-1.0/classes/SettingWireGuard.html
     w_con = NM.SettingWireGuard.new()
     w_con.append_peer(peer)
-    w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, config['Interface']['PrivateKey'])
+    private_key = config['Interface']['PrivateKey']
+    w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, private_key)
 
     profile.add_setting(s_ip4)
     profile.add_setting(s_ip6)

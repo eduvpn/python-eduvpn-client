@@ -2,9 +2,11 @@ from typing import Union, Optional, Iterable, List, Dict
 import logging
 import os
 import json
+import eduvpn.nm as nm
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import FLAG_PREFIX
 from functools import partial
+from eduvpn.connection import Connection
 from .utils import (
     get_prefix, thread_helper, run_in_background_thread, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
 
@@ -146,7 +148,7 @@ class Profile:
         self.profile_id = profile_id
         self.display_name = display_name
         self.default_gateway = default_gateway
-        self.vpn_proto_list = frozenset(map(Protocol, vpn_proto_list))
+        self.vpn_proto_list = frozenset(vpn_proto_list)
 
     @property
     def id(self):
@@ -209,9 +211,26 @@ class ServerDatabase:
         elif isinstance(server, CustomServer):
             url = server.address
         if is_institute:
-            print(eduvpn.get_config_institute_access(url))
+            config, config_type = eduvpn.get_config_institute_access(url)
         else:
-            eduvpn.get_config_secure_internet(url)
+            config, config_type = eduvpn.get_config_secure_internet(url)
+
+        def on_connected():
+            eduvpn.set_connected()
+
+        def on_connect(arg):
+            client = nm.get_client()
+            uuid = nm.get_uuid(eduvpn)
+            nm.activate_connection(client, uuid, on_connected)
+
+        @run_in_main_gtk_thread
+        def connect(common, config, config_type):
+            connection = Connection.parse(common, config, config_type)
+            connection.connect(on_connect)
+
+        connect(eduvpn, config, config_type)
+
+        
 
     def disco_parse_organizations(self, _str):
         # TODO: Only parse on actual update
@@ -219,7 +238,7 @@ class ServerDatabase:
         self.organizations = []
         json_organizations = json.loads(_str)
 
-        for organization in json_organizations:
+        for organization in json_organizations['organization_list']:
             server = OrganisationServer(**organization)
             self.servers.append(server)
 
@@ -229,7 +248,7 @@ class ServerDatabase:
         self.servers = []
         json_servers = json.loads(_str)
 
-        for server_data in json_servers:
+        for server_data in json_servers['server_list']:
             server_type = server_data.pop('server_type')
             if server_type == 'institute_access':
                 server = InstituteAccessServer(**server_data)

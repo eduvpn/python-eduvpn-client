@@ -1,38 +1,19 @@
-from datetime import datetime, timezone
 from configparser import ConfigParser
 from typing import Optional, List, Type
 from . import nm
 from .ovpn import Ovpn
-from .server import Protocol
-from .session import Validity
-from .crypto import SecretKey
-from .utils import parse_http_date_header, parse_http_expires_header
-
-
-def get_response_date(response) -> datetime:
-    try:
-        return parse_http_date_header(response.headers['Date'])
-    except (KeyError, ValueError):
-        return datetime.now(timezone.utc)
-
+#from .session import Validity
 
 class Connection:
     "Base class for connection configurations."
 
-    protocol: Protocol
-    validity: Validity
-
-    def __init__(self, validity: Validity):
-        self.validity = validity
-
     @classmethod
-    def parse(cls, response) -> 'Connection':
-        protocol = Protocol.get_by_config_type(response.headers['Content-Type'])
-        connection_type = protocol_to_connection_type[protocol]
-        return connection_type.parse(response)
-
-    def set_secret_key(self, secret_key: SecretKey):
-        pass
+    def parse(cls, common, config, protocol) -> 'Connection':
+        if protocol == 'wireguard':
+            connection_type = WireGuardConnection
+        else:
+            connection_type = OpenVPNConnection
+        return connection_type.parse(common, config, protocol)
 
     def force_tcp(self):
         raise NotImplementedError
@@ -47,19 +28,15 @@ class Connection:
 
 
 class OpenVPNConnection(Connection):
-    protocol = Protocol.OPENVPN
-
-    def __init__(self, validity: Validity, ovpn: Ovpn):
+    def __init__(self, common, ovpn: Ovpn):
+        self.common = common
         self.ovpn = ovpn
-        super().__init__(validity)
+        super().__init__()
 
     @classmethod
-    def parse(cls, response) -> 'OpenVPNConnection':
-        expiry = parse_http_expires_header(response.headers['Expires'])
-        created = get_response_date(response)
-        validity = Validity(created, expiry)
-        ovpn = Ovpn.parse(response.text)
-        return cls(validity=validity, ovpn=ovpn)
+    def parse(cls, common, config, _) -> 'OpenVPNConnection':
+        ovpn = Ovpn.parse(config)
+        return cls(common=common, ovpn=ovpn)
 
     def force_tcp(self):
         self.ovpn.force_tcp()
@@ -67,49 +44,30 @@ class OpenVPNConnection(Connection):
     def connect(self, callback):
         nm.start_openvpn_connection(
             self.ovpn,
+            self.common,
             callback=callback,
         )
 
 
 class WireGuardConnection(Connection):
-    protocol = Protocol.WIREGUARD
-
-    def __init__(self, validity: Validity, config: ConfigParser):
+    def __init__(self, common, config: ConfigParser):
+        self.common = common
         self.config = config
-        self.secret_key: Optional[SecretKey] = None
-        super().__init__(validity)
+        super().__init__()
 
     @classmethod
-    def parse(cls, response) -> 'WireGuardConnection':
-        expiry = parse_http_expires_header(response.headers['Expires'])
-        created = get_response_date(response)
-        validity = Validity(created, expiry)
+    def parse(cls, common, config_str, _) -> 'WireGuardConnection':
+        # TODO: validity
         config = ConfigParser()
-        config.read_string(response.text)
-        return cls(validity=validity, config=config)
-
-    def set_secret_key(self, secret_key: SecretKey):
-        assert self.secret_key is None
-        self.secret_key = secret_key
+        config.read_string(config_str)
+        return cls(common=common, config=config)
 
     def force_tcp(self):
         raise NotImplementedError("WireGuard cannot be forced over tcp")
 
     def connect(self, callback):
-        assert self.secret_key is not None
         nm.start_wireguard_connection(
             self.config,
-            secret_key=self.secret_key,
+            self.common,
             callback=callback,
         )
-
-
-connection_types: List[Type[Connection]] = [
-    OpenVPNConnection,
-    WireGuardConnection,
-]
-
-protocol_to_connection_type = {
-    connection_type.protocol: connection_type
-    for connection_type in connection_types
-}
