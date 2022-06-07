@@ -9,7 +9,7 @@ from gi.repository import Gtk
 from ..variants import EDUVPN, LETS_CONNECT
 from ..settings import CLIENT_ID, CONFIG_PREFIX
 from ..ui.app import EduVpnGtkApplication
-import eduvpncommon.main as common
+import eduvpn_common.main as common
 
 
 logger = logging.getLogger(__name__)
