@@ -13,6 +13,7 @@ CONFIG_PATH = CONFIG_PREFIX / CONFIG_FILE_NAME
 
 DEFAULT_SETTINGS = dict(
     force_tcp=False,
+    nm_user_only=False,
 )
 
 
@@ -63,3 +64,4 @@ class Configuration:
             self.save()
 
     force_tcp = SettingDescriptor[bool]()
+    nm_user_only = SettingDescriptor[bool]()
