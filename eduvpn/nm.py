@@ -321,8 +321,9 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callba
                                  user_data=callback)
 
 
-def set_connection(client, new_connection, callback):
+def set_connection(client, new_connection, callback, user_only=False):
     uuid = get_uuid()
+    new_connection = set_setting_ensure_permissions(new_connection, user_only)
     if uuid:
         old_con = client.get_connection_by_uuid(uuid)
         if old_con:
@@ -331,10 +332,18 @@ def set_connection(client, new_connection, callback):
     add_connection(client=client, connection=new_connection, callback=callback)
 
 
-def save_connection(client: 'NM.Client', ovpn: Ovpn, private_key, certificate, callback=None):
+def set_setting_ensure_permissions(con: 'NM.SimpleConnection', enable: bool) -> 'NM.SimpleConnection':
+    if enable:
+        s_con = con.get_setting_connection()
+        s_con.add_permission("user", GLib.get_user_name(), None)
+        con.add_setting(s_con)
+    return con
+
+
+def save_connection(client: 'NM.Client', ovpn: Ovpn, private_key, certificate, callback=None, user_only=False):
     _logger.info("writing configuration to Network Manager")
     new_con = import_ovpn_and_certificate(ovpn, private_key, certificate)
-    set_connection(client, new_con, callback)
+    set_connection(client, new_con, callback, user_only)
 
 
 def save_connection_with_config(client: 'NM.Client',
@@ -347,14 +356,15 @@ def save_connection_with_config(client: 'NM.Client',
     settings = Configuration.load()
     if settings.force_tcp:
         ovpn.force_tcp()
-    return save_connection(client, ovpn, private_key, certificate, callback)
+    return save_connection(client, ovpn, private_key, certificate, callback, settings.nm_user_only)
 
 
 def start_openvpn_connection(ovpn: Ovpn, *, callback=None):
     client = get_client()
     _logger.info("writing ovpn configuration to Network Manager")
     new_con = import_ovpn(ovpn)
-    set_connection(client, new_con, callback)
+    settings = Configuration.load()
+    set_connection(client, new_con, callback, settings.nm_user_only)
 
 
 def start_wireguard_connection(
@@ -436,7 +446,8 @@ def start_wireguard_connection(
     profile.add_setting(s_con)
     profile.add_setting(w_con)
 
-    set_connection(client, profile, callback)
+    settings = Configuration.load()
+    set_connection(client, profile, callback, settings.nm_user_only)
 
 
 def get_cert_key(client: 'NM.Client', uuid: str) -> Tuple[str, str]:
