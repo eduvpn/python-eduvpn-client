@@ -300,11 +300,12 @@
                                 <property name="headers-visible">False</property>
                                 <property name="enable-search">False</property>
                                 <property name="search-column">0</property>
+                                <property name="hover-selection">True</property>
                                 <property name="enable-grid-lines">horizontal</property>
+                                <property name="activate-on-single-click">True</property>
+                                <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection">
-                                    <signal name="changed" handler="on_select_server" swapped="no"/>
-                                  </object>
+                                  <object class="GtkTreeSelection"/>
                                 </child>
                               </object>
                               <packing>
@@ -373,11 +374,12 @@
                                 <property name="headers-visible">False</property>
                                 <property name="enable-search">False</property>
                                 <property name="search-column">0</property>
+                                <property name="hover-selection">True</property>
                                 <property name="enable-grid-lines">horizontal</property>
+                                <property name="activate-on-single-click">True</property>
+                                <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection">
-                                    <signal name="changed" handler="on_select_server" swapped="no"/>
-                                  </object>
+                                  <object class="GtkTreeSelection"/>
                                 </child>
                               </object>
                               <packing>
@@ -431,11 +433,12 @@
                                 <property name="headers-visible">False</property>
                                 <property name="enable-search">False</property>
                                 <property name="search-column">0</property>
+                                <property name="hover-selection">True</property>
                                 <property name="enable-grid-lines">horizontal</property>
+                                <property name="activate-on-single-click">True</property>
+                                <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
                                 <child internal-child="selection">
-                                  <object class="GtkTreeSelection">
-                                    <signal name="changed" handler="on_select_server" swapped="no"/>
-                                  </object>
+                                  <object class="GtkTreeSelection"/>
                                 </child>
                               </object>
                               <packing>
@@ -559,11 +562,12 @@
                     <property name="headers-visible">False</property>
                     <property name="enable-search">False</property>
                     <property name="search-column">0</property>
+                    <property name="hover-selection">True</property>
                     <property name="enable-grid-lines">horizontal</property>
+                    <property name="activate-on-single-click">True</property>
+                    <signal name="row-activated" handler="on_location_row_activated" swapped="no"/>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection">
-                        <signal name="changed" handler="on_location_selection_changed" swapped="no"/>
-                      </object>
+                      <object class="GtkTreeSelection"/>
                     </child>
                   </object>
                   <packing>
@@ -607,11 +611,12 @@
                     <property name="headers-visible">False</property>
                     <property name="enable-search">False</property>
                     <property name="search-column">0</property>
+                    <property name="hover-selection">True</property>
                     <property name="enable-grid-lines">horizontal</property>
+                    <property name="activate-on-single-click">True</property>
+                    <signal name="row-activated" handler="on_profile_row_activated" swapped="no"/>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection">
-                        <signal name="changed" handler="on_profile_selection_changed" swapped="no"/>
-                      </object>
+                      <object class="GtkTreeSelection"/>
                     </child>
                   </object>
                   <packing>
@@ -867,8 +872,8 @@
                                   </object>
                                   <packing>
                                     <property name="left-attach">0</property>
-                                    <property name="width">2</property>
                                     <property name="top-attach">3</property>
+                                    <property name="width">2</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -881,15 +886,9 @@
                                   </object>
                                   <packing>
                                     <property name="left-attach">2</property>
-                                    <property name="width">2</property>
                                     <property name="top-attach">3</property>
+                                    <property name="width">2</property>
                                   </packing>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <placeholder/>
                                 </child>
                                 <child>
                                   <placeholder/>

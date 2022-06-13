@@ -87,13 +87,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_add_other_server": self.on_add_other_server,
             "on_add_custom_server": self.on_add_custom_server,
             "on_cancel_oauth_setup": self.on_cancel_oauth_setup,
-            "on_select_server": self.on_select_server,
+            "on_server_row_activated": self.on_server_row_activated,
             "on_search_changed": self.on_search_changed,
             "on_search_activate": self.on_search_activate,
             "on_switch_connection_state": self.on_switch_connection_state,
             "on_toggle_connection_info": self.on_toggle_connection_info,
-            "on_profile_selection_changed": self.on_profile_selection_changed,
-            "on_location_selection_changed": self.on_location_selection_changed,
+            "on_profile_row_activated": self.on_profile_row_activated,
+            "on_location_row_activated": self.on_location_row_activated,
             "on_acknowledge_error": self.on_acknowledge_error,
             "on_renew_session_clicked": self.on_renew_session_clicked,
             "on_config_force_tcp": self.on_config_force_tcp,
@@ -342,7 +342,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             search.show_result_components(self, True)
             search.show_search_components(self, True)
             search.init_server_search(self)
-            search.connect_selection_handlers(self, self.on_select_server)
+            search.connect_activation_handlers(self, self.on_server_row_activated)
 
     @transition_edge_callback(EXIT, interface_state.configure_server_states)
     def exit_search(self, old_state, new_state):
@@ -350,7 +350,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             search.show_result_components(self, False)
             search.show_search_components(self, False)
             search.exit_server_search(self)
-            search.disconnect_selection_handlers(self, self.on_select_server)
+            search.disconnect_activation_handlers(self, self.on_server_row_activated)
             self.set_search_text('')
 
     @transition_edge_callback(
@@ -387,14 +387,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.add_other_server_button_container.show()
         search.update_results(self, new_state.servers)
         search.init_server_search(self)
-        search.connect_selection_handlers(self, self.on_select_server)
+        search.connect_activation_handlers(self, self.on_server_row_activated)
 
     @transition_edge_callback(EXIT, interface_state.MainState)
     def exit_MainState(self, old_state, new_state):
         search.show_result_components(self, False)
         self.add_other_server_button_container.hide()
         search.exit_server_search(self)
-        search.disconnect_selection_handlers(self, self.on_select_server)
+        search.disconnect_activation_handlers(self, self.on_server_row_activated)
 
     @transition_edge_callback(ENTER, interface_state.OAuthSetupPending)
     @transition_edge_callback(ENTER, interface_state.OAuthSetup)
@@ -573,17 +573,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = CustomServer(self.app.interface_state.address)
         self.app.interface_transition('connect_to_server', server)
 
-    def on_select_server(self, selection):
-        logger.debug("selected server search result")
-        (model, tree_iter) = selection.get_selected()
-        selection.unselect_all()
-        if tree_iter is None:
-            logger.info("selection empty")
-        else:
-            row = model[tree_iter]
-            server = row[1]
-            logger.debug(f"selected server: {server!r}")
-            self.app.interface_transition('connect_to_server', server)
+    def on_server_row_activated(self, widget, row, col):
+        model = widget.get_model()
+        server = model[row][1]
+        logger.debug(f"activated server: {server!r}")
+        self.app.interface_transition('connect_to_server', server)
 
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
@@ -667,29 +661,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.pause_connection_info()
 
-    def on_profile_selection_changed(self, selection):
-        logger.debug("selected profile")
-        (model, tree_iter) = selection.get_selected()
-        selection.unselect_all()
-        if tree_iter is None:
-            logger.debug("selection empty")
-        else:
-            row = model[tree_iter]
-            profile = row[1]
-            logger.debug(f"selected profile: {profile!r}")
-            self.app.interface_transition('select_profile', profile)
+    def on_profile_row_activated(self, widget, row, col):
+        model = widget.get_model()
+        profile = model[row][1]
+        logger.debug(f"activated profile: {profile!r}")
+        self.app.interface_transition('select_profile', profile)
 
-    def on_location_selection_changed(self, selection):
-        logger.debug("selected location")
-        (model, tree_iter) = selection.get_selected()
-        selection.unselect_all()
-        if tree_iter is None:
-            logger.debug("selection empty")
-        else:
-            row = model[tree_iter]
-            location = row[2]
-            logger.debug(f"selected location: {location!r}")
-            self.app.interface_transition('select_secure_internet_location', location)
+    def on_location_row_activated(self, widget, row, col):
+        model = widget.get_model()
+        location = model[row][2]
+        logger.debug(f"activated location: {location!r}")
+        self.app.interface_transition('select_secure_internet_location', location)
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")

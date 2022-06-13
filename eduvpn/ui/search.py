@@ -127,22 +127,20 @@ def exit_server_search(window):
     show_search_results(window, False)
 
 
-def connect_selection_handlers(window, select_callback: Callable):
-    "Connect the selection callback handlers for each server type."
+def connect_activation_handlers(window, activate_callback: Callable):
+    "Connect the activation callback handlers for each server type."
     for group in group_tree_component:
         component_name = group_tree_component[group]
         tree_view = getattr(window, component_name)
-        selection = tree_view.get_selection()
-        selection.connect("changed", select_callback)
+        tree_view.connect("row-activated", activate_callback)
 
 
-def disconnect_selection_handlers(window, select_callback: Callable):
-    "Disconnect the selection callback handlers for each server type."
+def disconnect_activation_handlers(window, activate_callback: Callable):
+    "Disconnect the activation callback handlers for each server type."
     for group in group_tree_component:
         component_name = group_tree_component[group]
         tree_view = getattr(window, component_name)
-        selection = tree_view.get_selection()
-        selection.disconnect_by_func(select_callback)
+        tree_view.disconnect_by_func(activate_callback)
 
 
 def update_search_results_for_type(window,
