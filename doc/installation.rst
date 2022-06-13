@@ -48,6 +48,11 @@ You can install the latest release of the eduVPN client on Fedora or CentOS by r
 
 More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/g/eduvpn/eduvpn-client/>`_.
 
+Arch (Unofficial)
+=================
+
+There is an unofficial package in the `Arch User Repository (AUR) <https://aur.archlinux.org/packages/python-eduvpn-client/>`_.
+
 
 Manual source installation
 ==========================
