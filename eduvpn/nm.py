@@ -50,155 +50,72 @@ def get_mainloop():
     return GLib.MainLoop()
 
 
+def get_active_connection() -> Optional['NM.ActiveConnection']:
+    """
+    Gets the active connection for the current uuid
+    """
+    client = get_client()
+    uuid = get_uuid()
+    for connection in client.get_active_connections():
+        if connection.get_uuid() == uuid:
+            return connection
+    return None
+
+
 def get_iface() -> Optional[str]:
     """
     Get the interface as a string for an openvpn or wireguard connection if there is one
     """
-    client = get_client()
-    uuid = get_uuid()
-    connection = client.get_connection_by_uuid(uuid)
-    if connection is None:
-        return None
-    type = connection.get_connection_type()
-    if type == 'vpn':
-        return get_iface_ovpn()
-    elif type == 'wireguard':
-        return get_iface_wg()
-    return None
-
-
-def get_iface_ovpn() -> Optional[str]:
-    """
-    Get the interface as a string if there is a master device for OpenVPN
-    """
-    client = get_client()
-    active_connection = client.get_primary_connection()
-    if not active_connection:
+    active_con = get_active_connection()
+    if not active_con:
         return None
 
-    master = active_connection.get_master()
-    if not master:
+    devices = active_con.get_devices()
+    if not devices:
         return None
 
-    return master.get_ip_iface()
-
-
-def get_iface_wg() -> Optional[str]:
-    """
-    Get the interface as a string for wireguard
-    """
-    client = get_client()
-    uuid = get_uuid()
-    connection = client.get_connection_by_uuid(uuid)
-    if connection is None:
-        return None
-    return connection.get_interface_name()
+    # Not always a master device is configured
+    # So get the interface for the first device we have
+    return devices[0].get_iface()
 
 
 def get_ipv4() -> Optional[str]:
     """
     Get the ipv4 address for an openvpn or wireguard connection as a string if there is one
     """
-    client = get_client()
-    uuid = get_uuid()
-    connection = client.get_connection_by_uuid(uuid)
-    if connection is None:
+    active_con = get_active_connection()
+    if not active_con:
         return None
-    type = connection.get_connection_type()
-    if type == 'vpn':
-        return get_ipv4_ovpn()
-    elif type == 'wireguard':
-        return get_ipv4_wg()
-    return None
+
+    ip4_config = active_con.get_ip4_config()
+    if not ip4_config:
+        return None
+
+    addresses = ip4_config.get_addresses()
+    if not addresses:
+        return None
+
+    return addresses[0].get_address()
 
 
 def get_ipv6() -> Optional[str]:
     """
     Get the ipv6 address for an openvpn or wireguard connection as a string if there is one
     """
-    client = get_client()
-    uuid = get_uuid()
-    connection = client.get_connection_by_uuid(uuid)
-    if connection is None:
-        return None
-    type = connection.get_connection_type()
-    if type == 'vpn':
-        return get_ipv6_ovpn()
-    elif type == 'wireguard':
-        return get_ipv6_wg()
-    return None
+    active_con = get_active_connection()
 
-
-def get_ipv4_ovpn() -> Optional[str]:
-    """
-    Get the ipv4 address for an openvpn connection as a string if there is one
-    """
-    client = get_client()
-    active_connection = client.get_primary_connection()
-    if not active_connection:
+    if not active_con:
         return None
 
-    ip4_config = active_connection.get_ip4_config()
-    addresses = ip4_config.get_addresses()
-    if not addresses:
-        return None
-    return addresses[0].get_address()
+    ip6_config = active_con.get_ip6_config()
 
-
-def get_ipv6_ovpn() -> Optional[str]:
-    """
-    Get the ipv6 address for an openvpn connection as a string if there is one
-    """
-    client = get_client()
-    active_connection = client.get_primary_connection()
-    if not active_connection:
+    if not ip6_config:
         return None
 
-    ip6_config = active_connection.get_ip6_config()
     addresses = ip6_config.get_addresses()
     if not addresses:
         return None
     return addresses[0].get_address()
-
-
-def get_ipv4_wg() -> Optional[str]:
-    """
-    Get the ipv4 address for a wireguard connection as a string if there is one
-    """
-    uuid = get_uuid()
-    if uuid is None:
-        return None
-    client = get_client()
-    connection = client.get_connection_by_uuid(uuid)
-    if not connection:
-        return None
-    ip4_config = connection.get_setting_ip4_config()
-    if not ip4_config:
-        return None
-    if ip4_config.get_num_addresses() == 0:
-        return None
-    address = ip4_config.get_address(0)
-    return address.get_address()
-
-
-def get_ipv6_wg() -> Optional[str]:
-    """
-    Get the ipv6 address for a wireguard connection as a string if there is one
-    """
-    uuid = get_uuid()
-    if uuid is None:
-        return None
-    client = get_client()
-    connection = client.get_connection_by_uuid(uuid)
-    if not connection:
-        return None
-    ip6_config = connection.get_setting_ip6_config()
-    if not ip6_config:
-        return None
-    if ip6_config.get_num_addresses() == 0:
-        return None
-    address = ip6_config.get_address(0)
-    return address.get_address()
 
 
 def nm_available() -> bool:
