@@ -421,24 +421,21 @@ def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
 
 
 def deactivate_connection_vpn(client: 'NM.Client', uuid: str, callback=None):
-    con = client.get_primary_connection()
+    con = get_active_connection()
     _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
-        active_uuid = con.get_uuid()
+        def on_deactivate_connection(a_client: 'NM.Client', res, callback=None):
+            try:
+                result = a_client.deactivate_connection_finish(res)
+            except Exception as e:
+                _logger.error(e)
+            else:
+                _logger.info(F"deactivate_connection_async result: {result}")
+            finally:
+                if callback:
+                    callback()
 
-        if uuid == active_uuid:
-            def on_deactivate_connection(a_client: 'NM.Client', res, callback=None):
-                try:
-                    result = a_client.deactivate_connection_finish(res)
-                except Exception as e:
-                    _logger.error(e)
-                else:
-                    _logger.info(F"deactivate_connection_async result: {result}")
-                finally:
-                    if callback:
-                        callback()
-
-            client.deactivate_connection_async(active=con, callback=on_deactivate_connection, user_data=callback)
+        client.deactivate_connection_async(active=con, callback=on_deactivate_connection, user_data=callback)
     else:
         _logger.info("No active connection to deactivate")
 
