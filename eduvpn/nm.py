@@ -591,37 +591,43 @@ def get_dbus() -> Optional['dbus.SystemBus']:
 
 def subscribe_to_status_changes(
     callback: Callable[[ConnectionState], Any],
-) -> bool:
+):
     """
-    Subscribe to all network status changes via DBus.
+    Subscribe to network status changes via the NM client.
 
     The callback argument is called with the connection state and reason
     whenever they change.
-
-    False is returned on failure.
     """
-    bus = get_dbus()
-    if bus is None:
-        return False
 
-    def wrapped_callback_vpn(state_code: 'dbus.UInt32', reason_code: 'dbus.UInt32'):
-        state = NM.VpnConnectionState(state_code)
-        callback(ConnectionState.from_vpn_state(state))
+    # The callback to monitor state changes
+    # Let the state machine know for state updates
+    def wrapped_callback(active: 'NM.ActiveConnection', state_code: int, reason_code: int):
+        if active.get_uuid() != get_uuid():
+            return
 
-    def wrapped_callback_wg(state_code: 'dbus.UInt32', reason_code: 'dbus.UInt32'):
         state = NM.ActiveConnectionState(state_code)
         callback(ConnectionState.from_active_state(state))
 
-    bus.add_signal_receiver(
-        handler_function=wrapped_callback_vpn,
-        dbus_interface='org.freedesktop.NetworkManager.VPN.Connection',
-        signal_name='VpnStateChanged',
-    )
-    bus.add_signal_receiver(
-        handler_function=wrapped_callback_wg,
-        dbus_interface='org.freedesktop.NetworkManager.Connection.Active',
-        signal_name='StateChanged',
-    )
+    # Connect the state changed signal for an active connection
+    def connect(con: 'NM.ActiveConnection'):
+        con.connect("state-changed", wrapped_callback)
+
+    # The callback when a connection gets added
+    # Connect the signals
+    def wrapped_connection_added(client: 'NM.Client', active_con: 'NM.ActiveConnection'):
+        if active_con.get_uuid() != get_uuid():
+            return
+        connect(active_con)
+
+    # If a connection was found already then...
+    client = get_client()
+    active_con = get_active_connection()
+
+    if active_con:
+        connect(active_con)
+
+    # Connect the active connection added signal
+    client.connect("active-connection-added", wrapped_connection_added)
     return True
 
 
