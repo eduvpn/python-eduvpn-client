@@ -61,6 +61,7 @@ class Application:
             else:
                 validity = storage.get_current_validity(server.oauth_login_url)
                 self.session_transition('found_active_session', server, validity)
+                self.network_transition('found_previous_connection')
         else:
             self.session_transition('no_previous_session_found')
 

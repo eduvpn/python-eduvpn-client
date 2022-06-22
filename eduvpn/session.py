@@ -94,7 +94,6 @@ class InitialSessionState(SessionState):
         """
         An already active session was found.
         """
-        app.network_transition('found_previous_connection')
         return self.new_session(app, server, validity)
 
     def no_previous_session_found(self, app: Application) -> SessionState:
