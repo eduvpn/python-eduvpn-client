@@ -7,8 +7,9 @@ from . import settings
 from . import storage
 from .state_machine import BaseState
 from .app import Application
-from .server import ConfiguredServer as Server, Protocol
+from .server import ConfiguredServer as Server
 from .utils import translated_property
+from .interface.event import on_start_connection, on_chosen_profile
 
 logger = logging.getLogger(__name__)
 
@@ -115,41 +116,30 @@ def connect(app: Application) -> NetworkState:
     """
     Estabilish a connection to the server.
     """
-    client = nm.get_client()
     assert app.current_network_uuid is not None
 
     server = app.session_state.server
-    if storage.get_connection_protocol(server) is Protocol.WIREGUARD:
-        from eduvpn.interface.event import on_start_connection, on_chosen_profile
-        oauth_session = storage.load_oauth_session(server)
-        server_info = app.server_db.get_server_info(server)
-        metadata = storage.get_current_metadata(server.oauth_login_url)
-        assert metadata is not None
-        profile_id = metadata[6]
-        profile = server_info.get_profile(oauth_session, profile_id)
-        if profile is None:
-            # Profile was removed, redo profile choice.
-            on_start_connection(
-                app,
-                server,
-                oauth_session,
-            )
-        else:
-            on_chosen_profile(
-                app,
-                server,
-                oauth_session,
-                profile,
-            )
-        return DisconnectedState()
-    else:
-        nm.activate_connection(
-            client,
-            app.current_network_uuid,
-            partial(on_any_update_callback, app),
+    oauth_session = storage.load_oauth_session(server)
+    server_info = app.server_db.get_server_info(server)
+    metadata = storage.get_current_metadata(server.oauth_login_url)
+    assert metadata is not None
+    profile_id = metadata[6]
+    profile = server_info.get_profile(oauth_session, profile_id)
+    if profile is None:
+        # Profile was removed, redo profile choice.
+        on_start_connection(
+            app,
+            server,
+            oauth_session,
         )
-
-    return ConnectingState()
+    else:
+        on_chosen_profile(
+            app,
+            server,
+            oauth_session,
+            profile,
+        )
+    return DisconnectedState()
 
 
 def disconnect(app: Application, *, update_state=True) -> NetworkState:
