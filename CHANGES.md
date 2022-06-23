@@ -1,3 +1,18 @@
+3.1.0 (2022-06-23)
+==
+
+Additions
+--------
+* #489 Make NetworkManager connections optionally for the current user only by @jwijenbergh. This can get rid of authentication popups depending on your polkit settings
+* #490 Add a quick note for the AUR package by @jwijenbergh
+
+Bugfixes
+--------
+* #491 Refactor selections by @jwijenbergh. This fixes profiles/servers being selected automatically
+* #494 Simplify getting interface/IP info and fix inconsistencies by @jwijenbergh. This gives a more accurate way to get the network interface across all systems
+* #495 Cleanup network states by @jwijenbergh. This makes sure that we use the right connection for state updates, which fixes bugs when using eduVPN with another VPN/Connection. Additionally it fixes a major bug with reconnecting when using OpenVPN
+* #497 Fix server info launch by @jwijenbergh. This guarantees that server info is correctly displayed when launching the app with an active eduVPN connection
+
 3.0.0 (2022-05-09)
 ===
 
