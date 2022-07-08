@@ -4,7 +4,7 @@ from functools import lru_cache
 from gi.repository import Gtk, GObject, Pango
 from eduvpn.server import (
     AnyServer as Server, InstituteAccessServer,
-    OrganisationServer, SecureInternetServer, CustomServer)
+    OrganisationServer, CustomServer)
 from .utils import show_ui_component
 
 
@@ -88,8 +88,7 @@ def group_servers(
         elif isinstance(server, CustomServer):
             groups[ServerGroup.OTHER].append(server)
         else:
-            continue
-            #raise TypeError(server)
+            raise TypeError(server)
     return groups
 
 
@@ -126,22 +125,6 @@ def exit_server_search(window):
     for group in group_tree_component:
         show_group_tree(window, group, False)
     show_search_results(window, False)
-
-
-def connect_activation_handlers(window, activate_callback: Callable):
-    "Connect the activation callback handlers for each server type."
-    for group in group_tree_component:
-        component_name = group_tree_component[group]
-        tree_view = getattr(window, component_name)
-        tree_view.connect("row-activated", activate_callback)
-
-
-def disconnect_activation_handlers(window, activate_callback: Callable):
-    "Disconnect the activation callback handlers for each server type."
-    for group in group_tree_component:
-        component_name = group_tree_component[group]
-        tree_view = getattr(window, component_name)
-        tree_view.disconnect_by_func(activate_callback)
 
 
 def update_search_results_for_type(window,

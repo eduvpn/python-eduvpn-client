@@ -175,8 +175,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 title=_("NetworkManager not managing device"),
                 message=_("The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."))
         self.common.register_class_callbacks(self)
-        #self.common.set_thread_helper(GObject.idle_add)
-        self.common.register()
+        self.common.register(debug=True)
 
     # ui functions
 
@@ -303,7 +302,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.show_search_components(self, True)
         search.update_results(self, self.app.server_db.servers) 
         search.init_server_search(self)
-        search.connect_selection_handlers(self, self.on_select_server)
 
     # TODO: Implement with Go callback
     @run_in_main_gtk_thread
@@ -312,7 +310,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.show_result_components(self, False)
         search.show_search_components(self, False)
         search.exit_server_search(self)
-        search.disconnect_selection_handlers(self, self.on_select_server)
         self.set_search_text('')
 
     # TODO: Implement with Go callback
@@ -324,13 +321,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @common.class_state_transition("No_Server", common.StateType.Enter)
     def enter_MainState(self, old_state: str, servers: str):
         search.show_result_components(self, True)
-        self.app.server_db.disco_parse_organizations(self.common.get_disco_organizations())
-        self.app.server_db.disco_parse_servers(self.common.get_disco_servers())
-        self.app.server_db.parse_servers(servers)
+        disco_orgs = self.common.get_disco_organizations()
+        disco_servers = self.common.get_disco_servers()
+        self.app.server_db.disco_parse(disco_orgs, disco_servers)
         self.add_other_server_button_container.show()
         search.update_results(self, self.app.server_db.configured) 
         search.init_server_search(self)
-        search.connect_selection_handlers(self, self.on_select_server)
 
     @run_in_main_gtk_thread
     @common.class_state_transition("No_Server", common.StateType.Leave)
@@ -338,7 +334,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.show_result_components(self, False)
         self.add_other_server_button_container.hide()
         search.exit_server_search(self)
-        search.disconnect_selection_handlers(self, self.on_select_server)
 
     @run_in_background_thread('browser-open')
     def open_browser(self, url):
@@ -349,6 +344,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_oauth_setup(self, old_state, url):
         self.show_page(self.oauth_page)
         self.open_browser(url)
+        self.oauth_cancel_button.show()
 
     # TODO: Implement with Go callback
     @run_in_main_gtk_thread
@@ -537,21 +533,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = CustomServer(self.app.interface_state.address)
         self.app.interface_transition('connect_to_server', server)
 
-    def on_select_server(self, selection):
-        if self.is_selected:
-            return
-        logger.debug("selected server search result")
-        (model, tree_iter) = selection.get_selected()
-        selection.unselect_all()
-        if tree_iter is None:
-            logger.info("selection empty")
-        else:
-            self.is_selected = True
-            row = model[tree_iter]
-            server = row[1]
-            logger.debug(f"selected server: {server!r}")
-            self.app.server_db.connect(self.common, server)
-            #self.app.interface_transition('connect_to_server', server)
+    def on_server_row_activated(self, widget, row, col):
+        model = widget.get_model()
+        server = model[row][1]
+        logger.debug(f"activated server: {server!r}")
+        self.app.server_db.connect(self.common, server)
 
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
@@ -571,7 +557,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_search_activate(self, _=None):
         logger.debug("activated server search")
-        print("ACTIVATE")
         # TODO
 
     def on_switch_connection_state(self, switch, state):

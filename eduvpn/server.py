@@ -50,43 +50,6 @@ class InstituteAccessServer:
         return texts
 
 
-class SecureInternetServer:
-    """
-    A record from: https://disco.eduvpn.org/v2/server_list.json
-    where: server_type == "secure_internet"
-    """
-
-    def __init__(self,
-                 base_url: str,
-                 public_key_list: List[str],
-                 country_code: str,
-                 support_contact: List[str] = [],
-                 authentication_url_template: Optional[str] = None):
-        self.base_url = base_url
-        self.public_key_list = public_key_list
-        self.support_contact = support_contact
-        self.country_code = country_code
-        self.authentication_url_template = authentication_url_template
-
-    def __str__(self):
-        return f"{self.country_name} @ {self.base_url}"
-
-    def __repr__(self):
-        return f"<SecureInternetServer {str(self)!r}>"
-
-    @property
-    def country_name(self) -> str:
-        return retrieve_country_name(self.country_code)
-
-    @property
-    def flag_path(self) -> Optional[str]:
-        path = f'{FLAG_PREFIX}{self.country_code}@1,5x.png'
-        if os.path.exists(path):
-            return path
-        else:
-            return None
-
-
 class OrganisationServer:
     """
     A record from: https://disco.eduvpn.org/v2/organization_list.json
@@ -172,7 +135,6 @@ class Profile:
 PredefinedServer = Union[
     InstituteAccessServer,
     OrganisationServer,
-    SecureInternetServer,
     CustomServer,
 ]
 ConfiguredServer = Union[
@@ -202,18 +164,14 @@ class ServerDatabase:
 
     @run_in_background_thread('connect')
     def connect(self, eduvpn, server: AnyServer):
-        is_institute = True
+        config = None
+        config_type = None
         if isinstance(server, InstituteAccessServer):
-            url = server.base_url
+            config, config_type = eduvpn.get_config_institute_access(server.base_url)
         elif isinstance(server, OrganisationServer):
-            url = server.secure_internet_home
-            is_institute = False
+            config, config_type = eduvpn.get_config_secure_internet(server.org_id)
         elif isinstance(server, CustomServer):
-            url = server.address
-        if is_institute:
-            config, config_type = eduvpn.get_config_institute_access(url)
-        else:
-            config, config_type = eduvpn.get_config_secure_internet(url)
+            config, config_type = eduvpn.get_config_custom_server(server.address)
 
         def on_connected():
             eduvpn.set_connected()
@@ -232,29 +190,22 @@ class ServerDatabase:
 
         
 
-    def disco_parse_organizations(self, _str):
+    def disco_parse(self, disco_organizations, disco_servers):
         # TODO: Only parse on actual update
         # Reset organizations
-        self.organizations = []
-        json_organizations = json.loads(_str)
+        self.servers = []
+        json_organizations = json.loads(disco_organizations)
 
         for organization in json_organizations['organization_list']:
             server = OrganisationServer(**organization)
             self.servers.append(server)
 
-    def disco_parse_servers(self, _str):
-        # TODO: Only parse on actual update
-        # Reset servers
-        self.servers = []
-        json_servers = json.loads(_str)
+        json_servers = json.loads(disco_servers)
 
         for server_data in json_servers['server_list']:
             server_type = server_data.pop('server_type')
             if server_type == 'institute_access':
                 server = InstituteAccessServer(**server_data)
-                self.servers.append(server)
-            elif server_type == 'secure_internet':
-                server = SecureInternetServer(**server_data)
                 self.servers.append(server)
 
     def parse_servers(self, _str):
