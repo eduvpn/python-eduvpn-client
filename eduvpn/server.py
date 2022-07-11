@@ -292,6 +292,7 @@ class Profile:
                  display_name: TranslatedStr,
                  default_gateway: Optional[bool] = None,
                  vpn_proto_list: Iterable[str] = frozenset('openvpn'),
+                 **kwargs
                  ):
         self.profile_id = profile_id
         self.display_name = display_name
