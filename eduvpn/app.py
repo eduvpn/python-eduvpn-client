@@ -10,7 +10,6 @@ from .utils import run_periodically
 
 logger = logging.getLogger(__name__)
 
-CHECK_NETWORK_INTERVAL = 1  # seconds
 
 
 class Application:
@@ -50,7 +49,7 @@ class Application:
             pass
 
         def on_network_update_callback(state):
-            network.on_state_update_callback(self, state)
+            print("Network state update")
 
         from . import network
         nm.subscribe_to_status_changes(on_network_update_callback)
