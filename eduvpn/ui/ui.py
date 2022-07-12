@@ -17,8 +17,7 @@ gi.require_version('NM', '1.0')  # noqa: E402
 from gi.repository import Gtk, GObject, GdkPixbuf
 
 from ..settings import HELP_URL
-from .. import network as network_state
-from ..server import CustomServer, Profile
+from ..server import CustomServer, StatusImage
 from ..app import Application
 from ..nm import nm_available, nm_managed
 from ..utils import (
@@ -62,13 +61,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_add_other_server": self.on_add_other_server,
             "on_add_custom_server": self.on_add_custom_server,
             "on_cancel_oauth_setup": self.on_cancel_oauth_setup,
-            "on_select_server": self.on_select_server,
+            "on_server_row_activated": self.on_server_row_activated,
             "on_search_changed": self.on_search_changed,
             "on_search_activate": self.on_search_activate,
             "on_switch_connection_state": self.on_switch_connection_state,
             "on_toggle_connection_info": self.on_toggle_connection_info,
-            "on_profile_selection_changed": self.on_profile_selection_changed,
-            "on_location_selection_changed": self.on_location_selection_changed,
+            "on_profile_row_activated": self.on_profile_row_activated,
+            "on_location_row_activated": self.on_location_row_activated,
             "on_acknowledge_error": self.on_acknowledge_error,
             "on_renew_session_clicked": self.on_renew_session_clicked,
             "on_config_force_tcp": self.on_config_force_tcp,
@@ -222,7 +221,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def leave_settings_page(self):
         assert self.is_on_settings_page()
         self.page_stack.set_visible_child(self.current_shown_page)
-        # TODO: Implement show_back_button with Go
+        self.show_back_button(False)
 
     # network state transition callbacks
 
@@ -286,17 +285,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # interface state transition callbacks
 
-    # Implement with Go callback
-    def default_interface_transition_callback(self, old_state, new_state):
-        # Only show the 'go back' button if
-        # the corresponding transition is available.
-        # TODO: Replace with Go
-        self.show_back_button(new_state.has_transition('go_back'))
-
     # TODO: Implement with Go callback
     @run_in_main_gtk_thread
     @common.class_state_transition("Search_Server", common.StateType.Enter)
     def enter_search(self, old_state: str, data: str):
+        self.show_back_button(True)
         self.find_server_search_input.grab_focus()
         search.show_result_components(self, True)
         search.show_search_components(self, True)
@@ -307,6 +300,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @run_in_main_gtk_thread
     @common.class_state_transition("Search_Server", common.StateType.Leave)
     def exit_search(self, new_state: str, data: str):
+        self.show_back_button(False)
         search.show_result_components(self, False)
         search.show_search_components(self, False)
         search.exit_server_search(self)
@@ -325,8 +319,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         disco_servers = self.common.get_disco_servers()
         self.app.server_db.disco_parse(disco_orgs, disco_servers)
         self.add_other_server_button_container.show()
-        search.update_results(self, self.app.server_db.configured) 
         search.init_server_search(self)
+        search.update_results(self, self.app.server_db.configured) 
 
     @run_in_main_gtk_thread
     @common.class_state_transition("No_Server", common.StateType.Leave)
@@ -367,7 +361,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.hide_loading_page()
 
     @run_in_main_gtk_thread
-    @common.class_state_transition("Chosen_Server", common.StateType.Enter)
+    @common.class_state_transition("Loading_Server", common.StateType.Enter)
     def enter_LoadingServerInformation(self, new_state, data):
         self.show_loading_page(
             _("Loading"),
@@ -375,13 +369,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         )
 
     @run_in_main_gtk_thread
-    @common.class_state_transition("Chosen_Server", common.StateType.Leave)
+    @common.class_state_transition("Loading_Server", common.StateType.Leave)
     def exit_LoadingServerInformation(self, old_state, data):
         self.hide_loading_page()
 
     @run_in_main_gtk_thread
     @common.class_state_transition("Ask_Profile", common.StateType.Enter)
     def enter_ChooseProfile(self, new_state, profiles_json):
+        self.show_back_button(True)
         self.show_page(self.choose_profile_page)
         self.profile_list.show()
 
@@ -408,11 +403,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @run_in_main_gtk_thread
     @common.class_state_transition("Ask_Profile", common.StateType.Leave)
     def exit_ChooseProfile(self, old_state, data):
+        self.show_back_button(False)
         self.hide_page(self.choose_profile_page)
         self.profile_list.hide()
 
-    # TODO: Implement with Go callback
-    def enter_ChooseSecureInternetLocation(self, old_state, new_state):
+    @run_in_main_gtk_thread
+    @common.class_state_transition("Ask_Location", common.StateType.Enter)
+    def enter_ChooseSecureInternetLocation(self, old_state, locations_json):
+        self.show_back_button(True)
         self.show_page(self.choose_location_page)
         self.location_list.show()
 
@@ -434,16 +432,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             location_tree_view.set_model(location_list_model)
 
         location_list_model.clear()
-        for location in new_state.locations:
+        for location in self.app.server_db.parse_locations(locations_json):
             if location.flag_path is None:
                 logger.warning(f"No flag found for country code {location.country_code}")
                 flag = None
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(location.flag_path)
-            location_list_model.append([location.country_name, flag, location])
+            location_list_model.append([str(location), flag, location.country_code])
 
-    # TODO: Implement with Go callback
+    @common.class_state_transition("Ask_Location", common.StateType.Leave)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
+        self.show_back_button(False)
         self.hide_page(self.choose_location_page)
         self.location_list.hide()
 
@@ -465,6 +464,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         is_expanded = self.connection_info_expander.get_expanded()
         if is_expanded:
             self.start_connection_info()
+        self.update_connection_status(True)
 
     # TODO: Implement with Go callback
     @run_in_main_gtk_thread
@@ -472,7 +472,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_ConnectionStatus(self, old_state, new_state):
         self.show_page(self.connection_page)
         self.update_connection_server()
-        self.update_connection_status()
 
     @run_in_main_gtk_thread
     @common.class_state_transition("Has_Config", common.StateType.Leave)
@@ -518,10 +517,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_go_back(self, widget, event):
         logger.debug("clicked on go back")
+        # TODO: Should the Go library have a settings state?
         if self.is_on_settings_page():
             self.leave_settings_page()
-        else:
-            self.app.interface_transition('go_back')
+        self.common.go_back()
 
     def on_add_other_server(self, button) -> None:
         logger.debug("clicked on add other server")
@@ -621,29 +620,23 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.pause_connection_info()
 
-    def on_profile_selection_changed(self, selection):
-        logger.debug("selected profile")
-        (model, tree_iter) = selection.get_selected()
-        selection.unselect_all()
-        if tree_iter is None:
-            logger.debug("selection empty")
-        else:
-            row = model[tree_iter]
-            profile = row[1]
-            logger.debug(f"selected profile: {profile!r}")
-            self.common.set_profile(profile.id)
+    def on_profile_row_activated(self, widget, row, col):
+        model = widget.get_model()
+        profile = model[row][1]
+        logger.debug(f"activated profile: {profile!r}")
+        self.common.set_profile(profile.id)
 
-    def on_location_selection_changed(self, selection):
-        logger.debug("selected location")
-        (model, tree_iter) = selection.get_selected()
-        selection.unselect_all()
-        if tree_iter is None:
-            logger.debug("selection empty")
-        else:
-            row = model[tree_iter]
-            location = row[2]
-            logger.debug(f"selected location: {location!r}")
-            self.app.interface_transition('select_secure_internet_location', location)
+    def on_location_row_activated(self, widget, row, col):
+        model = widget.get_model()
+        location = model[row][2]
+        logger.debug(f"activated location: {location!r}")
+        self.app.interface_transition('select_secure_internet_location', location)
+
+    def on_location_row_activated(self, widget, row, col):
+        model = widget.get_model()
+        location = model[row][2]
+        logger.debug(f"activated location: {location!r}")
+        self.common.set_secure_location(location)
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")

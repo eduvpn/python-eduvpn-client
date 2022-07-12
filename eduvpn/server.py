@@ -15,6 +15,29 @@ logger = logging.getLogger(__name__)
 TranslatedStr = Union[str, Dict[str, str]]
 
 
+class SecureInternetLocation:
+    """
+    A helper class for a secure internet location country code
+    """
+
+    def __init__(self,
+                 country_code: str):
+        self.country_code = country_code
+
+    def __str__(self):
+        return retrieve_country_name(self.country_code)
+
+    def __repr__(self):
+        return f"<SecureInternetLocation {str(self)!r}>"
+
+    @property
+    def flag_path(self) -> Optional[str]:
+        path = f'{FLAG_PREFIX}{self.country_code}@1,5x.png'
+        if os.path.exists(path):
+            return path
+        else:
+            return None
+
 class InstituteAccessServer:
     """
     A record from: https://disco.eduvpn.org/v2/server_list.json
@@ -55,12 +78,12 @@ class OrganisationServer:
     A record from: https://disco.eduvpn.org/v2/organization_list.json
     """
 
+    # TODO: Remove display name?
     def __init__(self,
-                 secure_internet_home: str,
                  display_name: TranslatedStr,
                  org_id: str,
-                 keyword_list: Dict[str, str] = {}):
-        self.secure_internet_home = secure_internet_home
+                 keyword_list: Dict[str, str] = {},
+                 **kwargs):
         self.display_name = display_name
         self.org_id = org_id
         self.keyword_list = keyword_list
@@ -208,6 +231,15 @@ class ServerDatabase:
                 server = InstituteAccessServer(**server_data)
                 self.servers.append(server)
 
+    def parse_locations(self, locations_json) -> [SecureInternetLocation]:
+        locations = json.loads(locations_json)
+        location_classes = []
+
+        for location in locations:
+            location_classes.append(SecureInternetLocation(location))
+
+        return location_classes
+
     def parse_servers(self, _str):
         #print("PARSE", _str)
         pass
@@ -215,6 +247,7 @@ class ServerDatabase:
     def all_configured(self) -> Iterable[ConfiguredServer]:
         "Return all configured servers."
         # TODO: replace with Go
+        print("ALL CONFIGURED")
         pass
 
     def get_single_configured(self) -> Optional[ConfiguredServer]:
