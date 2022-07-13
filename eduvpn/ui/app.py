@@ -33,7 +33,7 @@ class EduVpnGtkApplication(Gtk.Application):
             **kwargs
         )
 
-        self.app = Application(app_variant, run_in_main_gtk_thread)
+        self.app = Application(app_variant, run_in_main_gtk_thread, common)
         self.common = common
         # Only allow a single window and track it on the app.
         self.window = None

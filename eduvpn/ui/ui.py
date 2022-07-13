@@ -251,27 +251,18 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.server_support_label.hide()
 
     def update_connection_validity(self):
-        if isinstance(self.app.session_state,
-                      (session_state.InitialSessionState,
-                       session_state.NoSessionState)):
-            self.connection_session_label.hide()
-        else:
-            expiry_text = "TODO: Implement"
-            self.connection_session_label.show()
-            self.connection_session_label.set_markup(expiry_text)
+        expiry_text = "TODO: Implement"
+        self.connection_session_label.show()
+        self.connection_session_label.set_markup(expiry_text)
 
     def update_connection_status(self, connected):
         if connected:
-            # TODO: Proper text?
             self.connection_status_label.set_text(_("Connected"))
-            # TODO: Uncomment this
-            #self.connection_status_image.set_from_file(self.app.network_state.status_image.path)
+            self.connection_status_image.set_from_file(StatusImage.CONNECTED.path)
             self.set_connection_switch_state(True)
         else:
-            # TODO: Proper text?
             self.connection_status_label.set_text(_("Disconnected"))
-            # TODO: Uncomment this
-            #self.connection_status_image.set_from_file(self.app.network_state.status_image.path)
+            self.connection_status_image.set_from_file(StatusImage.NOT_CONNECTED.path)
             self.set_connection_switch_state(False)
 
     # session state transition callbacks
@@ -281,7 +272,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @common.class_state_transition("Connected", common.StateType.Enter)
     def default_session_transition_callback(self, old_state, data):
         if old_state == "Has_Config":
-            self.update_connection_status()
+            self.update_connection_status(True)
 
     # interface state transition callbacks
 
@@ -293,7 +284,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.find_server_search_input.grab_focus()
         search.show_result_components(self, True)
         search.show_search_components(self, True)
-        search.update_results(self, self.app.server_db.servers) 
+        search.update_results(self, self.app.model.servers) 
         search.init_server_search(self)
 
     # TODO: Implement with Go callback
@@ -315,12 +306,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @common.class_state_transition("No_Server", common.StateType.Enter)
     def enter_MainState(self, old_state: str, servers: str):
         search.show_result_components(self, True)
-        disco_orgs = self.common.get_disco_organizations()
-        disco_servers = self.common.get_disco_servers()
-        self.app.server_db.disco_parse(disco_orgs, disco_servers)
         self.add_other_server_button_container.show()
         search.init_server_search(self)
-        search.update_results(self, self.app.server_db.configured) 
+        search.update_results(self, self.app.model.configured_servers) 
 
     @run_in_main_gtk_thread
     @common.class_state_transition("No_Server", common.StateType.Leave)
@@ -329,15 +317,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.add_other_server_button_container.hide()
         search.exit_server_search(self)
 
-    @run_in_background_thread('browser-open')
-    def open_browser(self, url):
-        webbrowser.open(url)
-
     @run_in_main_gtk_thread
     @common.class_state_transition("OAuth_Started", common.StateType.Enter)
     def enter_oauth_setup(self, old_state, url):
         self.show_page(self.oauth_page)
-        self.open_browser(url)
+        self.app.model.open_browser(url)
         self.oauth_cancel_button.show()
 
     # TODO: Implement with Go callback
@@ -432,7 +416,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             location_tree_view.set_model(location_list_model)
 
         location_list_model.clear()
-        for location in self.app.server_db.parse_locations(locations_json):
+        for location in self.app.model.parse_locations(locations_json):
             if location.flag_path is None:
                 logger.warning(f"No flag found for country code {location.country_code}")
                 flag = None
@@ -536,7 +520,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         model = widget.get_model()
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
-        self.app.server_db.connect(self.common, server)
+        self.app.model.connect(server)
 
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
@@ -546,12 +530,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         query = self.find_server_search_input.get_text()
         logger.debug(f"entered server search query: {query}")
         if self.app.variant.use_predefined_servers and query.count('.') < 2:
-            results = self.app.server_db.search_predefined(query)
+            results = self.app.model.search_predefined(query)
             search.update_results(self, results)
         else:
             # Anything with two periods is interpreted
             # as a custom server address.
-            results = self.app.server_db.search_custom(query)
+            results = self.app.model.search_custom(query)
             search.update_results(self, results)
 
     def on_search_activate(self, _=None):
@@ -565,9 +549,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             # The user has toggled the connection switch,
             # as opposed to the ui itself setting it.
             if state:
-                self.app.interface_transition('activate_connection')
+                self.app.model.activate_connection()
             else:
-                self.app.interface_transition('deactivate_connection')
+                self.app.model.deactivate_connection()
         return True
 
     def pause_connection_info(self):
