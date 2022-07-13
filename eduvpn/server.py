@@ -2,9 +2,11 @@ from typing import Union, Optional, Iterable, List, Dict
 import logging
 import os
 import json
+import enum
 import eduvpn.nm as nm
+import webbrowser
 from eduvpn.i18n import extract_translation, retrieve_country_name
-from eduvpn.settings import FLAG_PREFIX
+from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
 from functools import partial
 from eduvpn.connection import Connection
 from .utils import (
@@ -14,6 +16,16 @@ from .utils import (
 logger = logging.getLogger(__name__)
 TranslatedStr = Union[str, Dict[str, str]]
 
+class StatusImage(enum.Enum):
+    # The value is the image filename.
+    DEFAULT = 'desktop-default.png'
+    CONNECTING = 'desktop-connecting.png'
+    CONNECTED = 'desktop-connected.png'
+    NOT_CONNECTED = 'desktop-not-connected.png'
+
+    @property
+    def path(self):
+        return IMAGE_PREFIX + self.value
 
 class SecureInternetLocation:
     """
@@ -185,34 +197,6 @@ class ServerDatabase:
         self.servers = []
         self.configured = []
 
-    @run_in_background_thread('connect')
-    def connect(self, eduvpn, server: AnyServer):
-        config = None
-        config_type = None
-        if isinstance(server, InstituteAccessServer):
-            config, config_type = eduvpn.get_config_institute_access(server.base_url)
-        elif isinstance(server, OrganisationServer):
-            config, config_type = eduvpn.get_config_secure_internet(server.org_id)
-        elif isinstance(server, CustomServer):
-            config, config_type = eduvpn.get_config_custom_server(server.address)
-
-        def on_connected():
-            eduvpn.set_connected()
-
-        def on_connect(arg):
-            client = nm.get_client()
-            uuid = nm.get_uuid(eduvpn)
-            nm.activate_connection(client, uuid, on_connected)
-
-        @run_in_main_gtk_thread
-        def connect(common, config, config_type):
-            connection = Connection.parse(common, config, config_type)
-            connection.connect(on_connect)
-
-        connect(eduvpn, config, config_type)
-
-        
-
     def disco_parse(self, disco_organizations, disco_servers):
         # TODO: Only parse on actual update
         # Reset organizations
@@ -231,15 +215,6 @@ class ServerDatabase:
                 server = InstituteAccessServer(**server_data)
                 self.servers.append(server)
 
-    def parse_locations(self, locations_json) -> [SecureInternetLocation]:
-        locations = json.loads(locations_json)
-        location_classes = []
-
-        for location in locations:
-            location_classes.append(SecureInternetLocation(location))
-
-        return location_classes
-
     def parse_servers(self, _str):
         #print("PARSE", _str)
         pass
@@ -247,7 +222,6 @@ class ServerDatabase:
     def all_configured(self) -> Iterable[ConfiguredServer]:
         "Return all configured servers."
         # TODO: replace with Go
-        print("ALL CONFIGURED")
         pass
 
     def get_single_configured(self) -> Optional[ConfiguredServer]:
