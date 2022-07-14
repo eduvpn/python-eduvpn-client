@@ -230,8 +230,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
             self.update_connection_status()
 
-    def update_connection_server(self):
+    def update_connection_server(self, server_info = None):
         # TODO: Go, return early
+        if server_info is None:
+            return
         server = self.app.session_state.server
 
         self.server_label.set_text(str(server))
@@ -267,9 +269,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # session state transition callbacks
 
+    @ui_transition("Connecting", common.StateType.Enter)
+    def enter_connecting(self, old_state: str, data):
+        self.connection_status_label.set_text(_("Connecting..."))
+        self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
+        self.set_connection_switch_state(True)
+
     # Implement with Go callback
     @ui_transition("Connected", common.StateType.Enter)
     def default_session_transition_callback(self, old_state, data):
+        print("HIER CONNECTED")
         if old_state == "Has_Config":
             self.update_connection_status(True)
 
@@ -411,8 +420,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.hide_page(self.choose_location_page)
         self.location_list.hide()
 
-    # TODO: Implement with Go callback
-    def enter_ConfiguringConnection(self, old_state, new_state):
+    def enter_ConfiguringConnection(self):
         self.show_loading_page(
             _("Configuring"),
             _("Your connection is being configured."),
@@ -422,24 +430,42 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def exit_ConfiguringConnection(self, old_state, new_state):
         self.hide_loading_page()
 
-    # TODO: Implement with Go callback
-    @ui_transition("Connected", common.StateType.Enter)
-    def enter_ConnectedState(self, old_state, data):
-        is_expanded = self.connection_info_expander.get_expanded()
-        if is_expanded:
-            self.start_connection_info()
-        self.update_connection_status(True)
+    @ui_transition("Request_Config", common.StateType.Enter)
+    def enter_RequestConfig(self, old_state: str, data):
+        # TODO: Remove hard-coded UI prefix here
+        if old_state != "UI_Has_Config":
+            self.enter_ConfiguringConnection()
+        else:
+            self.enter_connecting(old_state, data)
+
+    @ui_transition("Request_Config", common.StateType.Leave)
+    def exit_RequestConfig(self, old_state: str, data):
+        self.exit_ConfiguringConnection()
 
     # TODO: Implement with Go callback
     @ui_transition("Has_Config", common.StateType.Enter)
-    def enter_ConnectionStatus(self, old_state, new_state):
+    def enter_ConnectionStatus(self, old_state: str, data):
+        self.show_back_button(True)
+        self.stop_connection_info()
         self.show_page(self.connection_page)
+        self.update_connection_status(False)
         self.update_connection_server()
 
     @ui_transition("Has_Config", common.StateType.Leave)
     def exit_ConnectionStatus(self, old_state, new_state):
+        self.show_back_button(False)
         self.hide_page(self.connection_page)
         self.pause_connection_info()
+
+    # TODO: Implement with Go callback
+    @ui_transition("Connected", common.StateType.Enter)
+    def enter_ConnectedState(self, old_state, data):
+        self.show_page(self.connection_page)
+        self.show_back_button(False)
+        is_expanded = self.connection_info_expander.get_expanded()
+        if is_expanded:
+            self.start_connection_info()
+        self.update_connection_status(True)
 
     # TODO: Implement with Go callback
     def context_ConnectionStatus(self, state):
@@ -448,10 +474,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             UPDATE_EXIPRY_INTERVAL,
             'update-validity',
         ))
-
-    # TODO: Implement with Go callback
-    def enter_DisconnectedState(self, old_state, new_state):
-        self.stop_connection_info()
 
     # TODO: Implement with Go callback
     def enter_ErrorState(self, old_state, new_state):
