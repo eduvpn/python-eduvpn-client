@@ -22,6 +22,7 @@ class ApplicationModel:
         self.common = common
         self.server_db = ServerDatabase()
         self.common.register_class_callbacks(self)
+        self.current_server = None
 
     @model_transition("No_Server", common.StateType.Enter)
     def get_previous_servers(self, old_state: str, data: str):
@@ -65,6 +66,10 @@ class ApplicationModel:
         self.open_browser(url)
         return url
 
+    @model_transition("Request_Config", common.StateType.Enter)
+    def parse_request_config(self, old_state: str, data: str):
+        return data
+
     @model_transition("Has_Config", common.StateType.Enter)
     def parse_config(self, old_state: str, data: str):
         return data
@@ -72,6 +77,14 @@ class ApplicationModel:
     @run_in_background_thread('browser-open')
     def open_browser(self, url):
         webbrowser.open(url)
+
+    @model_transition("Connected", common.StateType.Enter)
+    def parse_connected(self, old_state: str, data: str):
+        return data
+
+    @model_transition("Connecting", common.StateType.Enter)
+    def parse_connecting(self, old_state: str, data: str):
+        return data
 
     @run_in_background_thread('connect')
     def connect(self, server: AnyServer):
@@ -97,14 +110,25 @@ class ApplicationModel:
             connection = Connection.parse(common, config, config_type)
             connection.connect(on_connect)
 
+        self.current_server = server
+        self.common.set_connecting()
         connect(self.common, config, config_type)
 
+    @run_in_main_gtk_thread
+    def disconnect(self):
+        client = nm.get_client()
+        uuid = nm.get_uuid(self.common)
+        nm.deactivate_connection(client, self.common, uuid)
+
     def activate_connection(self):
-        print("ACTIVATE CONNECTION")
+        if not self.current_server:
+            return
+
+        self.connect(self.current_server)
 
     def deactivate_connection(self):
-        print("DEACTIVATE CONNECTION")
-
+        self.disconnect()
+        self.common.set_disconnected()
 
     def search_predefined(self, query: str):
         return self.server_db.search_predefined(query)
@@ -117,37 +141,31 @@ class Application:
     def __init__(self, variant: ApplicationVariant, make_func_threadsafe, common: EduVPN):
         self.variant = variant
         self.make_func_threadsafe = make_func_threadsafe
+        self.common = common
         self.model = ApplicationModel(common)
         self.current_network_uuid: Optional[str] = None
 
     def initialize(self):
         self.initialize_network()
 
+    def on_network_update_callback(self, state):
+        if state == nm.ConnectionState.CONNECTED:
+            self.common.set_connected()
+        elif state == nm.ConnectionState.CONNECTING:
+            self.common.set_connecting()
+        else:
+            self.common.set_disconnected()
+
     def initialize_network(self):
         """
         Determine the current network state.
         """
         # Check if a previous network configuration exists.
-        uuid = nm.get_existing_configuration_uuid()
+        uuid = nm.get_existing_configuration_uuid(self.common)
         if uuid:
-            self.current_network_uuid = uuid
-            # Check what server corresponds to the configuration.
-            # TODO: get single configured:
-            # server = server_db.get_single_configured
-            server = None
-            if server is None:
-                # There is a network configuration,
-                # but no record of what server corresponds to it.
-                # TODO: Implement with Go
-                pass
-            else:
-                # TODO: Implement with Go
-                pass
+            self.on_network_update_callback(nm.get_connection_state(self.common))
         else:
             # TODO: Implement with Go
             pass
 
-        def on_network_update_callback(state):
-            print("Network state update")
-
-        nm.subscribe_to_status_changes(on_network_update_callback)
+        nm.subscribe_to_status_changes(self.common, self.on_network_update_callback)

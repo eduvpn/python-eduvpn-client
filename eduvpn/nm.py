@@ -74,12 +74,12 @@ def get_mainloop():
     return GLib.MainLoop()
 
 
-def get_active_connection() -> Optional['NM.ActiveConnection']:
+def get_active_connection(common) -> Optional['NM.ActiveConnection']:
     """
     Gets the active connection for the current uuid
     """
     client = get_client()
-    uuid = get_uuid()
+    uuid = get_uuid(common)
     for connection in client.get_active_connections():
         if connection.get_uuid() == uuid:
             return connection
@@ -172,8 +172,8 @@ def nm_managed() -> bool:
     return any(d.get_managed() for d in master_devices)
 
 
-def get_existing_configuration_uuid() -> Optional[str]:
-    uuid = get_uuid()
+def get_existing_configuration_uuid(common) -> Optional[str]:
+    uuid = get_uuid(common)
     if uuid is None:
         return None
     client = get_client()
@@ -296,8 +296,11 @@ def save_connection_with_config(client: 'NM.Client',
                                 callback=None,
                                 ):
     ovpn = Ovpn.parse(config)
-    settings = Configuration.load()
-    if settings.force_tcp:
+
+    # TODO implement force TCP and user_only
+    force_tcp = False
+    user_only = False
+    if force_tcp:
         ovpn.force_tcp()
     return save_connection(client, ovpn, private_key, certificate, callback, settings.nm_system_wide)
 
@@ -437,22 +440,22 @@ def activate_connection(client: 'NM.Client', uuid: str, callback=None):
     client.activate_connection_async(connection=con, callback=activate_connection_callback, user_data=callback)
 
 
-def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
+def deactivate_connection(client: 'NM.Client', common, uuid: str, callback=None):
     connection = client.get_connection_by_uuid(uuid)
     if connection is None:
         _logger.warning(f"no connection to deactivate of uuid {uuid}")
         return
     type = connection.get_connection_type()
     if type == 'vpn':
-        deactivate_connection_vpn(client, uuid, callback)
+        deactivate_connection_vpn(client, common, uuid, callback)
     elif type == 'wireguard':
         deactivate_connection_wg(client, uuid, callback)
     else:
         _logger.warning(f"unexpected connection type {type} of {uuid}")
 
 
-def deactivate_connection_vpn(client: 'NM.Client', uuid: str, callback=None):
-    con = get_active_connection()
+def deactivate_connection_vpn(client: 'NM.Client', common, uuid: str, callback=None):
+    con = get_active_connection(common)
     _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
         def on_deactivate_connection(a_client: 'NM.Client', res, callback=None):
@@ -550,9 +553,9 @@ def connection_status(client: 'NM.Client') -> Tuple[Optional[str], Optional['NM.
     return uuid, status
 
 
-def get_connection_state() -> ConnectionState:
+def get_connection_state(common) -> ConnectionState:
     client = get_client()
-    uuid = get_uuid()
+    uuid = get_uuid(common)
     connections = [connection for connection
                    in client.get_active_connections()
                    if connection.get_uuid() == uuid]
@@ -617,7 +620,7 @@ def get_dbus() -> Optional['dbus.SystemBus']:
         return bus
 
 
-def subscribe_to_status_changes(
+def subscribe_to_status_changes(common,
     callback: Callable[[ConnectionState], Any],
 ):
     """
@@ -630,7 +633,7 @@ def subscribe_to_status_changes(
     # The callback to monitor state changes
     # Let the state machine know for state updates
     def wrapped_callback(active: 'NM.ActiveConnection', state_code: int, reason_code: int):
-        if active.get_uuid() != get_uuid():
+        if active.get_uuid() != get_uuid(common):
             return
 
         state = NM.ActiveConnectionState(state_code)
@@ -643,13 +646,13 @@ def subscribe_to_status_changes(
     # The callback when a connection gets added
     # Connect the signals
     def wrapped_connection_added(client: 'NM.Client', active_con: 'NM.ActiveConnection'):
-        if active_con.get_uuid() != get_uuid():
+        if active_con.get_uuid() != get_uuid(common):
             return
         connect(active_con)
 
     # If a connection was found already then...
     client = get_client()
-    active_con = get_active_connection()
+    active_con = get_active_connection(common)
 
     if active_con:
         connect(active_con)
