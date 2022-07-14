@@ -8,7 +8,7 @@ from os import path, environ
 from sys import prefix
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
-
+import eduvpn_common.event as common
 
 logger = getLogger(__file__)
 
@@ -50,6 +50,36 @@ def thread_helper(func: Callable, *, name: Optional[str] = None) -> threading.Th
     thread.daemon = True
     thread.start()
     return thread
+
+def ui_transition(state: str, state_type: common.StateType):
+    def decorator(func):
+        @run_in_main_gtk_thread
+        @common.class_state_transition(f"UI_{state}", state_type)
+        def inner(self, other_state, data):
+            func(self, other_state, data)
+        return inner
+    return decorator
+
+def model_transition(state: str, state_type: common.StateType):
+    def decorator(func):
+        @run_in_background_thread(str(func))
+        def inner(self, other_state, data):
+            # The model converts the data
+            model_converted = func(self, other_state, data)
+
+            # We can then pass it to the UI
+            if state_type == common.StateType.Enter:
+                self.common.event.run(f"UI_{other_state}", f"UI_{state}", model_converted)
+            else:
+                self.common.event.run(f"UI_{state}", f"UI_{other_state}", model_converted)
+
+        # Add the inner function on the state transition
+        common.class_state_transition(state, state_type)(inner)
+
+        # Return the inner function to be called
+        return inner
+
+    return decorator
 
 
 def run_in_background_thread(name: Optional[str] = None):

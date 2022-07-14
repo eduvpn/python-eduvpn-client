@@ -1,16 +1,17 @@
 from typing import Optional
 import logging
 from gettext import gettext as _
-from .server import AnyServer, ServerDatabase, SecureInternetLocation, InstituteAccessServer, OrganisationServer, CustomServer
+from .server import AnyServer, ServerDatabase, SecureInternetLocation, InstituteAccessServer, OrganisationServer, CustomServer, Profile
 from . import nm
 import json
 from .variants import ApplicationVariant
 from .config import Configuration
 from .utils import run_periodically
 from eduvpn_common.main import EduVPN
+import eduvpn_common.event as common
 from eduvpn.connection import Connection
 import webbrowser
-from .utils import run_in_background_thread, run_in_main_gtk_thread
+from .utils import run_in_background_thread, run_in_main_gtk_thread, model_transition
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +21,33 @@ class ApplicationModel:
     def __init__(self, common: EduVPN):
         self.common = common
         self.server_db = ServerDatabase()
+        self.common.register_class_callbacks(self)
 
-    def activate_connection(self):
-        print("ACTIVATE CONNECTION")
+    @model_transition("No_Server", common.StateType.Enter)
+    def get_previous_servers(self, old_state: str, data: str):
+        return None
 
-    def deactivate_connection(self):
-        print("DEACTIVATE CONNECTION")
+    @model_transition("Search_Server", common.StateType.Enter)
+    def parse_discovery(self, old_state: str, _):
+        disco_orgs = self.common.get_disco_organizations()
+        disco_servers = self.common.get_disco_servers()
+        return self.server_db.disco_parse(disco_orgs, disco_servers)
 
-    def parse_locations(self, locations_json) -> [SecureInternetLocation]:
+    @model_transition("Loading_Server", common.StateType.Enter)
+    def loading_server(self, old_state: str, data: str):
+        print("DONE")
+        return data
+
+    @model_transition("Ask_Profile", common.StateType.Enter)
+    def parse_profiles(self, old_state: str, profiles_json: str):
+        profiles_parsed = json.loads(profiles_json)['info']['profile_list']
+        profiles = []
+        for profile in profiles_parsed:
+            profiles.append(Profile(**profile))
+        return profiles
+
+    @model_transition("Ask_Location", common.StateType.Enter)
+    def parse_locations(self, old_state: str, locations_json) -> [SecureInternetLocation]:
         locations = json.loads(locations_json)
         location_classes = []
 
@@ -36,15 +56,18 @@ class ApplicationModel:
 
         return location_classes
 
-    @property
-    def configured_servers(self):
-        disco_orgs = self.common.get_disco_organizations()
-        disco_servers = self.common.get_disco_servers()
-        return self.server_db.disco_parse(disco_orgs, disco_servers)
+    @model_transition("Authorized", common.StateType.Enter)
+    def authorized(self, old_state: str, data: str):
+        return data
 
-    @property
-    def servers(self):
-        return self.server_db.servers
+    @model_transition("OAuth_Started", common.StateType.Enter)
+    def start_oauth(self, old_state: str, url: str):
+        self.open_browser(url)
+        return url
+
+    @model_transition("Has_Config", common.StateType.Enter)
+    def parse_config(self, old_state: str, data: str):
+        return data
 
     @run_in_background_thread('browser-open')
     def open_browser(self, url):
@@ -52,7 +75,6 @@ class ApplicationModel:
 
     @run_in_background_thread('connect')
     def connect(self, server: AnyServer):
-        print("CONNECT")
         config = None
         config_type = None
         if isinstance(server, InstituteAccessServer):
@@ -76,6 +98,13 @@ class ApplicationModel:
             connection.connect(on_connect)
 
         connect(self.common, config, config_type)
+
+    def activate_connection(self):
+        print("ACTIVATE CONNECTION")
+
+    def deactivate_connection(self):
+        print("DEACTIVATE CONNECTION")
+
 
     def search_predefined(self, query: str):
         return self.server_db.search_predefined(query)
