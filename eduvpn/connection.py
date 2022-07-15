@@ -8,12 +8,12 @@ class Connection:
     "Base class for connection configurations."
 
     @classmethod
-    def parse(cls, common, config, protocol) -> 'Connection':
+    def parse(cls, config, protocol) -> 'Connection':
         if protocol == 'wireguard':
             connection_type = WireGuardConnection
         else:
             connection_type = OpenVPNConnection
-        return connection_type.parse(common, config, protocol)
+        return connection_type.parse(config, protocol)
 
     def force_tcp(self):
         raise NotImplementedError
@@ -28,15 +28,14 @@ class Connection:
 
 
 class OpenVPNConnection(Connection):
-    def __init__(self, common, ovpn: Ovpn):
-        self.common = common
+    def __init__(self, ovpn: Ovpn):
         self.ovpn = ovpn
         super().__init__()
 
     @classmethod
-    def parse(cls, common, config, _) -> 'OpenVPNConnection':
+    def parse(cls, config, _) -> 'OpenVPNConnection':
         ovpn = Ovpn.parse(config)
-        return cls(common=common, ovpn=ovpn)
+        return cls(ovpn=ovpn)
 
     def force_tcp(self):
         self.ovpn.force_tcp()
@@ -44,23 +43,21 @@ class OpenVPNConnection(Connection):
     def connect(self, callback):
         nm.start_openvpn_connection(
             self.ovpn,
-            self.common,
             callback=callback,
         )
 
 
 class WireGuardConnection(Connection):
-    def __init__(self, common, config: ConfigParser):
-        self.common = common
+    def __init__(self, config: ConfigParser):
         self.config = config
         super().__init__()
 
     @classmethod
-    def parse(cls, common, config_str, _) -> 'WireGuardConnection':
+    def parse(cls, config_str, _) -> 'WireGuardConnection':
         # TODO: validity
         config = ConfigParser()
         config.read_string(config_str)
-        return cls(common=common, config=config)
+        return cls(config=config)
 
     def force_tcp(self):
         raise NotImplementedError("WireGuard cannot be forced over tcp")
@@ -68,6 +65,5 @@ class WireGuardConnection(Connection):
     def connect(self, callback):
         nm.start_wireguard_connection(
             self.config,
-            self.common,
             callback=callback,
         )

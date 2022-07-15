@@ -7,7 +7,7 @@ from .settings import CONFIG_PREFIX
 T = TypeVar('T')
 
 
-CONFIG_FILE_NAME = 'config.json'
+CONFIG_FILE_NAME = 'org.eduvpn.app.linux_additional.json'
 
 CONFIG_PATH = CONFIG_PREFIX / CONFIG_FILE_NAME
 
