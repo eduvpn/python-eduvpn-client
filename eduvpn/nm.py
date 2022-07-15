@@ -14,6 +14,7 @@ from configparser import ConfigParser
 
 from .config import Configuration
 from .ovpn import Ovpn
+from .storage import get_uuid, set_uuid, write_ovpn
 from .utils import cache, run_in_background_thread
 
 _logger = logging.getLogger(__name__)
@@ -32,32 +33,6 @@ try:
 except ImportError:
     dbus = None
 
-# TODO: Move these back to a storage file?
-def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike):
-    """
-    Write the OVPN configuration file to target.
-    """
-    _logger.info(f"Writing configuration to {target}")
-    with open(target, mode='w+t') as f:
-        ovpn.write(f)
-        f.writelines(f"\n<key>\n{private_key}\n</key>\n")
-        f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
-
-
-def get_uuid(common) -> Optional[str]:
-    """
-    Read the UUID of the last generated eduVPN Network Manager connection.
-    """
-    return common.get_identifier()
-
-
-def set_uuid(common, uuid: str):
-    """
-    Write the eduVPN network manager connection UUID to disk.
-    """
-    common.set_identifier(uuid)
-
-
 @lru_cache()
 def get_client() -> 'NM.Client':
     """
@@ -74,12 +49,12 @@ def get_mainloop():
     return GLib.MainLoop()
 
 
-def get_active_connection(common) -> Optional['NM.ActiveConnection']:
+def get_active_connection() -> Optional['NM.ActiveConnection']:
     """
     Gets the active connection for the current uuid
     """
     client = get_client()
-    uuid = get_uuid(common)
+    uuid = get_uuid()
     for connection in client.get_active_connections():
         if connection.get_uuid() == uuid:
             return connection
@@ -172,8 +147,8 @@ def nm_managed() -> bool:
     return any(d.get_managed() for d in master_devices)
 
 
-def get_existing_configuration_uuid(common) -> Optional[str]:
-    uuid = get_uuid(common)
+def get_existing_configuration_uuid() -> Optional[str]:
+    uuid = get_uuid()
     if uuid is None:
         return None
     client = get_client()
@@ -224,30 +199,28 @@ def import_ovpn(ovpn: Ovpn) -> 'NM.SimpleConnection':
     return connection
 
 
-def add_connection_callback(client, result, data=(None, None)):
+def add_connection_callback(client, result, callback=None):
     new_con = client.add_connection_finish(result)
-    common, callback = data
-    set_uuid(common, uuid=new_con.get_uuid())
-    _logger.info(f"Connection added for uuid: {get_uuid(common)}")
+    set_uuid(uuid=new_con.get_uuid())
+    _logger.info(f"Connection added for uuid: {get_uuid()}")
     if callback is not None:
         callback(new_con is not None)
 
 
-def add_connection(client: 'NM.Client', common, connection: 'NM.Connection', callback=None):
+def add_connection(client: 'NM.Client', connection: 'NM.Connection', callback=None):
     _logger.info("Adding new connection")
     client.add_connection_async(connection=connection, save_to_disk=True, callback=add_connection_callback,
-                                user_data=(common, callback))
+                                user_data=callback)
 
 
-def update_connection_callback(remote_connection, result, data=(None, None)):
+def update_connection_callback(remote_connection, result, callback=None):
     res = remote_connection.commit_changes_finish(result)
-    common, callback = data
-    _logger.debug(f"Connection updated for uuid: {get_uuid(common)}, result: {res}, remote_con: {remote_connection}")
+    _logger.debug(f"Connection updated for uuid: {get_uuid()}, result: {res}, remote_con: {remote_connection}")
     if callback is not None:
         callback(result)
 
 
-def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', common, callback=None):
+def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', callback=None):
     """
     Update an existing Network Manager connection with the settings from another Network Manager connection
     """
@@ -261,7 +234,7 @@ def update_connection(old_con: 'NM.Connection', new_con: 'NM.Connection', common
             setting.props.uuid = old_con.get_uuid()
     old_con.replace_settings_from_connection(new_con)
     old_con.commit_changes_async(save_to_disk=True, cancellable=None, callback=update_connection_callback,
-                                 user_data=(common, callback))
+                                 user_data=callback)
 
 
 def set_connection(client, new_connection, callback, system_wide=False):
@@ -270,9 +243,9 @@ def set_connection(client, new_connection, callback, system_wide=False):
     if uuid:
         old_con = client.get_connection_by_uuid(uuid)
         if old_con:
-            update_connection(old_con, new_connection, common, callback)
+            update_connection(old_con, new_connection, callback)
             return
-    add_connection(client=client, common=common, connection=new_connection, callback=callback)
+    add_connection(client=client, connection=new_connection, callback=callback)
 
 
 def set_setting_ensure_permissions(con: 'NM.SimpleConnection', enable: bool) -> 'NM.SimpleConnection':
@@ -296,16 +269,13 @@ def save_connection_with_config(client: 'NM.Client',
                                 callback=None,
                                 ):
     ovpn = Ovpn.parse(config)
-
-    # TODO implement force TCP and user_only
-    force_tcp = False
-    user_only = False
-    if force_tcp:
+    settings = Configuration.load()
+    if settings.force_tcp:
         ovpn.force_tcp()
     return save_connection(client, ovpn, private_key, certificate, callback, settings.nm_system_wide)
 
 
-def start_openvpn_connection(ovpn: Ovpn, common, *, callback=None):
+def start_openvpn_connection(ovpn: Ovpn, *, callback=None):
     client = get_client()
     _logger.info("writing ovpn configuration to Network Manager")
     new_con = import_ovpn(ovpn)
@@ -315,7 +285,6 @@ def start_openvpn_connection(ovpn: Ovpn, common, *, callback=None):
 
 def start_wireguard_connection(
     config: ConfigParser,
-    common,
     *,
     callback=None,
 ):
@@ -440,22 +409,22 @@ def activate_connection(client: 'NM.Client', uuid: str, callback=None):
     client.activate_connection_async(connection=con, callback=activate_connection_callback, user_data=callback)
 
 
-def deactivate_connection(client: 'NM.Client', common, uuid: str, callback=None):
+def deactivate_connection(client: 'NM.Client', uuid: str, callback=None):
     connection = client.get_connection_by_uuid(uuid)
     if connection is None:
         _logger.warning(f"no connection to deactivate of uuid {uuid}")
         return
     type = connection.get_connection_type()
     if type == 'vpn':
-        deactivate_connection_vpn(client, common, uuid, callback)
+        deactivate_connection_vpn(client, uuid, callback)
     elif type == 'wireguard':
         deactivate_connection_wg(client, uuid, callback)
     else:
         _logger.warning(f"unexpected connection type {type} of {uuid}")
 
 
-def deactivate_connection_vpn(client: 'NM.Client', common, uuid: str, callback=None):
-    con = get_active_connection(common)
+def deactivate_connection_vpn(client: 'NM.Client', uuid: str, callback=None):
+    con = get_active_connection()
     _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
         def on_deactivate_connection(a_client: 'NM.Client', res, callback=None):
@@ -553,9 +522,9 @@ def connection_status(client: 'NM.Client') -> Tuple[Optional[str], Optional['NM.
     return uuid, status
 
 
-def get_connection_state(common) -> ConnectionState:
+def get_connection_state() -> ConnectionState:
     client = get_client()
-    uuid = get_uuid(common)
+    uuid = get_uuid()
     connections = [connection for connection
                    in client.get_active_connections()
                    if connection.get_uuid() == uuid]
@@ -620,8 +589,7 @@ def get_dbus() -> Optional['dbus.SystemBus']:
         return bus
 
 
-def subscribe_to_status_changes(common,
-    callback: Callable[[ConnectionState], Any],
+def subscribe_to_status_changes(callback: Callable[[ConnectionState], Any],
 ):
     """
     Subscribe to network status changes via the NM client.
@@ -633,7 +601,7 @@ def subscribe_to_status_changes(common,
     # The callback to monitor state changes
     # Let the state machine know for state updates
     def wrapped_callback(active: 'NM.ActiveConnection', state_code: int, reason_code: int):
-        if active.get_uuid() != get_uuid(common):
+        if active.get_uuid() != get_uuid():
             return
 
         state = NM.ActiveConnectionState(state_code)
@@ -646,13 +614,13 @@ def subscribe_to_status_changes(common,
     # The callback when a connection gets added
     # Connect the signals
     def wrapped_connection_added(client: 'NM.Client', active_con: 'NM.ActiveConnection'):
-        if active_con.get_uuid() != get_uuid(common):
+        if active_con.get_uuid() != get_uuid():
             return
         connect(active_con)
 
     # If a connection was found already then...
     client = get_client()
-    active_con = get_active_connection(common)
+    active_con = get_active_connection()
 
     if active_con:
         connect(active_con)

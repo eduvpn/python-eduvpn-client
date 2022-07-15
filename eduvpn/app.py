@@ -102,23 +102,23 @@ class ApplicationModel:
 
         def on_connect(arg):
             client = nm.get_client()
-            uuid = nm.get_uuid(self.common)
+            uuid = nm.get_uuid()
             nm.activate_connection(client, uuid, on_connected)
 
         @run_in_main_gtk_thread
-        def connect(common, config, config_type):
-            connection = Connection.parse(common, config, config_type)
+        def connect(config, config_type):
+            connection = Connection.parse(config, config_type)
             connection.connect(on_connect)
 
         self.current_server = server
         self.common.set_connecting()
-        connect(self.common, config, config_type)
+        connect(config, config_type)
 
     @run_in_main_gtk_thread
     def disconnect(self):
         client = nm.get_client()
-        uuid = nm.get_uuid(self.common)
-        nm.deactivate_connection(client, self.common, uuid)
+        uuid = nm.get_uuid()
+        nm.deactivate_connection(client, uuid)
 
     def activate_connection(self):
         if not self.current_server:
@@ -142,6 +142,7 @@ class Application:
         self.variant = variant
         self.make_func_threadsafe = make_func_threadsafe
         self.common = common
+        self.config = Configuration.load()
         self.model = ApplicationModel(common)
         self.current_network_uuid: Optional[str] = None
 
@@ -149,23 +150,26 @@ class Application:
         self.initialize_network()
 
     def on_network_update_callback(self, state):
-        if state == nm.ConnectionState.CONNECTED:
-            self.common.set_connected()
-        elif state == nm.ConnectionState.CONNECTING:
-            self.common.set_connecting()
-        else:
-            self.common.set_disconnected()
+        try:
+            if state == nm.ConnectionState.CONNECTED:
+                self.common.set_connected()
+            elif state == nm.ConnectionState.CONNECTING:
+                self.common.set_connecting()
+            else:
+                self.common.set_disconnected()
+        except:
+            return
 
     def initialize_network(self):
         """
         Determine the current network state.
         """
         # Check if a previous network configuration exists.
-        uuid = nm.get_existing_configuration_uuid(self.common)
+        uuid = nm.get_existing_configuration_uuid()
         if uuid:
-            self.on_network_update_callback(nm.get_connection_state(self.common))
+            self.on_network_update_callback(nm.get_connection_state())
         else:
             # TODO: Implement with Go
             pass
 
-        nm.subscribe_to_status_changes(self.common, self.on_network_update_callback)
+        nm.subscribe_to_status_changes(self.on_network_update_callback)

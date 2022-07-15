@@ -426,8 +426,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             _("Your connection is being configured."),
         )
 
-    # TODO: Implement with Go callback
-    def exit_ConfiguringConnection(self, old_state, new_state):
+    def exit_ConfiguringConnection(self, old_state: str, data):
         self.hide_loading_page()
 
     @ui_transition("Request_Config", common.StateType.Enter)
@@ -440,7 +439,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @ui_transition("Request_Config", common.StateType.Leave)
     def exit_RequestConfig(self, old_state: str, data):
-        self.exit_ConfiguringConnection()
+        self.exit_ConfiguringConnection(old_state, data)
 
     # TODO: Implement with Go callback
     @ui_transition("Has_Config", common.StateType.Enter)
