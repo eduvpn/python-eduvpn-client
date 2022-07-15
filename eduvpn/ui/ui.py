@@ -215,6 +215,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_settings_page(self):
         assert not self.is_on_settings_page()
         self.setting_config_nm_system_wide.set_state(self.app.config.nm_system_wide)
+        self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
         self.page_stack.set_visible_child(self.settings_page)
         self.show_back_button(True)
 
