@@ -655,6 +655,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Server Label</property>
+                    <property name="justify">center</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
