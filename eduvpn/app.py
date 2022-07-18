@@ -2,6 +2,7 @@ from typing import Optional
 import logging
 from gettext import gettext as _
 from .server import AnyServer, ServerDatabase, SecureInternetLocation, InstituteAccessServer, OrganisationServer, CustomServer, Profile
+from .i18n import extract_translation, retrieve_country_name
 from . import nm
 import json
 from .variants import ApplicationVariant
@@ -15,7 +16,15 @@ from .utils import run_in_background_thread, run_in_main_gtk_thread, model_trans
 
 logger = logging.getLogger(__name__)
 
+class ServerInfo:
+    def __init__(self, display_name, support_contact, location):
+        self.display_name = display_name
+        self.support_contact = support_contact
+        self.flag_path = None
 
+        if location:
+            self.flag_path = SecureInternetLocation(location).flag_path
+            self.display_name = f"{retrieve_country_name(location)}\n (via {self.display_name})"
 
 class ApplicationModel:
     def __init__(self, common: EduVPN):
@@ -36,7 +45,6 @@ class ApplicationModel:
 
     @model_transition("Loading_Server", common.StateType.Enter)
     def loading_server(self, old_state: str, data: str):
-        print("DONE")
         return data
 
     @model_transition("Ask_Profile", common.StateType.Enter)
@@ -70,9 +78,17 @@ class ApplicationModel:
     def parse_request_config(self, old_state: str, data: str):
         return data
 
+    def get_server_info(self, json_data: str):
+        server_info_json = json.loads(json_data)
+        server_display_name = extract_translation(server_info_json.get('display_name') or "Unknown Server")
+        server_display_contact = server_info_json.get('support_contact')
+        server_display_location = server_info_json.get('country_code')
+        server_info = ServerInfo(server_display_name, server_display_contact, server_display_location)
+        return server_info
+
     @model_transition("Has_Config", common.StateType.Enter)
     def parse_config(self, old_state: str, data: str):
-        return data
+        return self.get_server_info(data)
 
     @run_in_background_thread('browser-open')
     def open_browser(self, url):
@@ -80,7 +96,7 @@ class ApplicationModel:
 
     @model_transition("Connected", common.StateType.Enter)
     def parse_connected(self, old_state: str, data: str):
-        return data
+        return self.get_server_info(data)
 
     @model_transition("Connecting", common.StateType.Enter)
     def parse_connecting(self, old_state: str, data: str):

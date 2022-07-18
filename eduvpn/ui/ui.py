@@ -232,22 +232,19 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.update_connection_status()
 
     def update_connection_server(self, server_info = None):
-        # TODO: Go, return early
-        if server_info is None:
+        if not server_info:
             return
-        server = self.app.session_state.server
 
-        self.server_label.set_text(str(server))
+        self.server_label.set_text(server_info.display_name)
 
-        server_image_path = getattr(server, 'image_path', None)
-        if server_image_path:
-            self.server_image.set_from_file(server_image_path)
+        if server_info.flag_path:
+            self.server_image.set_from_file(server_info.flag_path)
             self.server_image.show()
         else:
             self.server_image.hide()
 
-        if getattr(server, 'support_contact', []):
-            support_text = _("Support:") + "\n" + "\n".join(map(link_markup, server.support_contact))
+        if server_info.support_contact:
+            support_text = _("Support:") + "\n" + "\n".join(map(link_markup, server_info.support_contact))
             self.server_support_label.set_markup(support_text)
             self.server_support_label.show()
         else:
@@ -279,7 +276,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     # Implement with Go callback
     @ui_transition("Connected", common.StateType.Enter)
     def default_session_transition_callback(self, old_state, data):
-        print("HIER CONNECTED")
         if old_state == "Has_Config":
             self.update_connection_status(True)
 
@@ -444,12 +440,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # TODO: Implement with Go callback
     @ui_transition("Has_Config", common.StateType.Enter)
-    def enter_ConnectionStatus(self, old_state: str, data):
+    def enter_ConnectionStatus(self, old_state: str, server_info):
         self.show_back_button(True)
         self.stop_connection_info()
         self.show_page(self.connection_page)
         self.update_connection_status(False)
-        self.update_connection_server()
+        self.update_connection_server(server_info)
 
     @ui_transition("Has_Config", common.StateType.Leave)
     def exit_ConnectionStatus(self, old_state, new_state):
@@ -459,13 +455,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # TODO: Implement with Go callback
     @ui_transition("Connected", common.StateType.Enter)
-    def enter_ConnectedState(self, old_state, data):
+    def enter_ConnectedState(self, old_state, server_info):
         self.show_page(self.connection_page)
         self.show_back_button(False)
         is_expanded = self.connection_info_expander.get_expanded()
         if is_expanded:
             self.start_connection_info()
         self.update_connection_status(True)
+        self.update_connection_server(server_info)
 
     # TODO: Implement with Go callback
     def context_ConnectionStatus(self, state):
