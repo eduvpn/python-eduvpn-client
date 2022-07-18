@@ -1,7 +1,7 @@
 from typing import Optional
 import logging
 from gettext import gettext as _
-from .server import AnyServer, ServerDatabase, SecureInternetLocation, InstituteAccessServer, OrganisationServer, CustomServer, Profile
+from .server import PredefinedServer, ServerDatabase, SecureInternetLocation, InstituteAccessServer, OrganisationServer, CustomServer, Profile
 from .i18n import extract_translation, retrieve_country_name
 from . import nm
 import json
@@ -84,6 +84,19 @@ class ApplicationModel:
         server_display_contact = server_info_json.get('support_contact')
         server_display_location = server_info_json.get('country_code')
         server_info = ServerInfo(server_display_name, server_display_contact, server_display_location)
+
+        # parse server
+        identifier = server_info_json.get('identifier')
+        server_type = server_info_json.get('server_type')
+        if server_type and identifier:
+            if server_type == "secure_internet":
+                self.current_server = OrganisationServer(server_display_name, identifier)
+            elif server_type == "institute_access":
+                self.current_server = InstituteAccessServer(identifier, server_display_name)
+            elif server_type == "custom_server":
+                self.current_server = CustomServer(identifier)
+        else:
+            # TODO: Log an error or something?
         return server_info
 
     @model_transition("Has_Config", common.StateType.Enter)
@@ -103,7 +116,7 @@ class ApplicationModel:
         return data
 
     @run_in_background_thread('connect')
-    def connect(self, server: AnyServer):
+    def connect(self, server: PredefinedServer):
         config = None
         config_type = None
         if isinstance(server, InstituteAccessServer):
