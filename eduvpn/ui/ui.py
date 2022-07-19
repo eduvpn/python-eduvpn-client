@@ -67,6 +67,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_switch_connection_state": self.on_switch_connection_state,
             "on_toggle_connection_info": self.on_toggle_connection_info,
             "on_profile_row_activated": self.on_profile_row_activated,
+            "on_profile_combo_changed": self.on_profile_combo_changed,
             "on_location_row_activated": self.on_location_row_activated,
             "on_acknowledge_error": self.on_acknowledge_error,
             "on_renew_session_clicked": self.on_renew_session_clicked,
@@ -126,6 +127,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.server_support_label = builder.get_object('supportLabel')
 
         self.renew_session_button = builder.get_object('renewSessionButton')
+        self.select_profile_combo = builder.get_object('selectProfileCombo')
+        self.select_profile_text = builder.get_object('selectProfileText')
 
         self.oauth_page = builder.get_object('openBrowserPage')
         self.oauth_cancel_button = builder.get_object('cancelBrowserButton')
@@ -234,6 +237,29 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def update_connection_server(self, server_info = None):
         if not server_info:
             return
+
+        self.select_profile_text.show()
+        if self.app.model.is_connected:
+            self.select_profile_combo.hide()
+            self.select_profile_text.set_text(f"Profile: {server_info.current_profile_name}")
+        else:
+            self.select_profile_combo.show()
+            self.select_profile_text.set_text("Select Profile: ")
+
+        if len(server_info.profiles) == 1:
+            self.select_profile_text.hide()
+            self.select_profile_combo.hide()
+        else:
+            profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
+
+            active_profile = 0
+            for index, profile in enumerate(server_info.profiles):
+                if profile == server_info.current_profile:
+                    active_profile = index
+                profile_store.append([str(profile), profile])
+
+            self.select_profile_combo.set_model(profile_store)
+            self.select_profile_combo.set_active(active_profile)
 
         self.server_label.set_text(server_info.display_name)
 
@@ -606,6 +632,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
         self.common.set_profile(profile.id)
+
+    def on_profile_combo_changed(self, combo):
+        tree_iter = combo.get_active_iter()
+        if tree_iter is not None:
+            model = combo.get_model()
+            profile_display, profile = model[tree_iter][:2]
+            logger.debug(f"selected combo profile: {profile!r}")
+            self.common.set_profile(profile.id)
 
     def on_location_row_activated(self, widget, row, col):
         model = widget.get_model()
