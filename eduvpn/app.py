@@ -35,7 +35,24 @@ class ApplicationModel:
 
     @model_transition("No_Server", common.StateType.Enter)
     def get_previous_servers(self, old_state: str, data: str):
-        return None
+        previous_servers = json.loads(data)
+        configured_servers = []
+        for server_json in previous_servers.get('custom_servers'):
+            server, _ = self.get_server_info(server_json, "custom_server")
+            if server:
+                configured_servers.append(server)
+
+        for server_json in previous_servers.get('institute_access_servers'):
+            server, _ = self.get_server_info(server_json, "institute_access")
+            if server:
+                configured_servers.append(server)
+
+        server_json = previous_servers.get('secure_internet_server')
+        if server_json:
+            server, _ = self.get_server_info(server_json, "secure_internet")
+            if server:
+                configured_servers.append(server)
+        return configured_servers
 
     @model_transition("Search_Server", common.StateType.Enter)
     def parse_discovery(self, old_state: str, _):
@@ -78,8 +95,7 @@ class ApplicationModel:
     def parse_request_config(self, old_state: str, data: str):
         return data
 
-    def get_server_info(self, json_data: str):
-        server_info_json = json.loads(json_data)
+    def get_server_info(self, server_info_json: str, server_type=None):
         server_display_name = extract_translation(server_info_json.get('display_name') or "Unknown Server")
         server_display_contact = server_info_json.get('support_contact')
         server_display_location = server_info_json.get('country_code')
@@ -88,20 +104,24 @@ class ApplicationModel:
         # parse server
         identifier = server_info_json.get('identifier')
         server_type = server_info_json.get('server_type')
+        server = None
         if server_type and identifier:
             if server_type == "secure_internet":
-                self.current_server = OrganisationServer(server_display_name, identifier)
+                server = OrganisationServer(server_display_name, identifier)
             elif server_type == "institute_access":
-                self.current_server = InstituteAccessServer(identifier, server_display_name)
+                server = InstituteAccessServer(identifier, server_display_name)
             elif server_type == "custom_server":
-                self.current_server = CustomServer(identifier)
+                server = CustomServer(identifier)
         else:
             # TODO: Log an error or something?
-        return server_info
+            pass
+        return server, server_info
 
     @model_transition("Has_Config", common.StateType.Enter)
     def parse_config(self, old_state: str, data: str):
-        return self.get_server_info(data)
+        server, server_info = self.get_server_info(json.loads(data))
+        self.current_server = server
+        return server_info
 
     @run_in_background_thread('browser-open')
     def open_browser(self, url):
@@ -109,7 +129,9 @@ class ApplicationModel:
 
     @model_transition("Connected", common.StateType.Enter)
     def parse_connected(self, old_state: str, data: str):
-        return self.get_server_info(data)
+        server, server_info = self.get_server_info(json.loads(data))
+        self.current_server = server
+        return server_info
 
     @model_transition("Connecting", common.StateType.Enter)
     def parse_connecting(self, old_state: str, data: str):
