@@ -592,7 +592,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.connection_info_stats = None
 
     def start_connection_info(self):
-        if not self.app.network_state.has_transition('disconnect'):
+        if not self.app.model.is_connected:
             logger.info("Connection Info: VPN is not active")
             return
 
