@@ -29,7 +29,7 @@ You can install the latest release on Debian or Ubuntu using the eduVPN packagin
 .. code-block:: console
 
     $ sudo apt install apt-transport-https wget
-    $ wget -O- https://app.eduvpn.org/linux/deb/eduvpn.key | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn.gpg
+    $ wget -O- https://app.eduvpn.org/linux/deb/eduvpn.key | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn.gpg >/dev/null
     $ echo "deb [signed-by=/usr/share/keyrings/eduvpn.gpg] https://app.eduvpn.org/linux/deb/ stable main" | sudo tee -a /etc/apt/sources.list.d/eduvpn.list
     $ sudo apt update
     $ sudo apt install eduvpn-client
