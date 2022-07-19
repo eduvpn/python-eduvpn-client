@@ -17,14 +17,22 @@ from .utils import run_in_background_thread, run_in_main_gtk_thread, model_trans
 logger = logging.getLogger(__name__)
 
 class ServerInfo:
-    def __init__(self, display_name, support_contact, location):
+    def __init__(self, display_name, support_contact, profiles, current_profile, location):
         self.display_name = display_name
         self.support_contact = support_contact
         self.flag_path = None
+        self.profiles = profiles
+        self.current_profile = current_profile
 
         if location:
             self.flag_path = SecureInternetLocation(location).flag_path
             self.display_name = f"{retrieve_country_name(location)}\n (via {self.display_name})"
+
+    @property
+    def current_profile_name(self):
+        if not self.current_profile:
+            return "Unknown"
+        return str(self.current_profile)
 
 class ApplicationModel:
     def __init__(self, common: EduVPN):
@@ -32,24 +40,25 @@ class ApplicationModel:
         self.server_db = ServerDatabase()
         self.common.register_class_callbacks(self)
         self.current_server = None
+        self.is_connected = False
 
     @model_transition("No_Server", common.StateType.Enter)
     def get_previous_servers(self, old_state: str, data: str):
         previous_servers = json.loads(data)
         configured_servers = []
-        for server_json in previous_servers.get('custom_servers'):
-            server, _ = self.get_server_info(server_json, "custom_server")
+        for server_dict in previous_servers.get('custom_servers'):
+            server, _ = self.get_server_info(server_dict, "custom_server")
             if server:
                 configured_servers.append(server)
 
-        for server_json in previous_servers.get('institute_access_servers'):
-            server, _ = self.get_server_info(server_json, "institute_access")
+        for server_dict in previous_servers.get('institute_access_servers'):
+            server, _ = self.get_server_info(server_dict, "institute_access")
             if server:
                 configured_servers.append(server)
 
-        server_json = previous_servers.get('secure_internet_server')
-        if server_json:
-            server, _ = self.get_server_info(server_json, "secure_internet")
+        server_dict = previous_servers.get('secure_internet_server')
+        if server_dict:
+            server, _ = self.get_server_info(server_dict, "secure_internet")
             if server:
                 configured_servers.append(server)
         return configured_servers
@@ -64,13 +73,16 @@ class ApplicationModel:
     def loading_server(self, old_state: str, data: str):
         return data
 
+    def parse_profiles_dict(self, profiles_dict):
+        profiles = []
+        for profile in profiles_dict:
+            profiles.append(Profile(**profile))
+        return profiles
+
     @model_transition("Ask_Profile", common.StateType.Enter)
     def parse_profiles(self, old_state: str, profiles_json: str):
         profiles_parsed = json.loads(profiles_json)['info']['profile_list']
-        profiles = []
-        for profile in profiles_parsed:
-            profiles.append(Profile(**profile))
-        return profiles
+        return self.parse_profiles_dict(profiles_parsed)
 
     @model_transition("Ask_Location", common.StateType.Enter)
     def parse_locations(self, old_state: str, locations_json) -> [SecureInternetLocation]:
@@ -95,15 +107,28 @@ class ApplicationModel:
     def parse_request_config(self, old_state: str, data: str):
         return data
 
-    def get_server_info(self, server_info_json: str, server_type=None):
-        server_display_name = extract_translation(server_info_json.get('display_name') or "Unknown Server")
-        server_display_contact = server_info_json.get('support_contact')
-        server_display_location = server_info_json.get('country_code')
-        server_info = ServerInfo(server_display_name, server_display_contact, server_display_location)
+    def get_server_info(self, server_info_dict: str, server_type=None):
+        server_display_name = extract_translation(server_info_dict.get('display_name') or "Unknown Server")
+        server_display_contact = server_info_dict.get('support_contact')
+        server_display_location = server_info_dict.get('country_code')
+        server_display_profiles = []
+        current_profile = None
+
+        profiles_dict = server_info_dict.get('profiles')
+
+        if profiles_dict:
+            if profiles_dict['info']['profile_list'] is not None:
+                server_display_profiles = self.parse_profiles_dict(profiles_dict['info']['profile_list'])
+
+                for profile in server_display_profiles:
+                    if profile.profile_id == profiles_dict.get('current_profile'):
+                        current_profile = profile
+
+        server_info = ServerInfo(server_display_name, server_display_contact, server_display_profiles, current_profile, server_display_location)
 
         # parse server
-        identifier = server_info_json.get('identifier')
-        server_type = server_info_json.get('server_type')
+        identifier = server_info_dict.get('identifier')
+        server_type = server_info_dict.get('server_type')
         server = None
         if server_type and identifier:
             if server_type == "secure_internet":
@@ -149,6 +174,7 @@ class ApplicationModel:
             config, config_type = self.common.get_config_custom_server(server.address)
 
         def on_connected():
+            self.is_connected = True
             self.common.set_connected()
 
         def on_connect(arg):
@@ -179,6 +205,7 @@ class ApplicationModel:
 
     def deactivate_connection(self):
         self.disconnect()
+        self.is_connected = False
         self.common.set_disconnected()
 
     def search_predefined(self, query: str):
@@ -203,10 +230,12 @@ class Application:
     def on_network_update_callback(self, state):
         try:
             if state == nm.ConnectionState.CONNECTED:
+                self.model.is_connected = True
                 self.common.set_connected()
             elif state == nm.ConnectionState.CONNECTING:
                 self.common.set_connecting()
             else:
+                self.model.is_connected = False
                 self.common.set_disconnected()
         except:
             return
