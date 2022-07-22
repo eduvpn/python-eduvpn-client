@@ -26,7 +26,8 @@ class ServerInfo:
 
         if location:
             self.flag_path = SecureInternetLocation(location).flag_path
-            self.display_name = f"{retrieve_country_name(location)}\n (via {self.display_name})"
+            self.country_name = retrieve_country_name(location)
+            self.display_name = f"{self.country_name}\n (via {self.display_name})"
 
     @property
     def current_profile_name(self):
@@ -58,7 +59,8 @@ class ApplicationModel:
 
         server_dict = previous_servers.get('secure_internet_server')
         if server_dict:
-            server, _ = self.get_server_info(server_dict, "secure_internet")
+            server, server_info = self.get_server_info(server_dict, "secure_internet")
+            server.display_name = server_info.country_name
             if server:
                 configured_servers.append(server)
         return configured_servers
