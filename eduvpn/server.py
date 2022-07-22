@@ -10,7 +10,7 @@ from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
 from functools import partial
 from eduvpn.connection import Connection
 from .utils import (
-    get_prefix, thread_helper, run_in_background_thread, run_in_main_gtk_thread, run_periodically, cancel_at_context_end)
+    get_prefix, thread_helper, run_in_background_thread, run_in_main_gtk_thread, run_periodically)
 
 
 logger = logging.getLogger(__name__)
