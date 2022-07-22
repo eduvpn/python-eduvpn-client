@@ -129,6 +129,9 @@ def run_periodically(func: Callable[[], None],
 
     @run_in_background_thread(name)
     def run_periodic_thread():
+        if func() is False:
+            return
+
         while 1:
             if event.wait(interval):
                 return
