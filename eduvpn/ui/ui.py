@@ -61,6 +61,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_add_other_server": self.on_add_other_server,
             "on_add_custom_server": self.on_add_custom_server,
             "on_cancel_oauth_setup": self.on_cancel_oauth_setup,
+            "on_change_location": self.on_change_location,
             "on_server_row_activated": self.on_server_row_activated,
             "on_search_changed": self.on_search_changed,
             "on_search_activate": self.on_search_activate,
@@ -440,6 +441,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @ui_transition("Ask_Location", common.StateType.Leave)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
         self.show_back_button(False)
+        self.hide_loading_page()
         self.hide_page(self.choose_location_page)
         self.location_list.hide()
 
@@ -549,6 +551,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("clicked on cancel oauth setup")
         self.common.cancel_oauth()
 
+    def on_change_location(self, _):
+        self.app.model.change_secure_location()
+
     def on_search_changed(self, _=None):
         query = self.find_server_search_input.get_text()
         logger.debug(f"entered server search query: {query}")
@@ -651,7 +656,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         model = widget.get_model()
         location = model[row][2]
         logger.debug(f"activated location: {location!r}")
-        self.common.set_secure_location(location)
+        self.app.model.set_secure_location(location)
+        self.show_loading_page("Loading location", "The location is being configured")
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")

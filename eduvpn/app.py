@@ -162,6 +162,14 @@ class ApplicationModel:
     def parse_connecting(self, old_state: str, data: str):
         return data
 
+    @run_in_background_thread('change-secure-location')
+    def change_secure_location(self):
+        self.common.change_secure_location()
+
+    @run_in_background_thread('set-secure-location')
+    def set_secure_location(self, location_id: str):
+        self.common.set_secure_location(location_id)
+
     @run_in_background_thread('connect')
     def connect(self, server: PredefinedServer):
         config = None

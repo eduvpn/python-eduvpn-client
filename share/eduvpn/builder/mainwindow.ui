@@ -346,21 +346,21 @@
                                     <property name="position">1</property>
                                   </packing>
                                 </child>
-                              <!-- See https://github.com/eduvpn/python-eduvpn-client/issues/333 -->
-                              <!-- <child> -->
-                              <!--   <object class="GtkButton" id="changeLocationButton"> -->
-                              <!--     <property name="label" translatable="yes">Change Location</property> -->
-                              <!--     <property name="visible">True</property> -->
-                              <!--     <property name="can_focus">True</property> -->
-                              <!--     <property name="receives_default">True</property> -->
-                              <!--   </object> -->
-                              <!--   <packing> -->
-                              <!--     <property name="expand">False</property> -->
-                              <!--     <property name="fill">True</property> -->
-                              <!--     <property name="pack_type">end</property> -->
-                              <!--     <property name="position">2</property> -->
-                              <!--   </packing> -->
-                              <!-- </child> -->
+                              <child>
+                                <object class="GtkButton" id="changeLocationButton">
+                                  <property name="label" translatable="yes">Change Location</property>
+                                  <property name="visible">True</property>
+                                  <property name="can_focus">True</property>
+                                  <property name="receives_default">True</property>
+				  <signal name="clicked" handler="on_change_location" swapped="no"/>
+                                </object>
+                                <packing>
+                                  <property name="expand">False</property>
+                                  <property name="fill">True</property>
+                                  <property name="pack_type">end</property>
+                                  <property name="position">2</property>
+                                </packing>
+                              </child>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
