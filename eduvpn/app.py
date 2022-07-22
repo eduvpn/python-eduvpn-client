@@ -172,6 +172,10 @@ class ApplicationModel:
     def set_secure_location(self, location_id: str):
         self.common.set_secure_location(location_id)
 
+    @run_in_background_thread('should-renew-button')
+    def should_renew_button(self):
+        return self.common.should_renew_button()
+
     @run_in_background_thread('connect')
     def connect(self, server: PredefinedServer):
         config = None

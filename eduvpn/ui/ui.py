@@ -21,7 +21,7 @@ from ..server import CustomServer, StatusImage
 from ..app import Application
 from ..nm import nm_available, nm_managed
 from ..utils import (
-    get_prefix, run_in_background_thread, run_in_main_gtk_thread, run_periodically, cancel_at_context_end, ui_transition)
+    get_prefix, run_in_background_thread, run_in_main_gtk_thread, run_periodically, ui_transition)
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 from .stats import NetworkStats
@@ -30,7 +30,8 @@ import eduvpn_common.event as common
 logger = logging.getLogger(__name__)
 
 
-UPDATE_EXIPRY_INTERVAL = 1.  # seconds
+UPDATE_EXPIRY_INTERVAL = 1.  # seconds
+UPDATE_RENEW_INTERVAL = 60.  # seconds
 
 RENEWAL_ALLOW_FRACTION = .8
 
@@ -121,6 +122,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_info_ipv4address = builder.get_object('connectionInfoIpv4AddressText')
         self.connection_info_ipv6address = builder.get_object('connectionInfoIpv6AddressText')
         self.connection_info_thread_cancel = None
+        self.connection_validity_thread_cancel = None
+        self.connection_renew_thread_cancel = None
         self.connection_info_stats = None
 
         self.server_image = builder.get_object('serverImage')
@@ -229,12 +232,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.show_back_button(False)
 
     # network state transition callbacks
-
-    # Implement with Go callback
-    def default_network_transition_callback(self, old_state, new_state):
-        if isinstance(self.app.interface_state, interface_state.ConnectionStatus):
-            self.update_connection_status()
-
     def update_connection_server(self, server_info = None):
         if not server_info:
             return
@@ -281,6 +278,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         expiry_text = "TODO: Implement"
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
+
+    def update_connection_renew(self):
+        if self.app.model.should_renew_button():
+            self.renew_session_button.show()
+        else:
+            self.renew_session_button.hide()
 
     def update_connection_status(self, connected):
         if connected:
@@ -470,6 +473,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @ui_transition("Has_Config", common.StateType.Enter)
     def enter_ConnectionStatus(self, old_state: str, server_info):
         self.show_back_button(True)
+        self.stop_validity_renew()
         self.stop_connection_info()
         self.show_page(self.connection_page)
         self.update_connection_status(False)
@@ -491,14 +495,27 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.start_connection_info()
         self.update_connection_status(True)
         self.update_connection_server(server_info)
+        self.start_validity_renew()
 
     # TODO: Implement with Go callback
-    def context_ConnectionStatus(self, state):
-        return cancel_at_context_end(run_periodically(
+    def start_validity_renew(self):
+        self.connection_validity_thread_cancel = run_periodically(
             run_in_main_gtk_thread(self.update_connection_validity),
-            UPDATE_EXIPRY_INTERVAL,
+            UPDATE_EXPIRY_INTERVAL,
             'update-validity',
-        ))
+        )
+        self.connection_renew_thread_cancel = run_periodically(
+            run_in_main_gtk_thread(self.update_connection_renew),
+            UPDATE_RENEW_INTERVAL,
+            'update-renew',
+        )
+
+    def stop_validity_renew(self):
+        if self.connection_validity_thread_cancel:
+            self.connection_validity_thread_cancel()
+
+        if self.connection_renew_thread_cancel:
+            self.connection_renew_thread_cancel()
 
     # TODO: Implement with Go callback
     def enter_ErrorState(self, old_state, new_state):
