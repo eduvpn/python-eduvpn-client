@@ -46,12 +46,12 @@ class ApplicationModel:
     def get_previous_servers(self, old_state: str, data: str):
         previous_servers = json.loads(data)
         configured_servers = []
-        for server_dict in previous_servers.get('custom_servers'):
+        for server_dict in previous_servers.get('custom_servers', {}):
             server, _ = self.get_server_info(server_dict, "custom_server")
             if server:
                 configured_servers.append(server)
 
-        for server_dict in previous_servers.get('institute_access_servers'):
+        for server_dict in previous_servers.get('institute_access_servers', {}):
             server, _ = self.get_server_info(server_dict, "institute_access")
             if server:
                 configured_servers.append(server)
