@@ -26,6 +26,7 @@ from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 from .stats import NetworkStats
 import eduvpn_common.event as common
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,28 @@ UPDATE_RENEW_INTERVAL = 60.  # seconds
 
 RENEWAL_ALLOW_FRACTION = .8
 
-# TODO: Go, implement get_validity_text
+def get_validity_text(validity) -> str:
+    if validity is None:
+        return _("Valid for <b>unknown</b>")
+    if validity.is_expired:
+        return _("This session has expired")
+    delta = validity.remaining
+    days = delta.days
+    hours = delta.seconds // 3600
+    if days == 0:
+        if hours == 0:
+            minutes = delta.seconds // 60
+            return ngettext("Valid for <b>{0} minute</b>",
+                            "Valid for <b>{0} minutes</b>", minutes).format(minutes)
+        else:
+            return ngettext("Valid for <b>{0} hour</b>",
+                            "Valid for <b>{0} hours</b>", hours).format(hours)
+    else:
+        dstr = ngettext("Valid for <b>{0} day</b>",
+                        "Valid for <b>{0} days</b>", days).format(days)
+        hstr = ngettext(" and <b>{0} hour</b>",
+                        " and <b>{0} hours</b>", hours).format(hours)
+        return dstr + hstr
 
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), 'share/eduvpn/builder', filename)
@@ -274,8 +296,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.server_support_label.hide()
 
-    def update_connection_validity(self):
-        expiry_text = "TODO: Implement"
+    def update_connection_validity(self, expire_time):
+        expiry_text = get_validity_text(self.app.model.get_expiry(expire_time))
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
 
@@ -495,12 +517,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.start_connection_info()
         self.update_connection_status(True)
         self.update_connection_server(server_info)
-        self.start_validity_renew()
+        self.start_validity_renew(server_info)
 
-    # TODO: Implement with Go callback
-    def start_validity_renew(self):
+    def start_validity_renew(self, server_info):
         self.connection_validity_thread_cancel = run_periodically(
-            run_in_main_gtk_thread(self.update_connection_validity),
+            run_in_main_gtk_thread(partial(self.update_connection_validity, server_info.expire_time)),
             UPDATE_EXPIRY_INTERVAL,
             'update-validity',
         )
