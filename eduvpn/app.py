@@ -13,16 +13,40 @@ import eduvpn_common.event as common
 from eduvpn.connection import Connection
 import webbrowser
 from .utils import run_in_background_thread, run_in_main_gtk_thread, model_transition
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
+def now() -> datetime:
+    return datetime.now()
+
+class Validity:
+    def __init__(self, end: datetime):
+        self.end = end
+
+    @property
+    def remaining(self) -> timedelta:
+        """
+        Return the duration from now until expiry.
+        """
+        return self.end - now()
+
+    @property
+    def is_expired(self) -> bool:
+        """
+        Return True if the validity has expired.
+        """
+        return now() >= self.end
+
+
 class ServerInfo:
-    def __init__(self, display_name, support_contact, profiles, current_profile, location):
+    def __init__(self, display_name, support_contact, profiles, current_profile, expire_time, location):
         self.display_name = display_name
         self.support_contact = support_contact
         self.flag_path = None
         self.profiles = profiles
         self.current_profile = current_profile
+        self.expire_time = datetime.fromtimestamp(expire_time)
 
         if location:
             self.flag_path = SecureInternetLocation(location).flag_path
@@ -42,6 +66,9 @@ class ApplicationModel:
         self.common.register_class_callbacks(self)
         self.current_server = None
         self.is_connected = False
+
+    def get_expiry(self, expire_time):
+        return Validity(expire_time)
 
     @model_transition("No_Server", common.StateType.Enter)
     def get_previous_servers(self, old_state: str, data: str):
@@ -117,6 +144,7 @@ class ApplicationModel:
         current_profile = None
 
         profiles_dict = server_info_dict.get('profiles')
+        expire_time = server_info_dict.get('expire_time')
 
         if profiles_dict:
             if profiles_dict['info']['profile_list'] is not None:
@@ -126,7 +154,7 @@ class ApplicationModel:
                     if profile.profile_id == profiles_dict.get('current_profile'):
                         current_profile = profile
 
-        server_info = ServerInfo(server_display_name, server_display_contact, server_display_profiles, current_profile, server_display_location)
+        server_info = ServerInfo(server_display_name, server_display_contact, server_display_profiles, current_profile, expire_time, server_display_location)
 
         # parse server
         identifier = server_info_dict.get('identifier')
