@@ -262,7 +262,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.select_profile_text.show()
         if self.app.model.is_connected:
             self.select_profile_combo.hide()
-            self.select_profile_text.set_text(f"Profile: {server_info.current_profile_name}")
+            self.select_profile_text.set_markup(f"Profile: <b>{server_info.current_profile_name}</b>")
         else:
             self.select_profile_combo.show()
             self.select_profile_text.set_text("Select Profile: ")
