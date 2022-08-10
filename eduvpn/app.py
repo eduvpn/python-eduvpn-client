@@ -200,7 +200,6 @@ class ApplicationModel:
     def set_secure_location(self, location_id: str):
         self.common.set_secure_location(location_id)
 
-    @run_in_background_thread('should-renew-button')
     def should_renew_button(self):
         return self.common.should_renew_button()
 
@@ -232,6 +231,20 @@ class ApplicationModel:
         self.current_server = server
         self.common.set_connecting()
         connect(config, config_type)
+
+    # https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
+    @run_in_background_thread('renew-session')
+    def renew_session(self):
+        was_connected = self.is_connected
+        if self.is_connected:
+            # Call /disconnect
+            self.deactivate_connection()
+        # Delete the OAuth access and refresh token
+        # Start the OAuth authorization flow
+        self.common.renew_session()
+        # Automatically reconnect to the server and profile if (and only if) the client was previously connected.
+        if was_connected:
+            self.activate_connection()
 
     @run_in_main_gtk_thread
     def disconnect(self):
