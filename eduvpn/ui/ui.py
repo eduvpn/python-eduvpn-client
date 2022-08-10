@@ -706,7 +706,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
-        self.app.session_transition('renew')
+        self.app.model.renew_session()
 
     def on_config_force_tcp(self, switch, state: bool):
         logger.debug("clicked on setting: 'force tcp'")
