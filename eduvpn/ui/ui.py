@@ -337,6 +337,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     # TODO: Implement with Go callback
     @ui_transition("Search_Server", common.StateType.Enter)
     def enter_search(self, old_state: str, servers):
+        self.set_search_text('')
         self.show_back_button(True)
         self.find_server_search_input.grab_focus()
         search.show_result_components(self, True)
@@ -351,7 +352,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.show_result_components(self, False)
         search.show_search_components(self, False)
         search.exit_server_search(self)
-        self.set_search_text('')
 
     # TODO: Implement with Go callback
     def exit_ConfigureCustomServer(self, old_state, new_state):
