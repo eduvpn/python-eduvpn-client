@@ -121,6 +121,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.choose_profile_page = builder.get_object('chooseProfilePage')
         self.choose_location_page = builder.get_object('chooseLocationPage')
+        self.change_location_button = builder.get_object('changeLocationButton')
         self.location_list = builder.get_object('locationTreeView')
         self.profile_list = builder.get_object('profileTreeView')
 
@@ -362,13 +363,15 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.show_result_components(self, True)
         self.add_other_server_button_container.show()
         search.init_server_search(self)
-        search.update_results(self, servers) 
+        search.update_results(self, servers)
+        self.change_location_button.show()
 
     @ui_transition("No_Server", common.StateType.Leave)
     def exit_MainState(self, old_state, new_state):
         search.show_result_components(self, False)
         self.add_other_server_button_container.hide()
         search.exit_server_search(self)
+        self.change_location_button.hide()
 
     @ui_transition("OAuth_Started", common.StateType.Enter)
     def enter_oauth_setup(self, old_state, url):
