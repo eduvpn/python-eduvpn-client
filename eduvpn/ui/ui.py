@@ -14,7 +14,7 @@ import time
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 gi.require_version('NM', '1.0')  # noqa: E402
-from gi.repository import Gtk, GObject, GdkPixbuf
+from gi.repository import Gtk, GObject, GdkPixbuf, GLib
 
 from ..settings import HELP_URL
 from ..server import CustomServer, StatusImage
@@ -254,33 +254,53 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.page_stack.set_visible_child(self.current_shown_page)
         self.show_back_button(False)
 
-    # network state transition callbacks
-    def update_connection_server(self, server_info = None):
-        if not server_info:
-            return
+    def recreate_profile_combo(self, server_info):
+        # Create a store of profiles
+        profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
+        active_profile = 0
+        for index, profile in enumerate(server_info.profiles):
+            if profile == server_info.current_profile:
+                active_profile = index
+            profile_store.append([str(profile), profile])
 
-        self.select_profile_text.show()
+        # Create a new combobox
+        # We create a new one every time because Gtk has some weird behaviour regarding the width of the combo box
+        # When we add items that are large, the combobox resizes to fit the content
+        # However, when we add items again that are all smaller (e.g. for a new server), the combo box does not shrink back
+        # The only proper way seems to be to recreate the combobox every time
+        combo = Gtk.ComboBoxText.new()
+        combo.set_model(profile_store)
+        combo.set_active(active_profile)
+        combo.set_halign(Gtk.Align.CENTER)
+        combo.connect("changed", self.on_profile_combo_changed)
+
+        # Get the position of the current combobox in the connection page
+        position = self.connection_page.child_get_property(self.select_profile_combo, "position")
+
+        # Destroy the combobox and add the new one
+        self.select_profile_combo.destroy()
+        self.connection_page.pack_start(combo, True, True, 0)
+        self.connection_page.reorder_child(combo, position)
+        self.select_profile_combo = combo
+
         if self.app.model.is_connected:
             self.select_profile_combo.hide()
-            self.select_profile_text.set_markup(f"Profile: <b>{server_info.current_profile_name}</b>")
+            self.select_profile_text.set_markup(f"Profile: <b>{GLib.markup_escape_text(server_info.current_profile_name)}</b>")
         else:
             self.select_profile_combo.show()
             self.select_profile_text.set_text("Select Profile: ")
 
-        if len(server_info.profiles) == 1:
+    # network state transition callbacks
+    def update_connection_server(self, server_info):
+        if not server_info:
+            return
+
+        if len(server_info.profiles) <= 1:
             self.select_profile_text.hide()
             self.select_profile_combo.hide()
         else:
-            profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
-
-            active_profile = 0
-            for index, profile in enumerate(server_info.profiles):
-                if profile == server_info.current_profile:
-                    active_profile = index
-                profile_store.append([str(profile), profile])
-
-            self.select_profile_combo.set_model(profile_store)
-            self.select_profile_combo.set_active(active_profile)
+            self.select_profile_text.show()
+            self.recreate_profile_combo(server_info)
 
         self.server_label.set_text(server_info.display_name)
 
