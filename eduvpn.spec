@@ -70,8 +70,8 @@ Let's Connect! desktop client
 %py3_install
 desktop-file-install %{buildroot}/%{_datadir}/applications/org.eduvpn.client.desktop
 
-%check
-%{__python3} setup.py test
+#%check
+#%{__python3} setup.py test
 
 
 %files -n python3-eduvpn-client
