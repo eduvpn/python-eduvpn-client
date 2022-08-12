@@ -10,10 +10,6 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 
 install_requires = [
-    'requests',
-    'requests_oauthlib',
-    'cryptography',
-    'pynacl',
     'wheel',
 ]
 
@@ -25,7 +21,6 @@ tests_require = [
 mypy_require = [
     'mypy',
     'PyGObject-stubs',
-    'types-requests',
     'types-setuptools',
 ]
 
