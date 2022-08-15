@@ -283,12 +283,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_page.reorder_child(combo, position)
         self.select_profile_combo = combo
 
-        if self.app.model.is_connected:
-            self.select_profile_combo.hide()
-            self.select_profile_text.set_markup(f"Profile: <b>{GLib.markup_escape_text(server_info.current_profile_name)}</b>")
-        else:
-            self.select_profile_combo.show()
-            self.select_profile_text.set_text("Select Profile: ")
+        self.select_profile_combo.show()
+        self.select_profile_text.set_text("Select Profile: ")
 
     # network state transition callbacks
     def update_connection_server(self, server_info):
@@ -345,6 +341,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_status_label.set_text(_("Connecting..."))
         self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
         self.set_connection_switch_state(True)
+        # Disable the profile combo box
+        self.select_profile_combo.set_sensitive(False)
+
+    @ui_transition("Connecting", common.StateType.Leave)
+    def exit_connecting(self, old_state: str, data):
+        # Re-enable the profile combo box
+        self.select_profile_combo.set_sensitive(True)
 
     # Implement with Go callback
     @ui_transition("Connected", common.StateType.Enter)
@@ -697,15 +700,47 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         model = widget.get_model()
         profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
-        self.common.set_profile(profile.id)
+        self.app.model.set_profile(profile)
+
+    def profile_ask_reconnect(self) -> bool:
+        gtk_reconnect_id = -10
+        gtk_nop_id = -11
+        dialog = Gtk.MessageDialog(  # type: ignore
+            parent=self,
+            type=Gtk.MessageType.QUESTION,  # type: ignore
+            title=_("Profile"),
+            message_format=_("New profile selected"))
+        dialog.add_buttons(_("Reconnect"), gtk_reconnect_id, _("Stay connected"), gtk_nop_id)
+        dialog.format_secondary_text(_("Do you want to apply the new profile by reconnecting?"))  # type: ignore
+        dialog.show()  # type: ignore
+        response = dialog.run()  # type: ignore
+        dialog.destroy()  # type: ignore
+
+        return response == gtk_reconnect_id
 
     def on_profile_combo_changed(self, combo):
         tree_iter = combo.get_active_iter()
-        if tree_iter is not None:
-            model = combo.get_model()
-            profile_display, profile = model[tree_iter][:2]
-            logger.debug(f"selected combo profile: {profile!r}")
-            self.common.set_profile(profile.id)
+
+        if tree_iter is None:
+            return
+
+        model = combo.get_model()
+        profile_display, profile = model[tree_iter][:2]
+        logger.debug(f"selected combo profile: {profile!r}")
+
+        # Profile is already the current, do nothing
+        if profile == self.app.model.current_server_info.current_profile:
+            return
+
+        # If we are already connected we should ask if we want to reconnect
+        if self.app.model.is_connected:
+            # Asking for reconnect was not successful
+            # Restore the previous profile
+            if not self.profile_ask_reconnect():
+                combo.set_active(self.app.model.current_server_info.current_profile_index)
+                return
+        # Finally set the profile
+        self.app.model.set_profile(profile, connect=True)
 
     def on_location_row_activated(self, widget, row, col):
         model = widget.get_model()
