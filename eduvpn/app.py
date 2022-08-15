@@ -54,6 +54,10 @@ class ServerInfo:
             self.display_name = f"{self.country_name}\n (via {self.display_name})"
 
     @property
+    def current_profile_index(self):
+        return self.profiles.index(self.current_profile)
+
+    @property
     def current_profile_name(self):
         if not self.current_profile:
             return "Unknown"
@@ -64,7 +68,9 @@ class ApplicationModel:
         self.common = common
         self.server_db = ServerDatabase()
         self.common.register_class_callbacks(self)
+        # TODO: combine server and server info
         self.current_server = None
+        self.current_server_info = None
         self.is_connected = False
 
     def get_expiry(self, expire_time):
@@ -176,6 +182,7 @@ class ApplicationModel:
     def parse_config(self, old_state: str, data: str):
         server, server_info = self.get_server_info(json.loads(data))
         self.current_server = server
+        self.current_server_info = server_info
         return server_info
 
     @run_in_background_thread('browser-open')
@@ -186,6 +193,7 @@ class ApplicationModel:
     def parse_connected(self, old_state: str, data: str):
         server, server_info = self.get_server_info(json.loads(data))
         self.current_server = server
+        self.current_server_info = server_info
         return server_info
 
     @model_transition("Connecting", common.StateType.Enter)
@@ -252,6 +260,21 @@ class ApplicationModel:
         uuid = nm.get_uuid()
         nm.deactivate_connection(client, uuid)
 
+    def set_profile(self, profile, connect=False):
+        was_connected = self.is_connected
+
+        # Deactivate connection if we are connected
+        # and the connection should be modified
+        if self.is_connected and connect:
+            self.deactivate_connection()
+
+        # Set the profile ID
+        self.common.set_profile(profile.id)
+
+        # Connect if we should and if we were previously connected
+        if connect and was_connected:
+            self.activate_connection()
+
     def activate_connection(self):
         if not self.current_server:
             return
@@ -290,8 +313,8 @@ class Application:
             elif state == nm.ConnectionState.CONNECTING:
                 self.common.set_connecting()
             else:
-                self.model.is_connected = False
-                self.common.set_disconnected()
+                if not self.is_connected:
+                    self.common.set_disconnected()
         except:
             return
 
