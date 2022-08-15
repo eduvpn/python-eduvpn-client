@@ -10,6 +10,7 @@ from .config import Configuration
 from .utils import run_periodically
 from eduvpn_common.main import EduVPN
 import eduvpn_common.event as common
+from eduvpn_common.state import State, StateType
 from eduvpn.connection import Connection
 import webbrowser
 from .utils import run_in_background_thread, run_in_main_gtk_thread, model_transition
@@ -76,7 +77,7 @@ class ApplicationModel:
     def get_expiry(self, expire_time):
         return Validity(expire_time)
 
-    @model_transition("No_Server", common.StateType.Enter)
+    @model_transition(State.NO_SERVER, StateType.Enter)
     def get_previous_servers(self, old_state: str, data: str):
         previous_servers = json.loads(data)
         configured_servers = []
@@ -98,13 +99,13 @@ class ApplicationModel:
                 configured_servers.append(server)
         return configured_servers
 
-    @model_transition("Search_Server", common.StateType.Enter)
+    @model_transition(State.SEARCH_SERVER, StateType.Enter)
     def parse_discovery(self, old_state: str, _):
         disco_orgs = self.common.get_disco_organizations()
         disco_servers = self.common.get_disco_servers()
         return self.server_db.disco_parse(disco_orgs, disco_servers)
 
-    @model_transition("Loading_Server", common.StateType.Enter)
+    @model_transition(State.LOADING_SERVER, StateType.Enter)
     def loading_server(self, old_state: str, data: str):
         return data
 
@@ -114,12 +115,12 @@ class ApplicationModel:
             profiles.append(Profile(**profile))
         return profiles
 
-    @model_transition("Ask_Profile", common.StateType.Enter)
+    @model_transition(State.ASK_PROFILE, StateType.Enter)
     def parse_profiles(self, old_state: str, profiles_json: str):
         profiles_parsed = json.loads(profiles_json)['info']['profile_list']
         return self.parse_profiles_dict(profiles_parsed)
 
-    @model_transition("Ask_Location", common.StateType.Enter)
+    @model_transition(State.ASK_LOCATION, StateType.Enter)
     def parse_locations(self, old_state: str, locations_json) -> [SecureInternetLocation]:
         locations = json.loads(locations_json)
         location_classes = []
@@ -129,16 +130,16 @@ class ApplicationModel:
 
         return location_classes
 
-    @model_transition("Authorized", common.StateType.Enter)
+    @model_transition(State.AUTHORIZED, StateType.Enter)
     def authorized(self, old_state: str, data: str):
         return data
 
-    @model_transition("OAuth_Started", common.StateType.Enter)
+    @model_transition(State.OAUTH_STARTED, StateType.Enter)
     def start_oauth(self, old_state: str, url: str):
         self.open_browser(url)
         return url
 
-    @model_transition("Request_Config", common.StateType.Enter)
+    @model_transition(State.REQUEST_CONFIG, StateType.Enter)
     def parse_request_config(self, old_state: str, data: str):
         return data
 
@@ -178,7 +179,7 @@ class ApplicationModel:
             pass
         return server, server_info
 
-    @model_transition("Has_Config", common.StateType.Enter)
+    @model_transition(State.HAS_CONFIG, StateType.Enter)
     def parse_config(self, old_state: str, data: str):
         server, server_info = self.get_server_info(json.loads(data))
         self.current_server = server
@@ -189,14 +190,14 @@ class ApplicationModel:
     def open_browser(self, url):
         webbrowser.open(url)
 
-    @model_transition("Connected", common.StateType.Enter)
+    @model_transition(State.CONNECTED, StateType.Enter)
     def parse_connected(self, old_state: str, data: str):
         server, server_info = self.get_server_info(json.loads(data))
         self.current_server = server
         self.current_server_info = server_info
         return server_info
 
-    @model_transition("Connecting", common.StateType.Enter)
+    @model_transition(State.CONNECTING, StateType.Enter)
     def parse_connecting(self, old_state: str, data: str):
         return data
 
