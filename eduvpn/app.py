@@ -136,7 +136,7 @@ class ApplicationModel:
 
     @model_transition(State.OAUTH_STARTED, StateType.Enter)
     def start_oauth(self, old_state: str, url: str):
-        self.open_browser(url)
+        self.open_browser(json.loads(url))
         return url
 
     @model_transition(State.REQUEST_CONFIG, StateType.Enter)
