@@ -6,13 +6,20 @@ import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 from gi.repository import Gtk
 
+from typing import Tuple
 from ..variants import EDUVPN, LETS_CONNECT
-from ..settings import CLIENT_ID, CONFIG_PREFIX
+from ..settings import LETSCONNECT_CLIENT_ID, CLIENT_ID, LETSCONNECT_CONFIG_PREFIX, CONFIG_PREFIX
 from ..ui.app import EduVpnGtkApplication
 import eduvpn_common.main as common
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_variant_settings(variant) -> Tuple[str, str]:
+    if variant == EDUVPN:
+        return CLIENT_ID, str(CONFIG_PREFIX)
+    return LETSCONNECT_CLIENT_ID, str(LETSCONNECT_CONFIG_PREFIX)
 
 
 def main_loop(args=None, app_variant=EDUVPN):
@@ -24,7 +31,7 @@ def main_loop(args=None, app_variant=EDUVPN):
         args = sys.argv
 
     try:
-        _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX))
+        _common = common.EduVPN(*get_variant_settings(app_variant))
         app = EduVpnGtkApplication(app_variant=app_variant, common=_common)
         app.run(args)
     except Exception as e:

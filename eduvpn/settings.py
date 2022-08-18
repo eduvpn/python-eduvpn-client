@@ -4,11 +4,13 @@ from eduvpn.utils import get_prefix, get_config_dir
 prefix = get_prefix()
 
 CONFIG_PREFIX = (Path(get_config_dir()).expanduser() / "eduvpn").resolve()
+LETSCONNECT_CONFIG_PREFIX = (Path(get_config_dir()).expanduser() / "letsconnect").resolve()
 CONFIG_DIR_MODE = 0o700 # Same as the Go library
 
 HELP_URL = 'https://www.eduvpn.org'
 
 CLIENT_ID = "org.eduvpn.app.linux"
+LETSCONNECT_CLIENT_ID = "org.letsconnect-vpn.app.linux"
 SCOPE = ["config"]
 CODE_CHALLENGE_METHOD = "S256"
 LANGUAGE = 'nl'
