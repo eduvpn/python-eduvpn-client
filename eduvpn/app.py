@@ -72,7 +72,6 @@ class ApplicationModel:
         # TODO: combine server and server info
         self.current_server = None
         self.current_server_info = None
-        self.is_connected = False
 
     def get_expiry(self, expire_time):
         return Validity(expire_time)
@@ -224,7 +223,6 @@ class ApplicationModel:
             config, config_type = self.common.get_config_custom_server(server.address)
 
         def on_connected():
-            self.is_connected = True
             self.common.set_connected()
 
         def on_connect(arg):
@@ -244,8 +242,8 @@ class ApplicationModel:
     # https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
     @run_in_background_thread('renew-session')
     def renew_session(self):
-        was_connected = self.is_connected
-        if self.is_connected:
+        was_connected = self.model.is_connected()
+        if was_connected:
             # Call /disconnect
             self.deactivate_connection()
         # Delete the OAuth access and refresh token
@@ -262,11 +260,11 @@ class ApplicationModel:
         nm.deactivate_connection(client, uuid)
 
     def set_profile(self, profile, connect=False):
-        was_connected = self.is_connected
+        was_connected = self.is_connected()
 
         # Deactivate connection if we are connected
         # and the connection should be modified
-        if self.is_connected and connect:
+        if was_connected and connect:
             self.deactivate_connection()
 
         # Set the profile ID
@@ -284,7 +282,6 @@ class ApplicationModel:
 
     def deactivate_connection(self):
         self.disconnect()
-        self.is_connected = False
         self.common.set_disconnected()
 
     def search_predefined(self, query: str):
@@ -292,6 +289,12 @@ class ApplicationModel:
 
     def search_custom(self, query: str):
         return self.server_db.search_custom(query)
+
+    def is_connected(self):
+        return self.common.in_fsm_state(State.CONNECTED)
+
+    def is_disconnected(self):
+        return self.common.in_fsm_state(State.HAS_CONFIG)
 
 
 class Application:
@@ -309,13 +312,13 @@ class Application:
     def on_network_update_callback(self, state):
         try:
             if state == nm.ConnectionState.CONNECTED:
-                self.model.is_connected = True
-                self.common.set_connected()
+                if self.model.is_disconnected():
+                    self.model.set_connected()
             elif state == nm.ConnectionState.CONNECTING:
                 self.common.set_connecting()
-            else:
-                if not self.is_connected:
-                    self.common.set_disconnected()
+            elif state == nm.ConnectionState.DISCONNECTED:
+                if self.model.is_connected():
+                    self.model.set_discconnected()
         except:
             return
 
