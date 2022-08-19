@@ -656,7 +656,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.connection_info_stats = None
 
     def start_connection_info(self):
-        if not self.app.model.is_connected:
+        if not self.app.model.is_connected():
             logger.info("Connection Info: VPN is not active")
             return
 
@@ -728,7 +728,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             return
 
         # If we are already connected we should ask if we want to reconnect
-        if self.app.model.is_connected:
+        if self.app.model.is_connected():
             # Asking for reconnect was not successful
             # Restore the previous profile
             if not self.profile_ask_reconnect():
