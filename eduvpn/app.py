@@ -108,6 +108,10 @@ class ApplicationModel:
     def loading_server(self, old_state: str, data: str):
         return data
 
+    @model_transition(State.DISCONNECTING, StateType.Enter)
+    def disconnecting(self, old_state: str, data: str):
+        return data
+
     def parse_profiles_dict(self, profiles_dict):
         profiles = []
         for profile in profiles_dict:
@@ -243,36 +247,44 @@ class ApplicationModel:
     @run_in_background_thread('renew-session')
     def renew_session(self):
         was_connected = self.model.is_connected()
+        def reconnect():
+            # Delete the OAuth access and refresh token
+            # Start the OAuth authorization flow
+            self.common.renew_session()
+            # Automatically reconnect to the server and profile if (and only if) the client was previously connected.
+            if was_connected:
+                self.activate_connection()
+
         if was_connected:
-            # Call /disconnect
-            self.deactivate_connection()
-        # Delete the OAuth access and refresh token
-        # Start the OAuth authorization flow
-        self.common.renew_session()
-        # Automatically reconnect to the server and profile if (and only if) the client was previously connected.
-        if was_connected:
-            self.activate_connection()
+            # Call /disconnect and reconnect with callback
+            self.deactivate_connection(reconnect)
+        else:
+            self.reconnect()
 
     @run_in_main_gtk_thread
-    def disconnect(self):
+    def disconnect(self, callback=None):
         client = nm.get_client()
         uuid = nm.get_uuid()
-        nm.deactivate_connection(client, uuid)
+        nm.deactivate_connection(client, uuid, callback)
 
     def set_profile(self, profile, connect=False):
         was_connected = self.is_connected()
 
+        def do_profile():
+            # Set the profile ID
+            self.common.set_profile(profile.id)
+
+            # Connect if we should and if we were previously connected
+            if connect and was_connected:
+                self.activate_connection()
+
         # Deactivate connection if we are connected
         # and the connection should be modified
+        # the do_profile will be called in the callback
         if was_connected and connect:
-            self.deactivate_connection()
-
-        # Set the profile ID
-        self.common.set_profile(profile.id)
-
-        # Connect if we should and if we were previously connected
-        if connect and was_connected:
-            self.activate_connection()
+            self.deactivate_connection(do_profile)
+        else:
+            do_profile()
 
     def activate_connection(self):
         if not self.current_server:
@@ -280,9 +292,14 @@ class ApplicationModel:
 
         self.connect(self.current_server)
 
-    def deactivate_connection(self):
-        self.disconnect()
-        self.common.set_disconnected()
+    @run_in_background_thread('deactivate')
+    def deactivate_connection(self, callback=None):
+        self.common.set_disconnecting()
+        def on_disconnected():
+            self.common.set_disconnected()
+            if callback:
+                callback()
+        self.disconnect(on_disconnected)
 
     def search_predefined(self, query: str):
         return self.server_db.search_predefined(query)
@@ -315,7 +332,8 @@ class Application:
                 if self.model.is_disconnected():
                     self.model.set_connected()
             elif state == nm.ConnectionState.CONNECTING:
-                self.common.set_connecting()
+                if self.model.is_disconnected():
+                    self.common.set_connecting()
             elif state == nm.ConnectionState.DISCONNECTED:
                 if self.model.is_connected():
                     self.model.set_discconnected()
