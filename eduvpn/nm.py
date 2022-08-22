@@ -436,12 +436,41 @@ def deactivate_connection_vpn(client: 'NM.Client', uuid: str, callback=None):
                 _logger.info(F"deactivate_connection_async result: {result}")
             finally:
                 if callback:
-                    callback()
+                    delete_connection(callback)
 
         client.deactivate_connection_async(active=con, callback=on_deactivate_connection, user_data=callback)
     else:
         _logger.info("No active connection to deactivate")
 
+def delete_connection(callback):
+    client = get_client()
+    uuid = get_uuid()
+
+    # We run the disconnected callback early if a delete fail happens
+    if uuid is None:
+        callback()
+        _logger.warning("No uuid found for deleting the connection")
+        return
+
+    con = client.get_connection_by_uuid(uuid)
+    if con is None:
+        callback()
+        _logger.warning(f"No uuid connection found to delete with uuid {uuid}")
+        return
+
+    # Delete the connection and after that do the callback
+    def on_deleted(a_con: 'NM.RemoteConnection', res, callback=None):
+        try:
+            result = a_con.delete_finish(res)
+        except Exception as e:
+            _logger.error(e)
+        else:
+            _logger.info(F"delete_async result: {result}")
+        finally:
+            if callback:
+                callback()
+
+    con.delete_async(callback=on_deleted, user_data=callback)
 
 def deactivate_connection_wg(client: 'NM.Client', uuid: str, callback=None):
     devices = [
@@ -465,7 +494,7 @@ def deactivate_connection_wg(client: 'NM.Client', uuid: str, callback=None):
             _logger.info(F"disconnect_async result: {result}")
         finally:
             if callback:
-                callback()
+                delete_connection(callback)
 
     _logger.debug(f"disconnect uuid: {uuid}")
     device.disconnect_async(callback=on_disconnect, user_data=callback)
