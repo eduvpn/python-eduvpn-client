@@ -295,6 +295,8 @@ class ApplicationModel:
     @run_in_background_thread('deactivate')
     def deactivate_connection(self, callback=None):
         self.common.set_disconnecting()
+
+        @run_in_background_thread('on-disconnected')
         def on_disconnected():
             self.common.set_disconnected()
             if callback:
