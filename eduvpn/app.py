@@ -328,6 +328,7 @@ class Application:
     def initialize(self):
         self.initialize_network()
 
+    @run_in_background_thread('on-network-update')
     def on_network_update_callback(self, state, initial=False):
         try:
             if state == nm.ConnectionState.CONNECTED:
@@ -338,7 +339,8 @@ class Application:
                     self.common.set_connecting()
             elif state == nm.ConnectionState.DISCONNECTED:
                 if self.model.is_connected():
-                    self.common.set_disconnected()
+                    self.common.set_disconnecting()
+                    self.common.set_disconnected(cleanup=False)
         except:
             return
 
