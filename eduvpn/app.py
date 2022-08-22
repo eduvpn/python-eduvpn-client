@@ -246,7 +246,7 @@ class ApplicationModel:
     # https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
     @run_in_background_thread('renew-session')
     def renew_session(self):
-        was_connected = self.model.is_connected()
+        was_connected = self.is_connected()
         def reconnect():
             # Delete the OAuth access and refresh token
             # Start the OAuth authorization flow
@@ -326,17 +326,17 @@ class Application:
     def initialize(self):
         self.initialize_network()
 
-    def on_network_update_callback(self, state):
+    def on_network_update_callback(self, state, initial=False):
         try:
             if state == nm.ConnectionState.CONNECTED:
-                if self.model.is_disconnected():
-                    self.model.set_connected()
+                if self.model.is_disconnected() or initial:
+                    self.common.set_connected()
             elif state == nm.ConnectionState.CONNECTING:
                 if self.model.is_disconnected():
                     self.common.set_connecting()
             elif state == nm.ConnectionState.DISCONNECTED:
                 if self.model.is_connected():
-                    self.model.set_discconnected()
+                    self.common.set_disconnected()
         except:
             return
 
@@ -347,7 +347,7 @@ class Application:
         # Check if a previous network configuration exists.
         uuid = nm.get_existing_configuration_uuid()
         if uuid:
-            self.on_network_update_callback(nm.get_connection_state())
+            self.on_network_update_callback(nm.get_connection_state(), True)
         else:
             # TODO: Implement with Go
             pass
