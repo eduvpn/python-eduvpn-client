@@ -456,20 +456,19 @@ def deactivate_connection_wg(client: 'NM.Client', uuid: str, callback=None):
     assert len(devices) == 1
     device = devices[0]
 
-    @run_in_background_thread('wg-disconnect')
-    def do_disconnect(a_device: 'NM.DeviceWireGuard', callback=None):
+    def on_disconnect(a_device: 'NM.DeviceWireGuard', res, callback=None):
         try:
-            result = a_device.disconnect()
+            result = a_device.disconnect_finish(res)
         except Exception as e:
             _logger.error(e)
         else:
-            _logger.info(F"disconnect result: {result}")
+            _logger.info(F"disconnect_async result: {result}")
         finally:
             if callback:
                 callback()
 
     _logger.debug(f"disconnect uuid: {uuid}")
-    do_disconnect(device, callback)
+    device.disconnect_async(callback=on_disconnect, user_data=callback)
 
 
 class ConnectionState(enum.Enum):
