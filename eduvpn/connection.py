@@ -2,14 +2,16 @@ from configparser import ConfigParser
 from typing import Optional, List, Type
 from . import nm
 from .ovpn import Ovpn
-#from .session import Validity
+
+# from .session import Validity
+
 
 class Connection:
     "Base class for connection configurations."
 
     @classmethod
-    def parse(cls, config, protocol) -> 'Connection':
-        if protocol == 'wireguard':
+    def parse(cls, config, protocol) -> "Connection":
+        if protocol == "wireguard":
             connection_type = WireGuardConnection
         else:
             connection_type = OpenVPNConnection
@@ -33,7 +35,7 @@ class OpenVPNConnection(Connection):
         super().__init__()
 
     @classmethod
-    def parse(cls, config, _) -> 'OpenVPNConnection':
+    def parse(cls, config, _) -> "OpenVPNConnection":
         ovpn = Ovpn.parse(config)
         return cls(ovpn=ovpn)
 
@@ -53,7 +55,7 @@ class WireGuardConnection(Connection):
         super().__init__()
 
     @classmethod
-    def parse(cls, config_str, _) -> 'WireGuardConnection':
+    def parse(cls, config_str, _) -> "WireGuardConnection":
         # TODO: validity
         config = ConfigParser()
         config.read_string(config_str)

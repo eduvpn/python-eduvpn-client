@@ -79,7 +79,9 @@ class NetworkStats:
             return self.default_text
         if file_bytes_upload <= self.start_bytes_upload:  # type: ignore
             return get_human_readable_bytes(0)
-        return get_human_readable_bytes(file_bytes_upload - self.start_bytes_upload)  # type:ignore
+        return get_human_readable_bytes(
+            file_bytes_upload - self.start_bytes_upload
+        )  # type:ignore
 
     def open_file(self, filename: str) -> Optional[TextIO]:
         """

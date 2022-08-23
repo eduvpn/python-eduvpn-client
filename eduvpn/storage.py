@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 def get_setting(what: str) -> Optional[str]:
     p = (CONFIG_PREFIX / what).expanduser()
     if p.exists():
-        return open(p, 'r').read().strip()
+        return open(p, "r").read().strip()
     else:
         return None
 
@@ -28,7 +28,8 @@ def check_config_dir_permissions():
     if not is_config_dir_permissions_correct():
         logger.warning(
             f"The permissions for the config dir ({CONFIG_PREFIX}) "
-            f"are not as expected, it may be world readable!")
+            f"are not as expected, it may be world readable!"
+        )
 
 
 def ensure_config_dir_exists():
@@ -42,7 +43,7 @@ def ensure_config_dir_exists():
 def set_setting(what: str, value: str):
     p = (CONFIG_PREFIX / what).expanduser()
     ensure_config_dir_exists()
-    with open(p, 'w') as f:
+    with open(p, "w") as f:
         f.write(value)
 
 
@@ -51,7 +52,7 @@ def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike)
     Write the OVPN configuration file to target.
     """
     _logger.info(f"Writing configuration to {target}")
-    with open(target, mode='w+t') as f:
+    with open(target, mode="w+t") as f:
         ovpn.write(f)
         f.writelines(f"\n<key>\n{private_key}\n</key>\n")
         f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
@@ -69,4 +70,3 @@ def set_uuid(uuid: str):
     Write the eduVPN network manager connection UUID to disk.
     """
     set_setting("uuid", uuid)
-

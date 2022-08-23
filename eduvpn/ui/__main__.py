@@ -3,12 +3,18 @@ import os
 import sys
 
 import gi
-gi.require_version('Gtk', '3.0')  # noqa: E402
+
+gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import Gtk
 
 from typing import Tuple
 from ..variants import EDUVPN, LETS_CONNECT
-from ..settings import LETSCONNECT_CLIENT_ID, CLIENT_ID, LETSCONNECT_CONFIG_PREFIX, CONFIG_PREFIX
+from ..settings import (
+    LETSCONNECT_CLIENT_ID,
+    CLIENT_ID,
+    LETSCONNECT_CONFIG_PREFIX,
+    CONFIG_PREFIX,
+)
 from ..ui.app import EduVpnGtkApplication
 import eduvpn_common.main as common
 
@@ -43,7 +49,7 @@ def main_loop(args=None, app_variant=EDUVPN):
             modal=True,
             buttons=Gtk.ButtonsType.OK,
         )
-        dialog.connect('response', Gtk.main_quit)
+        dialog.connect("response", Gtk.main_quit)
         dialog.show()
         Gtk.main()
     except KeyboardInterrupt:
@@ -58,5 +64,5 @@ def letsconnect(args=None):
     main_loop(args, app_variant=LETS_CONNECT)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     eduvpn()

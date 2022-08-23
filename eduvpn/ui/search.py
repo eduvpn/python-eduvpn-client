@@ -3,8 +3,11 @@ import enum
 from functools import lru_cache
 from gi.repository import Gtk, GObject, Pango
 from eduvpn.server import (
-    AnyServer as Server, InstituteAccessServer,
-    OrganisationServer, CustomServer)
+    AnyServer as Server,
+    InstituteAccessServer,
+    OrganisationServer,
+    CustomServer,
+)
 from .utils import show_ui_component
 
 
@@ -15,15 +18,15 @@ class ServerGroup(enum.Enum):
 
 
 group_tree_component = {
-    ServerGroup.INSTITUTE_ACCESS: 'institute_list',
-    ServerGroup.SECURE_INTERNET: 'secure_internet_list',
-    ServerGroup.OTHER: 'other_server_list',
+    ServerGroup.INSTITUTE_ACCESS: "institute_list",
+    ServerGroup.SECURE_INTERNET: "secure_internet_list",
+    ServerGroup.OTHER: "other_server_list",
 }
 
 group_header_component = {
-    ServerGroup.INSTITUTE_ACCESS: 'institute_list_header',
-    ServerGroup.SECURE_INTERNET: 'secure_internet_list_header',
-    ServerGroup.OTHER: 'other_server_list_header',
+    ServerGroup.INSTITUTE_ACCESS: "institute_list_header",
+    ServerGroup.SECURE_INTERNET: "secure_internet_list_header",
+    ServerGroup.OTHER: "other_server_list_header",
 }
 
 
@@ -34,9 +37,7 @@ Model = Gtk.ListStore
 @lru_cache()
 def get_group_model(group: ServerGroup) -> Model:
     # Model: (name: str, server: ServerType)
-    return Gtk.ListStore(  # type: ignore
-        GObject.TYPE_STRING,
-        GObject.TYPE_PYOBJECT)
+    return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
 
 
 def server_to_model_data(server: Server) -> list:
@@ -70,8 +71,7 @@ def show_search_results(window, show: bool):
     show_ui_component(window.server_list_container, show)
 
 
-def group_servers(
-        servers: Iterable[Server]) -> Dict[ServerGroup, List[Server]]:
+def group_servers(servers: Iterable[Server]) -> Dict[ServerGroup, List[Server]]:
     """
     Separate the servers into three groups.
     """
@@ -127,9 +127,9 @@ def exit_server_search(window):
     show_search_results(window, False)
 
 
-def update_search_results_for_type(window,
-                                   group: ServerGroup,
-                                   servers: Iterable[Server]):
+def update_search_results_for_type(
+    window, group: ServerGroup, servers: Iterable[Server]
+):
     """
     Update the UI with the search results
     for a single type of server.

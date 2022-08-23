@@ -1,7 +1,15 @@
 from typing import Optional
 import logging
 from gettext import gettext as _
-from .server import PredefinedServer, ServerDatabase, SecureInternetLocation, InstituteAccessServer, OrganisationServer, CustomServer, Profile
+from .server import (
+    PredefinedServer,
+    ServerDatabase,
+    SecureInternetLocation,
+    InstituteAccessServer,
+    OrganisationServer,
+    CustomServer,
+    Profile,
+)
 from .i18n import extract_translation, retrieve_country_name
 from . import nm
 import json
@@ -18,8 +26,10 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
+
 def now() -> datetime:
     return datetime.now()
+
 
 class Validity:
     def __init__(self, end: datetime):
@@ -41,7 +51,15 @@ class Validity:
 
 
 class ServerInfo:
-    def __init__(self, display_name, support_contact, profiles, current_profile, expire_time, location):
+    def __init__(
+        self,
+        display_name,
+        support_contact,
+        profiles,
+        current_profile,
+        expire_time,
+        location,
+    ):
         self.display_name = display_name
         self.support_contact = support_contact
         self.flag_path = None
@@ -64,6 +82,7 @@ class ServerInfo:
             return "Unknown"
         return str(self.current_profile)
 
+
 class ApplicationModel:
     def __init__(self, common: EduVPN):
         self.common = common
@@ -80,17 +99,17 @@ class ApplicationModel:
     def get_previous_servers(self, old_state: str, data: str):
         previous_servers = json.loads(data)
         configured_servers = []
-        for server_dict in previous_servers.get('custom_servers', {}):
+        for server_dict in previous_servers.get("custom_servers", {}):
             server, _ = self.get_server_info(server_dict, "custom_server")
             if server:
                 configured_servers.append(server)
 
-        for server_dict in previous_servers.get('institute_access_servers', {}):
+        for server_dict in previous_servers.get("institute_access_servers", {}):
             server, _ = self.get_server_info(server_dict, "institute_access")
             if server:
                 configured_servers.append(server)
 
-        server_dict = previous_servers.get('secure_internet_server')
+        server_dict = previous_servers.get("secure_internet_server")
         if server_dict:
             server, server_info = self.get_server_info(server_dict, "secure_internet")
             server.display_name = server_info.country_name
@@ -120,11 +139,13 @@ class ApplicationModel:
 
     @model_transition(State.ASK_PROFILE, StateType.Enter)
     def parse_profiles(self, old_state: str, profiles_json: str):
-        profiles_parsed = json.loads(profiles_json)['info']['profile_list']
+        profiles_parsed = json.loads(profiles_json)["info"]["profile_list"]
         return self.parse_profiles_dict(profiles_parsed)
 
     @model_transition(State.ASK_LOCATION, StateType.Enter)
-    def parse_locations(self, old_state: str, locations_json) -> [SecureInternetLocation]:
+    def parse_locations(
+        self, old_state: str, locations_json
+    ) -> [SecureInternetLocation]:
         locations = json.loads(locations_json)
         location_classes = []
 
@@ -147,28 +168,39 @@ class ApplicationModel:
         return data
 
     def get_server_info(self, server_info_dict: str, server_type=None):
-        server_display_name = extract_translation(server_info_dict.get('display_name') or "Unknown Server")
-        server_display_contact = server_info_dict.get('support_contact')
-        server_display_location = server_info_dict.get('country_code')
+        server_display_name = extract_translation(
+            server_info_dict.get("display_name") or "Unknown Server"
+        )
+        server_display_contact = server_info_dict.get("support_contact")
+        server_display_location = server_info_dict.get("country_code")
         server_display_profiles = []
         current_profile = None
 
-        profiles_dict = server_info_dict.get('profiles')
-        expire_time = server_info_dict.get('expire_time')
+        profiles_dict = server_info_dict.get("profiles")
+        expire_time = server_info_dict.get("expire_time")
 
         if profiles_dict:
-            if profiles_dict['info']['profile_list'] is not None:
-                server_display_profiles = self.parse_profiles_dict(profiles_dict['info']['profile_list'])
+            if profiles_dict["info"]["profile_list"] is not None:
+                server_display_profiles = self.parse_profiles_dict(
+                    profiles_dict["info"]["profile_list"]
+                )
 
                 for profile in server_display_profiles:
-                    if profile.profile_id == profiles_dict.get('current_profile'):
+                    if profile.profile_id == profiles_dict.get("current_profile"):
                         current_profile = profile
 
-        server_info = ServerInfo(server_display_name, server_display_contact, server_display_profiles, current_profile, expire_time, server_display_location)
+        server_info = ServerInfo(
+            server_display_name,
+            server_display_contact,
+            server_display_profiles,
+            current_profile,
+            expire_time,
+            server_display_location,
+        )
 
         # parse server
-        identifier = server_info_dict.get('identifier')
-        server_type = server_info_dict.get('server_type')
+        identifier = server_info_dict.get("identifier")
+        server_type = server_info_dict.get("server_type")
         server = None
         if server_type and identifier:
             if server_type == "secure_internet":
@@ -189,7 +221,7 @@ class ApplicationModel:
         self.current_server_info = server_info
         return server_info
 
-    @run_in_background_thread('browser-open')
+    @run_in_background_thread("browser-open")
     def open_browser(self, url):
         webbrowser.open(url)
 
@@ -204,23 +236,25 @@ class ApplicationModel:
     def parse_connecting(self, old_state: str, data: str):
         return data
 
-    @run_in_background_thread('change-secure-location')
+    @run_in_background_thread("change-secure-location")
     def change_secure_location(self):
         self.common.change_secure_location()
 
-    @run_in_background_thread('set-secure-location')
+    @run_in_background_thread("set-secure-location")
     def set_secure_location(self, location_id: str):
         self.common.set_secure_location(location_id)
 
     def should_renew_button(self):
         return self.common.should_renew_button()
 
-    @run_in_background_thread('connect')
+    @run_in_background_thread("connect")
     def connect(self, server: PredefinedServer):
         config = None
         config_type = None
         if isinstance(server, InstituteAccessServer):
-            config, config_type = self.common.get_config_institute_access(server.base_url)
+            config, config_type = self.common.get_config_institute_access(
+                server.base_url
+            )
         elif isinstance(server, OrganisationServer):
             config, config_type = self.common.get_config_secure_internet(server.org_id)
         elif isinstance(server, CustomServer):
@@ -244,9 +278,10 @@ class ApplicationModel:
         connect(config, config_type)
 
     # https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
-    @run_in_background_thread('renew-session')
+    @run_in_background_thread("renew-session")
     def renew_session(self):
         was_connected = self.is_connected()
+
         def reconnect():
             # Delete the OAuth access and refresh token
             # Start the OAuth authorization flow
@@ -291,15 +326,16 @@ class ApplicationModel:
 
         self.connect(self.current_server)
 
-    @run_in_background_thread('deactivate')
+    @run_in_background_thread("deactivate")
     def deactivate_connection(self, callback=None):
         self.common.set_disconnecting()
 
-        @run_in_background_thread('on-disconnected')
+        @run_in_background_thread("on-disconnected")
         def on_disconnected():
             self.common.set_disconnected()
             if callback:
                 callback()
+
         self.disconnect(on_disconnected)
 
     def search_predefined(self, query: str):
@@ -316,7 +352,9 @@ class ApplicationModel:
 
 
 class Application:
-    def __init__(self, variant: ApplicationVariant, make_func_threadsafe, common: EduVPN):
+    def __init__(
+        self, variant: ApplicationVariant, make_func_threadsafe, common: EduVPN
+    ):
         self.variant = variant
         self.make_func_threadsafe = make_func_threadsafe
         self.common = common
@@ -327,7 +365,7 @@ class Application:
     def initialize(self):
         self.initialize_network()
 
-    @run_in_background_thread('on-network-update')
+    @run_in_background_thread("on-network-update")
     def on_network_update_callback(self, state, initial=False):
         try:
             if state == nm.ConnectionState.CONNECTED:

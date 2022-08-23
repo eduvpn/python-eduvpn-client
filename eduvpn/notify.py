@@ -1,5 +1,6 @@
 import gi
-gi.require_version('Notify', '0.7')  # noqa: E402
+
+gi.require_version("Notify", "0.7")  # noqa: E402
 from gi.repository import GdkPixbuf, Notify  # type: ignore
 
 from .variants import ApplicationVariant

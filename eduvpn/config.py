@@ -4,10 +4,10 @@ import json
 from .settings import CONFIG_PREFIX
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
-CONFIG_FILE_NAME = 'org.eduvpn.app.linux_additional.json'
+CONFIG_FILE_NAME = "org.eduvpn.app.linux_additional.json"
 
 CONFIG_PATH = CONFIG_PREFIX / CONFIG_FILE_NAME
 
@@ -39,7 +39,7 @@ class Configuration:
     def load(cls):
         if not CONFIG_PATH.exists():
             return cls(dict(DEFAULT_SETTINGS))
-        with open(CONFIG_PATH, 'r') as f:
+        with open(CONFIG_PATH, "r") as f:
             try:
                 settings = json.load(f)
             except Exception:
@@ -52,7 +52,7 @@ class Configuration:
 
     def save(self):
         logger.debug(f"saving settings: {self.settings}")
-        with open(CONFIG_PATH, 'w') as f:
+        with open(CONFIG_PATH, "w") as f:
             json.dump(self.settings, f)
 
     def get_setting(self, name: str):
