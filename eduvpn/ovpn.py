@@ -60,7 +60,7 @@ class InvalidOVPN(Exception):
 
 def parse_ovpn(lines: Iterable[str]) -> Iterable[Item]:
     current_section = None
-    for lineno, line in enumerate(lines):
+    for _lineno, line in enumerate(lines):
         if current_section is not None:
             if line.strip() == f"</{current_section.tag}>":
                 yield current_section

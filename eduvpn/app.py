@@ -71,12 +71,6 @@ class ServerInfo:
     def current_profile_index(self):
         return self.profiles.index(self.current_profile)
 
-    @property
-    def current_profile_name(self):
-        if not self.current_profile:
-            return "Unknown"
-        return str(self.current_profile)
-
 
 class ApplicationModel:
     def __init__(self, common: EduVPN):
@@ -258,7 +252,7 @@ class ApplicationModel:
         def on_connected():
             self.common.set_connected()
 
-        def on_connect(arg):
+        def on_connect(_):
             client = nm.get_client()
             uuid = nm.get_uuid()
             nm.activate_connection(client, uuid, on_connected)
@@ -355,7 +349,6 @@ class Application:
         self.common = common
         self.config = Configuration.load()
         self.model = ApplicationModel(common)
-        self.current_network_uuid: Optional[str] = None
 
     def initialize(self):
         self.initialize_network()

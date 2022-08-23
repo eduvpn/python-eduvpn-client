@@ -14,11 +14,8 @@ HELP_URL = "https://www.eduvpn.org"
 
 CLIENT_ID = "org.eduvpn.app.linux"
 LETSCONNECT_CLIENT_ID = "org.letsconnect-vpn.app.linux"
-SCOPE = ["config"]
-CODE_CHALLENGE_METHOD = "S256"
 LANGUAGE = "nl"
 COUNTRY = "nl-NL"
-REQUEST_TIMEOUT = 2
 
 COUNTRY_MAP = Path(prefix + "/share/eduvpn/country_codes.json")
 FLAG_PREFIX = prefix + "/share/eduvpn/images/flags/png/"

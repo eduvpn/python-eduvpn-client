@@ -99,7 +99,7 @@ class EduVpnGtkApplication(Gtk.Application):
         self.activate()
         return 0
 
-    def on_quit(self, action=None, param=None):
+    def on_quit(self, action=None, _param=None):
         logger.debug("quit")
         # Deregister the common library to save settings
         self.common.deregister()

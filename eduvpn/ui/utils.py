@@ -16,7 +16,7 @@ def show_ui_component(component, show: bool):
 
 def link_markup(link: str) -> str:
     try:
-        scheme, rest = link.split(":", 1)
+        _scheme, rest = link.split(":", 1)
         if rest.startswith("//"):
             rest = rest[2:]
     except ValueError:
