@@ -3,34 +3,31 @@
 # Copyright: 2017-2020, The Commons Conservancy eduVPN Programme
 # SPDX-License-Identifier: GPL-3.0+
 
-from typing import Optional
+import logging
 import os
 import webbrowser
-import logging
-from gettext import gettext as _, ngettext
+from gettext import gettext as _
+from gettext import ngettext
+from typing import Optional
 
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
 gi.require_version("NM", "1.0")  # noqa: E402
-from gi.repository import GObject, Gdk, GdkPixbuf, Gtk
+from functools import partial
 
-from ..settings import HELP_URL
-from ..server import CustomServer, StatusImage
+from eduvpn_common.state import State, StateType
+from gi.repository import Gdk, GdkPixbuf, GObject, Gtk
+
 from ..app import Application
 from ..nm import nm_available, nm_managed
-from ..utils import (
-    get_prefix,
-    get_ui_state,
-    run_in_main_gtk_thread,
-    run_periodically,
-    ui_transition,
-)
+from ..server import CustomServer, StatusImage
+from ..settings import HELP_URL
+from ..utils import (get_prefix, get_ui_state, run_in_main_gtk_thread,
+                     run_periodically, ui_transition)
 from . import search
-from .utils import show_ui_component, link_markup, show_error_dialog
 from .stats import NetworkStats
-from eduvpn_common.state import State, StateType
-from functools import partial
+from .utils import link_markup, show_error_dialog, show_ui_component
 
 logger = logging.getLogger(__name__)
 

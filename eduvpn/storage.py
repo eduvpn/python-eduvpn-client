@@ -3,8 +3,9 @@ This module contains code to maintain a simple metadata storage in ~/.config/edu
 """
 from os import PathLike
 from typing import Optional
-from eduvpn.settings import CONFIG_PREFIX, CONFIG_DIR_MODE
+
 from eduvpn.ovpn import Ovpn
+from eduvpn.settings import CONFIG_DIR_MODE, CONFIG_PREFIX
 from eduvpn.utils import get_logger
 
 logger = get_logger(__name__)

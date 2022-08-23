@@ -1,11 +1,11 @@
-from typing import Union, Optional, Iterable, List, Dict
+import enum
+import json
 import logging
 import os
-import json
-import enum
+from typing import Dict, Iterable, List, Optional, Union
+
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
-
 
 logger = logging.getLogger(__name__)
 TranslatedStr = Union[str, Dict[str, str]]

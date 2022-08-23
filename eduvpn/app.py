@@ -1,25 +1,23 @@
-from typing import Optional
-import logging
-from .server import (
-    PredefinedServer,
-    ServerDatabase,
-    SecureInternetLocation,
-    InstituteAccessServer,
-    OrganisationServer,
-    CustomServer,
-    Profile,
-)
-from .i18n import extract_translation, retrieve_country_name
-from . import nm
 import json
-from .variants import ApplicationVariant
-from .config import Configuration
+import logging
+import webbrowser
+from datetime import datetime, timedelta
+from typing import Optional
+
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
+
 from eduvpn.connection import Connection
-import webbrowser
-from .utils import run_in_background_thread, run_in_main_gtk_thread, model_transition
-from datetime import datetime, timedelta
+
+from . import nm
+from .config import Configuration
+from .i18n import extract_translation, retrieve_country_name
+from .server import (CustomServer, InstituteAccessServer, OrganisationServer,
+                     PredefinedServer, Profile, SecureInternetLocation,
+                     ServerDatabase)
+from .utils import (model_transition, run_in_background_thread,
+                    run_in_main_gtk_thread)
+from .variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
 

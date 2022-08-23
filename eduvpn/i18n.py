@@ -1,12 +1,13 @@
-import json
-import os
-import logging
-import locale
 import gettext
-from typing import Union, Dict
-from eduvpn.settings import COUNTRY, LANGUAGE, COUNTRY_MAP
-from eduvpn.variants import ApplicationVariant
+import json
+import locale
+import logging
+import os
+from typing import Dict, Union
+
+from eduvpn.settings import COUNTRY, COUNTRY_MAP, LANGUAGE
 from eduvpn.utils import get_prefix
+from eduvpn.variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,12 @@
 import sys
-from typing import Optional, Callable
 import threading
 from functools import lru_cache, partial, wraps
 from gettext import gettext
 from logging import getLogger
-from os import path, environ
+from os import environ, path
 from sys import prefix
+from typing import Callable, Optional
+
 import eduvpn_common.event as common
 from eduvpn_common.state import State, StateType
 

@@ -1,8 +1,8 @@
-from typing import TypeVar, Generic, Any, Dict
-import logging
 import json
-from .settings import CONFIG_PREFIX
+import logging
+from typing import Any, Dict, Generic, TypeVar
 
+from .settings import CONFIG_PREFIX
 
 T = TypeVar("T")
 
