@@ -251,15 +251,14 @@ class ApplicationModel:
             # Delete the OAuth access and refresh token
             # Start the OAuth authorization flow
             self.common.renew_session()
-            # Automatically reconnect to the server and profile if (and only if) the client was previously connected.
-            if was_connected:
-                self.activate_connection()
+            # Automatically reconnect to the server
+            self.activate_connection()
 
         if was_connected:
             # Call /disconnect and reconnect with callback
             self.deactivate_connection(reconnect)
         else:
-            self.reconnect()
+            reconnect()
 
     @run_in_main_gtk_thread
     def disconnect(self, callback=None):
