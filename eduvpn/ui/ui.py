@@ -7,15 +7,13 @@ from typing import Optional
 import os
 import webbrowser
 import logging
-import json
 from gettext import gettext as _, ngettext
-import time
 
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
 gi.require_version("NM", "1.0")  # noqa: E402
-from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GLib
+from gi.repository import GObject, Gdk, GdkPixbuf, Gtk
 
 from ..settings import HELP_URL
 from ..server import CustomServer, StatusImage
@@ -24,7 +22,6 @@ from ..nm import nm_available, nm_managed
 from ..utils import (
     get_prefix,
     get_ui_state,
-    run_in_background_thread,
     run_in_main_gtk_thread,
     run_periodically,
     ui_transition,
@@ -32,7 +29,6 @@ from ..utils import (
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 from .stats import NetworkStats
-import eduvpn_common.event as common
 from eduvpn_common.state import State, StateType
 from functools import partial
 

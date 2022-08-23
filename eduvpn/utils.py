@@ -6,8 +6,6 @@ from gettext import gettext
 from logging import getLogger
 from os import path, environ
 from sys import prefix
-from requests import Session
-from requests.adapters import HTTPAdapter, Retry
 import eduvpn_common.event as common
 from eduvpn_common.state import State, StateType
 

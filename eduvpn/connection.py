@@ -1,5 +1,4 @@
 from configparser import ConfigParser
-from typing import Optional, List, Type
 from . import nm
 from .ovpn import Ovpn
 

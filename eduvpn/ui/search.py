@@ -1,4 +1,4 @@
-from typing import Optional, Iterable, Callable, List, Dict
+from typing import Dict, Iterable, List, Optional
 import enum
 from functools import lru_cache
 from gi.repository import Gtk, GObject, Pango
