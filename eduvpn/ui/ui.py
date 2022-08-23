@@ -14,7 +14,7 @@ import time
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 gi.require_version('NM', '1.0')  # noqa: E402
-from gi.repository import Gtk, GObject, GdkPixbuf, GLib
+from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GLib
 
 from ..settings import HELP_URL
 from ..server import CustomServer, StatusImage
@@ -87,6 +87,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_cancel_oauth_setup": self.on_cancel_oauth_setup,
             "on_change_location": self.on_change_location,
             "on_server_row_activated": self.on_server_row_activated,
+            "on_server_row_pressed": self.on_server_row_pressed,
             "on_search_changed": self.on_search_changed,
             "on_search_activate": self.on_search_activate,
             "on_switch_connection_state": self.on_switch_connection_state,
@@ -618,6 +619,69 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
         self.app.model.connect(server)
+
+    def server_ask_remove(self, server):
+        gtk_remove_id = -12
+        gtk_nop_id = -11
+        dialog = Gtk.MessageDialog(  # type: ignore
+            parent=self,
+            type=Gtk.MessageType.QUESTION,  # type: ignore
+            title=_("Server"),
+            message_format=_("Removing server"))
+        dialog.add_buttons(_("Remove server"), gtk_remove_id, _("Do nothing"), gtk_nop_id)
+        dialog.format_secondary_text(_(f"Are you sure you want to remove server {str(server)}?"))  # type: ignore
+        dialog.show()  # type: ignore
+        response = dialog.run()  # type: ignore
+        dialog.destroy()  # type: ignore
+
+        if response == gtk_remove_id:
+            print("Remove server", str(server))
+
+    def server_change_profile(self, server):
+        print("Change profile", str(server))
+
+    def on_server_row_pressed(self, widget, event):
+        # Exit if not a press
+        if event.type != Gdk.EventType.BUTTON_PRESS:
+            return
+
+        # Not a right click
+        if event.button != 3:
+            return
+
+        (model, tree_iter) = widget.get_selection().get_selected()
+        if tree_iter is None:
+            return None
+
+        row = model[tree_iter]
+        server = row[1]
+
+        cancel_item = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_CLOSE)
+        cancel_item.set_always_show_image(True)
+        cancel_item.show()
+
+        remove_item = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_REMOVE)
+        remove_item.connect("activate", lambda _ : self.server_ask_remove(server))
+        remove_item.set_always_show_image(True)
+        remove_item.set_label(_("Remove server"))
+        remove_item.show()
+
+        menu = Gtk.Menu()
+        menu.append(remove_item)
+
+        # TODO: let server contain the profiles and change this if to:
+        # if len(server.profiles) > 0
+        if True:
+            change_profile = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_EDIT)
+            change_profile.connect("activate", lambda _ : self.server_change_profile(server))
+            change_profile.set_always_show_image(True)
+            change_profile.set_label("Change profile")
+            change_profile.show()
+            menu.append(change_profile)
+
+        menu.append(cancel_item)
+        menu.attach_to_widget(widget)
+        menu.popup_at_pointer()
 
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
