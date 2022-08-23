@@ -343,12 +343,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_status_label.set_text(_("Connecting..."))
         self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
         self.set_connection_switch_state(True)
-        # Disable the profile combo box
+        # Disable the profile combo box and switch
+        self.connection_switch.set_sensitive(False)
         self.select_profile_combo.set_sensitive(False)
 
     @ui_transition(State.CONNECTING, StateType.Leave)
     def exit_connecting(self, old_state: str, data):
-        # Re-enable the profile combo box
+        # Re-enable the profile combo box and switch
+        self.connection_switch.set_sensitive(True)
         self.select_profile_combo.set_sensitive(True)
 
     @ui_transition(State.DISCONNECTING, StateType.Enter)
@@ -356,12 +358,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_status_label.set_text(_("Disconnecting..."))
         self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
         self.set_connection_switch_state(False)
-        # Disable the profile combo box
+        # Disable the profile combo box and switch
+        self.connection_switch.set_sensitive(False)
         self.select_profile_combo.set_sensitive(False)
 
     @ui_transition(State.DISCONNECTING, StateType.Leave)
     def exit_disconnecting(self, old_state: str, data):
-        # Re-enable the profile combo box
+        # Re-enable the profile combo box and switch
+        self.connection_switch.set_sensitive(True)
         self.select_profile_combo.set_sensitive(True)
 
     # interface state transition callbacks
