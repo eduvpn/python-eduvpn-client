@@ -1,8 +1,6 @@
 """
 This module contains code to maintain a simple metadata storage in ~/.config/eduvpn/
 """
-import json
-import eduvpn
 from os import PathLike
 from typing import Optional
 from eduvpn.settings import CONFIG_PREFIX, CONFIG_DIR_MODE

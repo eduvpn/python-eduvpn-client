@@ -1,6 +1,5 @@
 from typing import Optional
 import logging
-from gettext import gettext as _
 from .server import (
     PredefinedServer,
     ServerDatabase,
@@ -15,9 +14,7 @@ from . import nm
 import json
 from .variants import ApplicationVariant
 from .config import Configuration
-from .utils import run_periodically
 from eduvpn_common.main import EduVPN
-import eduvpn_common.event as common
 from eduvpn_common.state import State, StateType
 from eduvpn.connection import Connection
 import webbrowser

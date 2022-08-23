@@ -3,19 +3,8 @@ import logging
 import os
 import json
 import enum
-import eduvpn.nm as nm
-import webbrowser
 from eduvpn.i18n import extract_translation, retrieve_country_name
 from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
-from functools import partial
-from eduvpn.connection import Connection
-from .utils import (
-    get_prefix,
-    thread_helper,
-    run_in_background_thread,
-    run_in_main_gtk_thread,
-    run_periodically,
-)
 
 
 logger = logging.getLogger(__name__)

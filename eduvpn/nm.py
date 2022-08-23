@@ -2,7 +2,6 @@ import logging
 import time
 import uuid
 import enum
-from os import PathLike
 from functools import lru_cache
 from pathlib import Path
 from shutil import rmtree
@@ -15,7 +14,7 @@ from configparser import ConfigParser
 from .config import Configuration
 from .ovpn import Ovpn
 from .storage import get_uuid, set_uuid, write_ovpn
-from .utils import cache, run_in_background_thread
+from .utils import cache
 
 _logger = logging.getLogger(__name__)
 
