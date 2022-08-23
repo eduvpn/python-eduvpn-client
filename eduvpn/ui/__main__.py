@@ -5,19 +5,15 @@ import sys
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
+from typing import Tuple
+
+import eduvpn_common.main as common
 from gi.repository import Gtk
 
-from typing import Tuple
-from ..variants import EDUVPN, LETS_CONNECT
-from ..settings import (
-    LETSCONNECT_CLIENT_ID,
-    CLIENT_ID,
-    LETSCONNECT_CONFIG_PREFIX,
-    CONFIG_PREFIX,
-)
+from ..settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
+                        LETSCONNECT_CONFIG_PREFIX)
 from ..ui.app import EduVpnGtkApplication
-import eduvpn_common.main as common
-
+from ..variants import EDUVPN, LETS_CONNECT
 
 logger = logging.getLogger(__name__)
 

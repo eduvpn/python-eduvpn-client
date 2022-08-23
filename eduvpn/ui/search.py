@@ -1,13 +1,13 @@
-from typing import Dict, Iterable, List, Optional
 import enum
 from functools import lru_cache
-from gi.repository import Gtk, GObject, Pango
-from eduvpn.server import (
-    AnyServer as Server,
-    InstituteAccessServer,
-    OrganisationServer,
-    CustomServer,
-)
+from typing import Dict, Iterable, List, Optional
+
+from gi.repository import GObject, Gtk, Pango
+
+from eduvpn.server import AnyServer as Server
+from eduvpn.server import (CustomServer, InstituteAccessServer,
+                           OrganisationServer)
+
 from .utils import show_ui_component
 
 

@@ -1,5 +1,6 @@
 from pathlib import Path
-from eduvpn.utils import get_prefix, get_config_dir
+
+from eduvpn.utils import get_config_dir, get_prefix
 
 prefix = get_prefix()
 

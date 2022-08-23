@@ -1,6 +1,6 @@
-from io import StringIO
-from typing import Optional, Callable, Iterable, List
 from gettext import gettext as _
+from io import StringIO
+from typing import Callable, Iterable, List, Optional
 
 
 class Item:

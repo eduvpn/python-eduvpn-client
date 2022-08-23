@@ -4,16 +4,14 @@ from gettext import gettext as _
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
-from gi.repository import GLib, Gio, Gtk
+from eduvpn_common.main import EduVPN
+from gi.repository import Gio, GLib, Gtk
 
-from .. import i18n
-from .. import notify
+from .. import i18n, notify
+from ..app import Application
 from ..utils import run_in_main_gtk_thread
 from ..variants import ApplicationVariant
-from ..app import Application
 from .ui import EduVpnGtkWindow
-from eduvpn_common.main import EduVPN
-
 
 logger = logging.getLogger(__name__)
 

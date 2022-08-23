@@ -1,15 +1,15 @@
+import enum
 import logging
 import time
 import uuid
-import enum
+from configparser import ConfigParser
 from functools import lru_cache
+from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
-from tempfile import mkdtemp
-from typing import Any, Optional, Tuple, Callable
-from ipaddress import ip_interface, ip_address
 from socket import AF_INET, AF_INET6
-from configparser import ConfigParser
+from tempfile import mkdtemp
+from typing import Any, Callable, Optional, Tuple
 
 from .config import Configuration
 from .ovpn import Ovpn
