@@ -10,30 +10,36 @@ from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
 from functools import partial
 from eduvpn.connection import Connection
 from .utils import (
-    get_prefix, thread_helper, run_in_background_thread, run_in_main_gtk_thread, run_periodically)
+    get_prefix,
+    thread_helper,
+    run_in_background_thread,
+    run_in_main_gtk_thread,
+    run_periodically,
+)
 
 
 logger = logging.getLogger(__name__)
 TranslatedStr = Union[str, Dict[str, str]]
 
+
 class StatusImage(enum.Enum):
     # The value is the image filename.
-    DEFAULT = 'desktop-default.png'
-    CONNECTING = 'desktop-connecting.png'
-    CONNECTED = 'desktop-connected.png'
-    NOT_CONNECTED = 'desktop-not-connected.png'
+    DEFAULT = "desktop-default.png"
+    CONNECTING = "desktop-connecting.png"
+    CONNECTED = "desktop-connected.png"
+    NOT_CONNECTED = "desktop-not-connected.png"
 
     @property
     def path(self):
         return IMAGE_PREFIX + self.value
+
 
 class SecureInternetLocation:
     """
     A helper class for a secure internet location country code
     """
 
-    def __init__(self,
-                 country_code: str):
+    def __init__(self, country_code: str):
         self.country_code = country_code
 
     def __str__(self):
@@ -44,11 +50,12 @@ class SecureInternetLocation:
 
     @property
     def flag_path(self) -> Optional[str]:
-        path = f'{FLAG_PREFIX}{self.country_code}@1,5x.png'
+        path = f"{FLAG_PREFIX}{self.country_code}@1,5x.png"
         if os.path.exists(path):
             return path
         else:
             return None
+
 
 class InstituteAccessServer:
     """
@@ -56,11 +63,13 @@ class InstituteAccessServer:
     where: server_type == "institute_access"
     """
 
-    def __init__(self,
-                 base_url: str,
-                 display_name: TranslatedStr,
-                 support_contact: List[str] = [],
-                 keyword_list: Optional[Union[str, List[str]]] = None):
+    def __init__(
+        self,
+        base_url: str,
+        display_name: TranslatedStr,
+        support_contact: List[str] = [],
+        keyword_list: Optional[Union[str, List[str]]] = None,
+    ):
         self.base_url = base_url
         self.display_name = display_name
         self.support_contact = support_contact
@@ -91,11 +100,13 @@ class OrganisationServer:
     """
 
     # TODO: Remove display name?
-    def __init__(self,
-                 display_name: TranslatedStr,
-                 org_id: str,
-                 keyword_list: Dict[str, str] = {},
-                 **kwargs):
+    def __init__(
+        self,
+        display_name: TranslatedStr,
+        org_id: str,
+        keyword_list: Dict[str, str] = {},
+        **kwargs,
+    ):
         self.display_name = display_name
         self.org_id = org_id
         self.keyword_list = keyword_list
@@ -136,13 +147,14 @@ class CustomServer:
 
 
 class Profile:
-    def __init__(self,
-                 profile_id: str,
-                 display_name: TranslatedStr,
-                 default_gateway: Optional[bool] = None,
-                 vpn_proto_list: Iterable[str] = frozenset('openvpn'),
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        profile_id: str,
+        display_name: TranslatedStr,
+        default_gateway: Optional[bool] = None,
+        vpn_proto_list: Iterable[str] = frozenset("openvpn"),
+        **kwargs,
+    ):
         self.profile_id = profile_id
         self.display_name = display_name
         self.default_gateway = default_gateway
@@ -183,10 +195,10 @@ AnyServer = Union[
 
 
 def is_search_match(server: PredefinedServer, query: str) -> bool:
-    if hasattr(server, 'search_texts'):
-        return any(query.lower() in search_text.lower()
-                   for search_text
-                   in server.search_texts)  # type: ignore
+    if hasattr(server, "search_texts"):
+        return any(
+            query.lower() in search_text.lower() for search_text in server.search_texts
+        )  # type: ignore
     else:
         return False
 
@@ -203,20 +215,20 @@ class ServerDatabase:
         self.servers = []
         json_organizations = json.loads(disco_organizations)
 
-        for organization in json_organizations['organization_list']:
+        for organization in json_organizations["organization_list"]:
             server = OrganisationServer(**organization)
             self.servers.append(server)
 
         json_servers = json.loads(disco_servers)
 
-        for server_data in json_servers['server_list']:
-            server_type = server_data.pop('server_type')
-            if server_type == 'institute_access':
+        for server_data in json_servers["server_list"]:
+            server_type = server_data.pop("server_type")
+            if server_type == "institute_access":
                 server = InstituteAccessServer(**server_data)
                 self.servers.append(server)
 
     def parse_servers(self, _str):
-        #print("PARSE", _str)
+        # print("PARSE", _str)
         pass
 
     def all_configured(self) -> Iterable[ConfiguredServer]:

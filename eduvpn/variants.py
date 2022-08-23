@@ -25,19 +25,19 @@ class ApplicationVariant:
 
 
 EDUVPN = ApplicationVariant(
-    app_id='org.eduvpn.client',
+    app_id="org.eduvpn.client",
     name=settings.EDUVPN_NAME,
     icon=settings.EDUVPN_ICON,
-    translation_domain='eduVPN',
+    translation_domain="eduVPN",
 )
 
 LETS_CONNECT = ApplicationVariant(
-    app_id='org.letsconnect-vpn.client',
+    app_id="org.letsconnect-vpn.client",
     name=settings.LETS_CONNECT_NAME,
     icon=settings.LETS_CONNECT_ICON,
     logo=settings.LETS_CONNECT_LOGO,
     server_image=settings.SERVER_ILLUSTRATION,
-    translation_domain='LetConnect',
+    translation_domain="LetConnect",
     use_predefined_servers=False,
     use_configured_servers=False,
 )

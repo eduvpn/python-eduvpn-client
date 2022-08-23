@@ -12,8 +12,9 @@ from gettext import gettext as _, ngettext
 import time
 
 import gi
-gi.require_version('Gtk', '3.0')  # noqa: E402
-gi.require_version('NM', '1.0')  # noqa: E402
+
+gi.require_version("Gtk", "3.0")  # noqa: E402
+gi.require_version("NM", "1.0")  # noqa: E402
 from gi.repository import Gdk, Gtk, GObject, GdkPixbuf, GLib
 
 from ..settings import HELP_URL
@@ -21,7 +22,13 @@ from ..server import CustomServer, StatusImage
 from ..app import Application
 from ..nm import nm_available, nm_managed
 from ..utils import (
-    get_prefix, get_ui_state, run_in_background_thread, run_in_main_gtk_thread, run_periodically, ui_transition)
+    get_prefix,
+    get_ui_state,
+    run_in_background_thread,
+    run_in_main_gtk_thread,
+    run_periodically,
+    ui_transition,
+)
 from . import search
 from .utils import show_ui_component, link_markup, show_error_dialog
 from .stats import NetworkStats
@@ -32,10 +39,11 @@ from functools import partial
 logger = logging.getLogger(__name__)
 
 
-UPDATE_EXPIRY_INTERVAL = 1.  # seconds
-UPDATE_RENEW_INTERVAL = 60.  # seconds
+UPDATE_EXPIRY_INTERVAL = 1.0  # seconds
+UPDATE_RENEW_INTERVAL = 60.0  # seconds
 
-RENEWAL_ALLOW_FRACTION = .8
+RENEWAL_ALLOW_FRACTION = 0.8
+
 
 def get_validity_text(validity) -> str:
     if validity is None:
@@ -50,23 +58,33 @@ def get_validity_text(validity) -> str:
             minutes = delta.seconds // 60
             if minutes == 0:
                 seconds = delta.seconds
-                return ngettext("Valid for <b>{0} second</b>",
-                                "Valid for <b>{0} seconds</b>", seconds).format(seconds)
+                return ngettext(
+                    "Valid for <b>{0} second</b>",
+                    "Valid for <b>{0} seconds</b>",
+                    seconds,
+                ).format(seconds)
             else:
-                return ngettext("Valid for <b>{0} minute</b>",
-                                "Valid for <b>{0} minutes</b>", minutes).format(minutes)
+                return ngettext(
+                    "Valid for <b>{0} minute</b>",
+                    "Valid for <b>{0} minutes</b>",
+                    minutes,
+                ).format(minutes)
         else:
-            return ngettext("Valid for <b>{0} hour</b>",
-                            "Valid for <b>{0} hours</b>", hours).format(hours)
+            return ngettext(
+                "Valid for <b>{0} hour</b>", "Valid for <b>{0} hours</b>", hours
+            ).format(hours)
     else:
-        dstr = ngettext("Valid for <b>{0} day</b>",
-                        "Valid for <b>{0} days</b>", days).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>",
-                        " and <b>{0} hours</b>", hours).format(hours)
+        dstr = ngettext(
+            "Valid for <b>{0} day</b>", "Valid for <b>{0} days</b>", days
+        ).format(days)
+        hstr = ngettext(" and <b>{0} hour</b>", " and <b>{0} hours</b>", hours).format(
+            hours
+        )
         return dstr + hstr
 
+
 def get_template_path(filename: str) -> str:
-    return os.path.join(get_prefix(), 'share/eduvpn/builder', filename)
+    return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
 
 
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
@@ -74,8 +92,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def __new__(cls, application: Application):
         builder = Gtk.Builder()
-        builder.add_from_file(get_template_path('mainwindow.ui'))  # type: ignore
-        window = builder.get_object('eduvpn')  # type: ignore
+        builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
+        window = builder.get_object("eduvpn")  # type: ignore
         window.setup(builder, application)  # type: ignore
         window.set_application(application)  # type: ignore
         return window
@@ -110,74 +128,82 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.is_selected = False
 
-        self.app_logo = builder.get_object('appLogo')
+        self.app_logo = builder.get_object("appLogo")
 
-        self.page_stack = builder.get_object('pageStack')
-        self.settings_button = builder.get_object('settingsButton')
-        self.back_button_container = builder.get_object('backButtonEventBox')
+        self.page_stack = builder.get_object("pageStack")
+        self.settings_button = builder.get_object("settingsButton")
+        self.back_button_container = builder.get_object("backButtonEventBox")
 
-        self.server_list_container = builder.get_object('serverListContainer')
+        self.server_list_container = builder.get_object("serverListContainer")
 
-        self.institute_list_header = builder.get_object('instituteAccessHeader')
-        self.secure_internet_list_header = builder.get_object('secureInternetHeader')
-        self.other_server_list_header = builder.get_object('otherServersHeader')
+        self.institute_list_header = builder.get_object("instituteAccessHeader")
+        self.secure_internet_list_header = builder.get_object("secureInternetHeader")
+        self.other_server_list_header = builder.get_object("otherServersHeader")
 
-        self.institute_list = builder.get_object('instituteTreeView')
-        self.secure_internet_list = builder.get_object('secureInternetTreeView')
-        self.other_server_list = builder.get_object('otherServersTreeView')
+        self.institute_list = builder.get_object("instituteTreeView")
+        self.secure_internet_list = builder.get_object("secureInternetTreeView")
+        self.other_server_list = builder.get_object("otherServersTreeView")
 
-        self.choose_profile_page = builder.get_object('chooseProfilePage')
-        self.choose_location_page = builder.get_object('chooseLocationPage')
-        self.change_location_button = builder.get_object('changeLocationButton')
-        self.location_list = builder.get_object('locationTreeView')
-        self.profile_list = builder.get_object('profileTreeView')
+        self.choose_profile_page = builder.get_object("chooseProfilePage")
+        self.choose_location_page = builder.get_object("chooseLocationPage")
+        self.change_location_button = builder.get_object("changeLocationButton")
+        self.location_list = builder.get_object("locationTreeView")
+        self.profile_list = builder.get_object("profileTreeView")
 
-        self.find_server_page = builder.get_object('findServerPage')
-        self.find_server_search_form = builder.get_object('findServerSearchForm')
-        self.find_server_search_input = builder.get_object('findServerSearchInput')
-        self.find_server_image = builder.get_object('findServerImage')
-        self.find_server_label = builder.get_object('findServerLabel')
+        self.find_server_page = builder.get_object("findServerPage")
+        self.find_server_search_form = builder.get_object("findServerSearchForm")
+        self.find_server_search_input = builder.get_object("findServerSearchInput")
+        self.find_server_image = builder.get_object("findServerImage")
+        self.find_server_label = builder.get_object("findServerLabel")
 
-        self.add_custom_server_button_container = builder.get_object('addCustomServerRow')
-        self.add_other_server_button_container = builder.get_object('addOtherServerRow')
+        self.add_custom_server_button_container = builder.get_object(
+            "addCustomServerRow"
+        )
+        self.add_other_server_button_container = builder.get_object("addOtherServerRow")
 
-        self.connection_page = builder.get_object('connectionPage')
-        self.connection_status_image = builder.get_object('connectionStatusImage')
-        self.connection_status_label = builder.get_object('connectionStatusLabel')
-        self.connection_session_label = builder.get_object('connectionSessionLabel')
-        self.connection_switch = builder.get_object('connectionSwitch')
-        self.connection_info_expander = builder.get_object('connectionInfoExpander')
-        self.connection_info_downloaded = builder.get_object('connectionInfoDownloadedText')
-        self.connection_info_uploaded = builder.get_object('connectionInfoUploadedText')
-        self.connection_info_ipv4address = builder.get_object('connectionInfoIpv4AddressText')
-        self.connection_info_ipv6address = builder.get_object('connectionInfoIpv6AddressText')
+        self.connection_page = builder.get_object("connectionPage")
+        self.connection_status_image = builder.get_object("connectionStatusImage")
+        self.connection_status_label = builder.get_object("connectionStatusLabel")
+        self.connection_session_label = builder.get_object("connectionSessionLabel")
+        self.connection_switch = builder.get_object("connectionSwitch")
+        self.connection_info_expander = builder.get_object("connectionInfoExpander")
+        self.connection_info_downloaded = builder.get_object(
+            "connectionInfoDownloadedText"
+        )
+        self.connection_info_uploaded = builder.get_object("connectionInfoUploadedText")
+        self.connection_info_ipv4address = builder.get_object(
+            "connectionInfoIpv4AddressText"
+        )
+        self.connection_info_ipv6address = builder.get_object(
+            "connectionInfoIpv6AddressText"
+        )
         self.connection_info_thread_cancel = None
         self.connection_validity_thread_cancel = None
         self.connection_renew_thread_cancel = None
         self.connection_info_stats = None
 
-        self.server_image = builder.get_object('serverImage')
-        self.server_label = builder.get_object('serverLabel')
-        self.server_support_label = builder.get_object('supportLabel')
+        self.server_image = builder.get_object("serverImage")
+        self.server_label = builder.get_object("serverLabel")
+        self.server_support_label = builder.get_object("supportLabel")
 
-        self.renew_session_button = builder.get_object('renewSessionButton')
-        self.select_profile_combo = builder.get_object('selectProfileCombo')
-        self.select_profile_text = builder.get_object('selectProfileText')
+        self.renew_session_button = builder.get_object("renewSessionButton")
+        self.select_profile_combo = builder.get_object("selectProfileCombo")
+        self.select_profile_text = builder.get_object("selectProfileText")
 
-        self.oauth_page = builder.get_object('openBrowserPage')
-        self.oauth_cancel_button = builder.get_object('cancelBrowserButton')
+        self.oauth_page = builder.get_object("openBrowserPage")
+        self.oauth_cancel_button = builder.get_object("cancelBrowserButton")
 
         self.settings_page = builder.get_object('settingsPage')
         self.setting_config_force_tcp = builder.get_object('settingConfigForceTCP')
         self.setting_config_nm_system_wide = builder.get_object('settingConfigNMSystemWide')
 
-        self.loading_page = builder.get_object('loadingPage')
-        self.loading_title = builder.get_object('loadingTitle')
-        self.loading_message = builder.get_object('loadingMessage')
+        self.loading_page = builder.get_object("loadingPage")
+        self.loading_title = builder.get_object("loadingTitle")
+        self.loading_message = builder.get_object("loadingMessage")
 
-        self.error_page = builder.get_object('errorPage')
-        self.error_text = builder.get_object('errorText')
-        self.error_acknowledge_button = builder.get_object('errorAcknowledgeButton')
+        self.error_page = builder.get_object("errorPage")
+        self.error_text = builder.get_object("errorText")
+        self.error_acknowledge_button = builder.get_object("errorAcknowledgeButton")
 
         self.set_title(self.app.variant.name)  # type: ignore
         self.set_icon_from_file(self.app.variant.icon)  # type: ignore
@@ -187,7 +213,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.find_server_image.set_from_file(self.app.variant.server_image)
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
-            self.find_server_search_input.set_placeholder_text(_("Enter the server address"))
+            self.find_server_search_input.set_placeholder_text(
+                _("Enter the server address")
+            )
 
         # Track the currently shown page so we can return to it
         # when the settings page is closed.
@@ -203,13 +231,19 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self,
                 name=_("Error"),
                 title=_("NetworkManager not available"),
-                message=_("The application will not be able to configure the network. Please install and set up NetworkManager."))
+                message=_(
+                    "The application will not be able to configure the network. Please install and set up NetworkManager."
+                ),
+            )
         elif not nm_managed():
             show_error_dialog(
                 self,
                 name=_("Error"),
                 title=_("NetworkManager not managing device"),
-                message=_("The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."))
+                message=_(
+                    "The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."
+                ),
+            )
         self.common.register_class_callbacks(self)
         self.common.register(debug=True)
 
@@ -282,7 +316,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         combo.connect("changed", self.on_profile_combo_changed)
 
         # Get the position of the current combobox in the connection page
-        position = self.connection_page.child_get_property(self.select_profile_combo, "position")
+        position = self.connection_page.child_get_property(
+            self.select_profile_combo, "position"
+        )
 
         # Destroy the combobox and add the new one
         self.select_profile_combo.destroy()
@@ -314,7 +350,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.server_image.hide()
 
         if server_info.support_contact:
-            support_text = _("Support:") + "\n" + "\n".join(map(link_markup, server_info.support_contact))
+            support_text = (
+                _("Support:")
+                + "\n"
+                + "\n".join(map(link_markup, server_info.support_contact))
+            )
             self.server_support_label.set_markup(support_text)
             self.server_support_label.show()
         else:
@@ -378,7 +418,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     # TODO: Implement with Go callback
     @ui_transition(State.SEARCH_SERVER, StateType.Enter)
     def enter_search(self, old_state: str, servers):
-        self.set_search_text('')
+        self.set_search_text("")
         self.show_back_button(True)
         self.find_server_search_input.grab_focus()
         search.show_result_components(self, True)
@@ -482,7 +522,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.location_list.show()
 
         location_tree_view = self.location_list
-        location_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT)
+        location_list_model = Gtk.ListStore(
+            GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT
+        )
 
         if len(location_tree_view.get_columns()) == 0:
             # Only initialize this tree view once.
@@ -501,7 +543,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         location_list_model.clear()
         for location in locations:
             if location.flag_path is None:
-                logger.warning(f"No flag found for country code {location.country_code}")
+                logger.warning(
+                    f"No flag found for country code {location.country_code}"
+                )
                 flag = None
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(location.flag_path)
@@ -565,14 +609,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def start_validity_renew(self, server_info):
         self.connection_validity_thread_cancel = run_periodically(
-            run_in_main_gtk_thread(partial(self.update_connection_validity, server_info.expire_time)),
+            run_in_main_gtk_thread(
+                partial(self.update_connection_validity, server_info.expire_time)
+            ),
             UPDATE_EXPIRY_INTERVAL,
-            'update-validity',
+            "update-validity",
         )
         self.connection_renew_thread_cancel = run_periodically(
             run_in_main_gtk_thread(self.update_connection_renew),
             UPDATE_RENEW_INTERVAL,
-            'update-renew',
+            "update-renew",
         )
 
     def stop_validity_renew(self):
@@ -616,12 +662,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_add_other_server(self, button) -> None:
         logger.debug("clicked on add other server")
         self.common.set_search_server()
-        #self.app.interface_transition('configure_new_server')
+        # self.app.interface_transition('configure_new_server')
 
     def on_add_custom_server(self, button) -> None:
         logger.debug("clicked on add custom server")
         server = CustomServer(self.app.interface_state.address)
-        self.app.interface_transition('connect_to_server', server)
+        self.app.interface_transition("connect_to_server", server)
 
     def on_server_row_activated(self, widget, row, col):
         model = widget.get_model()
@@ -636,8 +682,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             parent=self,
             type=Gtk.MessageType.QUESTION,  # type: ignore
             title=_("Server"),
-            message_format=_("Removing server"))
-        dialog.add_buttons(_("Remove server"), gtk_remove_id, _("Do nothing"), gtk_nop_id)
+            message_format=_("Removing server"),
+        )
+        dialog.add_buttons(
+            _("Remove server"), gtk_remove_id, _("Do nothing"), gtk_nop_id
+        )
         dialog.format_secondary_text(_(f"Are you sure you want to remove server {str(server)}?"))  # type: ignore
         dialog.show()  # type: ignore
         response = dialog.run()  # type: ignore
@@ -670,7 +719,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         cancel_item.show()
 
         remove_item = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_REMOVE)
-        remove_item.connect("activate", lambda _ : self.server_ask_remove(server))
+        remove_item.connect("activate", lambda _: self.server_ask_remove(server))
         remove_item.set_always_show_image(True)
         remove_item.set_label(_("Remove server"))
         remove_item.show()
@@ -682,7 +731,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # if len(server.profiles) > 0
         if True:
             change_profile = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_EDIT)
-            change_profile.connect("activate", lambda _ : self.server_change_profile(server))
+            change_profile.connect(
+                "activate", lambda _: self.server_change_profile(server)
+            )
             change_profile.set_always_show_image(True)
             change_profile.set_label("Change profile")
             change_profile.show()
@@ -702,7 +753,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_search_changed(self, _=None):
         query = self.find_server_search_input.get_text()
         logger.debug(f"entered server search query: {query}")
-        if self.app.variant.use_predefined_servers and query.count('.') < 2:
+        if self.app.variant.use_predefined_servers and query.count(".") < 2:
             results = self.app.model.search_predefined(query)
             search.update_results(self, results)
         else:
@@ -790,8 +841,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             parent=self,
             type=Gtk.MessageType.QUESTION,  # type: ignore
             title=_("Profile"),
-            message_format=_("New profile selected"))
-        dialog.add_buttons(_("Reconnect"), gtk_reconnect_id, _("Stay connected"), gtk_nop_id)
+            message_format=_("New profile selected"),
+        )
+        dialog.add_buttons(
+            _("Reconnect"), gtk_reconnect_id, _("Stay connected"), gtk_nop_id
+        )
         dialog.format_secondary_text(_("Do you want to apply the new profile by reconnecting?"))  # type: ignore
         dialog.show()  # type: ignore
         response = dialog.run()  # type: ignore
@@ -818,7 +872,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             # Asking for reconnect was not successful
             # Restore the previous profile
             if not self.profile_ask_reconnect():
-                combo.set_active(self.app.model.current_server_info.current_profile_index)
+                combo.set_active(
+                    self.app.model.current_server_info.current_profile_index
+                )
                 return
         # Finally set the profile
         self.app.model.set_profile(profile, connect=True)
@@ -827,7 +883,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         model = widget.get_model()
         location = model[row][2]
         logger.debug(f"activated location: {location!r}")
-        self.app.interface_transition('select_secure_internet_location', location)
+        self.app.interface_transition("select_secure_internet_location", location)
 
     def on_location_row_activated(self, widget, row, col):
         model = widget.get_model()
@@ -838,7 +894,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")
-        self.app.interface_transition('acknowledge_error')
+        self.app.interface_transition("acknowledge_error")
 
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
@@ -859,6 +915,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         return True
 
     def on_reopen_window(self):
-        self.app.interface_transition('restart')
+        self.app.interface_transition("restart")
         self.show()
         self.present()

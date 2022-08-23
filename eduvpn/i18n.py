@@ -17,7 +17,7 @@ def initialize(app_variant: ApplicationVariant):
     prefix = get_prefix()
     try:
         setup(app_variant, prefix)
-        logger.debug(u"i18n successfully initialized")
+        logger.debug("i18n successfully initialized")
     except Exception as e:
         logger.error(f"i18n initialization failed: {e}")
 
@@ -27,9 +27,9 @@ def setup(app_variant: ApplicationVariant, prefix: str):
     Init locale and gettext, returns text domain
     """
     domain = app_variant.translation_domain
-    directory = os.path.join(prefix, 'share/locale')
+    directory = os.path.join(prefix, "share/locale")
 
-    locale.setlocale(locale.LC_ALL, '')
+    locale.setlocale(locale.LC_ALL, "")
     locale.bindtextdomain(domain, directory)  # type: ignore
     locale.textdomain(domain)  # type: ignore
     gettext.bindtextdomain(domain, directory)
@@ -43,7 +43,7 @@ def country() -> str:
         locale_setting = locale.getlocale()[0]
         if not locale_setting:
             return COUNTRY
-        return locale_setting.replace('_', '-')
+        return locale_setting.replace("_", "-")
     except Exception:
         return COUNTRY
 
@@ -53,14 +53,14 @@ def language() -> str:
         locale_setting = locale.getlocale()[0]
         if not locale_setting:
             return LANGUAGE
-        return locale_setting.split('_')[0]
+        return locale_setting.split("_")[0]
     except Exception:
         return LANGUAGE
 
 
 def extract_translation(d: Union[str, Dict[str, str]]):
     if isinstance(d, dict):
-        for m in [country(), language(), 'en-US', 'en']:
+        for m in [country(), language(), "en-US", "en"]:
             try:
                 return d[m]
             except KeyError:
@@ -74,7 +74,7 @@ def retrieve_country_name(country_code: str) -> str:
     country_map = _read_country_map()
     loc = locale.getlocale()
     if loc[0] is None:
-        prefix = 'en'
+        prefix = "en"
     else:
         prefix = loc[0][:2]
     if country_code in country_map:
@@ -82,6 +82,7 @@ def retrieve_country_name(country_code: str) -> str:
         if prefix in code:
             return code[prefix]
     return country_code
+
 
 def _read_country_map() -> dict:
     """
@@ -94,7 +95,7 @@ def _read_country_map() -> dict:
 
     if COUNTRY_MAP.exists():
         try:
-            with open(COUNTRY_MAP, 'r') as f:
+            with open(COUNTRY_MAP, "r") as f:
                 country_mapping = json.load(f)
                 return country_mapping
         except Exception as e:

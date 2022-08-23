@@ -1,5 +1,6 @@
 import gi
-gi.require_version('Gtk', '3.0')  # noqa: E402
+
+gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import Gtk
 
 
@@ -15,8 +16,8 @@ def show_ui_component(component, show: bool):
 
 def link_markup(link: str) -> str:
     try:
-        scheme, rest = link.split(':', 1)
-        if rest.startswith('//'):
+        scheme, rest = link.split(":", 1)
+        if rest.startswith("//"):
             rest = rest[2:]
     except ValueError:
         return link
@@ -30,7 +31,8 @@ def show_error_dialog(parent, name: str, title: str, message: str):
         type=Gtk.MessageType.INFO,  # type: ignore
         buttons=Gtk.ButtonsType.OK,  # type: ignore
         title=name,
-        message_format=title)
+        message_format=title,
+    )
     dialog.format_secondary_text(message)  # type: ignore
     dialog.show()  # type: ignore
     dialog.run()  # type: ignore

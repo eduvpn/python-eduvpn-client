@@ -26,9 +26,9 @@ def get_prefix() -> str:
     returns:
         path to Python installation prefix
     """
-    target = 'share/eduvpn/builder/mainwindow.ui'
+    target = "share/eduvpn/builder/mainwindow.ui"
     local = path.dirname(path.dirname(path.abspath(__file__)))
-    options = [local, path.expanduser('~/.local'), '/usr/local', prefix]
+    options = [local, path.expanduser("~/.local"), "/usr/local", prefix]
     for option in options:
         logger.debug(f"looking for '{target}' in '{option}'")
         if path.isfile(path.join(option, target)):
@@ -52,10 +52,12 @@ def thread_helper(func: Callable, *, name: Optional[str] = None) -> threading.Th
     thread.start()
     return thread
 
+
 def get_ui_state(state: State) -> int:
     # The UI state will have as identifier the last state id + offset of the state
     # So for example the UI DEREGISTERED state will come directly after the last normal state
     return len(State) + state
+
 
 def ui_transition(state: State, state_type: StateType):
     def decorator(func):
@@ -63,8 +65,11 @@ def ui_transition(state: State, state_type: StateType):
         @common.class_state_transition(get_ui_state(state), state_type)
         def inner(self, other_state, data):
             func(self, other_state, data)
+
         return inner
+
     return decorator
+
 
 def model_transition(state: State, state_type: StateType):
     def decorator(func):
@@ -95,8 +100,8 @@ def run_in_background_thread(name: Optional[str] = None):
     Decorator for functions that must always run
     in a background thread.
     """
-    def decorator(func):
 
+    def decorator(func):
         @wraps(func)
         def background_func(*args, **kwargs):
             thread_helper(partial(func, *args, **kwargs), name=name)
@@ -120,10 +125,11 @@ def run_in_main_gtk_thread(func):
     return main_gtk_thread_func
 
 
-def run_periodically(func: Callable[[], None],
-                     interval: float,
-                     name: Optional[str] = None,
-                     ) -> Callable[[], None]:
+def run_periodically(
+    func: Callable[[], None],
+    interval: float,
+    name: Optional[str] = None,
+) -> Callable[[], None]:
     """
     Run a funtion periodically in a background thread.
 
@@ -132,7 +138,7 @@ def run_periodically(func: Callable[[], None],
     or until the returned cancel callback is called.
     """
     if name is None:
-        name = 'run-periodically'
+        name = "run-periodically"
     event = threading.Event()
 
     @run_in_background_thread(name)
@@ -150,10 +156,11 @@ def run_periodically(func: Callable[[], None],
     return event.set
 
 
-def run_delayed(func: Callable[[], None],
-                delay: float,
-                name: Optional[str] = None,
-                ) -> Callable[[], None]:
+def run_delayed(
+    func: Callable[[], None],
+    delay: float,
+    name: Optional[str] = None,
+) -> Callable[[], None]:
     """
     Run a function with a delay.
 
@@ -163,7 +170,7 @@ def run_delayed(func: Callable[[], None],
     Call the returned callback to cancel calling the delayed function.
     """
     if name is None:
-        name = 'run-delayed'
+        name = "run-delayed"
     event = threading.Event()
 
     @run_in_background_thread(name)
@@ -194,7 +201,9 @@ if sys.version_info < (3, 9):
     # https://github.com/python/cpython/blob/3.10/Lib/functools.py#L651
     def cache(func):
         from functools import lru_cache
+
         return lru_cache(maxsize=None)(func)
+
 else:
     from functools import cache  # noqa: W0611
 
