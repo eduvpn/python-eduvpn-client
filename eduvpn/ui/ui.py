@@ -35,8 +35,6 @@ logger = logging.getLogger(__name__)
 UPDATE_EXPIRY_INTERVAL = 1.0  # seconds
 UPDATE_RENEW_INTERVAL = 60.0  # seconds
 
-RENEWAL_ALLOW_FRACTION = 0.8
-
 
 def get_validity_text(validity) -> str:
     if validity is None:
@@ -662,7 +660,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = CustomServer(self.app.interface_state.address)
         self.app.interface_transition("connect_to_server", server)
 
-    def on_server_row_activated(self, widget, row, col):
+    def on_server_row_activated(self, widget, row, _col):
         model = widget.get_model()
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
@@ -759,7 +757,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("activated server search")
         # TODO
 
-    def on_switch_connection_state(self, switch, state):
+    def on_switch_connection_state(self, _switch, state):
         logger.debug("clicked on switch connection state")
         if state is not self.connection_switch_state:
             self.connection_switch_state = state
@@ -821,7 +819,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.pause_connection_info()
 
-    def on_profile_row_activated(self, widget, row, col):
+    def on_profile_row_activated(self, widget, row, _col):
         model = widget.get_model()
         profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
@@ -853,7 +851,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             return
 
         model = combo.get_model()
-        profile_display, profile = model[tree_iter][:2]
+        _profile_display, profile = model[tree_iter][:2]
         logger.debug(f"selected combo profile: {profile!r}")
 
         # Profile is already the current, do nothing
@@ -872,13 +870,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # Finally set the profile
         self.app.model.set_profile(profile, connect=True)
 
-    def on_location_row_activated(self, widget, row, col):
+    def on_location_row_activated(self, widget, row, _col):
         model = widget.get_model()
         location = model[row][2]
         logger.debug(f"activated location: {location!r}")
         self.app.interface_transition("select_secure_internet_location", location)
 
-    def on_location_row_activated(self, widget, row, col):
+    def on_location_row_activated(self, widget, row, _col):
         model = widget.get_model()
         location = model[row][2]
         logger.debug(f"activated location: {location!r}")
@@ -893,7 +891,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("clicked on renew session")
         self.app.model.renew_session()
 
-    def on_config_force_tcp(self, switch, state: bool):
+    def on_config_force_tcp(self, _switch, state: bool):
         logger.debug("clicked on setting: 'force tcp'")
         self.app.config.force_tcp = state
 

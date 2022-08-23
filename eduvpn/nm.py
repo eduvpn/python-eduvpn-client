@@ -679,7 +679,7 @@ def subscribe_to_status_changes(
     # The callback to monitor state changes
     # Let the state machine know for state updates
     def wrapped_callback(
-        active: "NM.ActiveConnection", state_code: int, reason_code: int
+        active: "NM.ActiveConnection", state_code: int, _reason_code: int
     ):
         if active.get_uuid() != get_uuid():
             return
