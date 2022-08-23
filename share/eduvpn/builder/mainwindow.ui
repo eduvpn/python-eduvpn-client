@@ -304,6 +304,7 @@
                                 <property name="enable-grid-lines">horizontal</property>
                                 <property name="activate-on-single-click">True</property>
                                 <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
+                                <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection"/>
                                 </child>
@@ -378,6 +379,7 @@
                                 <property name="enable-grid-lines">horizontal</property>
                                 <property name="activate-on-single-click">True</property>
                                 <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
+                                <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection"/>
                                 </child>
@@ -437,6 +439,7 @@
                                 <property name="enable-grid-lines">horizontal</property>
                                 <property name="activate-on-single-click">True</property>
                                 <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
+                                <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection"/>
                                 </child>
