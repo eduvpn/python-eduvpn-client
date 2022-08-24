@@ -684,7 +684,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         dialog.destroy()  # type: ignore
 
         if response == gtk_remove_id:
-            print("Remove server", str(server))
+            logger.debug(f"doing server remove for: {server!r}")
+            self.app.model.remove(server)
+        else:
+            logger.debug(f"cancelled server remove for: {server!r}")
 
     def server_change_profile(self, server):
         print("Change profile", str(server))
