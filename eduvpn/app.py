@@ -236,6 +236,15 @@ class ApplicationModel:
     def should_renew_button(self):
         return self.common.should_renew_button()
 
+    @run_in_background_thread("remove")
+    def remove(self, server: PredefinedServer):
+        if isinstance(server, InstituteAccessServer):
+            self.common.remove_institute_access(server.base_url)
+        elif isinstance(server, OrganisationServer):
+            self.common.remove_secure_internet()
+        elif isinstance(server, CustomServer):
+            self.common.remove_custom_server(server.address)
+
     @run_in_background_thread("connect")
     def connect(self, server: PredefinedServer):
         config = None
