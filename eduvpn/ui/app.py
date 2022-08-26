@@ -81,7 +81,7 @@ class EduVpnGtkApplication(Gtk.Application):
     def do_command_line(self, command_line):
         logger.debug(f"command line: {command_line}")
         options = command_line.get_options_dict()
-        # unpack the commandline args into a dict
+        ## unpack the commandline args into a dict
         options = options.end().unpack()
 
         if "version" in options:

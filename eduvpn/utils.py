@@ -70,6 +70,17 @@ def ui_transition(state: State, state_type: StateType):
     return decorator
 
 
+def cmd_transition(state: State, state_type: StateType):
+    def decorator(func):
+        @common.class_state_transition(get_ui_state(state), state_type)
+        def inner(self, other_state, data):
+            func(self, other_state, data)
+
+        return inner
+
+    return decorator
+
+
 def model_transition(state: State, state_type: StateType):
     def decorator(func):
         @run_in_background_thread(str(func))
