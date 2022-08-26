@@ -2,8 +2,6 @@ import enum
 from functools import lru_cache
 from typing import Dict, Iterable, List, Optional
 
-from gi.repository import GObject, Gtk, Pango
-
 from eduvpn.server import AnyServer as Server
 from eduvpn.server import (CustomServer, InstituteAccessServer,
                            OrganisationServer)
@@ -30,13 +28,10 @@ group_header_component = {
 }
 
 
-# typing aliases
-Model = Gtk.ListStore
-
-
 @lru_cache()
-def get_group_model(group: ServerGroup) -> Model:
+def get_group_model(group: ServerGroup):
     # Model: (name: str, server: ServerType)
+    from gi.repository import GObject, Gtk
     return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
 
 
@@ -106,6 +101,7 @@ def show_group_tree(window, group: ServerGroup, show: bool):
 
 def init_server_search(window):
     "Initialize the search page components."
+    from gi.repository import Gtk, Pango
     text_cell = Gtk.CellRendererText()
     text_cell.props.ellipsize = Pango.EllipsizeMode.END
     text_cell.set_property("size-points", 14)

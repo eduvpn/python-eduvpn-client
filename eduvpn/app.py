@@ -246,7 +246,7 @@ class ApplicationModel:
             self.common.remove_custom_server(server.address)
 
     @run_in_background_thread("connect")
-    def connect(self, server: PredefinedServer):
+    def connect(self, server: PredefinedServer, callback=None):
         config = None
         config_type = None
         if isinstance(server, InstituteAccessServer):
@@ -260,17 +260,22 @@ class ApplicationModel:
 
         def on_connected():
             self.common.set_connected()
+            if callback:
+                callback()
 
         def on_connect(_):
+            print("ACTIVATE")
             client = nm.get_client()
             uuid = nm.get_uuid()
             nm.activate_connection(client, uuid, on_connected)
 
         @run_in_main_gtk_thread
         def connect(config, config_type):
+            print("TEST")
             connection = Connection.parse(config, config_type)
             connection.connect(on_connect)
 
+        print("YEAH")
         self.current_server = server
         self.common.set_connecting()
         connect(config, config_type)
@@ -324,7 +329,7 @@ class ApplicationModel:
 
         self.connect(self.current_server)
 
-    @run_in_background_thread("deactivate")
+    #@run_in_background_thread("deactivate")
     def deactivate_connection(self, callback=None):
         self.common.set_disconnecting()
 
