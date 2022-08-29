@@ -59,9 +59,17 @@ class CommandLine:
         print("- [Custom Servers]")
         for index, custom in enumerate(self.grouped_servers[ServerGroup.OTHER]):
             print(f"\t* [{index+1}]: {str(custom)}")
+    def initialize(self):
+        uuid = nm.get_existing_configuration_uuid()
+        if uuid:
+            state = nm.get_connection_state()
+
+            if state == nm.ConnectionState.CONNECTED:
+                self.common.set_connected()
 
     def start(self):
         self.common.register(debug=True)
+        self.initialize()
         parser = ArgumentParser(description='The eduVPN command line client')
         subparsers = parser.add_subparsers(title='subcommands',
                                            description='Valid subcommands',
