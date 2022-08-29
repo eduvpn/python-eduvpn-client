@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 
-from . import nm
-from .ovpn import Ovpn
+from eduvpn import nm
+from eduvpn.ovpn import Ovpn
 
 # from .session import Validity
 

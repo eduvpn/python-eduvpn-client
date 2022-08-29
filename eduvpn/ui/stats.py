@@ -2,8 +2,8 @@ import logging
 from pathlib import Path
 from typing import Optional, TextIO
 
-from ..nm import get_iface, get_ipv4, get_ipv6
-from ..utils import cache, get_human_readable_bytes, translated_property
+from eduvpn.nm import get_iface, get_ipv4, get_ipv6
+from eduvpn.utils import cache, get_human_readable_bytes, translated_property
 
 logger = logging.getLogger(__name__)
 

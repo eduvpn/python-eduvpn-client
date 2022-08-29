@@ -6,7 +6,7 @@ from eduvpn.server import AnyServer as Server
 from eduvpn.server import (CustomServer, InstituteAccessServer,
                            OrganisationServer)
 
-from .utils import show_ui_component
+from eduvpn.ui.utils import show_ui_component
 
 
 class ServerGroup(enum.Enum):
