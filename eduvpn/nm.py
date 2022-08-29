@@ -720,7 +720,10 @@ def action_with_mainloop(action: Callable):
         _logger.info("Quiting main loop, thanks!")
         main_loop.quit()
 
-    action(callback=quit_loop)
+    # Schedule the action
+    GLib.idle_add(lambda: action(callback=quit_loop))
+
+    # Run the main loop
     main_loop.run()
 
 
