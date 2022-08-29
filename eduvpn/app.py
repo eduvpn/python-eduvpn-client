@@ -259,18 +259,15 @@ class ApplicationModel:
                 callback()
 
         def on_connect(_):
-            print("ACTIVATE")
             client = nm.get_client()
             uuid = nm.get_uuid()
             nm.activate_connection(client, uuid, on_connected)
 
         @run_in_main_gtk_thread
         def connect(config, config_type):
-            print("TEST")
             connection = Connection.parse(config, config_type)
             connection.connect(on_connect)
 
-        print("YEAH")
         self.current_server = server
         self.common.set_connecting()
         connect(config, config_type)
