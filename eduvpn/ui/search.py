@@ -141,7 +141,6 @@ def update_search_results_for_type(
     model_has_results = len(model) > 0  # type: ignore
     show_group_tree(window, group, show=model_has_results)
 
-
 def update_results(window, servers: Optional[Iterable[Server]]):
     """
     Update the UI with the search results.
