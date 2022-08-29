@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Any, Dict, Generic, TypeVar
 
-from .settings import CONFIG_PREFIX
+from eduvpn.settings import CONFIG_PREFIX
 
 T = TypeVar("T")
 

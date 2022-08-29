@@ -10,10 +10,10 @@ from typing import Tuple
 import eduvpn_common.main as common
 from gi.repository import Gtk
 
-from ..settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
+from eduvpn.settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
                         LETSCONNECT_CONFIG_PREFIX)
-from ..ui.app import EduVpnGtkApplication
-from ..variants import EDUVPN, LETS_CONNECT
+from eduvpn.ui.app import EduVpnGtkApplication
+from eduvpn.variants import EDUVPN, LETS_CONNECT
 
 logger = logging.getLogger(__name__)
 

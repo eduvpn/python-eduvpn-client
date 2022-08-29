@@ -11,10 +11,10 @@ from socket import AF_INET, AF_INET6
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, Tuple
 
-from .config import Configuration
-from .ovpn import Ovpn
-from .storage import get_uuid, set_uuid, write_ovpn
-from .utils import cache
+from eduvpn.config import Configuration
+from eduvpn.ovpn import Ovpn
+from eduvpn.storage import get_uuid, set_uuid, write_ovpn
+from eduvpn.utils import cache
 
 _logger = logging.getLogger(__name__)
 

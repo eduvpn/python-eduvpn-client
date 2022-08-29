@@ -19,15 +19,15 @@ from functools import partial
 from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GObject, Gtk
 
-from ..app import Application
-from ..nm import nm_available, nm_managed
-from ..server import CustomServer, StatusImage
-from ..settings import HELP_URL
-from ..utils import (get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
+from eduvpn.app import Application
+from eduvpn.nm import nm_available, nm_managed
+from eduvpn.server import CustomServer, StatusImage
+from eduvpn.settings import HELP_URL
+from eduvpn.utils import (get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
                      run_periodically, ui_transition)
-from . import search
-from .stats import NetworkStats
-from .utils import link_markup, show_error_dialog, show_ui_component
+from eduvpn.ui import search
+from eduvpn.ui.stats import NetworkStats
+from eduvpn.ui.utils import link_markup, show_error_dialog, show_ui_component
 
 logger = logging.getLogger(__name__)
 

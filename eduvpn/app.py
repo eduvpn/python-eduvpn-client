@@ -9,15 +9,15 @@ from eduvpn_common.state import State, StateType
 
 from eduvpn.connection import Connection
 
-from . import nm
-from .config import Configuration
-from .i18n import extract_translation, retrieve_country_name
-from .server import (CustomServer, InstituteAccessServer, OrganisationServer,
+from eduvpn import nm
+from eduvpn.config import Configuration
+from eduvpn.i18n import extract_translation, retrieve_country_name
+from eduvpn.server import (CustomServer, InstituteAccessServer, OrganisationServer,
                      PredefinedServer, Profile, SecureInternetLocation,
                      ServerDatabase)
-from .utils import (model_transition, run_in_background_thread,
+from eduvpn.utils import (model_transition, run_in_background_thread,
                     run_in_main_gtk_thread)
-from .variants import ApplicationVariant
+from eduvpn.variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
 import eduvpn_common.main as common
 from eduvpn_common.state import State, StateType
 
-from ..app import ApplicationModel
-from ..settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
+from eduvpn.app import ApplicationModel
+from eduvpn.settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
                         LETSCONNECT_CONFIG_PREFIX)
-from ..utils  import cmd_transition, run_in_background_thread
-from .search import group_servers, ServerGroup
+from eduvpn.utils  import cmd_transition, run_in_background_thread
+from eduvpn.ui.search import group_servers, ServerGroup
 import eduvpn.nm as nm
 
 from argparse import ArgumentParser

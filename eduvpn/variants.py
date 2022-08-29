@@ -1,6 +1,6 @@
 from typing import Optional
 
-from . import settings
+from eduvpn import settings
 
 
 class ApplicationVariant:
