@@ -210,7 +210,6 @@ class ApplicationModel:
         self.current_server_info = server_info
         return server_info
 
-    @run_in_background_thread("browser-open")
     def open_browser(self, url):
         webbrowser.open(url)
 
@@ -225,18 +224,15 @@ class ApplicationModel:
     def parse_connecting(self, old_state: str, data: str):
         return data
 
-    @run_in_background_thread("change-secure-location")
     def change_secure_location(self):
         self.common.change_secure_location()
 
-    @run_in_background_thread("set-secure-location")
     def set_secure_location(self, location_id: str):
         self.common.set_secure_location(location_id)
 
     def should_renew_button(self):
         return self.common.should_renew_button()
 
-    @run_in_background_thread("remove")
     def remove(self, server: PredefinedServer):
         if isinstance(server, InstituteAccessServer):
             self.common.remove_institute_access(server.base_url)
@@ -245,7 +241,6 @@ class ApplicationModel:
         elif isinstance(server, CustomServer):
             self.common.remove_custom_server(server.address)
 
-    @run_in_background_thread("connect")
     def connect(self, server: PredefinedServer, callback=None):
         config = None
         config_type = None
@@ -281,7 +276,6 @@ class ApplicationModel:
         connect(config, config_type)
 
     # https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
-    @run_in_background_thread("renew-session")
     def renew_session(self):
         was_connected = self.is_connected()
 
@@ -329,7 +323,6 @@ class ApplicationModel:
 
         self.connect(self.current_server)
 
-    #@run_in_background_thread("deactivate")
     def deactivate_connection(self, callback=None):
         self.common.set_disconnecting()
 
