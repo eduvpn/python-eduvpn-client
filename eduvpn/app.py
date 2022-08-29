@@ -210,6 +210,7 @@ class ApplicationModel:
         self.current_server_info = server_info
         return server_info
 
+    @run_in_background_thread('open-browser')
     def open_browser(self, url):
         webbrowser.open(url)
 
