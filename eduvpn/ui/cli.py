@@ -4,9 +4,9 @@ from eduvpn_common.state import State, StateType
 from ..app import ApplicationModel
 from ..settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
                         LETSCONNECT_CONFIG_PREFIX)
-from ..utils  import cmd_transition
+from ..utils  import cmd_transition, run_in_background_thread
 from .search import group_servers, ServerGroup
-from ..nm import action_with_mainloop
+import eduvpn.nm as nm
 
 from argparse import ArgumentParser
 import time
@@ -31,34 +31,44 @@ class CommandLine:
         def connect(callback=None):
             self.model.connect(self.grouped_servers[ServerGroup.SECURE_INTERNET][0], callback)
             
-        action_with_mainloop(connect)
+        nm.action_with_mainloop(connect)
 
     def disconnect(self, _):
         def disconnect(callback=None):
             try:
                 self.model.deactivate_connection(callback)
-            except:
-                pass
+            except Exception as e:
                 print("An error occurred while trying to disconnect. Are you connected?")
                 if callback:
                     callback()
 
-        action_with_mainloop(disconnect)
+        nm.action_with_mainloop(disconnect)
 
     def list(self, _):
-        print("Saved Servers:")
-
-        print("- [Institute Access Servers]")
+        print("============================")
+        print("Institute Access Servers")
+        print("============================")
         for index, institute in enumerate(self.grouped_servers[ServerGroup.INSTITUTE_ACCESS]):
-            print(f"\t* [{index+1}]: {str(institute)}")
+            print(f"- [{index+1}]: {str(institute)}")
+        if len(self.grouped_servers[ServerGroup.INSTITUTE_ACCESS]) == 0:
+            print("No institute access servers configured")
 
-        print("- [Secure Internet Server]")
+        print("\n============================")
+        print("Secure Internet Server")
+        print("============================")
         for secure in self.grouped_servers[ServerGroup.SECURE_INTERNET]:
-            print(f"\t* {str(secure)}")
+            print(f"- {str(secure)}")
+        if len(self.grouped_servers[ServerGroup.SECURE_INTERNET]) == 0:
+            print("No secure internet servers configured")
 
-        print("- [Custom Servers]")
+        print("\n============================")
+        print("Custom Servers")
+        print("============================")
         for index, custom in enumerate(self.grouped_servers[ServerGroup.OTHER]):
-            print(f"\t* [{index+1}]: {str(custom)}")
+            print(f"- [{index+1}]: {str(custom)}")
+        if len(self.grouped_servers[ServerGroup.OTHER]) == 0:
+            print("No custom servers configured")
+
     def initialize(self):
         uuid = nm.get_existing_configuration_uuid()
         if uuid:
