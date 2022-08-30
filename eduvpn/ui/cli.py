@@ -10,6 +10,7 @@ from eduvpn.settings import (
 )
 from eduvpn.utils import cmd_transition, run_in_background_thread
 from eduvpn.ui.search import group_servers, ServerGroup, update_results
+from eduvpn.ui.utils import get_validity_text
 import eduvpn.nm as nm
 from eduvpn.server import (
     ServerDatabase,
@@ -81,6 +82,17 @@ class CommandLine:
     @cmd_transition(State.OAUTH_STARTED, StateType.Enter)
     def on_oauth_started(self, old_state: State, url: str):
         print(f"Authorization needed. Your browser has been opened with url: {url}")
+
+    def status(self, _):
+        if not self.model.is_connected():
+            print("You are currently not connected to a server", file=sys.stderr)
+            sys.exit(1)
+
+        print(f"Connected to: {str(self.model.current_server)}")
+        expiry = self.model.current_server_info.expire_time
+        valid_for = get_validity_text(self.model.get_expiry(expiry)).replace("<b>", "").replace("</b>", "")
+        print(valid_for)
+        print(f"Current profile: {str(self.model.current_server_info.current_profile)}")
 
     def get_grouped_index(self, servers, index):
         if index < 0 or index >= len(servers):
@@ -285,6 +297,11 @@ class CommandLine:
             "disconnect", help="Disconnect the currently active server"
         )
         disconnect_parser.set_defaults(func=self.disconnect)
+
+        status_parser = subparsers.add_parser(
+            "status", help="See the current status of eduVPN"
+        )
+        status_parser.set_defaults(func=self.status)
 
         list_parser = subparsers.add_parser("list", help="List all configured servers")
         list_parser.add_argument("--all", action="store_true")
