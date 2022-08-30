@@ -118,7 +118,7 @@ class NetworkStats:
         filehandler.seek(0)
         return stat
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Cleanup the network stats by closing the files
         """

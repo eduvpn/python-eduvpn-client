@@ -15,6 +15,10 @@ from eduvpn.config import Configuration
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.utils import cache
+import gi
+gi.require_version("NM", "1.0")  # noqa: E402
+from gi.repository.Gio import Task
+from gi.repository.NM import Client, SimpleConnection
 
 _logger = logging.getLogger(__name__)
 
@@ -201,7 +205,7 @@ def import_ovpn(ovpn: Ovpn) -> "NM.SimpleConnection":
     return connection
 
 
-def add_connection_callback(client, result, callback=None):
+def add_connection_callback(client: Client, result: Task, callback: Optional[Callable]=None) -> None:
     new_con = client.add_connection_finish(result)
     set_uuid(uuid=new_con.get_uuid())
     _logger.info(f"Connection added for uuid: {get_uuid()}")
@@ -209,7 +213,7 @@ def add_connection_callback(client, result, callback=None):
         callback(new_con is not None)
 
 
-def add_connection(client: "NM.Client", connection: "NM.Connection", callback=None):
+def add_connection(client: "NM.Client", connection: "NM.Connection", callback: Optional[Callable]=None) -> None:
     _logger.info("Adding new connection")
     client.add_connection_async(
         connection=connection,
@@ -251,7 +255,7 @@ def update_connection(
     )
 
 
-def set_connection(client, new_connection, callback, system_wide=False):
+def set_connection(client: Client, new_connection: SimpleConnection, callback: Callable, system_wide: bool=False):
     uuid = get_uuid()
     new_connection = set_setting_ensure_permissions(new_connection, not system_wide)
     if uuid:
@@ -301,7 +305,7 @@ def save_connection_with_config(
     )
 
 
-def start_openvpn_connection(ovpn: Ovpn, *, callback=None):
+def start_openvpn_connection(ovpn: Ovpn, *, callback=None) -> None:
     client = get_client()
     _logger.info("writing ovpn configuration to Network Manager")
     new_con = import_ovpn(ovpn)
@@ -313,7 +317,7 @@ def start_wireguard_connection(
     config: ConfigParser,
     *,
     callback=None,
-):
+) -> None:
     client = get_client()
     _logger.info("writing wireguard configuration to Network Manager")
 
@@ -410,7 +414,7 @@ def get_cert_key(client: "NM.Client", uuid: str) -> Tuple[str, str]:
     return cert, key
 
 
-def activate_connection(client: "NM.Client", uuid: str, callback=None):
+def activate_connection(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
     con = client.get_connection_by_uuid(uuid)
     _logger.info(f"activate_connection uuid: {uuid} connection: {con}")
     if con is None:
@@ -437,7 +441,7 @@ def activate_connection(client: "NM.Client", uuid: str, callback=None):
     )
 
 
-def deactivate_connection(client: "NM.Client", uuid: str, callback=None):
+def deactivate_connection(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
     connection = client.get_connection_by_uuid(uuid)
     if connection is None:
         _logger.warning(f"no connection to deactivate of uuid {uuid}")
@@ -451,7 +455,7 @@ def deactivate_connection(client: "NM.Client", uuid: str, callback=None):
         _logger.warning(f"unexpected connection type {type} of {uuid}")
 
 
-def deactivate_connection_vpn(client: "NM.Client", uuid: str, callback=None):
+def deactivate_connection_vpn(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
     con = get_active_connection()
     _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
@@ -474,7 +478,7 @@ def deactivate_connection_vpn(client: "NM.Client", uuid: str, callback=None):
         _logger.info("No active connection to deactivate")
 
 
-def delete_connection(callback):
+def delete_connection(callback: Callable) -> None:
     client = get_client()
     uuid = get_uuid()
 
@@ -505,7 +509,7 @@ def delete_connection(callback):
     con.delete_async(callback=on_deleted, user_data=callback)
 
 
-def deactivate_connection_wg(client: "NM.Client", uuid: str, callback=None):
+def deactivate_connection_wg(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
     devices = [
         device
         for device in client.get_all_devices()
@@ -542,7 +546,7 @@ class ConnectionState(enum.Enum):
     UNKNOWN = enum.auto()
 
     @classmethod
-    def from_vpn_state(cls, state: "NM.VpnConnectionState"):
+    def from_vpn_state(cls, state: "NM.VpnConnectionState") -> "ConnectionState":
         if state in [
             NM.VpnConnectionState.CONNECT,
             NM.VpnConnectionState.IP_CONFIG_GET,
@@ -563,7 +567,7 @@ class ConnectionState(enum.Enum):
             raise ValueError(state)
 
     @classmethod
-    def from_active_state(cls, state: "NM.ActiveConnectionState"):
+    def from_active_state(cls, state: "NM.ActiveConnectionState") -> "ConnectionState":
         if state is NM.ActiveConnectionState.ACTIVATING:
             return cls.CONNECTING
         elif state is NM.ActiveConnectionState.ACTIVATED:
@@ -668,7 +672,7 @@ def get_dbus() -> Optional["dbus.SystemBus"]:
 
 def subscribe_to_status_changes(
     callback: Callable[[ConnectionState], Any],
-):
+) -> bool:
     """
     Subscribe to network status changes via the NM client.
 

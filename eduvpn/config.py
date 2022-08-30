@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, Dict, Generic, TypeVar
+from typing import Optional, Type, Any, Dict, Generic, TypeVar
 
 from eduvpn.settings import CONFIG_PREFIX
 
@@ -21,22 +21,22 @@ logger = logging.getLogger(__name__)
 
 
 class SettingDescriptor(Generic[T]):
-    def __set_name__(self, owner, name):
+    def __set_name__(self, owner: "Configuration", name: str) -> None:
         self.name = name
 
-    def __get__(self, instance, owner=None) -> T:
+    def __get__(self, instance: "Configuration", owner: "Configuration") -> T:
         return instance.get_setting(self.name)
 
-    def __set__(self, instance, value: T):
+    def __set__(self, instance: "Configuration", value: T) -> None:
         instance.set_setting(self.name, value)
 
 
 class Configuration:
-    def __init__(self, settings: Dict[str, Any]):
+    def __init__(self, settings: Dict[str, Any]) -> None:
         self.settings = settings
 
     @classmethod
-    def load(cls):
+    def load(cls) -> "Configuration":
         if not CONFIG_PATH.exists():
             return cls(dict(DEFAULT_SETTINGS))
         with open(CONFIG_PATH, "r") as f:
@@ -50,15 +50,15 @@ class Configuration:
         settings = {**DEFAULT_SETTINGS, **settings}
         return cls(settings)
 
-    def save(self):
+    def save(self) -> None:
         logger.debug(f"saving settings: {self.settings}")
         with open(CONFIG_PATH, "w") as f:
             json.dump(self.settings, f)
 
-    def get_setting(self, name: str):
+    def get_setting(self, name: str) -> bool:
         return self.settings[name]
 
-    def set_setting(self, name: str, value: Any):
+    def set_setting(self, name: str, value: Any) -> None:
         if value != self.settings[name]:
             self.settings[name] = value
             self.save()

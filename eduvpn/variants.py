@@ -14,7 +14,7 @@ class ApplicationVariant:
         server_image: Optional[str] = None,
         use_predefined_servers: bool = True,
         use_configured_servers: bool = True,
-    ):
+    ) -> None:
         self.app_id = app_id
         self.name = name
         self.icon = icon

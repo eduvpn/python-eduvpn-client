@@ -2,10 +2,10 @@ import sys
 import threading
 from functools import lru_cache, partial, wraps
 from gettext import gettext
-from logging import getLogger
+from logging import Logger, getLogger
 from os import environ, path
 from sys import prefix
-from typing import Callable, Optional
+from typing import Union, Callable, Optional
 
 import eduvpn_common.event as common
 from eduvpn_common.state import State, StateType
@@ -13,7 +13,7 @@ from eduvpn_common.state import State, StateType
 logger = getLogger(__file__)
 
 
-def get_logger(name_space: str):
+def get_logger(name_space: str) -> Logger:
     return getLogger(name_space)
 
 
@@ -58,7 +58,7 @@ def get_ui_state(state: State) -> int:
     return len(State) + state
 
 
-def ui_transition(state: State, state_type: StateType):
+def ui_transition(state: State, state_type: StateType) -> Callable:
     def decorator(func):
         @run_in_main_gtk_thread
         @common.class_state_transition(get_ui_state(state), state_type)
@@ -81,7 +81,7 @@ def cmd_transition(state: State, state_type: StateType):
     return decorator
 
 
-def model_transition(state: State, state_type: StateType):
+def model_transition(state: State, state_type: StateType) -> Callable:
     def decorator(func):
         @run_in_background_thread(str(func))
         def inner(self, other_state, data):
@@ -105,7 +105,7 @@ def model_transition(state: State, state_type: StateType):
     return decorator
 
 
-def run_in_background_thread(name: Optional[str] = None):
+def run_in_background_thread(name: Optional[str] = None) -> Callable:
     """
     Decorator for functions that must always run
     in a background thread.
@@ -121,7 +121,7 @@ def run_in_background_thread(name: Optional[str] = None):
     return decorator
 
 
-def run_in_main_gtk_thread(func):
+def run_in_main_gtk_thread(func: Union[partial, Callable]) -> Callable:
     """
     Decorator for functions that must always run
     in the main GTK thread.
@@ -196,5 +196,5 @@ def get_human_readable_bytes(total_bytes: int) -> str:
     return f"{hr_bytes:.2f} {suffix}"
 
 
-def translated_property(text):
+def translated_property(text: str) -> property:
     return property(lambda self: gettext(text))  # type: ignore

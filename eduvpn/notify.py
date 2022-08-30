@@ -6,12 +6,12 @@ from gi.repository import GdkPixbuf, Notify  # type: ignore
 from eduvpn.variants import ApplicationVariant
 
 
-def initialize(app_variant: ApplicationVariant):
+def initialize(app_variant: ApplicationVariant) -> None:
     Notify.init(app_variant.name)
 
 
 class Notification:
-    def __init__(self, app_variant: ApplicationVariant):
+    def __init__(self, app_variant: ApplicationVariant) -> None:
         self.app_variant = app_variant
         self.notification = None
 
@@ -28,7 +28,7 @@ class Notification:
         self.notification.update(title, message)  # type: ignore
         self.notification.show()  # type: ignore
 
-    def hide(self):
+    def hide(self) -> None:
         if self.notification is not None:
             self.notification.close()  # type: ignore
             self.notification = None

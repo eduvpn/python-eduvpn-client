@@ -2,9 +2,10 @@ import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import Gtk
+from gi.overrides.Gtk import Widget
 
 
-def show_ui_component(component, show: bool):
+def show_ui_component(component: Widget, show: bool) -> None:
     """
     Set the visibility of a UI component.
     """

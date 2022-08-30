@@ -8,7 +8,7 @@ import os
 import webbrowser
 from gettext import gettext as _
 from gettext import ngettext
-from typing import Optional
+from typing import List, Type, Union, Optional
 
 import gi
 
@@ -19,15 +19,19 @@ from functools import partial
 from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GObject, Gtk
 
-from eduvpn.app import Application
+from eduvpn.app import ServerInfo, Validity, Application
 from eduvpn.nm import nm_available, nm_managed
-from eduvpn.server import CustomServer, StatusImage
+from eduvpn.server import Profile, CustomServer, StatusImage
 from eduvpn.settings import HELP_URL
 from eduvpn.utils import (get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
                      run_periodically, ui_transition)
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
 from eduvpn.ui.utils import link_markup, show_error_dialog, show_ui_component
+from datetime import datetime
+from gi.overrides.Gdk import Event, EventButton
+from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn
+from gi.repository.Gtk import EventBox, SearchEntry, Switch
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +39,7 @@ logger = logging.getLogger(__name__)
 UPDATE_EXPIRY_INTERVAL = 1.0  # seconds
 UPDATE_RENEW_INTERVAL = 60.0  # seconds
 
-def get_validity_text(validity) -> str:
+def get_validity_text(validity: Validity) -> str:
     if validity is None:
         return _("Valid for <b>unknown</b>")
     if validity.is_expired:
@@ -80,7 +84,7 @@ def get_template_path(filename: str) -> str:
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
 
-    def __new__(cls, application: Application):
+    def __new__(cls: Type['EduVpnGtkWindow'], application: Type['EduVpnGtkApplication']) -> "EduVpnGtkWindow":
         builder = Gtk.Builder()
         builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
         window = builder.get_object("eduvpn")  # type: ignore
@@ -88,7 +92,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         window.set_application(application)  # type: ignore
         return window
 
-    def setup(self, builder, application: Application):
+    def setup(self, builder: Builder, application: Type['EduVpnGtkApplication']) -> None:  # type: ignore
         self.app = application.app  # type: ignore
         self.common = application.common
         handlers = {
@@ -215,7 +219,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # the switch being set by the ui from the user toggling it.
         self.connection_switch_state: Optional[bool] = None
 
-    def initialize(self):
+    def initialize(self) -> None:
         if not nm_available():
             show_error_dialog(
                 self,
@@ -239,32 +243,32 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # ui functions
 
-    def show_back_button(self, show: bool):
+    def show_back_button(self, show: bool) -> None:
         show_ui_component(self.back_button_container, show)
 
-    def set_search_text(self, text: str):
+    def set_search_text(self, text: str) -> None:
         self.find_server_search_input.set_text(text)
 
-    def show_loading_page(self, title: str, message: str):
+    def show_loading_page(self, title: str, message: str) -> None:
         self.show_page(self.loading_page)
         self.loading_title.set_text(title)
         self.loading_message.set_text(message)
 
-    def hide_loading_page(self):
+    def hide_loading_page(self) -> None:
         self.hide_page(self.loading_page)
 
-    def set_connection_switch_state(self, state: bool):
+    def set_connection_switch_state(self, state: bool) -> None:
         self.connection_switch_state = state
         self.connection_switch.set_state(state)
 
-    def show_page(self, page):
+    def show_page(self, page: Box) -> None:
         """
         Show a collection of pages.
         """
         self.page_stack.set_visible_child(page)
         self.current_shown_page = page
 
-    def hide_page(self, page):
+    def hide_page(self, page: Box) -> None:
         """
         Show a collection of pages.
         """
@@ -273,19 +277,19 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def is_on_settings_page(self) -> bool:
         return self.page_stack.get_visible_child() is self.settings_page
 
-    def enter_settings_page(self):
+    def enter_settings_page(self) -> None:
         assert not self.is_on_settings_page()
         self.setting_config_nm_system_wide.set_state(self.app.config.nm_system_wide)
         self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
         self.page_stack.set_visible_child(self.settings_page)
         self.show_back_button(True)
 
-    def leave_settings_page(self):
+    def leave_settings_page(self) -> None:
         assert self.is_on_settings_page()
         self.page_stack.set_visible_child(self.current_shown_page)
         self.show_back_button(False)
 
-    def recreate_profile_combo(self, server_info):
+    def recreate_profile_combo(self, server_info: ServerInfo) -> None:
         # Create a store of profiles
         profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
         active_profile = 0
@@ -320,7 +324,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.select_profile_text.set_text("Select Profile: ")
 
     # network state transition callbacks
-    def update_connection_server(self, server_info):
+    def update_connection_server(self, server_info: ServerInfo) -> None:
         if not server_info:
             return
 
@@ -350,18 +354,18 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.server_support_label.hide()
 
-    def update_connection_validity(self, expire_time):
+    def update_connection_validity(self, expire_time: datetime) -> None:
         expiry_text = get_validity_text(self.app.model.get_expiry(expire_time))
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
 
-    def update_connection_renew(self):
+    def update_connection_renew(self) -> None:
         if self.app.model.should_renew_button():
             self.renew_session_button.show()
         else:
             self.renew_session_button.hide()
 
-    def update_connection_status(self, connected):
+    def update_connection_status(self, connected: bool) -> None:
         if connected:
             self.connection_status_label.set_text(_("Connected"))
             self.connection_status_image.set_from_file(StatusImage.CONNECTED.path)
@@ -548,13 +552,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.hide_page(self.choose_location_page)
         self.location_list.hide()
 
-    def enter_ConfiguringConnection(self):
+    def enter_ConfiguringConnection(self) -> None:
         self.show_loading_page(
             _("Configuring"),
             _("Your connection is being configured."),
         )
 
-    def exit_ConfiguringConnection(self, old_state: str, data):
+    def exit_ConfiguringConnection(self, old_state: str, data: Union[List[Profile], ServerInfo]) -> None:
         self.hide_loading_page()
 
     @ui_transition(State.REQUEST_CONFIG, StateType.Enter)
@@ -597,7 +601,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.update_connection_server(server_info)
         self.start_validity_renew(server_info)
 
-    def start_validity_renew(self, server_info):
+    def start_validity_renew(self, server_info: ServerInfo) -> None:
         self.connection_validity_thread_cancel = run_periodically(
             run_in_main_gtk_thread(
                 partial(self.update_connection_validity, server_info.expire_time)
@@ -611,7 +615,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "update-renew",
         )
 
-    def stop_validity_renew(self):
+    def stop_validity_renew(self) -> None:
         if self.connection_validity_thread_cancel:
             self.connection_validity_thread_cancel()
 
@@ -631,7 +635,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # ui callbacks
 
-    def on_configure_settings(self, widget, event):
+    def on_configure_settings(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked on configure settings")
         if self.is_on_settings_page():
             self.leave_settings_page()
@@ -642,14 +646,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("clicked on get help")
         webbrowser.open(HELP_URL)
 
-    def on_go_back(self, widget, event):
+    def on_go_back(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked on go back")
         # TODO: Should the Go library have a settings state?
         if self.is_on_settings_page():
             self.leave_settings_page()
         self.common.go_back()
 
-    def on_add_other_server(self, button) -> None:
+    def on_add_other_server(self, button: Button) -> None:
         logger.debug("clicked on add other server")
         self.common.set_search_server()
         # self.app.interface_transition('configure_new_server')
@@ -659,7 +663,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = CustomServer(self.app.interface_state.address)
         self.app.interface_transition("connect_to_server", server)
 
-    def on_server_row_activated(self, widget, row, _col):
+    def on_server_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
         model = widget.get_model()
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
@@ -700,7 +704,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def server_change_profile(self, server):
         print("Change profile", str(server))
 
-    def on_server_row_pressed(self, widget, event):
+    def on_server_row_pressed(self, widget: TreeView, event: EventButton) -> None:
         # Exit if not a press
         if event.type != Gdk.EventType.BUTTON_PRESS:
             return
@@ -756,7 +760,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         change_location()
 
-    def on_search_changed(self, _=None):
+    def on_search_changed(self, _: Optional[SearchEntry]=None) -> None:
         query = self.find_server_search_input.get_text()
         logger.debug(f"entered server search query: {query}")
         if self.app.variant.use_predefined_servers and query.count(".") < 2:
@@ -772,7 +776,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("activated server search")
         # TODO
 
-    def on_switch_connection_state(self, _switch, state):
+    def on_switch_connection_state(self, _switch: Switch, state: bool) -> bool:
         logger.debug("clicked on switch connection state")
 
         @run_in_background_thread('activate')
@@ -793,12 +797,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 deactivate()
         return True
 
-    def pause_connection_info(self):
+    def pause_connection_info(self) -> None:
         if self.connection_info_thread_cancel:
             self.connection_info_thread_cancel()
             self.connection_info_thread_cancel = None
 
-    def stop_connection_info(self):
+    def stop_connection_info(self) -> None:
         # Pause the thread
         self.pause_connection_info()
 
@@ -843,7 +847,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.pause_connection_info()
 
-    def on_profile_row_activated(self, widget, row, _col):
+    def on_profile_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
         model = widget.get_model()
         profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
@@ -908,12 +912,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         model = widget.get_model()
         location = model[row][2]
         logger.debug(f"activated location: {location!r}")
-        self.app.interface_transition("select_secure_internet_location", location)
-
-    def on_location_row_activated(self, widget, row, _col):
-        model = widget.get_model()
-        location = model[row][2]
-        logger.debug(f"activated location: {location!r}")
 
         @run_in_background_thread('set-secure-location')
         def set_secure_location():
@@ -935,7 +933,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         renew_session()
 
-    def on_config_force_tcp(self, _switch, state: bool):
+    def on_config_force_tcp(self, _switch: Switch, state: bool) -> None:
         logger.debug("clicked on setting: 'force tcp'")
         self.app.config.force_tcp = state
 
@@ -943,10 +941,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("clicked on setting: 'nm system wide'")
         self.app.config.nm_system_wide = state
 
-    def on_close_window(self, window, event):
+    def on_close_window(self, window: "EduVpnGtkWindow", event: Event) -> bool:
         logger.debug("clicked on close window")
         self.hide()
-        self.get_application().on_window_closed()
+        application = self.get_application()
+        if application:
+            application.on_window_closed()
         return True
 
     def on_reopen_window(self):
