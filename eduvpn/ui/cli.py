@@ -263,7 +263,7 @@ class CommandLine:
         parser.set_defaults(func=lambda _: parser.print_usage())
         subparsers = parser.add_subparsers(title="subcommands")
 
-        connect_parser = subparsers.add_parser("connect", help="Connect to a server")
+        connect_parser = subparsers.add_parser("connect", help="connect to a server")
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
         connect_group.add_argument(
             "--search", type=str, help="connect to a server by searching for one"
@@ -294,18 +294,18 @@ class CommandLine:
         connect_group.set_defaults(func=self.connect_new)
 
         disconnect_parser = subparsers.add_parser(
-            "disconnect", help="Disconnect the currently active server"
+            "disconnect", help="disconnect the currently active server"
         )
         disconnect_parser.set_defaults(func=self.disconnect)
 
+        list_parser = subparsers.add_parser("list", help="list all configured servers")
+        list_parser.add_argument("--all", action="store_true", help="list all available servers")
+        list_parser.set_defaults(func=self.list)
+
         status_parser = subparsers.add_parser(
-            "status", help="See the current status of eduVPN"
+            "status", help="see the current status of eduVPN"
         )
         status_parser.set_defaults(func=self.status)
-
-        list_parser = subparsers.add_parser("list", help="List all configured servers")
-        list_parser.add_argument("--all", action="store_true")
-        list_parser.set_defaults(func=self.list)
 
         parsed = parser.parse_args()
         parsed.func(parsed)
