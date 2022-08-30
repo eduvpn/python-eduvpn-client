@@ -7,7 +7,6 @@ import logging
 import os
 import webbrowser
 from gettext import gettext as _
-from gettext import ngettext
 from typing import List, Type, Union, Optional
 
 import gi
@@ -19,7 +18,7 @@ from functools import partial
 from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GObject, Gtk
 
-from eduvpn.app import ServerInfo, Validity, Application
+from eduvpn.app import ServerInfo, Application
 from eduvpn.nm import nm_available, nm_managed
 from eduvpn.server import Profile, CustomServer, StatusImage
 from eduvpn.settings import HELP_URL
@@ -27,7 +26,7 @@ from eduvpn.utils import (get_prefix, get_ui_state, run_in_main_gtk_thread, run_
                      run_periodically, ui_transition)
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
-from eduvpn.ui.utils import link_markup, show_error_dialog, show_ui_component
+from eduvpn.ui.utils import get_validity_text, link_markup, show_error_dialog, show_ui_component
 from datetime import datetime
 from gi.overrides.Gdk import Event, EventButton
 from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn
@@ -38,44 +37,6 @@ logger = logging.getLogger(__name__)
 
 UPDATE_EXPIRY_INTERVAL = 1.0  # seconds
 UPDATE_RENEW_INTERVAL = 60.0  # seconds
-
-def get_validity_text(validity: Validity) -> str:
-    if validity is None:
-        return _("Valid for <b>unknown</b>")
-    if validity.is_expired:
-        return _("This session has expired")
-    delta = validity.remaining
-    days = delta.days
-    hours = delta.seconds // 3600
-    if days == 0:
-        if hours == 0:
-            minutes = delta.seconds // 60
-            if minutes == 0:
-                seconds = delta.seconds
-                return ngettext(
-                    "Valid for <b>{0} second</b>",
-                    "Valid for <b>{0} seconds</b>",
-                    seconds,
-                ).format(seconds)
-            else:
-                return ngettext(
-                    "Valid for <b>{0} minute</b>",
-                    "Valid for <b>{0} minutes</b>",
-                    minutes,
-                ).format(minutes)
-        else:
-            return ngettext(
-                "Valid for <b>{0} hour</b>", "Valid for <b>{0} hours</b>", hours
-            ).format(hours)
-    else:
-        dstr = ngettext(
-            "Valid for <b>{0} day</b>", "Valid for <b>{0} days</b>", days
-        ).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>", " and <b>{0} hours</b>", hours).format(
-            hours
-        )
-        return dstr + hstr
-
 
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
