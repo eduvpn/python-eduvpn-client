@@ -19,7 +19,7 @@ class StatusImage(enum.Enum):
     NOT_CONNECTED = "desktop-not-connected.png"
 
     @property
-    def path(self):
+    def path(self) -> str:
         return IMAGE_PREFIX + self.value
 
 
@@ -69,14 +69,14 @@ class InstituteAccessServer:
                 raise TypeError(keyword_list)
         self.keyword_list = keyword_list
 
-    def __str__(self):
+    def __str__(self) -> str:
         return extract_translation(self.display_name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<InstituteAccessServer {str(self)!r}>"
 
     @property
-    def search_texts(self):
+    def search_texts(self) -> List[str]:
         texts = [str(self)]
         if self.keyword_list:
             texts.extend(self.keyword_list)
@@ -100,10 +100,10 @@ class OrganisationServer:
         self.org_id = org_id
         self.keyword_list = keyword_list
 
-    def __str__(self):
+    def __str__(self) -> str:
         return extract_translation(self.display_name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<OrganisationServer {str(self)!r}>"
 
     @property
@@ -113,7 +113,7 @@ class OrganisationServer:
         return None
 
     @property
-    def search_texts(self):
+    def search_texts(self) -> List[str]:
         texts = [str(self)]
         if self.keyword:
             texts.append(self.keyword)
@@ -125,13 +125,13 @@ class CustomServer:
     A server defined by the user.
     """
 
-    def __init__(self, address: str):
+    def __init__(self, address: str) -> None:
         self.address = address
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.address
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<CustomServer {str(self)!r}>"
 
 
@@ -150,13 +150,13 @@ class Profile:
         self.vpn_proto_list = frozenset(vpn_proto_list)
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self.profile_id
 
-    def __str__(self):
+    def __str__(self) -> str:
         return extract_translation(self.display_name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Profile id={self.id!r} {str(self)!r}>"
 
     @property
@@ -193,7 +193,7 @@ def is_search_match(server: PredefinedServer, query: str) -> bool:
 
 
 class ServerDatabase:
-    def __init__(self):
+    def __init__(self) -> None:
         # TODO load the servers from a cache
         self.servers = []
         self.configured = []

@@ -12,6 +12,8 @@ from eduvpn.app import Application
 from eduvpn.utils import run_in_main_gtk_thread
 from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
+from gi.repository.Gio import ApplicationCommandLine
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +28,7 @@ class EduVpnGtkApplication(Gtk.Application):
     # TODO: Go type hint
     def __init__(
         self, *args, app_variant: ApplicationVariant, common: EduVPN, **kwargs
-    ):
+    ) -> None:
         super().__init__(  # type: ignore
             *args,
             application_id=app_variant.app_id,
@@ -56,19 +58,19 @@ class EduVpnGtkApplication(Gtk.Application):
             None,
         )
 
-    def do_startup(self):
+    def do_startup(self) -> None:
         logger.debug("startup")
         Gtk.Application.do_startup(self)
         i18n.initialize(self.app.variant)
         notify.initialize(self.app.variant)
         self.connection_notification = notify.Notification(self.app.variant)
 
-    def do_shutdown(self):
+    def do_shutdown(self) -> None:  # type: ignore
         logger.debug("shutdown")
         self.connection_notification.hide()
         Gtk.Application.do_shutdown(self)
 
-    def do_activate(self):
+    def do_activate(self) -> None:
         logger.debug("activate")
         if not self.window:
             self.window = EduVpnGtkWindow(application=self)
@@ -78,7 +80,7 @@ class EduVpnGtkApplication(Gtk.Application):
         else:
             self.window.on_reopen_window()
 
-    def do_command_line(self, command_line):
+    def do_command_line(self, command_line: ApplicationCommandLine) -> int:  # type: ignore
         logger.debug(f"command line: {command_line}")
         options = command_line.get_options_dict()
         ## unpack the commandline args into a dict
@@ -99,13 +101,13 @@ class EduVpnGtkApplication(Gtk.Application):
         self.activate()
         return 0
 
-    def on_quit(self, action=None, _param=None):
+    def on_quit(self, action: None=None, _param: None=None) -> None:
         logger.debug("quit")
         # Deregister the common library to save settings
         self.common.deregister()
         self.quit()
 
-    def on_window_closed(self):
+    def on_window_closed(self) -> None:
         logger.debug("window closed")
         # TODO: Go, only quit while no active connection
         self.on_quit()

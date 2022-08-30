@@ -1,5 +1,5 @@
 from gettext import gettext as _
-from io import StringIO
+from io import TextIOWrapper, StringIO
 from typing import Callable, Iterable, List, Optional
 
 
@@ -7,7 +7,7 @@ class Item:
     def to_string(self) -> str:
         raise NotImplementedError
 
-    def write(self, file):
+    def write(self, file: TextIOWrapper) -> None:
         line = self.to_string()
         file.write(f"{line}\n")
 
@@ -20,20 +20,20 @@ class Item:
 
 
 class Field(Item):
-    def __init__(self, name: str, arguments: List[str]):
+    def __init__(self, name: str, arguments: List[str]) -> None:
         self.name = name
         self.arguments = arguments
 
-    def to_string(self):
+    def to_string(self) -> str:
         return f'{self.name} {" ".join(self.arguments)}'
 
 
 class Section(Item):
-    def __init__(self, tag: str, content: List[str]):
+    def __init__(self, tag: str, content: List[str]) -> None:
         self.tag = tag
         self.content = content
 
-    def to_string(self):
+    def to_string(self) -> str:
         lines = []
         lines.append(f"<{self.tag}>")
         lines.extend(self.content)
@@ -42,10 +42,10 @@ class Section(Item):
 
 
 class Comment(Item):
-    def __init__(self, content: str):
+    def __init__(self, content: str) -> None:
         self.content = content
 
-    def to_string(self):
+    def to_string(self) -> str:
         return f"#{self.content}"
 
 
@@ -83,14 +83,14 @@ def parse_ovpn(lines: Iterable[str]) -> Iterable[Item]:
 
 
 class Ovpn:
-    def __init__(self, content: List[Item]):
+    def __init__(self, content: List[Item]) -> None:
         self.content = content
 
     @classmethod
     def parse(cls, content: str) -> "Ovpn":
         return cls(list(parse_ovpn(content.splitlines())))
 
-    def write(self, file):
+    def write(self, file: TextIOWrapper) -> None:
         for item in self.content:
             item.write(file)
 

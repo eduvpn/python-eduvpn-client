@@ -2,7 +2,7 @@ import json
 import logging
 import webbrowser
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Callable, Iterator, Union, Optional
 
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
@@ -27,7 +27,7 @@ def now() -> datetime:
 
 
 class Validity:
-    def __init__(self, end: datetime):
+    def __init__(self, end: datetime) -> None:
         self.end = end
 
     @property
@@ -73,7 +73,7 @@ class ServerInfo:
 
 
 class ApplicationModel:
-    def __init__(self, common: EduVPN):
+    def __init__(self, common: EduVPN) -> None:
         self.common = common
         self.server_db = ServerDatabase()
         self.common.register_class_callbacks(self)
@@ -81,7 +81,7 @@ class ApplicationModel:
         self.current_server = None
         self.current_server_info = None
 
-    def get_expiry(self, expire_time):
+    def get_expiry(self, expire_time: datetime) -> Validity:
         return Validity(expire_time)
 
     @model_transition(State.NO_SERVER, StateType.Enter)
@@ -156,7 +156,7 @@ class ApplicationModel:
     def parse_request_config(self, old_state: str, data: str):
         return data
 
-    def get_server_info(self, server_info_dict: str, server_type=None):
+    def get_server_info(self, server_info_dict: dict, server_type=None):
         server_display_name = extract_translation(
             server_info_dict.get("display_name") or "Unknown Server"
         )
@@ -231,7 +231,7 @@ class ApplicationModel:
     def set_secure_location(self, location_id: str):
         self.common.set_secure_location(location_id)
 
-    def should_renew_button(self):
+    def should_renew_button(self) -> int:
         return self.common.should_renew_button()
 
     def remove(self, server: PredefinedServer):
@@ -242,7 +242,7 @@ class ApplicationModel:
         elif isinstance(server, CustomServer):
             self.common.remove_custom_server(server.address)
 
-    def connect(self, server: PredefinedServer, callback=None):
+    def connect(self, server: PredefinedServer, callback: Optional[Callable]=None) -> None:
         config = None
         config_type = None
         if isinstance(server, InstituteAccessServer):
@@ -291,7 +291,7 @@ class ApplicationModel:
             reconnect()
 
     @run_in_main_gtk_thread
-    def disconnect(self, callback=None):
+    def disconnect(self, callback: Optional[Callable]=None) -> None:
         client = nm.get_client()
         uuid = nm.get_uuid()
         nm.deactivate_connection(client, uuid, callback)
@@ -321,7 +321,7 @@ class ApplicationModel:
 
         self.connect(self.current_server)
 
-    def deactivate_connection(self, callback=None):
+    def deactivate_connection(self, callback: Optional[Callable]=None) -> None:
         self.common.set_disconnecting()
 
         @run_in_background_thread("on-disconnected")
@@ -332,13 +332,13 @@ class ApplicationModel:
 
         self.disconnect(on_disconnected)
 
-    def search_predefined(self, query: str):
+    def search_predefined(self, query: str) -> Iterator[Any]:
         return self.server_db.search_predefined(query)
 
-    def search_custom(self, query: str):
+    def search_custom(self, query: str) -> Iterator[Any]:
         return self.server_db.search_custom(query)
 
-    def is_connected(self):
+    def is_connected(self) -> int:
         return self.common.in_fsm_state(State.CONNECTED)
 
     def is_disconnected(self):
@@ -347,15 +347,15 @@ class ApplicationModel:
 
 class Application:
     def __init__(
-        self, variant: ApplicationVariant, make_func_threadsafe, common: EduVPN
-    ):
+        self, variant: ApplicationVariant, make_func_threadsafe: Callable, common: EduVPN
+    ) -> None:
         self.variant = variant
         self.make_func_threadsafe = make_func_threadsafe
         self.common = common
         self.config = Configuration.load()
         self.model = ApplicationModel(common)
 
-    def initialize(self):
+    def initialize(self) -> None:
         self.initialize_network()
 
     @run_in_background_thread("on-network-update")
@@ -374,7 +374,7 @@ class Application:
         except:
             return
 
-    def initialize_network(self):
+    def initialize_network(self) -> None:
         """
         Determine the current network state.
         """
