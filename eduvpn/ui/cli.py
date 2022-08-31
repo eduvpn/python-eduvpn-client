@@ -310,6 +310,8 @@ class CommandLine:
         parsed = parser.parse_args()
         parsed.func(parsed)
 
+        self.common.deregister()
+
 
 def eduvpn():
     _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX))
