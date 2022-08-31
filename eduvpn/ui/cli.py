@@ -23,6 +23,7 @@ from eduvpn.server import (
 import argparse
 import sys
 
+
 def get_grouped_index(servers, index):
     if index < 0 or index >= len(servers):
         return None
@@ -33,8 +34,11 @@ def get_grouped_index(servers, index):
     servers_added += grouped_servers[ServerGroup.OTHER]
     return servers_added[index]
 
+
 class CommandLine:
-    def __init__(self, common):
+    def __init__(self, name: str, enable_discovery: bool, common):
+        self.name = name
+        self.discovery = enable_discovery
         self.common = common
         self.model = ApplicationModel(common)
         self.servers = []
@@ -63,7 +67,7 @@ class CommandLine:
                 print(f"Input is not a number: {server_nr}")
 
                 if fallback_search:
-                    print("Using the term as a search query instead")
+                    print("Using the term as a search query instead...")
                     server = self.get_server_search(server_nr)
                     if server:
                         return server
@@ -83,7 +87,7 @@ class CommandLine:
 
         if len(servers) == 1:
             server = servers[0]
-            print(f"One server found: {server.category_str} \"{server.detailed_str}\"")
+            print(f'One server found: {server.category_str} "{server.detailed_str}"')
             ask = input("Do you want to connect to it (y/n): ")
 
             if ask in ["y", "yes"]:
@@ -109,7 +113,14 @@ class CommandLine:
 
         nm.action_with_mainloop(connect)
 
+    def ask_server_custom(self):
+        custom = input("Enter a URL to connect to: ")
+        return CustomServer(custom)
+
     def ask_server(self):
+        if not self.discovery:
+            return self.ask_server_custom()
+
         if self.servers:
             answer = input("Do you want to connect to an existing server? (y/n):")
 
@@ -124,12 +135,12 @@ class CommandLine:
         return self.ask_server_input(servers, fallback_search=True)
 
     def parse_server(self, variables):
-        search_query = variables["search"]
-        url = variables["url"]
-        custom_url = variables["custom_url"]
-        org_id = variables["orgid"]
-        number = variables["number"]
-        number_all = variables["number_all"]
+        search_query = variables.get("search", None)
+        url = variables.get("url", None)
+        custom_url = variables.get("custom_url", None)
+        org_id = variables.get("orgid", None)
+        number = variables.get("number", None)
+        number_all = variables.get("number_all", None)
 
         if search_query:
             server = self.get_server_search(search_query)
@@ -154,13 +165,15 @@ class CommandLine:
                 print(
                     f"Server with number: {number_all} does not exist. Maybe the server list had an update? Make sure to re-run list --all"
                 )
+        return server
 
     def status(self, _args={}):
         if not self.model.is_connected():
             print("You are currently not connected to a server", file=sys.stderr)
             return False
 
-        print(f"Connected to: {str(self.model.current_server)}")
+        current = self.model.current_server
+        print(f"Connected to {current.category_str}: {current.detailed_str}")
         expiry = self.model.current_server_info.expire_time
         valid_for = (
             get_validity_text(self.model.get_expiry(expiry))
@@ -172,7 +185,10 @@ class CommandLine:
 
     def connect(self, variables={}):
         if self.model.is_connected():
-            print("You are already connected to a server, please disconnect first", file=sys.stderr)
+            print(
+                "You are already connected to a server, please disconnect first",
+                file=sys.stderr,
+            )
             return False
 
         if not variables:
@@ -191,9 +207,7 @@ class CommandLine:
             try:
                 self.model.deactivate_connection(callback)
             except Exception as e:
-                print(
-                    "An error occurred while trying to disconnect"
-                )
+                print("An error occurred while trying to disconnect")
                 print("Error disconnecting:", e, file=sys.stderr)
                 if callback:
                     callback()
@@ -211,7 +225,7 @@ class CommandLine:
             total_servers += 1
 
         if len(grouped_servers[ServerGroup.SECURE_INTERNET]) > 0:
-            print("\n============================")
+            print("============================")
             print("Secure Internet Server")
             print("============================")
         for secure in grouped_servers[ServerGroup.SECURE_INTERNET]:
@@ -219,7 +233,7 @@ class CommandLine:
             total_servers += 1
 
         if len(grouped_servers[ServerGroup.OTHER]) > 0:
-            print("\n============================")
+            print("============================")
             print("Custom Servers")
             print("============================")
         for custom in grouped_servers[ServerGroup.OTHER]:
@@ -249,7 +263,10 @@ class CommandLine:
 
     def remove(self, args={}):
         if self.model.is_connected():
-            print("Please disconnect from your server before doing any changes", file=sys.stderr)
+            print(
+                "Please disconnect from your server before doing any changes",
+                file=sys.stderr,
+            )
             return False
 
         if not self.servers:
@@ -265,14 +282,16 @@ class CommandLine:
         return self.remove_server(server)
 
     def help_interactive(self):
-        print("Available commands: connect, disconnect, remove, status, list, help, quit")
+        print(
+            "Available commands: connect, disconnect, remove, status, list, help, quit"
+        )
 
     def interactive(self, _):
-        print("Welcome to the eduVPN interactive commandline")
+        print(f"Welcome to the {self.name} interactive commandline")
         self.help_interactive()
         command = ""
         while command != "quit":
-            command = input("[eduVPN]: ")
+            command = input(f"[{self.name}]: ")
             commands = {
                 "connect": self.connect,
                 "disconnect": self.disconnect,
@@ -296,7 +315,9 @@ class CommandLine:
     def start(self):
         self.common.register(debug=True)
         self.initialize()
-        parser = argparse.ArgumentParser(description="The eduVPN command line client")
+        parser = argparse.ArgumentParser(
+            description=f"The {self.name} command line client"
+        )
         parser.set_defaults(func=lambda _: parser.print_usage())
         subparsers = parser.add_subparsers(title="subcommands")
 
@@ -307,19 +328,20 @@ class CommandLine:
 
         connect_parser = subparsers.add_parser("connect", help="connect to a server")
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
-        connect_group.add_argument(
-            "--search", type=str, help="connect to a server by searching for one"
-        )
-        connect_group.add_argument(
-            "--orgid",
-            type=str,
-            help="connect to a secure internet server using the organisation ID",
-        )
-        connect_group.add_argument(
-            "--url",
-            type=str,
-            help="connect to an institute access server using the URL",
-        )
+        if self.discovery:
+            connect_group.add_argument(
+                "--search", type=str, help="connect to a server by searching for one"
+            )
+            connect_group.add_argument(
+                "--orgid",
+                type=str,
+                help="connect to a secure internet server using the organisation ID",
+            )
+            connect_group.add_argument(
+                "--url",
+                type=str,
+                help="connect to an institute access server using the URL",
+            )
         connect_group.add_argument(
             "--custom-url", type=str, help="connect to a custom server using the URL"
         )
@@ -328,11 +350,12 @@ class CommandLine:
             type=int,
             help="connect to an already configured server using the number. Run the 'list' subcommand to see the currently configured servers with their number",
         )
-        connect_group.add_argument(
-            "--number-all",
-            type=int,
-            help="connect to a server using the number for all servers. Run the 'list --all' command to see all the available servers with their number",
-        )
+        if self.discovery:
+            connect_group.add_argument(
+                "--number-all",
+                type=int,
+                help="connect to a server using the number for all servers. Run the 'list --all' command to see all the available servers with their number",
+            )
         connect_group.set_defaults(func=lambda args: self.connect(vars(args)))
 
         disconnect_parser = subparsers.add_parser(
@@ -341,13 +364,21 @@ class CommandLine:
         disconnect_parser.set_defaults(func=self.disconnect)
 
         list_parser = subparsers.add_parser("list", help="list all configured servers")
-        list_parser.add_argument(
-            "--all", action="store_true", help="list all available servers"
-        )
+        if self.discovery:
+            list_parser.add_argument(
+                "--all", action="store_true", help="list all available servers"
+            )
         list_parser.set_defaults(func=lambda args: self.list(vars(args)))
 
-        remove_parser = subparsers.add_parser("remove", help="remove a configured server")
-        remove_parser.add_argument("--number", type=int, required=True, help="remove a configured server by number")
+        remove_parser = subparsers.add_parser(
+            "remove", help="remove a configured server"
+        )
+        remove_parser.add_argument(
+            "--number",
+            type=int,
+            required=True,
+            help="remove a configured server by number",
+        )
         remove_parser.set_defaults(func=lambda args: self.remove(vars(args)))
 
         status_parser = subparsers.add_parser(
@@ -359,6 +390,7 @@ class CommandLine:
         parsed.func(parsed)
 
         self.common.deregister()
+
 
 class CommandLineTransitions:
     def __init__(self, model):
@@ -416,15 +448,15 @@ class CommandLineTransitions:
 
 def eduvpn():
     _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX))
-    cmd = CommandLine(_common)
+    cmd = CommandLine("eduVPN", True, _common)
     cmd.start()
 
 
 def letsconnect():
     _common = common.EduVPN(LETSCONNECT_CLIENT_ID, str(LETSCONNECT_CONFIG_PREFIX))
-    cmd = CommandLine(_common)
+    cmd = CommandLine("Let's Connect!", False, _common)
     cmd.start()
 
 
 if __name__ == "__main__":
-    eduvpn()
+    letsconnect()
