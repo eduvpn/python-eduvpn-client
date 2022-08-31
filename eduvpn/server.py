@@ -76,6 +76,14 @@ class InstituteAccessServer:
         return f"<InstituteAccessServer {str(self)!r}>"
 
     @property
+    def category_str(self) -> str:
+        return "Institute Access Server"
+
+    @property
+    def detailed_str(self) -> str:
+        return f"{str(self)} (URL: {self.base_url})"
+
+    @property
     def search_texts(self) -> List[str]:
         texts = [str(self)]
         if self.keyword_list:
@@ -107,6 +115,14 @@ class OrganisationServer:
         return f"<OrganisationServer {str(self)!r}>"
 
     @property
+    def category_str(self) -> str:
+        return "Organisation Server"
+
+    @property
+    def detailed_str(self) -> str:
+        return f"{str(self)} (Org ID: {self.org_id})"
+
+    @property
     def keyword(self) -> Optional[str]:
         if self.keyword_list:
             return extract_translation(self.keyword_list)
@@ -133,6 +149,15 @@ class CustomServer:
 
     def __repr__(self) -> str:
         return f"<CustomServer {str(self)!r}>"
+
+    @property
+    def category_str(self) -> str:
+        return "Custom Server"
+
+    @property
+    def detailed_str(self) -> str:
+        return f"{str(self)} (URL)"
+
 
 
 class Profile:
