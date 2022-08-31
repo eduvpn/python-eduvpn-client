@@ -22,7 +22,6 @@ from eduvpn.server import (
 import argparse
 import sys
 
-
 def get_grouped_index(servers, index):
     if index < 0 or index >= len(servers):
         return None
@@ -82,7 +81,8 @@ class CommandLine:
             return None
 
         if len(servers) == 1:
-            print(f"One server found: {str(servers[0])}")
+            server = servers[0]
+            print(f"One server found: {server.category_str} \"{server.detailed_str}\"")
             ask = input("Do you want to connect to it (y/n): ")
 
             if ask in ["y", "yes"]:
@@ -198,7 +198,7 @@ class CommandLine:
             print("Institute Access Servers")
             print("============================")
         for institute in grouped_servers[ServerGroup.INSTITUTE_ACCESS]:
-            print(f"[{index}]: {str(institute)} (URL: {institute.base_url})")
+            print(f"[{index}]: {institute.detailed_str}")
             index += 1
 
         if len(grouped_servers[ServerGroup.SECURE_INTERNET]) > 0:
@@ -206,7 +206,7 @@ class CommandLine:
             print("Secure Internet Server")
             print("============================")
         for secure in grouped_servers[ServerGroup.SECURE_INTERNET]:
-            print(f"[{index}]: {str(secure)} (Org ID: {secure.org_id})")
+            print(f"[{index}]: {secure.detailed_str}")
             index += 1
 
         if len(grouped_servers[ServerGroup.OTHER]) > 0:
@@ -214,7 +214,7 @@ class CommandLine:
             print("Custom Servers")
             print("============================")
         for custom in grouped_servers[ServerGroup.OTHER]:
-            print(f"[{index}]: {str(custom)} (URL)")
+            print(f"[{index}]: {custom.detailed_str}")
             index += 1
         if index > 1:
             print("The number for the server is in [brackets]")
