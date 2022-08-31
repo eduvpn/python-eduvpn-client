@@ -1,3 +1,4 @@
+import readline
 import eduvpn_common.main as common
 from eduvpn_common.state import State, StateType
 
