@@ -157,6 +157,9 @@ class ApplicationModel:
         return data
 
     def get_server_info(self, server_info_dict: dict, server_type=None):
+        if server_info_dict is None:
+            server_info_dict = {}
+
         server_display_name = extract_translation(
             server_info_dict.get("display_name") or "Unknown Server"
         )
@@ -166,7 +169,7 @@ class ApplicationModel:
         current_profile = None
 
         profiles_dict = server_info_dict.get("profiles")
-        expire_time = server_info_dict.get("expire_time")
+        expire_time = server_info_dict.get("expire_time", 0)
 
         if profiles_dict:
             if profiles_dict["info"]["profile_list"] is not None:
