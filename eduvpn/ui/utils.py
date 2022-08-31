@@ -1,5 +1,6 @@
 import gi
 
+from gettext import gettext as _
 from gettext import ngettext
 from eduvpn.app import Validity
 gi.require_version("Gtk", "3.0")  # noqa: E402
