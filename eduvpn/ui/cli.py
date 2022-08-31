@@ -41,16 +41,16 @@ class CommandLine:
         self.common.register_class_callbacks(self.transitions)
 
     def ask_server_input(self, servers, fallback_search=False):
-        print("Multiple servers found:\n")
+        print("Multiple servers found:")
         self.list_groups(group_servers(servers))
 
         while True:
             if fallback_search:
                 server_nr = input(
-                    "\nPlease select a server number to connect to or enter a search query: "
+                    "\nPlease select a server number or enter a search query: "
                 )
             else:
-                server_nr = input("\nPlease select a server number to connect to: ")
+                server_nr = input("\nPlease select a server number: ")
             try:
                 server_index = int(server_nr)
                 server = get_grouped_index(servers, server_index - 1)
@@ -170,6 +170,10 @@ class CommandLine:
         print(f"Current profile: {str(self.model.current_server_info.current_profile)}")
 
     def connect(self, variables={}):
+        if self.model.is_connected():
+            print("You are already connected to a server, please disconnect first", file=sys.stderr)
+            return False
+
         if not variables:
             server = self.ask_server()
         else:
@@ -178,12 +182,16 @@ class CommandLine:
         return self.connect_server(server)
 
     def disconnect(self, _arg={}):
+        if not self.model.is_connected():
+            print("You are not connected to a server", file=sys.stderr)
+            return False
+
         def disconnect(callback=None):
             try:
                 self.model.deactivate_connection(callback)
             except Exception as e:
                 print(
-                    "An error occurred while trying to disconnect. Are you connected?"
+                    "An error occurred while trying to disconnect"
                 )
                 print("Error disconnecting:", e, file=sys.stderr)
                 if callback:
@@ -192,31 +200,31 @@ class CommandLine:
         nm.action_with_mainloop(disconnect)
 
     def list_groups(self, grouped_servers):
-        index = 1
+        total_servers = 1
         if len(grouped_servers[ServerGroup.INSTITUTE_ACCESS]) > 0:
             print("============================")
             print("Institute Access Servers")
             print("============================")
         for institute in grouped_servers[ServerGroup.INSTITUTE_ACCESS]:
-            print(f"[{index}]: {institute.detailed_str}")
-            index += 1
+            print(f"[{total_servers}]: {institute.detailed_str}")
+            total_servers += 1
 
         if len(grouped_servers[ServerGroup.SECURE_INTERNET]) > 0:
             print("\n============================")
             print("Secure Internet Server")
             print("============================")
         for secure in grouped_servers[ServerGroup.SECURE_INTERNET]:
-            print(f"[{index}]: {secure.detailed_str}")
-            index += 1
+            print(f"[{total_servers}]: {secure.detailed_str}")
+            total_servers += 1
 
         if len(grouped_servers[ServerGroup.OTHER]) > 0:
             print("\n============================")
             print("Custom Servers")
             print("============================")
         for custom in grouped_servers[ServerGroup.OTHER]:
-            print(f"[{index}]: {custom.detailed_str}")
-            index += 1
-        if index > 1:
+            print(f"[{total_servers}]: {custom.detailed_str}")
+            total_servers += 1
+        if total_servers > 1:
             print("The number for the server is in [brackets]")
 
     def list(self, args={}):
@@ -229,8 +237,34 @@ class CommandLine:
             servers = server_db.servers
         self.list_groups(group_servers(servers))
 
+    def remove_server(self, server):
+        if not server:
+            print("No server chosen to remove")
+            return False
+
+        self.model.remove(server)
+        if server in self.servers:
+            self.servers.remove(server)
+
+    def remove(self, args={}):
+        if self.model.is_connected():
+            print("Please disconnect from your server before doing any changes", file=sys.stderr)
+            return False
+
+        if not self.servers:
+            print("There are no servers configured to remove", file=sys.stderr)
+            return False
+
+        if not args:
+            server = self.ask_server_input(self.servers)
+        else:
+            server = get_grouped_index(self.servers, number - 1)
+            if not server:
+                print(f"Configured server with number: {number} does not exist")
+        return self.remove_server(server)
+
     def help_interactive(self):
-        print("Available commands: connect, disconnect, status, list, help, quit")
+        print("Available commands: connect, disconnect, remove, status, list, help, quit")
 
     def interactive(self, _):
         print("Welcome to the eduVPN interactive commandline")
@@ -241,6 +275,7 @@ class CommandLine:
             commands = {
                 "connect": self.connect,
                 "disconnect": self.disconnect,
+                "remove": self.remove,
                 "status": self.status,
                 "list": self.list,
                 "help": self.help_interactive,
@@ -309,6 +344,10 @@ class CommandLine:
             "--all", action="store_true", help="list all available servers"
         )
         list_parser.set_defaults(func=lambda args: self.list(vars(args)))
+
+        remove_parser = subparsers.add_parser("remove", help="remove a configured server")
+        remove_parser.add_argument("--number", type=int, required=True, help="remove a configured server by number")
+        remove_parser.set_defaults(func=lambda args: self.remove(vars(args)))
 
         status_parser = subparsers.add_parser(
             "status", help="see the current status of eduVPN"
