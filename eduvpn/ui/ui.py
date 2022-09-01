@@ -54,8 +54,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         return window
 
     def setup(self, builder: Builder, application: Type['EduVpnGtkApplication']) -> None:  # type: ignore
-        self.app = application.app  # type: ignore
-        self.common = application.common
+        self.eduvpn_app = application
+        self.app = self.eduvpn_app.app  # type: ignore
+        self.common = self.eduvpn_app.common
         handlers = {
             "on_configure_settings": self.on_configure_settings,
             "on_get_help": self.on_get_help,
@@ -315,13 +316,35 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.server_support_label.hide()
 
+    # every second
     def update_connection_validity(self, expire_time: datetime) -> None:
         is_expired, expiry_text = get_validity_text(self.app.model.get_expiry(expire_time))
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
 
+        # The connection is expired, show a notification
+        if is_expired:
+            # Be extra sure the renew button is shown
+            self.renew_session_button.show()
+
+            # Stop updating the text
+            if self.connection_validity_thread_cancel:
+                self.connection_validity_thread_cancel()
+
+            self.eduvpn_app.enter_SessionExpiredState()
+
+
+    # Show renew button or not
     def update_connection_renew(self) -> None:
         if self.app.model.should_renew_button():
+            # Stop polling for updates as we're done toggling the button
+            if self.connection_renew_thread_cancel:
+                self.connection_renew_thread_cancel()
+
+            # This is the first time that the renew session button will be visible
+            # Show a notification that it is pending expiry
+            if not self.renew_session_button.is_visible():
+                self.eduvpn_app.enter_SessionPendingExpiryState()
             self.renew_session_button.show()
         else:
             self.renew_session_button.hide()
@@ -579,9 +602,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def stop_validity_renew(self) -> None:
         if self.connection_validity_thread_cancel:
             self.connection_validity_thread_cancel()
+            self.connection_validity_thread_cancel = None
 
         if self.connection_renew_thread_cancel:
             self.connection_renew_thread_cancel()
+            self.connection_renew_thread_cancel = None
 
     # TODO: Implement with Go callback
     def enter_ErrorState(self, old_state, new_state):
@@ -889,7 +914,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("clicked on renew session")
 
         @run_in_background_thread('renew')
-        def renew_sesion():
+        def renew_session():
             self.app.model.renew_session()
 
         renew_session()
