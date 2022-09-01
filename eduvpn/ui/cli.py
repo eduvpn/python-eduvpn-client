@@ -176,7 +176,7 @@ class CommandLine:
         print(f"Connected to {current.category_str}: {current.detailed_str}")
         expiry = self.model.current_server_info.expire_time
         valid_for = (
-            get_validity_text(self.model.get_expiry(expiry))
+            get_validity_text(self.model.get_expiry(expiry))[1]
             .replace("<b>", "")
             .replace("</b>", "")
         )

@@ -6,12 +6,13 @@ from eduvpn.app import Validity
 gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import Gtk
 from gi.overrides.Gtk import Widget
+from typing import Tuple
 
-def get_validity_text(validity: Validity) -> str:
+def get_validity_text(validity: Validity) -> Tuple[bool, str]:
     if validity is None:
-        return _(f"Valid for: <b>unknown</b>")
+        return (False, _(f"Valid for: <b>unknown</b>"))
     if validity.is_expired:
-        return _("This session has expired")
+        return (True, _("This session has expired"))
     delta = validity.remaining
     days = delta.days
     hours = delta.seconds // 3600
@@ -20,21 +21,21 @@ def get_validity_text(validity: Validity) -> str:
             minutes = delta.seconds // 60
             if minutes == 0:
                 seconds = delta.seconds
-                return ngettext(
+                return (False, ngettext(
                     "Valid for: <b>{0} second</b>",
                     "Valid for: <b>{0} seconds</b>",
                     seconds,
-                ).format(seconds)
+                ).format(seconds))
             else:
-                return ngettext(
+                return (False, ngettext(
                     "Valid for: <b>{0} minute</b>",
                     "Valid for: <b>{0} minutes</b>",
                     minutes,
-                ).format(minutes)
+                ).format(minutes))
         else:
-            return ngettext(
+            return (False, ngettext(
                 "Valid for: <b>{0} hour</b>", "Valid for: <b>{0} hours</b>", hours
-            ).format(hours)
+            ).format(hours))
     else:
         dstr = ngettext(
             "Valid for: <b>{0} day</b>", "Valid for: <b>{0} days</b>", days
@@ -42,7 +43,7 @@ def get_validity_text(validity: Validity) -> str:
         hstr = ngettext(" and <b>{0} hour</b>", " and <b>{0} hours</b>", hours).format(
             hours
         )
-        return dstr + hstr
+        return (False, (dstr + hstr))
 
 
 def show_ui_component(component: Widget, show: bool) -> None:

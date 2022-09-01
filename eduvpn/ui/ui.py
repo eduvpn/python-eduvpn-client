@@ -316,7 +316,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.server_support_label.hide()
 
     def update_connection_validity(self, expire_time: datetime) -> None:
-        expiry_text = get_validity_text(self.app.model.get_expiry(expire_time))
+        is_expired, expiry_text = get_validity_text(self.app.model.get_expiry(expire_time))
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
 
