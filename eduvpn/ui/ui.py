@@ -16,13 +16,13 @@ gi.require_version("NM", "1.0")  # noqa: E402
 from functools import partial
 
 from eduvpn_common.state import State, StateType
-from gi.repository import Gdk, GdkPixbuf, GObject, Gtk
+from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
 from eduvpn.app import ServerInfo, Application
 from eduvpn.nm import nm_available, nm_managed
 from eduvpn.server import Profile, CustomServer, StatusImage
 from eduvpn.settings import HELP_URL
-from eduvpn.utils import (get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
+from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
                      run_periodically, ui_transition)
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
@@ -40,6 +40,14 @@ UPDATE_RENEW_INTERVAL = 60.0  # seconds
 
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
+
+
+def style_widget(widget: Gtk.Widget, class_name: str, style: str):
+    style_context = widget.get_style_context()
+    provider = Gtk.CssProvider.new()
+    provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))
+    style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    style_context.add_class(class_name)
 
 
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
@@ -111,6 +119,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.find_server_search_input = builder.get_object("findServerSearchInput")
         self.find_server_image = builder.get_object("findServerImage")
         self.find_server_label = builder.get_object("findServerLabel")
+
+
+        self.main_overlay = builder.get_object("mainOverlay")
+
+        # Create a revealer
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        self.error_revealer = None
+        self.error_revealer_label = None
+        self.create_error_revealer()
+        #self.error_revealer.set_has_window(True)
 
         self.add_custom_server_button_container = builder.get_object(
             "addCustomServerRow"
@@ -200,11 +218,118 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                     "The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."
                 ),
             )
-        self.common.register_class_callbacks(self)
-        self.common.register(debug=True)
+
+        @run_in_background_thread('register')
+        def register():
+            try:
+                self.common.register_class_callbacks(self)
+                self.enter_deregistered()
+                self.common.register(debug=True)
+                self.exit_deregistered()
+            except Exception as e:
+                self.show_error_revealer(str(e))
+
+        register()
+
+    def enter_deregistered(self):
+        self.show_loading_page(
+            _("Loading client"),
+            _("The client is loading the servers."),
+        )
+
+    def exit_deregistered(self):
+        self.hide_loading_page()
+
+    @ui_transition(ERROR_STATE, StateType.Enter)
+    def enter_error_state(self, old_state: str, error: str):
+        self.show_error_revealer(error)
+
+    def create_error_revealer(self):
+        # Creat the revealer and set the properties
+        self.error_revealer = Gtk.Revealer.new()
+        self.error_revealer.set_valign(Gtk.Align.END)
+        self.error_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_UP)
+        self.error_revealer.set_transition_duration(200)
+        #self.error_revealer.set_vexpand(False)
+
+        # Create a close button
+        error_revealer_close_image = Gtk.Image.new_from_icon_name("window-close", Gtk.IconSize.BUTTON)
+        error_revealer_close_button = Gtk.Button.new()
+        error_revealer_close_button.set_halign(Gtk.Align.END)
+        error_revealer_close_button.set_valign(Gtk.Align.START)
+        error_revealer_close_button.set_always_show_image(True)
+        error_revealer_close_button.set_image(error_revealer_close_image)
+        error_revealer_close_button.set_relief(Gtk.ReliefStyle.NONE)
+        error_revealer_close_button.connect("clicked", self.hide_error_revealer)
+        error_revealer_close_button.show()
+        style_widget(error_revealer_close_button, "errorRevealerButton", "background-color: transparent; padding: 0px;")
+
+        # Create a clipboard button
+        error_revealer_clipboard_image = Gtk.Image.new_from_icon_name("edit-copy", Gtk.IconSize.BUTTON)
+        error_revealer_clipboard_button = Gtk.Button.new()
+        error_revealer_clipboard_button.set_halign(Gtk.Align.END)
+        error_revealer_clipboard_button.set_valign(Gtk.Align.START)
+        error_revealer_clipboard_button.set_always_show_image(True)
+        error_revealer_clipboard_button.set_image(error_revealer_clipboard_image)
+        error_revealer_clipboard_button.set_relief(Gtk.ReliefStyle.NONE)
+        error_revealer_clipboard_button.connect("clicked", self.copy_error_revealer)
+        error_revealer_clipboard_button.show()
+        style_widget(error_revealer_clipboard_button, "errorRevealerClipboardButton", "background-color: transparent; padding: 0px;")
+
+        # Create the label
+        self.error_revealer_label = Gtk.Label.new("<b>Error occurred</b>: Example error")
+        self.error_revealer_label.set_use_markup(True)
+        self.error_revealer_label.set_margin_bottom(20)
+        self.error_revealer_label.set_line_wrap(True)
+        self.error_revealer_label.set_selectable(True)
+        self.error_revealer_label.show()
+
+        # Create the title box and title label
+        error_revealer_title = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 10)
+        error_revealer_title_label = Gtk.Label.new("<b>Error occurred</b>")
+        error_revealer_title_label.set_use_markup(True)
+        error_revealer_title_label.show()
+        # Add the buttons and the title label to the box
+        error_revealer_title.pack_start(error_revealer_title_label, True, True, 0)
+        error_revealer_title.pack_end(error_revealer_close_button, False, False, 0)
+        error_revealer_title.pack_end(error_revealer_clipboard_button, False, False, 0)
+        error_revealer_title.show()
+        # Add the title box and the error label to a new box
+        error_revealer_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 10)
+        error_revealer_box.add(error_revealer_title)
+        error_revealer_box.add(self.error_revealer_label)
+        error_revealer_box.show()
+
+        # Add a frame around the box
+        error_revealer_frame = Gtk.Frame.new()
+        error_revealer_frame.set_valign(Gtk.Align.END)
+        style_widget(error_revealer_frame, "errorClass", "margin-left: 20px; margin-right: 20px; background-color: #B00020; margin-top: 0px; padding: 0px; color: rgba(255, 255, 255, 1);")
+        error_revealer_frame.add(error_revealer_box)
+        error_revealer_frame.show()
+
+        # Add the frame to the revealer and show it
+        self.error_revealer.add(error_revealer_frame)
+        self.error_revealer.show()
+
+        # add the error revealer to the main overlay
+        self.main_overlay.add_overlay(self.error_revealer)
+
+
+    @run_in_main_gtk_thread
+    def show_error_revealer(self, error: str) -> None:
+        self.error_revealer.set_reveal_child(True)
+        self.error_revealer_label.set_text(f"The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.\n See the log file for more information.")
+        self.error_revealer_label.set_use_markup(True)
+
+    @run_in_main_gtk_thread
+    def copy_error_revealer(self, _button) -> None:
+        self.clipboard.set_text(self.error_revealer_label.get_text(), -1)
+
+    @run_in_main_gtk_thread
+    def hide_error_revealer(self, _button) -> None:
+        self.error_revealer.set_reveal_child(False)
 
     # ui functions
-
     def show_back_button(self, show: bool) -> None:
         show_ui_component(self.back_button_container, show)
 
@@ -454,6 +579,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def exit_OAuthRefreshToken(self, old_state, data):
         self.hide_loading_page()
 
+    @ui_transition(State.CHOSEN_SERVER, StateType.Enter)
+    def enter_chosenServerInformation(self, new_state, data):
+        self.show_loading_page(
+            _("Chosen"),
+            _("The server has been chosen and is loading."),
+        )
+
+    @ui_transition(State.CHOSEN_SERVER, StateType.Leave)
+    def exit_chosenServerInformation(self, old_state, data):
+        self.hide_loading_page()
+
     @ui_transition(State.LOADING_SERVER, StateType.Enter)
     def enter_LoadingServerInformation(self, new_state, data):
         self.show_loading_page(
@@ -637,12 +773,24 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # TODO: Should the Go library have a settings state?
         if self.is_on_settings_page():
             self.leave_settings_page()
-        self.common.go_back()
+
+        @run_in_background_thread('go-back')
+        def go_back():
+            self.common.go_back()
+
+        go_back()
 
     def on_add_other_server(self, button: Button) -> None:
         logger.debug("clicked on add other server")
-        self.common.set_search_server()
-        # self.app.interface_transition('configure_new_server')
+
+        @run_in_background_thread('set-search-server')
+        def set_search_server():
+            try:
+                self.common.set_search_server()
+            except Exception as e:
+                self.show_error_revealer(str(e))
+
+        set_search_server()
 
     def on_add_custom_server(self, button) -> None:
         logger.debug("clicked on add custom server")
@@ -656,7 +804,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         @run_in_background_thread('connect')
         def connect():
-            self.app.model.connect(server)
+            try:
+                self.app.model.connect(server)
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         connect()
 
@@ -679,7 +830,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         @run_in_background_thread('connect')
         def remove():
-            self.app.model.remove(server)
+            try:
+                self.app.model.remove(server)
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         if response == gtk_remove_id:
             logger.debug(f"doing server remove for: {server!r}")
@@ -737,12 +891,21 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
-        self.common.cancel_oauth()
+
+        @run_in_background_thread('change-location')
+        def cancel_oauth():
+            self.common.cancel_oauth()
+
+        cancel_oauth()
 
     def on_change_location(self, _):
         @run_in_background_thread('change-location')
         def change_location():
-            self.app.model.change_secure_location()
+            try:
+                self.app.model.change_secure_location()
+            except Exception as e:
+                self.show_error_revealer(str(e))
+
 
         change_location()
 
@@ -767,11 +930,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         @run_in_background_thread('activate')
         def activate():
-            self.app.model.activate_connection()
+            try:
+                self.app.model.activate_connection()
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         @run_in_background_thread('deactivate')
         def deactivate():
-            self.app.model.deactivate_connection()
+            try:
+                self.app.model.deactivate_connection()
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         if state is not self.connection_switch_state:
             self.connection_switch_state = state
@@ -840,7 +1009,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         @run_in_background_thread('set-profile')
         def set_profile():
-            self.app.model.set_profile(profile)
+            try:
+                self.app.model.set_profile(profile)
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         set_profile()
 
@@ -889,7 +1061,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         @run_in_background_thread('set-profile-connect')
         def set_profile():
-            self.app.model.set_profile(profile, connect=True)
+            try:
+                self.app.model.set_profile(profile, connect=True)
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         # Finally set the profile
         set_profile()
@@ -901,7 +1076,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         @run_in_background_thread('set-secure-location')
         def set_secure_location():
-            self.app.model.set_secure_location(location)
+            try:
+                self.app.model.set_secure_location(location)
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         set_secure_location()
         self.show_loading_page("Loading location", "The location is being configured")
@@ -915,7 +1093,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         @run_in_background_thread('renew')
         def renew_session():
-            self.app.model.renew_session()
+            try:
+                self.app.model.renew_session()
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
         renew_session()
 

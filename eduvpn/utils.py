@@ -58,6 +58,9 @@ def get_ui_state(state: State) -> int:
     return len(State) + state
 
 
+ERROR_STATE = len(State)
+
+
 def ui_transition(state: State, state_type: StateType) -> Callable:
     def decorator(func):
         @run_in_main_gtk_thread
@@ -86,7 +89,17 @@ def model_transition(state: State, state_type: StateType) -> Callable:
         @run_in_background_thread(str(func))
         def inner(self, other_state, data):
             # The model converts the data
-            model_converted = func(self, other_state, data)
+            try:
+                model_converted = func(self, other_state, data)
+            except Exception as e:
+                # Log as info as we're already giving the error in the UI
+                logger.info(e)
+                # Run the error state event
+                self.common.event.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), str(e))
+
+                # Go back to the previous state as the model transition was not successful
+                self.common.go_back()
+                return
 
             other_ui_state = get_ui_state(other_state)
             ui_state = get_ui_state(state)
