@@ -119,6 +119,15 @@ class EduVpnGtkApplication(Gtk.Application):
         if not self.app.model.is_connected():
             self.on_quit()
 
+    def enter_ClipboardError(self):
+        self.connection_notification.show(
+            title=_("Error Copied"),
+            message=_(
+                "The error message has been copied to your clipboard. "
+                "Report it at https://github.com/eduvpn/python-eduvpn-client if you think it is an issue."
+            ),
+        )
+
     @ui_transition(State.CONNECTING, StateType.Enter)
     def enter_ConnectingState(self, old_state, new_state):
         self.connection_notification.show(

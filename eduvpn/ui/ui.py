@@ -324,6 +324,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @run_in_main_gtk_thread
     def copy_error_revealer(self, _button) -> None:
         self.clipboard.set_text(self.error_revealer_label.get_text(), -1)
+        self.eduvpn_app.enter_ClipboardError()
 
     @run_in_main_gtk_thread
     def hide_error_revealer(self, _button) -> None:
