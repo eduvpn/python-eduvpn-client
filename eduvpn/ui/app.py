@@ -141,7 +141,10 @@ class EduVpnGtkApplication(Gtk.Application):
 
     @ui_transition(State.DISCONNECTED, StateType.Enter)
     def enter_DisconnectedState(self, old_state, new_state):
-        self.connection_notification.hide()
+        # TODO: Show if disconnected due to expiry
+        self.connection_notification.show(
+            title=_("Disconnected"), message=_("You are now disconnected from your server.")
+        )
 
     def enter_SessionExpiredState(self):
         self.connection_notification.show(
