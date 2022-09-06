@@ -227,7 +227,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.common.register(debug=True)
                 self.exit_deregistered()
             except Exception as e:
-                self.show_error_revealer(str(e))
+                GLib.idle_add(lambda msg=str(e): show_error_dialog(self, name=_("Fatal Error"), title=_("Fatal error while starting the client"), message=msg, only_quit=True))
 
         register()
 

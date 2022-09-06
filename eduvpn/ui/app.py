@@ -76,8 +76,8 @@ class EduVpnGtkApplication(Gtk.Application):
         logger.debug("activate")
         if not self.window:
             self.window = EduVpnGtkWindow(application=self)
-            self.window.initialize()
             self.window.present()
+            self.window.initialize()
             self.app.initialize()
         else:
             self.window.on_reopen_window()
@@ -106,7 +106,12 @@ class EduVpnGtkApplication(Gtk.Application):
     def on_quit(self, action: None=None, _param: None=None) -> None:
         logger.debug("quit")
         # Deregister the common library to save settings
-        self.common.deregister()
+        try:
+            self.common.deregister()
+        # Deregister is best effort
+        except Exception as e:
+            # TODO: Log
+            pass
         self.quit()
 
     def on_window_closed(self) -> None:

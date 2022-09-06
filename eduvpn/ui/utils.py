@@ -3,6 +3,7 @@ import gi
 from gettext import gettext as _
 from gettext import ngettext
 from eduvpn.app import Validity
+from eduvpn.utils import run_in_main_gtk_thread
 gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import Gtk
 from gi.overrides.Gtk import Widget
@@ -67,15 +68,25 @@ def link_markup(link: str) -> str:
         return f'<a href="{link}">{rest}</a>'
 
 
-def show_error_dialog(parent, name: str, title: str, message: str):
+def show_error_dialog(parent, name: str, title: str, message: str, only_quit: bool = False):
     dialog = Gtk.MessageDialog(  # type: ignore
         parent=parent,
         type=Gtk.MessageType.INFO,  # type: ignore
-        buttons=Gtk.ButtonsType.OK,  # type: ignore
         title=name,
         message_format=title,
     )
+
+    ignore_id = -13
+    quit_id = -14
+    if not only_quit:
+        dialog.add_buttons(_("Ignore and continue"), ignore_id)
+
+    dialog.add_buttons(
+        _("Quit client"), quit_id,
+    )
     dialog.format_secondary_text(message)  # type: ignore
     dialog.show()  # type: ignore
-    dialog.run()  # type: ignore
+    close = dialog.run()  # type: ignore
     dialog.destroy()  # type: ignore
+    if close == quit_id or only_quit:
+        parent.close()
