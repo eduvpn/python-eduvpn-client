@@ -684,7 +684,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @ui_transition(State.REQUEST_CONFIG, StateType.Enter)
     def enter_RequestConfig(self, old_state: str, data):
         # TODO: Remove get_ui_state here
-        if old_state != get_ui_state(State.HAS_CONFIG):
+        if old_state != get_ui_state(State.DISCONNECTED):
             self.enter_ConfiguringConnection()
         else:
             self.enter_connecting(old_state, data)
@@ -694,7 +694,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.exit_ConfiguringConnection(old_state, data)
 
     # TODO: Implement with Go callback
-    @ui_transition(State.HAS_CONFIG, StateType.Enter)
+    @ui_transition(State.DISCONNECTED, StateType.Enter)
     def enter_ConnectionStatus(self, old_state: str, server_info):
         self.show_back_button(True)
         self.stop_validity_renew()
@@ -703,7 +703,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.update_connection_status(False)
         self.update_connection_server(server_info)
 
-    @ui_transition(State.HAS_CONFIG, StateType.Leave)
+    @ui_transition(State.DISCONNECTED, StateType.Leave)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_back_button(False)
         self.hide_page(self.connection_page)

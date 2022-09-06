@@ -206,7 +206,7 @@ class ApplicationModel:
             pass
         return server, server_info
 
-    @model_transition(State.HAS_CONFIG, StateType.Enter)
+    @model_transition(State.DISCONNECTED, StateType.Enter)
     def parse_config(self, old_state: str, data: str):
         server, server_info = self.get_server_info(json.loads(data))
         self.current_server = server
@@ -345,7 +345,7 @@ class ApplicationModel:
         return self.common.in_fsm_state(State.CONNECTED)
 
     def is_disconnected(self):
-        return self.common.in_fsm_state(State.HAS_CONFIG)
+        return self.common.in_fsm_state(State.DISCONNECTED)
 
 
 class Application:

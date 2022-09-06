@@ -139,7 +139,7 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    @ui_transition(State.HAS_CONFIG, StateType.Enter)
+    @ui_transition(State.DISCONNECTED, StateType.Enter)
     def enter_DisconnectedState(self, old_state, new_state):
         self.connection_notification.hide()
 
@@ -161,7 +161,7 @@ class EduVpnGtkApplication(Gtk.Application):
             message = f"{message}: {new_state.error}"
         self.connection_notification.show(title=_("Connection Error"), message=message)
 
-    @ui_transition(State.HAS_CONFIG, StateType.Enter)
+    @ui_transition(State.DISCONNECTED, StateType.Enter)
     def enter_NoActiveConnection(self, old_state, new_state):
         if not self.window.is_visible():
             # Quit the app if no window is open when the connection is deactivated.
