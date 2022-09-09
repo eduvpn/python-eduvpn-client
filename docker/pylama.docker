@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM debian:bullseye
 
 ADD docker/docker-apt-install /usr/local/bin/docker-apt-install
 RUN docker-apt-install python3-pip
