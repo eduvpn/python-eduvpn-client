@@ -305,19 +305,23 @@ def start_wireguard_connection(
     dns4 = []
     dns6 = []
     dns_hostnames = []
-    for dns_entry in config['Interface']['DNS'].split(','):
-        stripped_entry = dns_entry.strip()
-        try:
-            address = ip_address(stripped_entry)
-        # The entry is not an ip but a hostname
-        # They need to be added to dns search domains
-        except ValueError:
-            dns_hostnames.append(stripped_entry)
-        else:
-            if address.version == 4:
-                dns4.append(str(address))
-            elif address.version == 6:
-                dns6.append(str(address))
+
+    # DNS entries are not required
+    dns_entries = config['Interface'].get('DNS')
+    if dns_entries:
+        for dns_entry in dns_entries.split(','):
+            stripped_entry = dns_entry.strip()
+            try:
+                address = ip_address(stripped_entry)
+            # The entry is not an ip but a hostname
+            # They need to be added to dns search domains
+            except ValueError:
+                dns_hostnames.append(stripped_entry)
+            else:
+                if address.version == 4:
+                    dns4.append(str(address))
+                elif address.version == 6:
+                    dns6.append(str(address))
 
     profile = NM.SimpleConnection.new()
     s_con = NM.SettingConnection.new()
