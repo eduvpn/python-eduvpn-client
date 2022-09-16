@@ -39,6 +39,7 @@ def setup(app_variant: ApplicationVariant, prefix: str):
     return domain
 
 
+# TODO: rename to language_tag and pass to library
 def country() -> str:
     try:
         locale_setting = locale.getlocale()[0]

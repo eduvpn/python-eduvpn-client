@@ -1,23 +1,23 @@
-import json
 import logging
 import webbrowser
 from datetime import datetime, timedelta
 from typing import Any, Callable, Iterator, Union, Optional
 
+from eduvpn_common.server import Profile, Server, InstituteServer, SecureInternetServer
+from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
+from eduvpn.server import ServerDatabase
 
 from eduvpn.connection import Connection
 
 from eduvpn import nm
 from eduvpn.config import Configuration
 from eduvpn.i18n import extract_translation, retrieve_country_name
-from eduvpn.server import (CustomServer, InstituteAccessServer, OrganisationServer,
-                     PredefinedServer, Profile, SecureInternetLocation,
-                     ServerDatabase)
 from eduvpn.utils import (model_transition, run_in_background_thread,
                     run_in_main_gtk_thread)
 from eduvpn.variants import ApplicationVariant
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -45,123 +45,25 @@ class Validity:
         return now() >= self.end
 
 
-class ServerInfo:
-    def __init__(
-        self,
-        display_name,
-        support_contact,
-        profiles,
-        current_profile,
-        expire_time,
-        location,
-    ):
-        self.display_name = display_name
-        self.support_contact = support_contact
-        self.flag_path = None
-        self.profiles = profiles
-        self.current_profile = current_profile
-        self.expire_time = datetime.fromtimestamp(expire_time)
-
-        if location:
-            self.flag_path = SecureInternetLocation(location).flag_path
-            self.country_name = retrieve_country_name(location)
-            self.display_name = f"{self.country_name}\n (via {self.display_name})"
-
-    @property
-    def current_profile_index(self):
-        return self.profiles.index(self.current_profile)
-
 class ApplicationModelTransitions:
     def __init__(self, common: EduVPN) -> None:
         self.common = common
         self.common.register_class_callbacks(self)
         self.current_server = None
-        self.current_server_info = None
         self.server_db = ServerDatabase()
 
-    def parse_profiles_dict(self, profiles_dict):
-        profiles = []
-        for profile in profiles_dict:
-            profiles.append(Profile(**profile))
-        return profiles
-
-    def get_server_info(self, server_info_dict: dict, server_type=None):
-        if server_info_dict is None:
-            server_info_dict = {}
-
-        server_display_name = extract_translation(
-            server_info_dict.get("display_name") or "Unknown Server"
-        )
-        server_display_contact = server_info_dict.get("support_contact")
-        server_display_location = server_info_dict.get("country_code")
-        server_display_profiles = []
-        current_profile = None
-
-        profiles_dict = server_info_dict.get("profiles")
-        expire_time = server_info_dict.get("expire_time", 0)
-
-        if profiles_dict:
-            if profiles_dict["info"]["profile_list"] is not None:
-                server_display_profiles = self.parse_profiles_dict(
-                    profiles_dict["info"]["profile_list"]
-                )
-
-                for profile in server_display_profiles:
-                    if profile.profile_id == profiles_dict.get("current_profile"):
-                        current_profile = profile
-
-        server_info = ServerInfo(
-            server_display_name,
-            server_display_contact,
-            server_display_profiles,
-            current_profile,
-            expire_time,
-            server_display_location,
-        )
-
-        # parse server
-        identifier = server_info_dict.get("identifier")
-        server_type = server_info_dict.get("server_type")
-        server = None
-        if server_type and identifier:
-            if server_type == "secure_internet":
-                server = OrganisationServer(server_display_name, identifier)
-            elif server_type == "institute_access":
-                server = InstituteAccessServer(identifier, server_display_name)
-            elif server_type == "custom_server":
-                server = CustomServer(identifier)
-        else:
-            # TODO: Log an error or something?
-            pass
-        return server, server_info
-
     @model_transition(State.NO_SERVER, StateType.Enter)
-    def get_previous_servers(self, old_state: str, data: str):
-        previous_servers = json.loads(data)
-        configured_servers = []
-        for server_dict in previous_servers.get("custom_servers", {}):
-            server, _ = self.get_server_info(server_dict, "custom_server")
-            if server:
-                configured_servers.append(server)
-
-        for server_dict in previous_servers.get("institute_access_servers", {}):
-            server, _ = self.get_server_info(server_dict, "institute_access")
-            if server:
-                configured_servers.append(server)
-
-        server_dict = previous_servers.get("secure_internet_server")
-        if server_dict:
-            server, server_info = self.get_server_info(server_dict, "secure_internet")
-            server.display_name = server_info.country_name
-            if server:
-                configured_servers.append(server)
-        return configured_servers
+    def get_previous_servers(self, old_state: str, servers):
+        return servers
 
     @model_transition(State.SEARCH_SERVER, StateType.Enter)
     def parse_discovery(self, old_state: str, _):
         disco_orgs = self.common.get_disco_organizations()
         disco_servers = self.common.get_disco_servers()
-        return self.server_db.disco_parse(disco_orgs, disco_servers)
+        all_servers = disco_orgs.organizations
+        all_servers.extend(disco_servers.servers)
+        self.server_db.servers = all_servers
+        return all_servers
 
     @model_transition(State.LOADING_SERVER, StateType.Enter)
     def loading_server(self, old_state: str, data: str):
@@ -172,25 +74,17 @@ class ApplicationModelTransitions:
         return data
 
     @model_transition(State.DISCONNECTING, StateType.Enter)
-    def disconnecting(self, old_state: str, data: str):
-        return data
+    def disconnecting(self, old_state: str, server):
+        self.current_server = server
+        return server
 
     @model_transition(State.ASK_PROFILE, StateType.Enter)
-    def parse_profiles(self, old_state: str, profiles_json: str):
-        profiles_parsed = json.loads(profiles_json)["info"]["profile_list"]
-        return self.parse_profiles_dict(profiles_parsed)
+    def parse_profiles(self, old_state: str, profiles):
+        return profiles
 
     @model_transition(State.ASK_LOCATION, StateType.Enter)
-    def parse_locations(
-        self, old_state: str, locations_json
-    ) -> [SecureInternetLocation]:
-        locations = json.loads(locations_json)
-        location_classes = []
-
-        for location in locations:
-            location_classes.append(SecureInternetLocation(location))
-
-        return location_classes
+    def parse_locations(self, old_state: str, locations: List[str]):
+        return locations
 
     @model_transition(State.AUTHORIZED, StateType.Enter)
     def authorized(self, old_state: str, data: str):
@@ -198,7 +92,7 @@ class ApplicationModelTransitions:
 
     @model_transition(State.OAUTH_STARTED, StateType.Enter)
     def start_oauth(self, old_state: str, url: str):
-        self.open_browser(json.loads(url))
+        self.open_browser(url)
         return url
 
     @model_transition(State.REQUEST_CONFIG, StateType.Enter)
@@ -206,26 +100,23 @@ class ApplicationModelTransitions:
         return data
 
     @model_transition(State.DISCONNECTED, StateType.Enter)
-    def parse_config(self, old_state: str, data: str):
-        server, server_info = self.get_server_info(json.loads(data))
+    def parse_config(self, old_state: str, server):
         self.current_server = server
-        self.current_server_info = server_info
-        return server_info
+        return server
 
     @run_in_background_thread('open-browser')
     def open_browser(self, url):
         webbrowser.open(url)
 
     @model_transition(State.CONNECTED, StateType.Enter)
-    def parse_connected(self, old_state: str, data: str):
-        server, server_info = self.get_server_info(json.loads(data))
+    def parse_connected(self, old_state: str, server):
         self.current_server = server
-        self.current_server_info = server_info
-        return server_info
+        return server
 
     @model_transition(State.CONNECTING, StateType.Enter)
-    def parse_connecting(self, old_state: str, data: str):
-        return data
+    def parse_connecting(self, old_state: str, server):
+        self.current_server = server
+        return server
 
 
 class ApplicationModel:
@@ -266,30 +157,31 @@ class ApplicationModel:
     def should_renew_button(self) -> int:
         return self.common.should_renew_button()
 
-    def remove(self, server: PredefinedServer):
-        if isinstance(server, InstituteAccessServer):
-            self.common.remove_institute_access(server.base_url)
-        elif isinstance(server, OrganisationServer):
+    def remove(self, server):
+        if isinstance(server, InstituteServer):
+            self.common.remove_institute_access(server.url)
+        elif isinstance(server, SecureInternetServer):
             self.common.remove_secure_internet()
-        elif isinstance(server, CustomServer):
-            self.common.remove_custom_server(server.address)
+        elif isinstance(server, Server):
+            self.common.remove_custom_server(server.url)
 
-    def connect(self, server: PredefinedServer, callback: Optional[Callable]=None) -> None:
+    def connect(self, server, callback: Optional[Callable]=None) -> None:
         config = None
         config_type = None
         try:
-            if isinstance(server, InstituteAccessServer):
+            if isinstance(server, InstituteServer):
+                config, config_type = self.common.get_config_institute_access(
+                    server.url
+                    )
+            elif isinstance(server, DiscoServer):
                 config, config_type = self.common.get_config_institute_access(
                     server.base_url
                     )
-            elif isinstance(server, OrganisationServer):
+            elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
                 config, config_type = self.common.get_config_secure_internet(server.org_id)
-            elif isinstance(server, CustomServer):
-                config, config_type = self.common.get_config_custom_server(server.address)
+            elif isinstance(server, Server):
+                config, config_type = self.common.get_config_custom_server(server.url)
         except Exception as e:
-            # TODO: This is a hack, remove this
-            if "cancelled" in str(e):
-                return
             raise e
 
         def on_connected():
@@ -307,7 +199,6 @@ class ApplicationModel:
             connection = Connection.parse(config, config_type)
             connection.connect(on_connect)
 
-        self.current_server = server
         self.common.set_connecting()
         connect(config, config_type)
 
@@ -339,7 +230,7 @@ class ApplicationModel:
 
         def do_profile():
             # Set the profile ID
-            self.common.set_profile(profile.id)
+            self.common.set_profile(profile.identifier)
 
             # Connect if we should and if we were previously connected
             if connect and was_connected:

@@ -18,9 +18,12 @@ from functools import partial
 from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
-from eduvpn.app import ServerInfo, Application
+from eduvpn.app import Application
 from eduvpn.nm import nm_available, nm_managed
-from eduvpn.server import Profile, CustomServer, StatusImage
+from eduvpn.server import StatusImage
+from eduvpn.settings import FLAG_PREFIX
+from eduvpn.i18n import retrieve_country_name
+from eduvpn_common.server import Server, Profile
 from eduvpn.settings import HELP_URL
 from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
                      run_periodically, ui_transition)
@@ -37,6 +40,13 @@ logger = logging.getLogger(__name__)
 
 UPDATE_EXPIRY_INTERVAL = 1.0  # seconds
 UPDATE_RENEW_INTERVAL = 60.0  # seconds
+
+def get_flag_path(country_code: str) -> Optional[str]:
+        path = f'{FLAG_PREFIX}{country_code}@1,5x.png'
+        if os.path.exists(path):
+            return path
+        else:
+            return None
 
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
@@ -377,12 +387,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.page_stack.set_visible_child(self.current_shown_page)
         self.show_back_button(False)
 
-    def recreate_profile_combo(self, server_info: ServerInfo) -> None:
+    def recreate_profile_combo(self, server_info) -> None:
         # Create a store of profiles
         profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
         active_profile = 0
-        for index, profile in enumerate(server_info.profiles):
-            if profile == server_info.current_profile:
+        for index, profile in enumerate(server_info.profiles.profiles):
+            if profile == server_info.profiles.current:
                 active_profile = index
             profile_store.append([str(profile), profile])
 
@@ -412,11 +422,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.select_profile_text.set_text("Select Profile: ")
 
     # network state transition callbacks
-    def update_connection_server(self, server_info: ServerInfo) -> None:
+    def update_connection_server(self, server_info) -> None:
         if not server_info:
             return
 
-        if len(server_info.profiles) <= 1:
+        if len(server_info.profiles.profiles) <= 1:
             self.select_profile_text.hide()
             self.select_profile_combo.hide()
         else:
@@ -425,13 +435,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.server_label.set_text(server_info.display_name)
 
-        if server_info.flag_path:
-            self.server_image.set_from_file(server_info.flag_path)
-            self.server_image.show()
+        if hasattr(server_info, "country_code"):
+            flag_path = get_flag_path(server_info.country_code)
+            if flag_path:
+                self.server_image.set_from_file(flag_path)
+                self.server_image.show()
+            else:
+                self.server_image.hide()
         else:
             self.server_image.hide()
 
-        if server_info.support_contact:
+        if hasattr(server_info, "support_contact") and server_info.support_contact:
             support_text = (
                 _("Support:")
                 + "\n"
@@ -621,7 +635,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         profile_tree_view.set_model(profiles_list_model)
         profiles_list_model.clear()
-        for profile in profiles:
+        for profile in profiles.profiles:
             profiles_list_model.append([str(profile), profile])
 
     @ui_transition(State.ASK_PROFILE, StateType.Leave)
@@ -657,14 +671,15 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         location_list_model.clear()
         for location in locations:
-            if location.flag_path is None:
+            flag_path = get_flag_path(location)
+            if flag_path is None:
                 logger.warning(
-                    f"No flag found for country code {location.country_code}"
+                    f"No flag found for country code {location}"
                 )
                 flag = None
             else:
-                flag = GdkPixbuf.Pixbuf.new_from_file(location.flag_path)
-            location_list_model.append([str(location), flag, location.country_code])
+                flag = GdkPixbuf.Pixbuf.new_from_file(flag_path)
+            location_list_model.append([retrieve_country_name(location), flag, location])
 
     @ui_transition(State.ASK_LOCATION, StateType.Leave)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
@@ -679,7 +694,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             _("Your connection is being configured."),
         )
 
-    def exit_ConfiguringConnection(self, old_state: str, data: Union[List[Profile], ServerInfo]) -> None:
+    def exit_ConfiguringConnection(self, old_state: str, data) -> None:
         self.hide_loading_page()
 
     @ui_transition(State.REQUEST_CONFIG, StateType.Enter)
@@ -722,7 +737,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.update_connection_server(server_info)
         self.start_validity_renew(server_info)
 
-    def start_validity_renew(self, server_info: ServerInfo) -> None:
+    def start_validity_renew(self, server_info) -> None:
         self.connection_validity_thread_cancel = run_periodically(
             run_in_main_gtk_thread(
                 partial(self.update_connection_validity, server_info.expire_time)
@@ -1047,7 +1062,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug(f"selected combo profile: {profile!r}")
 
         # Profile is already the current, do nothing
-        if profile == self.app.model.current_server_info.current_profile:
+        if profile == self.app.model.current_server.profiles.current:
             return
 
         # If we are already connected we should ask if we want to reconnect
@@ -1056,7 +1071,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             # Restore the previous profile
             if not self.profile_ask_reconnect():
                 combo.set_active(
-                    self.app.model.current_server_info.current_profile_index
+                    self.app.model.current_server.profiles.current_index
                 )
                 return
 
