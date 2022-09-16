@@ -105,9 +105,9 @@ def model_transition(state: State, state_type: StateType) -> Callable:
             ui_state = get_ui_state(state)
             # We can then pass it to the UI
             if state_type == StateType.Enter:
-                self.common.event.run(other_ui_state, ui_state, model_converted)
+                self.common.event.run(other_ui_state, ui_state, model_converted, convert=False)
             else:
-                self.common.event.run(ui_state, other_ui_state, model_converted)
+                self.common.event.run(ui_state, other_ui_state, model_converted, convert=False)
 
         # Add the inner function on the state transition
         common.class_state_transition(state, state_type)(inner)

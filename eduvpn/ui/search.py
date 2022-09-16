@@ -2,10 +2,8 @@ import enum
 from functools import lru_cache
 from typing import Union, Dict, Iterable, List, Optional
 
-from eduvpn.server import AnyServer as Server
-from eduvpn.server import (CustomServer, InstituteAccessServer,
-                           OrganisationServer)
-
+from eduvpn_common.discovery import DiscoServer, DiscoOrganization
+from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
 from eduvpn.ui.utils import show_ui_component
 from gi.overrides.Gtk import ListStore
 
@@ -36,7 +34,7 @@ def get_group_model(group: ServerGroup) -> ListStore:
     return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
 
 
-def server_to_model_data(server: Server) -> list:
+def server_to_model_data(server) -> list:
     return [str(server), server]
 
 
@@ -67,7 +65,7 @@ def show_search_results(window: 'EduVpnGtkWindow', show: bool) -> None:  # type:
     show_ui_component(window.server_list_container, show)
 
 
-def group_servers(servers: Iterable[Server]) -> Dict[ServerGroup, List[Server]]:
+def group_servers(servers):
     """
     Separate the servers into three groups.
     """
@@ -77,14 +75,14 @@ def group_servers(servers: Iterable[Server]) -> Dict[ServerGroup, List[Server]]:
         ServerGroup.OTHER: [],
     }
     for server in servers:
-        if isinstance(server, InstituteAccessServer):
+        if isinstance(server, InstituteServer) or (isinstance(server, DiscoServer) and server.server_type == "institute_access"):
             groups[ServerGroup.INSTITUTE_ACCESS].append(server)
-        elif isinstance(server, OrganisationServer):
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
             groups[ServerGroup.SECURE_INTERNET].append(server)
-        elif isinstance(server, CustomServer):
+        elif isinstance(server, Server):
             groups[ServerGroup.OTHER].append(server)
         else:
-            raise TypeError(server)
+            continue
     return groups
 
 
@@ -125,7 +123,7 @@ def exit_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
 
 
 def update_search_results_for_type(
-    window: 'EduVpnGtkWindow', group: ServerGroup, servers: Iterable[Server]  # type: ignore
+    window: 'EduVpnGtkWindow', group: ServerGroup, servers  # type: ignore
 ) -> None:
     """
     Update the UI with the search results
@@ -142,7 +140,7 @@ def update_search_results_for_type(
     model_has_results = len(model) > 0  # type: ignore
     show_group_tree(window, group, show=model_has_results)
 
-def update_results(window: 'EduVpnGtkWindow', servers: Optional[Iterable[Server]]) -> None:  # type: ignore
+def update_results(window: 'EduVpnGtkWindow', servers) -> None:  # type: ignore
     """
     Update the UI with the search results.
     """
