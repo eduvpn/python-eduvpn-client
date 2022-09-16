@@ -284,9 +284,6 @@ class Application:
         self.config = Configuration.load()
         self.model = ApplicationModel(common)
 
-    def initialize(self) -> None:
-        self.initialize_network()
-
     @run_in_background_thread("on-network-update")
     def on_network_update_callback(self, state, initial=False):
         try:
