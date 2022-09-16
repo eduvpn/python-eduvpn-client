@@ -236,6 +236,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.enter_deregistered()
                 self.common.register(debug=True)
                 self.exit_deregistered()
+                self.app.initialize_network()
             except Exception as e:
                 GLib.idle_add(lambda msg=str(e): show_error_dialog(self, name=_("Fatal Error"), title=_("Fatal error while starting the client"), message=msg, only_quit=True))
 
@@ -433,9 +434,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.select_profile_text.show()
             self.recreate_profile_combo(server_info)
 
-        self.server_label.set_text(server_info.display_name)
-
         if hasattr(server_info, "country_code"):
+            self.server_label.set_text(f"{retrieve_country_name(server_info.country_code)}\n(via {server_info.display_name})")
             flag_path = get_flag_path(server_info.country_code)
             if flag_path:
                 self.server_image.set_from_file(flag_path)
@@ -443,6 +443,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             else:
                 self.server_image.hide()
         else:
+            self.server_label.set_text(server_info.display_name)
             self.server_image.hide()
 
         if hasattr(server_info, "support_contact") and server_info.support_contact:

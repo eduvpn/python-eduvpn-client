@@ -78,7 +78,6 @@ class EduVpnGtkApplication(Gtk.Application):
             self.window = EduVpnGtkWindow(application=self)
             self.window.present()
             self.window.initialize()
-            self.app.initialize()
         else:
             self.window.on_reopen_window()
 

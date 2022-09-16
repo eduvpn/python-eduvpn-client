@@ -4,6 +4,7 @@ from typing import Union, Dict, Iterable, List, Optional
 
 from eduvpn_common.discovery import DiscoServer, DiscoOrganization
 from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
+from eduvpn.i18n import retrieve_country_name
 from eduvpn.ui.utils import show_ui_component
 from gi.overrides.Gtk import ListStore
 
@@ -35,7 +36,10 @@ def get_group_model(group: ServerGroup) -> ListStore:
 
 
 def server_to_model_data(server) -> list:
-    return [str(server), server]
+    display_string = str(server)
+    if isinstance(server, SecureInternetServer):
+        display_string = retrieve_country_name(server.country_code)
+    return [display_string, server]
 
 
 def show_result_components(window: 'EduVpnGtkWindow', show: bool) -> None:  # type: ignore
