@@ -2,7 +2,8 @@ import readline
 import eduvpn_common.main as common
 from eduvpn_common.state import State, StateType
 
-from eduvpn.app import ApplicationModel
+from eduvpn.app import Application
+from eduvpn.i18n import retrieve_country_name
 from eduvpn.settings import (
     CLIENT_ID,
     CONFIG_PREFIX,
@@ -13,11 +14,12 @@ from eduvpn.utils import cmd_transition, run_in_background_thread
 from eduvpn.ui.search import group_servers, ServerGroup, update_results
 from eduvpn.ui.utils import get_validity_text
 import eduvpn.nm as nm
-from eduvpn.server import (
-    ServerDatabase,
-    InstituteAccessServer,
-    OrganisationServer,
-    CustomServer,
+from eduvpn.server import ServerDatabase
+from eduvpn.variants import EDUVPN, LETS_CONNECT, ApplicationVariant
+from eduvpn_common.server import (
+        Server,
+        InstituteServer,
+        SecureInternetServer
 )
 
 import argparse
@@ -36,13 +38,13 @@ def get_grouped_index(servers, index):
 
 
 class CommandLine:
-    def __init__(self, name: str, enable_discovery: bool, common):
+    def __init__(self, name: str, variant: ApplicationVariant, common):
         self.name = name
-        self.discovery = enable_discovery
+        self.variant = variant
         self.common = common
-        self.model = ApplicationModel(common)
-        self.servers = []
-        self.transitions = CommandLineTransitions(self.model)
+        self.app = Application(variant, common)
+        self.server_db = ServerDatabase(common)
+        self.transitions = CommandLineTransitions(self.app)
         self.common.register_class_callbacks(self.transitions)
 
     def ask_server_input(self, servers, fallback_search=False):
@@ -73,13 +75,10 @@ class CommandLine:
                         return server
 
     def get_server_search(self, search_query):
-        server_db = ServerDatabase()
-        disco_orgs = self.common.get_disco_organizations()
-        disco_servers = self.common.get_disco_servers()
-        server_db.disco_parse(disco_orgs, disco_servers)
-        servers = list(server_db.search_predefined(search_query))
+        servers = self.server_db.disco
+        servers = list(self.server_db.search_predefined(search_query))
         if search_query.count(".") >= 2:
-            servers.append(CustomServer(search_query))
+            servers.append(Server(search_query, search_query))
 
         if len(servers) == 0:
             print(f"No servers found with query: {search_query}")
@@ -87,7 +86,8 @@ class CommandLine:
 
         if len(servers) == 1:
             server = servers[0]
-            print(f'One server found: {server.category_str} "{server.detailed_str}"')
+            # TODO: category
+            print(f'One server found: "{str(server)}"')
             ask = input("Do you want to connect to it (y/n): ")
 
             if ask in ["y", "yes"]:
@@ -100,8 +100,7 @@ class CommandLine:
     def connect_server(self, server):
         def connect(callback=None):
             try:
-                self.model.connect(server, callback)
-                self.servers.append(server)
+                self.app.model.connect(server, callback)
             except Exception as e:
                 print("Error connecting:", e, file=sys.stderr)
                 if callback:
@@ -115,23 +114,19 @@ class CommandLine:
 
     def ask_server_custom(self):
         custom = input("Enter a URL to connect to: ")
-        return CustomServer(custom)
+        return Server(custom, custom)
 
     def ask_server(self):
-        if not self.discovery:
+        if not self.variant.use_predefined_servers:
             return self.ask_server_custom()
 
-        if self.servers:
+        if self.server_db.configured:
             answer = input("Do you want to connect to an existing server? (y/n):")
 
             if answer in ["y", "yes"]:
-                return self.ask_server_input(self.servers)
+                return self.ask_server_input(self.server_db.configured)
 
-        server_db = ServerDatabase()
-        disco_orgs = self.common.get_disco_organizations()
-        disco_servers = self.common.get_disco_servers()
-        server_db.disco_parse(disco_orgs, disco_servers)
-        servers = server_db.servers
+        servers = self.server_db.disco
         return self.ask_server_input(servers, fallback_search=True)
 
     def parse_server(self, variables):
@@ -145,21 +140,17 @@ class CommandLine:
         if search_query:
             server = self.get_server_search(search_query)
         elif url:
-            server = InstituteAccessServer(url, "Institute Server")
+            server = InstituteServer(url, "Institute Server", [], None, 0)
         elif org_id:
-            server = OrganisationServer("Organisation Server", org_id)
+            server = SecureInternetServer(org_id, "Organisation Server", [], None, 0, "nl")
         elif custom_url:
-            server = CustomServer(custom_url)
+            server = Server(custom_url, "Custom Server")
         elif number is not None:
-            server = get_grouped_index(self.servers, number - 1)
+            server = get_grouped_index(self.server_db.configured, number - 1)
             if not server:
                 print(f"Configured server with number: {number} does not exist")
         elif number_all is not None:
-            server_db = ServerDatabase()
-            disco_orgs = self.common.get_disco_organizations()
-            disco_servers = self.common.get_disco_servers()
-            server_db.disco_parse(disco_orgs, disco_servers)
-            servers = server_db.servers
+            servers = self.server_db.disco
             server = get_grouped_index(servers, number_all - 1)
             if not server:
                 print(
@@ -168,23 +159,24 @@ class CommandLine:
         return server
 
     def status(self, _args={}):
-        if not self.model.is_connected():
+        if not self.app.model.is_connected():
             print("You are currently not connected to a server", file=sys.stderr)
             return False
 
-        current = self.model.current_server
-        print(f"Connected to {current.category_str}: {current.detailed_str}")
-        expiry = self.model.current_server_info.expire_time
+        current = self.app.model.current_server
+        # TODO: Category string
+        print(f"Connected to: {str(current)}")
+        expiry = self.app.model.current_server.expire_time
         valid_for = (
-            get_validity_text(self.model.get_expiry(expiry))[1]
+            get_validity_text(self.app.model.get_expiry(expiry))[1]
             .replace("<b>", "")
             .replace("</b>", "")
         )
         print(valid_for)
-        print(f"Current profile: {str(self.model.current_server_info.current_profile)}")
+        print(f"Current profile: {str(self.app.model.current_server.profiles.current)}")
 
     def connect(self, variables={}):
-        if self.model.is_connected():
+        if self.app.model.is_connected():
             print(
                 "You are already connected to a server, please disconnect first",
                 file=sys.stderr,
@@ -199,13 +191,13 @@ class CommandLine:
         return self.connect_server(server)
 
     def disconnect(self, _arg={}):
-        if not self.model.is_connected():
+        if not self.app.model.is_connected():
             print("You are not connected to a server", file=sys.stderr)
             return False
 
         def disconnect(callback=None):
             try:
-                self.model.deactivate_connection(callback)
+                self.app.model.deactivate_connection(callback)
             except Exception as e:
                 print("An error occurred while trying to disconnect")
                 print("Error disconnecting:", e, file=sys.stderr)
@@ -221,7 +213,7 @@ class CommandLine:
             print("Institute Access Servers")
             print("============================")
         for institute in grouped_servers[ServerGroup.INSTITUTE_ACCESS]:
-            print(f"[{total_servers}]: {institute.detailed_str}")
+            print(f"[{total_servers}]: {str(institute)}")
             total_servers += 1
 
         if len(grouped_servers[ServerGroup.SECURE_INTERNET]) > 0:
@@ -229,7 +221,7 @@ class CommandLine:
             print("Secure Internet Server")
             print("============================")
         for secure in grouped_servers[ServerGroup.SECURE_INTERNET]:
-            print(f"[{total_servers}]: {secure.detailed_str}")
+            print(f"[{total_servers}]: {str(secure)}")
             total_servers += 1
 
         if len(grouped_servers[ServerGroup.OTHER]) > 0:
@@ -237,19 +229,15 @@ class CommandLine:
             print("Custom Servers")
             print("============================")
         for custom in grouped_servers[ServerGroup.OTHER]:
-            print(f"[{total_servers}]: {custom.detailed_str}")
+            print(f"[{total_servers}]: {str(custom)}")
             total_servers += 1
         if total_servers > 1:
             print("The number for the server is in [brackets]")
 
     def list(self, args={}):
-        servers = self.servers
+        servers = self.server_db.configured
         if args.get("all"):
-            server_db = ServerDatabase()
-            disco_orgs = self.common.get_disco_organizations()
-            disco_servers = self.common.get_disco_servers()
-            server_db.disco_parse(disco_orgs, disco_servers)
-            servers = server_db.servers
+            servers = self.server_db.disco
         self.list_groups(group_servers(servers))
 
     def remove_server(self, server):
@@ -257,26 +245,28 @@ class CommandLine:
             print("No server chosen to remove")
             return False
 
-        self.model.remove(server)
-        if server in self.servers:
-            self.servers.remove(server)
+        self.app.model.remove(server)
 
     def remove(self, args={}):
-        if self.model.is_connected():
+        if self.app.model.is_connected():
             print(
                 "Please disconnect from your server before doing any changes",
                 file=sys.stderr,
             )
             return False
 
-        if not self.servers:
+        if not self.server_db.configured:
             print("There are no servers configured to remove", file=sys.stderr)
             return False
 
         if not args:
-            server = self.ask_server_input(self.servers)
+            server = self.ask_server_input(self.server_db.configured)
         else:
-            server = get_grouped_index(self.servers, number - 1)
+            number = args.get("number", None)
+            if number is None:
+                print("Please enter a number")
+                return
+            server = get_grouped_index(self.server_db.configured, number - 1)
             if not server:
                 print(f"Configured server with number: {number} does not exist")
         return self.remove_server(server)
@@ -286,7 +276,14 @@ class CommandLine:
             "Available commands: connect, disconnect, remove, status, list, help, quit"
         )
 
+    @run_in_background_thread('subscribe')
+    def subscribe(self):
+        # TODO: Fix this
+        nm.action_with_mainloop(
+            action=lambda callback: self.app.initialize_network(needs_update=False))
+
     def interactive(self, _):
+        #self.subscribe()
         print(f"Welcome to the {self.name} interactive commandline")
         self.help_interactive()
         command = ""
@@ -328,7 +325,7 @@ class CommandLine:
 
         connect_parser = subparsers.add_parser("connect", help="connect to a server")
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
-        if self.discovery:
+        if self.variant.use_predefined_servers:
             connect_group.add_argument(
                 "--search", type=str, help="connect to a server by searching for one"
             )
@@ -350,7 +347,7 @@ class CommandLine:
             type=int,
             help="connect to an already configured server using the number. Run the 'list' subcommand to see the currently configured servers with their number",
         )
-        if self.discovery:
+        if self.variant.use_predefined_servers:
             connect_group.add_argument(
                 "--number-all",
                 type=int,
@@ -364,7 +361,7 @@ class CommandLine:
         disconnect_parser.set_defaults(func=self.disconnect)
 
         list_parser = subparsers.add_parser("list", help="list all configured servers")
-        if self.discovery:
+        if self.variant.use_predefined_servers:
             list_parser.add_argument(
                 "--all", action="store_true", help="list all available servers"
             )
@@ -393,14 +390,14 @@ class CommandLine:
 
 
 class CommandLineTransitions:
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, app):
+        self.app = app
 
     @cmd_transition(State.ASK_LOCATION, StateType.Enter)
     def on_ask_location(self, old_state: State, locations):
         print("This secure internet server has the following available locations:")
         for index, location in enumerate(locations):
-            print(f"[{index+1}]: {str(location)}")
+            print(f"[{index+1}]: {retrieve_country_name(location)}")
 
         while True:
             location_nr = input("Please select a location to continue connecting: ")
@@ -413,8 +410,8 @@ class CommandLineTransitions:
                 # FIXME: This should just accept a location instead of the country code
                 # The model should convert this to a location
                 # This needs fixing in the normal GTK UI as well
-                self.model.set_secure_location(
-                    locations[location_index - 1].country_code
+                self.app.model.set_secure_location(
+                    locations[location_index - 1]
                 )
                 return
             except ValueError:
@@ -423,7 +420,7 @@ class CommandLineTransitions:
     @cmd_transition(State.ASK_PROFILE, StateType.Enter)
     def on_ask_profile(self, old_state: State, profiles):
         print("This server has multiple profiles.")
-        for index, profile in enumerate(profiles):
+        for index, profile in enumerate(profiles.profiles):
             print(f"[{index+1}]: {str(profile)}")
 
         while True:
@@ -433,10 +430,10 @@ class CommandLineTransitions:
             try:
                 profile_index = int(profile_nr)
 
-                if profile_index < 1 or profile_index > len(profiles):
+                if profile_index < 1 or profile_index > len(profiles.profiles):
                     print(f"Invalid profile choice: {profile_index}")
                     continue
-                self.model.set_profile(profiles[profile_index - 1])
+                self.app.model.set_profile(profiles.profiles[profile_index - 1])
                 return
             except ValueError:
                 print(f"Input is not a number: {profile_nr}")
@@ -448,15 +445,15 @@ class CommandLineTransitions:
 
 def eduvpn():
     _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX))
-    cmd = CommandLine("eduVPN", True, _common)
+    cmd = CommandLine("eduVPN", EDUVPN, _common)
     cmd.start()
 
 
 def letsconnect():
     _common = common.EduVPN(LETSCONNECT_CLIENT_ID, str(LETSCONNECT_CONFIG_PREFIX))
-    cmd = CommandLine("Let's Connect!", False, _common)
+    cmd = CommandLine("Let's Connect!", LETS_CONNECT, _common)
     cmd.start()
 
 
 if __name__ == "__main__":
-    letsconnect()
+    eduvpn()

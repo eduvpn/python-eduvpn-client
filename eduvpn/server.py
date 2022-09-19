@@ -36,27 +36,24 @@ def is_search_match(server, query: str) -> bool:
 
 
 class ServerDatabase:
-    def __init__(self) -> None:
-        # TODO load the servers from a cache
-        self.servers = []
-        self.configured = []
+    def __init__(self, common) -> None:
+        self.common = common
 
-    #def parse_servers(self, _str):
-    #    # print("PARSE", _str)
-    #    pass
+    @property
+    def disco(self):
+        disco_orgs = self.common.get_disco_organizations()
+        disco_servers = self.common.get_disco_servers()
+        all_servers = disco_orgs.organizations
+        all_servers.extend(disco_servers.servers)
+        return all_servers
 
-    #def all_configured(self) -> Iterable[ConfiguredServer]:
-    #    "Return all configured servers."
-    #    # TODO: replace with Go
-    #    pass
-
-    #def get_single_configured(self) -> Optional[ConfiguredServer]:
-    #    # TODO: replace with Go
-    #    pass
+    @property
+    def configured(self):
+        return self.common.get_saved_servers()
 
     def all(self):
         "Return all servers."
-        return self.servers
+        return self.disco
 
     def search_predefined(self, query: str):
         "Return all servers that match the search query."
