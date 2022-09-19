@@ -60,18 +60,6 @@ def language() -> str:
         return LANGUAGE
 
 
-def extract_translation(d: Union[str, Dict[str, str]]):
-    if isinstance(d, dict):
-        for m in [country(), language(), "en-US", "en"]:
-            try:
-                return d[m]
-            except KeyError:
-                continue
-        return list(d.values())[0]  # otherwise just return first in list
-    else:
-        return d
-
-
 def retrieve_country_name(country_code: str) -> str:
     country_map = _read_country_map()
     loc = locale.getlocale()
