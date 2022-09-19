@@ -50,7 +50,7 @@ class ApplicationModelTransitions:
         self.common = common
         self.common.register_class_callbacks(self)
         self.current_server = None
-        self.server_db = ServerDatabase()
+        self.server_db = ServerDatabase(common)
 
     @model_transition(State.NO_SERVER, StateType.Enter)
     def get_previous_servers(self, old_state: str, servers):
@@ -58,12 +58,7 @@ class ApplicationModelTransitions:
 
     @model_transition(State.SEARCH_SERVER, StateType.Enter)
     def parse_discovery(self, old_state: str, _):
-        disco_orgs = self.common.get_disco_organizations()
-        disco_servers = self.common.get_disco_servers()
-        all_servers = disco_orgs.organizations
-        all_servers.extend(disco_servers.servers)
-        self.server_db.servers = all_servers
-        return all_servers
+        return self.server_db.disco
 
     @model_transition(State.LOADING_SERVER, StateType.Enter)
     def loading_server(self, old_state: str, data: str):
@@ -136,14 +131,6 @@ class ApplicationModel:
     @current_server.setter
     def current_server(self, current_server):
         self.transitions.current_server = current_server
-
-    @property
-    def current_server_info(self):
-        return self.transitions.current_server_info
-
-    @current_server_info.setter
-    def current_server_info(self, current_server_info):
-        self.transitions.current_server_info = current_server_info
 
     def get_expiry(self, expire_time: datetime) -> Validity:
         return Validity(expire_time)
@@ -276,15 +263,13 @@ class ApplicationModel:
 
 class Application:
     def __init__(
-        self, variant: ApplicationVariant, make_func_threadsafe: Callable, common: EduVPN
+        self, variant: ApplicationVariant, common: EduVPN
     ) -> None:
         self.variant = variant
-        self.make_func_threadsafe = make_func_threadsafe
         self.common = common
         self.config = Configuration.load()
         self.model = ApplicationModel(common)
 
-    @run_in_background_thread("on-network-update")
     def on_network_update_callback(self, state, initial=False):
         try:
             if state == nm.ConnectionState.CONNECTED:
@@ -300,16 +285,17 @@ class Application:
         except:
             return
 
-    def initialize_network(self) -> None:
+    def initialize_network(self, needs_update=True) -> None:
         """
         Determine the current network state.
         """
         # Check if a previous network configuration exists.
         uuid = nm.get_existing_configuration_uuid()
         if uuid:
-            self.on_network_update_callback(nm.get_connection_state(), True)
-        else:
-            # TODO: Implement with Go
-            pass
+            self.on_network_update_callback(nm.get_connection_state(), needs_update)
 
-        nm.subscribe_to_status_changes(self.on_network_update_callback)
+        @run_in_background_thread("on-network-update")
+        def update(state, initial):
+            self.on_network_update_callback(state, initial)
+
+        nm.subscribe_to_status_changes(update)

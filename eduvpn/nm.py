@@ -738,7 +738,6 @@ def save_connection_with_mainloop(config, private_key, certificate):
         )
     )
 
-
 def activate_connection_with_mainloop(uuid):
     action_with_mainloop(
         action=lambda callback: activate_connection(get_client(), uuid, callback)

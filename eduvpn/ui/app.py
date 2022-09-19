@@ -10,7 +10,7 @@ from gi.repository import Gio, GLib, Gtk
 
 from eduvpn import i18n, notify
 from eduvpn.app import Application
-from eduvpn.utils import run_in_background_thread, run_in_main_gtk_thread, ui_transition
+from eduvpn.utils import run_in_background_thread, ui_transition
 from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
 from gi.repository.Gio import ApplicationCommandLine
@@ -37,7 +37,7 @@ class EduVpnGtkApplication(Gtk.Application):
             **kwargs,
         )
 
-        self.app = Application(app_variant, run_in_main_gtk_thread, common)
+        self.app = Application(app_variant, common)
         self.common = common
         self.common.register_class_callbacks(self)
         # Only allow a single window and track it on the app.
