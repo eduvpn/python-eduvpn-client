@@ -13,7 +13,7 @@ from eduvpn.connection import Connection
 
 from eduvpn import nm
 from eduvpn.config import Configuration
-from eduvpn.i18n import extract_translation, retrieve_country_name
+from eduvpn.i18n import retrieve_country_name
 from eduvpn.utils import (model_transition, run_in_background_thread,
                     run_in_main_gtk_thread)
 from eduvpn.variants import ApplicationVariant
