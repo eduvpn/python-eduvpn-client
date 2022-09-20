@@ -13,6 +13,7 @@ from eduvpn.app import Application
 from eduvpn.utils import run_in_background_thread, ui_transition
 from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
+from eduvpn.ui.utils import get_validity_text
 from gi.repository.Gio import ApplicationCommandLine
 from typing import Any
 
@@ -153,10 +154,13 @@ class EduVpnGtkApplication(Gtk.Application):
         )
 
     @ui_transition(State.DISCONNECTED, StateType.Enter)
-    def enter_DisconnectedState(self, old_state, new_state):
-        # TODO: Show if disconnected due to expiry
+    def enter_DisconnectedState(self, old_state, server):
+        is_expired, _text = get_validity_text(self.app.model.get_expiry(server.expire_time))
+        reason = ""
+        if is_expired:
+            reason = " due to expiry"
         self.connection_notification.show(
-            title=_("Disconnected"), message=_("You are now disconnected from your server.")
+            title=_("Disconnected"), message=_(f"You have been disconnected from your server{reason}.")
         )
 
     def enter_SessionExpiredState(self):
