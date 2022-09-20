@@ -27,7 +27,6 @@ LOG_FORMAT = format_ = (
 
 
 class EduVpnGtkApplication(Gtk.Application):
-    # TODO: Go type hint
     def __init__(
         self, *args, app_variant: ApplicationVariant, common: EduVPN, **kwargs
     ) -> None:
@@ -173,13 +172,6 @@ class EduVpnGtkApplication(Gtk.Application):
             self.app.model.deactivate_connection()
 
         expired_deactivate()
-
-    # TODO: Implement with Go callback
-    def enter_ConnectionErrorState(self, old_state, new_state):
-        message = _("An error occured")
-        if new_state.error:
-            message = f"{message}: {new_state.error}"
-        self.connection_notification.show(title=_("Connection Error"), message=message)
 
     @ui_transition(State.DISCONNECTED, StateType.Enter)
     def enter_NoActiveConnection(self, old_state, new_state):
