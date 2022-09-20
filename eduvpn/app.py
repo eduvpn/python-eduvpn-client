@@ -295,7 +295,7 @@ class Application:
             self.on_network_update_callback(nm.get_connection_state(), needs_update)
 
         @run_in_background_thread("on-network-update")
-        def update(state, initial):
-            self.on_network_update_callback(state, initial)
+        def update(state):
+            self.on_network_update_callback(state, False)
 
         nm.subscribe_to_status_changes(update)
