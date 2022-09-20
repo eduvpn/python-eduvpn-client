@@ -94,6 +94,7 @@ desktop-file-install %{buildroot}/%{_datadir}/applications/org.eduvpn.client.des
 %{_datarootdir}/icons/hicolor/512x512/apps/org.eduvpn.client.png
 %{_datarootdir}/eduvpn/images/*.svg
 %{_datarootdir}/eduvpn/images/*.png
+%{_datarootdir}/eduvpn/images/flags/png/*.png
 %{_datarootdir}/locale/*/LC_MESSAGES/eduVPN.mo
 
 %files -n letsconnect-client
