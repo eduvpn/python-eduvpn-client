@@ -537,8 +537,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     # TODO: Implement with Go callback
     @ui_transition(State.SEARCH_SERVER, StateType.Enter)
     def enter_search(self, old_state: str, servers):
+        is_main = len(self.common.get_saved_servers()) == 0
+        self.show_back_button(not is_main)
         self.set_search_text("")
-        self.show_back_button(True)
         self.find_server_search_input.grab_focus()
         search.show_result_components(self, True)
         search.show_search_components(self, True)
@@ -565,6 +566,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.init_server_search(self)
         search.update_results(self, servers)
         self.change_location_button.show()
+
+        @run_in_background_thread('set-search-server')
+        def set_search_server():
+            try:
+                self.common.set_search_server()
+            except Exception as e:
+                self.show_error_revealer(str(e))
+
+        if len(servers) == 0:
+            set_search_server()
 
     @ui_transition(State.NO_SERVER, StateType.Leave)
     def exit_MainState(self, old_state, new_state):
@@ -619,7 +630,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @ui_transition(State.ASK_PROFILE, StateType.Enter)
     def enter_ChooseProfile(self, new_state, profiles):
-        self.show_back_button(True)
         self.show_page(self.choose_profile_page)
         self.profile_list.show()
 
