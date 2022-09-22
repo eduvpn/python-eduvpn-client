@@ -1101,7 +1101,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">Only the current user may connect to the network</property>
+                        <property name="label" translatable="yes">All users may connect to the VPN network</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -1109,12 +1109,12 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSwitch" id="settingConfigNMUserOnly">
+                      <object class="GtkSwitch" id="settingConfigNMSystemWide">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="halign">end</property>
                         <property name="hexpand">True</property>
-                        <signal name="state-set" handler="on_config_nm_user_only" swapped="no"/>
+                        <signal name="state-set" handler="on_config_nm_system_wide" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>

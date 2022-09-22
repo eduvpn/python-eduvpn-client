@@ -97,7 +97,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_acknowledge_error": self.on_acknowledge_error,
             "on_renew_session_clicked": self.on_renew_session_clicked,
             "on_config_force_tcp": self.on_config_force_tcp,
-            "on_config_nm_user_only": self.on_config_nm_user_only,
+            "on_config_nm_system_wide": self.on_config_nm_system_wide,
             "on_close_window": self.on_close_window,
         }
         builder.connect_signals(handlers)
@@ -156,7 +156,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.settings_page = builder.get_object('settingsPage')
         self.setting_config_force_tcp = builder.get_object('settingConfigForceTCP')
-        self.setting_config_nm_user_only = builder.get_object('settingConfigNMUserOnly')
+        self.setting_config_nm_system_wide = builder.get_object('settingConfigNMSystemWide')
 
         self.loading_page = builder.get_object('loadingPage')
         self.loading_title = builder.get_object('loadingTitle')
@@ -239,7 +239,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_settings_page(self):
         assert not self.is_on_settings_page()
         self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
-        self.setting_config_nm_user_only.set_state(self.app.config.nm_user_only)
+        self.setting_config_nm_system_wide.set_state(self.app.config.nm_system_wide)
         self.page_stack.set_visible_child(self.settings_page)
         self.show_back_button(True)
 
@@ -685,9 +685,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         logger.debug("clicked on setting: 'force tcp'")
         self.app.config.force_tcp = state
 
-    def on_config_nm_user_only(self, switch, state: bool):
-        logger.debug("clicked on setting: 'nm user only'")
-        self.app.config.nm_user_only = state
+    def on_config_nm_system_wide(self, switch, state: bool):
+        logger.debug("clicked on setting: 'nm system wide'")
+        self.app.config.nm_system_wide = state
 
     def on_close_window(self, window, event):
         logger.debug("clicked on close window")
