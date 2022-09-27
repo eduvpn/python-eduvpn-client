@@ -328,12 +328,11 @@ class CommandLine:
             func()
 
     def start(self):
-        self.common.register(debug=True)
-        self.update_state(True)
         parser = argparse.ArgumentParser(
             description=f"The {self.name} command line client"
         )
         parser.set_defaults(func=lambda _: parser.print_usage())
+        parser.add_argument("-d", "--debug", action="store_true", help="enable debugging")
         subparsers = parser.add_subparsers(title="subcommands")
 
         institute_parser = subparsers.add_parser(
@@ -345,29 +344,29 @@ class CommandLine:
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
         if self.variant.use_predefined_servers:
             connect_group.add_argument(
-                "--search", type=str, help="connect to a server by searching for one"
+                "-s", "--search", type=str, help="connect to a server by searching for one"
             )
             connect_group.add_argument(
-                "--orgid",
+                "-o", "--orgid",
                 type=str,
                 help="connect to a secure internet server using the organisation ID",
             )
             connect_group.add_argument(
-                "--url",
+                "-u", "--url",
                 type=str,
                 help="connect to an institute access server using the URL",
             )
         connect_group.add_argument(
-            "--custom-url", type=str, help="connect to a custom server using the URL"
+            "-c", "--custom-url", type=str, help="connect to a custom server using the URL"
         )
         connect_group.add_argument(
-            "--number",
+            "-n", "--number",
             type=int,
             help="connect to an already configured server using the number. Run the 'list' subcommand to see the currently configured servers with their number",
         )
         if self.variant.use_predefined_servers:
             connect_group.add_argument(
-                "--number-all",
+                "-a", "--number-all",
                 type=int,
                 help="connect to a server using the number for all servers. Run the 'list --all' command to see all the available servers with their number",
             )
@@ -402,6 +401,8 @@ class CommandLine:
         status_parser.set_defaults(func=self.status)
 
         parsed = parser.parse_args()
+        self.common.register(parsed.debug)
+        self.update_state(True)
         parsed.func(parsed)
 
         self.common.deregister()
