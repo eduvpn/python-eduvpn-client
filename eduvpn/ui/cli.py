@@ -276,11 +276,14 @@ class CommandLine:
             "Available commands: connect, disconnect, remove, status, list, help, quit"
         )
 
-    @run_in_background_thread('subscribe')
-    def subscribe(self):
-        # TODO: Fix this
-        nm.action_with_mainloop(
-            action=lambda callback: self.app.initialize_network(needs_update=False))
+    def update_state(self, initial: bool = False):
+        def update_state_callback(callback):
+            state = nm.get_connection_state()
+            self.app.on_network_update_callback(state, initial)
+
+            # This exits the main loop and gives back control to the CLI
+            callback()
+        nm.action_with_mainloop(update_state_callback)
 
     def interactive(self, _):
         #self.subscribe()
@@ -288,7 +291,13 @@ class CommandLine:
         self.help_interactive()
         command = ""
         while command != "quit":
+            # Ask for the command to execute
             command = input(f"[{self.name}]: ")
+
+            # Update the state right before we execute
+            self.update_state()
+
+            # Execute the right command
             commands = {
                 "connect": self.connect,
                 "disconnect": self.disconnect,
@@ -301,17 +310,9 @@ class CommandLine:
             func = commands.get(command, self.help_interactive)
             func()
 
-    def initialize(self):
-        uuid = nm.get_existing_configuration_uuid()
-        if uuid:
-            state = nm.get_connection_state()
-
-            if state == nm.ConnectionState.CONNECTED:
-                self.common.set_connected()
-
     def start(self):
         self.common.register(debug=True)
-        self.initialize()
+        self.update_state(True)
         parser = argparse.ArgumentParser(
             description=f"The {self.name} command line client"
         )
