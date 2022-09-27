@@ -167,8 +167,10 @@ class ApplicationModel:
                 config, config_type = self.common.get_config_secure_internet(server.org_id)
             elif isinstance(server, Server):
                 config, config_type = self.common.get_config_custom_server(server.url)
-        except Exception as e:
-            raise e
+        except WrappedError as e:
+            if e.level != ErrorLevel.ERR_INFO:
+                raise e
+            return
 
         def on_connected():
             self.common.set_connected()
