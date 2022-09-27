@@ -261,6 +261,9 @@ class ApplicationModel:
     def is_disconnected(self):
         return self.common.in_fsm_state(State.DISCONNECTED)
 
+    def is_oauth_started(self) -> int:
+        return self.common.in_fsm_state(State.OAUTH_STARTED)
+
 
 class Application:
     def __init__(

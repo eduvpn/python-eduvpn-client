@@ -23,6 +23,7 @@ from eduvpn_common.server import (
 )
 
 import argparse
+import signal
 import sys
 
 
@@ -87,7 +88,7 @@ class CommandLine:
         if len(servers) == 1:
             server = servers[0]
             # TODO: category
-            print(f'One server found: "{str(server)}"')
+            print(f'One server found: "{str(server)}" ({server.category})')
             ask = input("Do you want to connect to it (y/n): ")
 
             if ask in ["y", "yes"]:
@@ -288,9 +289,23 @@ class CommandLine:
             callback()
         nm.action_with_mainloop(update_state_callback)
 
+    def handle_exit(self):
+        def signal_handler(_signal, _frame):
+            if self.app.model.is_oauth_started():
+                self.common.cancel_oauth()
+            self.common.go_back()
+            self.common.deregister()
+            sys.exit(1)
+
+        signal.signal(signal.SIGINT, signal_handler)
+
     def interactive(self, _):
+        # Show a title and the help
         print(f"Welcome to the {self.name} interactive commandline")
         self.help_interactive()
+
+        # Handle ctrl+c
+        self.handle_exit()
         command = ""
         while command != "quit":
             # Ask for the command to execute
@@ -398,7 +413,7 @@ class CommandLineTransitions:
 
     @cmd_transition(State.ASK_LOCATION, StateType.ENTER)
     def on_ask_location(self, old_state: State, locations):
-        print("This secure internet server has the following available locations:")
+        print("This Secure Internet Server has the following available locations:")
         for index, location in enumerate(locations):
             print(f"[{index+1}]: {retrieve_country_name(location)}")
 
@@ -410,9 +425,6 @@ class CommandLineTransitions:
                 if location_index < 1 or location_index > len(locations):
                     print(f"Invalid location choice: {location_index}")
                     continue
-                # FIXME: This should just accept a location instead of the country code
-                # The model should convert this to a location
-                # This needs fixing in the normal GTK UI as well
                 self.app.model.set_secure_location(
                     locations[location_index - 1]
                 )
