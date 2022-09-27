@@ -303,9 +303,6 @@ class CommandLine:
         # Show a title and the help
         print(f"Welcome to the {self.name} interactive commandline")
         self.help_interactive()
-
-        # Handle ctrl+c
-        self.handle_exit()
         command = ""
         while command != "quit":
             # Ask for the command to execute
@@ -401,10 +398,20 @@ class CommandLine:
         status_parser.set_defaults(func=self.status)
 
         parsed = parser.parse_args()
+
+        # Handle ctrl+c
+        self.handle_exit()
+
+        # Register the common library
         self.common.register(parsed.debug)
+
+        # Update the state by asking NetworkManager
         self.update_state(True)
+
+        # Run the command
         parsed.func(parsed)
 
+        # Deregister the library
         self.common.deregister()
 
 
