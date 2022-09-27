@@ -40,6 +40,7 @@ class EduVpnGtkApplication(Gtk.Application):
         self.app = Application(app_variant, common)
         self.common = common
         self.common.register_class_callbacks(self)
+        self.debug = False
         # Only allow a single window and track it on the app.
         self.window = None
 
@@ -93,7 +94,9 @@ class EduVpnGtkApplication(Gtk.Application):
             print(f"eduVPN Linux client version {__version__}")
             return 0
 
-        if "debug" in options:
+        self.debug = "debug" in options
+
+        if self.debug:
             log_level = logging.DEBUG
         else:
             log_level = logging.INFO

@@ -234,7 +234,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             try:
                 self.common.register_class_callbacks(self)
                 self.enter_deregistered()
-                self.common.register(debug=True)
+                self.common.register(debug=self.eduvpn_app.debug)
                 self.exit_deregistered()
                 self.app.initialize_network()
             except Exception as e:
