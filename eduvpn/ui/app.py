@@ -127,7 +127,7 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    @ui_transition(State.CONNECTING, StateType.Enter)
+    @ui_transition(State.CONNECTING, StateType.ENTER)
     def enter_ConnectingState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Connecting"),
@@ -137,7 +137,7 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    @ui_transition(State.CONNECTED, StateType.Enter)
+    @ui_transition(State.CONNECTED, StateType.ENTER)
     def enter_ConnectedState(self, old_state, new_state):
         self.connection_notification.show(
             title=_("Connected"), message=_("You are now connected to your server.")
@@ -152,7 +152,7 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    @ui_transition(State.DISCONNECTED, StateType.Enter)
+    @ui_transition(State.DISCONNECTED, StateType.ENTER)
     def enter_DisconnectedState(self, old_state, server):
         is_expired, _text = get_validity_text(self.app.model.get_expiry(server.expire_time))
         reason = ""
@@ -173,7 +173,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
         expired_deactivate()
 
-    @ui_transition(State.DISCONNECTED, StateType.Enter)
+    @ui_transition(State.DISCONNECTED, StateType.ENTER)
     def enter_NoActiveConnection(self, old_state, new_state):
         if not self.window.is_visible():
             # Quit the app if no window is open when the connection is deactivated.
