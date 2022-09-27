@@ -393,7 +393,7 @@ class CommandLineTransitions:
     def __init__(self, app):
         self.app = app
 
-    @cmd_transition(State.ASK_LOCATION, StateType.Enter)
+    @cmd_transition(State.ASK_LOCATION, StateType.ENTER)
     def on_ask_location(self, old_state: State, locations):
         print("This secure internet server has the following available locations:")
         for index, location in enumerate(locations):
@@ -417,7 +417,7 @@ class CommandLineTransitions:
             except ValueError:
                 print(f"Input is not a number: {location_nr}")
 
-    @cmd_transition(State.ASK_PROFILE, StateType.Enter)
+    @cmd_transition(State.ASK_PROFILE, StateType.ENTER)
     def on_ask_profile(self, old_state: State, profiles):
         print("This server has multiple profiles.")
         for index, profile in enumerate(profiles.profiles):
@@ -438,7 +438,7 @@ class CommandLineTransitions:
             except ValueError:
                 print(f"Input is not a number: {profile_nr}")
 
-    @cmd_transition(State.OAUTH_STARTED, StateType.Enter)
+    @cmd_transition(State.OAUTH_STARTED, StateType.ENTER)
     def on_oauth_started(self, old_state: State, url: str):
         print(f"Authorization needed. Your browser has been opened with url: {url}")
 
