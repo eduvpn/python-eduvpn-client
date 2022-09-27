@@ -286,7 +286,6 @@ class CommandLine:
         nm.action_with_mainloop(update_state_callback)
 
     def interactive(self, _):
-        #self.subscribe()
         print(f"Welcome to the {self.name} interactive commandline")
         self.help_interactive()
         command = ""
