@@ -121,7 +121,7 @@ class CommandLine:
             return self.ask_server_custom()
 
         if self.server_db.configured:
-            answer = input("Do you want to connect to an existing server? (y/n):")
+            answer = input("Do you want to connect to an existing server? (y/n): ")
 
             if answer in ["y", "yes"]:
                 return self.ask_server_input(self.server_db.configured)
