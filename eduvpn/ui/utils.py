@@ -9,6 +9,29 @@ from gi.repository import Gtk
 from gi.overrides.Gtk import Widget
 from typing import Tuple
 
+
+def style_widget(widget: Gtk.Widget, class_name: str, style: str):
+    style_context = widget.get_style_context()
+    provider = Gtk.CssProvider.new()
+    provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))
+    style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    style_context.add_class(class_name.split(":")[0])
+
+
+def style_tree_view(window, tree_view):
+    # Get the background from the window to 'blend' the tree view
+    style_context = window.get_style_context()
+    background = style_context.get_background_color(Gtk.StateFlags.NORMAL).to_string()
+    # grayish
+    bordercolor = "#B2BEB5"
+    # Organgeish in the style of the eduVPN logo
+    background_hl = "#E24301"
+    # Plain white
+    textcolor_hl = "#ffffff"
+    style_widget(tree_view, "TreeView", f"background-color: {background}; border-top-color: {bordercolor};")
+    style_widget(tree_view, "TreeView:hover", f"color: {textcolor_hl}; background-color: {background_hl}; border-top-color: {bordercolor}")
+
+
 def get_validity_text(validity: Validity) -> Tuple[bool, str]:
     if validity is None:
         return (False, _(f"Valid for: <b>unknown</b>"))
