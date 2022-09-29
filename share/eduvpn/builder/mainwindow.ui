@@ -130,6 +130,8 @@
                   <object class="GtkBox" id="findServerPage">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">10</property>
                     <child>
@@ -245,7 +247,6 @@
                     <child>
                       <object class="GtkScrolledWindow" id="serverListContainer">
                         <property name="can-focus">True</property>
-                        <property name="shadow-type">in</property>
                         <child>
                           <object class="GtkViewport">
                             <property name="visible">True</property>
@@ -264,6 +265,8 @@
                                       <object class="GtkImage">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
+                                        <property name="margin-start">2</property>
+                                        <property name="margin-end">2</property>
                                         <property name="pixbuf">../images/institute-icon.png</property>
                                       </object>
                                       <packing>
@@ -326,6 +329,8 @@
                                       <object class="GtkImage">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
+                                        <property name="margin-start">2</property>
+                                        <property name="margin-end">2</property>
                                         <property name="pixbuf">../images/earth-icon.png</property>
                                       </object>
                                       <packing>
@@ -401,6 +406,8 @@
                                       <object class="GtkImage">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
+                                        <property name="margin-start">2</property>
+                                        <property name="margin-end">2</property>
                                         <property name="pixbuf">../images/server-icon.png</property>
                                       </object>
                                       <packing>

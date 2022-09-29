@@ -29,7 +29,7 @@ from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, run_in_main_gtk
                      run_periodically, ui_transition)
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
-from eduvpn.ui.utils import get_validity_text, link_markup, show_error_dialog, show_ui_component
+from eduvpn.ui.utils import get_validity_text, link_markup, show_error_dialog, show_ui_component, style_tree_view, style_widget
 from datetime import datetime
 from gi.overrides.Gdk import Event, EventButton
 from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn
@@ -50,14 +50,6 @@ def get_flag_path(country_code: str) -> Optional[str]:
 
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
-
-
-def style_widget(widget: Gtk.Widget, class_name: str, style: str):
-    style_context = widget.get_style_context()
-    provider = Gtk.CssProvider.new()
-    provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))
-    style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-    style_context.add_class(class_name)
 
 
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
@@ -640,10 +632,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             # Only initialize this tree view once.
             text_cell = Gtk.CellRendererText()
             text_cell.set_property("size-points", 14)
+            text_cell.set_property("ypad", 10)
 
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
             profile_tree_view.append_column(column)
 
+        style_tree_view(self, profile_tree_view)
         profile_tree_view.set_model(profiles_list_model)
         profiles_list_model.clear()
         for profile in profiles.profiles:
@@ -670,6 +664,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             # Only initialize this tree view once.
             text_cell = Gtk.CellRendererText()
             text_cell.set_property("size-points", 14)
+            text_cell.set_property("ypad", 10)
 
             renderer_pixbuf = Gtk.CellRendererPixbuf()
             column = Gtk.TreeViewColumn("Image", renderer_pixbuf, pixbuf=1)
@@ -678,6 +673,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
             location_tree_view.append_column(column)
 
+            style_tree_view(self, location_tree_view)
             location_tree_view.set_model(location_list_model)
 
         location_list_model.clear()
