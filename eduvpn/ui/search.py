@@ -116,7 +116,9 @@ def init_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
             column = Gtk.TreeViewColumn("", text_cell, text=0)
             tree_view.append_column(column)
         model = get_group_model(group)
-        tree_view.set_model(model)
+        sorted_model = Gtk.TreeModelSort(model=model)
+        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+        tree_view.set_model(sorted_model)
 
 
 def exit_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
