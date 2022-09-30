@@ -904,18 +904,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         menu = Gtk.Menu()
         menu.append(remove_item)
 
-        # TODO: let server contain the profiles and change this if to:
-        # if len(server.profiles) > 0
-        if True:
-            change_profile = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_EDIT)
-            change_profile.connect(
-                "activate", lambda _: self.server_change_profile(server)
-            )
-            change_profile.set_always_show_image(True)
-            change_profile.set_label("Change profile")
-            change_profile.show()
-            menu.append(change_profile)
-
         menu.append(cancel_item)
         menu.attach_to_widget(widget)
         menu.popup_at_pointer()
