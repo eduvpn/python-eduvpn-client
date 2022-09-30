@@ -187,7 +187,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
@@ -207,14 +207,14 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">0</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="position">4</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -234,240 +234,253 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">0</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="position">5</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow" id="serverListContainer">
-                        <property name="can-focus">True</property>
+                      <object class="GtkBox" id="serverListContainer">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">10</property>
                         <child>
-                          <object class="GtkViewport">
-                            <property name="visible">True</property>
+                          <object class="GtkBox" id="instituteAccessHeader">
                             <property name="can-focus">False</property>
+                            <property name="spacing">15</property>
                             <child>
-                              <object class="GtkBox">
+                              <object class="GtkImage">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <property name="spacing">10</property>
-                                <child>
-                                  <object class="GtkBox" id="instituteAccessHeader">
-                                    <property name="can-focus">False</property>
-                                    <property name="spacing">15</property>
-                                    <child>
-                                      <object class="GtkImage">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="margin-start">2</property>
-                                        <property name="margin-end">2</property>
-                                        <property name="pixbuf">../images/institute-icon.png</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="label" translatable="yes">Institute Access</property>
-                                        <attributes>
-                                          <attribute name="weight" value="bold"/>
-                                        </attributes>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkTreeView" id="instituteTreeView">
-                                    <property name="can-focus">True</property>
-                                    <property name="hexpand">True</property>
-                                    <property name="vexpand">True</property>
-                                    <property name="headers-visible">False</property>
-                                    <property name="enable-search">False</property>
-                                    <property name="search-column">0</property>
-                                    <property name="hover-selection">True</property>
-                                    <property name="enable-grid-lines">horizontal</property>
-                                    <property name="activate-on-single-click">True</property>
-                                    <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
-                                    <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
-                                    <child internal-child="selection">
-                                      <object class="GtkTreeSelection"/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkBox" id="secureInternetHeader">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="spacing">15</property>
-                                    <child>
-                                      <object class="GtkImage">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="margin-start">2</property>
-                                        <property name="margin-end">2</property>
-                                        <property name="pixbuf">../images/earth-icon.png</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="label" translatable="yes">Secure Internet</property>
-                                        <attributes>
-                                          <attribute name="weight" value="bold"/>
-                                        </attributes>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkButton" id="changeLocationButton">
-                                        <property name="label" translatable="yes">Change Location</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">True</property>
-                                        <signal name="clicked" handler="on_change_location" swapped="no"/>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="pack-type">end</property>
-                                        <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkTreeView" id="secureInternetTreeView">
-                                    <property name="can-focus">True</property>
-                                    <property name="headers-visible">False</property>
-                                    <property name="enable-search">False</property>
-                                    <property name="search-column">0</property>
-                                    <property name="hover-selection">True</property>
-                                    <property name="enable-grid-lines">horizontal</property>
-                                    <property name="activate-on-single-click">True</property>
-                                    <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
-                                    <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
-                                    <child internal-child="selection">
-                                      <object class="GtkTreeSelection"/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">3</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkBox" id="otherServersHeader">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="spacing">15</property>
-                                    <child>
-                                      <object class="GtkImage">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="margin-start">2</property>
-                                        <property name="margin-end">2</property>
-                                        <property name="pixbuf">../images/server-icon.png</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="label" translatable="yes">Other Servers</property>
-                                        <attributes>
-                                          <attribute name="weight" value="bold"/>
-                                        </attributes>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">4</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkTreeView" id="otherServersTreeView">
-                                    <property name="can-focus">True</property>
-                                    <property name="headers-visible">False</property>
-                                    <property name="enable-search">False</property>
-                                    <property name="search-column">0</property>
-                                    <property name="hover-selection">True</property>
-                                    <property name="enable-grid-lines">horizontal</property>
-                                    <property name="activate-on-single-click">True</property>
-                                    <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
-                                    <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
-                                    <child internal-child="selection">
-                                      <object class="GtkTreeSelection"/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">5</property>
-                                  </packing>
+                                <property name="margin-left">2</property>
+                                <property name="margin-right">2</property>
+                                <property name="margin-start">2</property>
+                                <property name="margin-end">2</property>
+                                <property name="pixbuf">../images/institute-icon.png</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Institute Access</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                </attributes>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="instituteScrolledView">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <child>
+                              <object class="GtkTreeView" id="instituteTreeView">
+                                <property name="can-focus">True</property>
+                                <property name="hexpand">True</property>
+                                <property name="vexpand">True</property>
+                                <property name="headers-visible">False</property>
+                                <property name="enable-search">False</property>
+                                <property name="search-column">0</property>
+                                <property name="hover-selection">True</property>
+                                <property name="enable-grid-lines">horizontal</property>
+                                <property name="activate-on-single-click">True</property>
+                                <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
+                                <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection"/>
                                 </child>
                               </object>
                             </child>
                           </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="secureInternetHeader">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="spacing">15</property>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-left">2</property>
+                                <property name="margin-right">2</property>
+                                <property name="margin-start">2</property>
+                                <property name="margin-end">2</property>
+                                <property name="pixbuf">../images/earth-icon.png</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Secure Internet</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                </attributes>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="changeLocationButton">
+                                <property name="label" translatable="yes">Change Location</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <signal name="clicked" handler="on_change_location" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="pack-type">end</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="secureInternetScrolledView">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <child>
+                              <object class="GtkTreeView" id="secureInternetTreeView">
+                                <property name="can-focus">True</property>
+                                <property name="headers-visible">False</property>
+                                <property name="enable-search">False</property>
+                                <property name="search-column">0</property>
+                                <property name="hover-selection">True</property>
+                                <property name="enable-grid-lines">horizontal</property>
+                                <property name="activate-on-single-click">True</property>
+                                <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
+                                <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection"/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="otherServersHeader">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="spacing">15</property>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-left">2</property>
+                                <property name="margin-right">2</property>
+                                <property name="margin-start">2</property>
+                                <property name="margin-end">2</property>
+                                <property name="pixbuf">../images/server-icon.png</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Other Servers</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                </attributes>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">4</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="otherServersScrolledView">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <child>
+                              <object class="GtkTreeView" id="otherServersTreeView">
+                                <property name="can-focus">True</property>
+                                <property name="headers-visible">False</property>
+                                <property name="enable-search">False</property>
+                                <property name="search-column">0</property>
+                                <property name="hover-selection">True</property>
+                                <property name="enable-grid-lines">horizontal</property>
+                                <property name="activate-on-single-click">True</property>
+                                <signal name="button-press-event" handler="on_server_row_pressed" swapped="no"/>
+                                <signal name="row-activated" handler="on_server_row_activated" swapped="no"/>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection"/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">5</property>
+                          </packing>
                         </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">6</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>

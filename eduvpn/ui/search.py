@@ -15,10 +15,16 @@ class ServerGroup(enum.Enum):
     OTHER = enum.auto()
 
 
-group_tree_component = {
+group_scroll_component = {
     ServerGroup.INSTITUTE_ACCESS: "institute_list",
     ServerGroup.SECURE_INTERNET: "secure_internet_list",
     ServerGroup.OTHER: "other_server_list",
+}
+
+group_tree_component = {
+    ServerGroup.INSTITUTE_ACCESS: "institute_list_tree",
+    ServerGroup.SECURE_INTERNET: "secure_internet_list_tree",
+    ServerGroup.OTHER: "other_server_list_tree",
 }
 
 group_header_component = {
@@ -94,6 +100,9 @@ def show_group_tree(window: 'EduVpnGtkWindow', group: ServerGroup, show: bool) -
     """
     Set the visibility of the tree of result for a server type.
     """
+    scroll_component_name = group_scroll_component[group]
+    scroll_component = getattr(window, scroll_component_name)
+    show_ui_component(scroll_component, show)
     tree_component_name = group_tree_component[group]
     tree_component = getattr(window, tree_component_name)
     show_ui_component(tree_component, show)
@@ -125,7 +134,7 @@ def init_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
 
 def exit_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
     "Hide the search page components."
-    for group in group_tree_component:
+    for group in group_scroll_component:
         show_group_tree(window, group, False)
     show_search_results(window, False)
 
@@ -156,7 +165,7 @@ def update_results(window: 'EduVpnGtkWindow', servers) -> None:  # type: ignore
         show_search_results(window, False)
         return
     server_map = group_servers(servers)
-    for group in group_tree_component:
+    for group in group_scroll_component:
         update_search_results_for_type(
             window,
             group,

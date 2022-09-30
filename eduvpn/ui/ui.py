@@ -106,9 +106,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.secure_internet_list_header = builder.get_object("secureInternetHeader")
         self.other_server_list_header = builder.get_object("otherServersHeader")
 
-        self.institute_list = builder.get_object("instituteTreeView")
-        self.secure_internet_list = builder.get_object("secureInternetTreeView")
-        self.other_server_list = builder.get_object("otherServersTreeView")
+        self.institute_list = builder.get_object("instituteScrolledView")
+        self.secure_internet_list = builder.get_object("secureInternetScrolledView")
+        self.other_server_list = builder.get_object("otherServersScrolledView")
+
+        self.institute_list_tree = builder.get_object("instituteTreeView")
+        self.secure_internet_list_tree = builder.get_object("secureInternetTreeView")
+        self.other_server_list_tree = builder.get_object("otherServersTreeView")
 
         self.choose_profile_page = builder.get_object("chooseProfilePage")
         self.choose_location_page = builder.get_object("chooseLocationPage")
