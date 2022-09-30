@@ -255,13 +255,16 @@ class ApplicationModel:
     def search_custom(self, query: str) -> Iterator[Any]:
         return self.server_db.search_custom(query)
 
-    def is_connected(self) -> int:
+    def is_no_server(self) -> bool:
+        return self.common.in_fsm_state(State.NO_SERVER)
+
+    def is_connected(self) -> bool:
         return self.common.in_fsm_state(State.CONNECTED)
 
-    def is_disconnected(self):
+    def is_disconnected(self) -> bool:
         return self.common.in_fsm_state(State.DISCONNECTED)
 
-    def is_oauth_started(self) -> int:
+    def is_oauth_started(self) -> bool:
         return self.common.in_fsm_state(State.OAUTH_STARTED)
 
 

@@ -876,6 +876,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if event.type != Gdk.EventType.BUTTON_PRESS:
             return
 
+        # Not in the main screen
+        if not self.app.model.is_no_server():
+            return
+
         # Not a right click
         if event.button != 3:
             return
