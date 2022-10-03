@@ -10,6 +10,7 @@ from gi.overrides.Gtk import Widget
 from typing import Tuple
 
 
+@run_in_main_gtk_thread
 def style_widget(widget: Gtk.Widget, class_name: str, style: str):
     style_context = widget.get_style_context()
     provider = Gtk.CssProvider.new()
@@ -18,6 +19,7 @@ def style_widget(widget: Gtk.Widget, class_name: str, style: str):
     style_context.add_class(class_name.split(":")[0])
 
 
+@run_in_main_gtk_thread
 def style_tree_view(window, tree_view):
     # Get the background from the window to 'blend' the tree view
     style_context = window.get_style_context()
@@ -70,6 +72,7 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
         return (False, (dstr + hstr))
 
 
+@run_in_main_gtk_thread
 def show_ui_component(component: Widget, show: bool) -> None:
     """
     Set the visibility of a UI component.
@@ -91,6 +94,7 @@ def link_markup(link: str) -> str:
         return f'<a href="{link}">{rest}</a>'
 
 
+@run_in_main_gtk_thread
 def show_error_dialog(parent, name: str, title: str, message: str, only_quit: bool = False):
     dialog = Gtk.MessageDialog(  # type: ignore
         parent=parent,
