@@ -292,6 +292,7 @@ class Application:
         except:
             return
 
+    @run_in_main_gtk_thread
     def initialize_network(self, needs_update=True) -> None:
         """
         Determine the current network state.

@@ -130,11 +130,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.main_overlay = builder.get_object("mainOverlay")
 
         # Create a revealer
-        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        self.clipboard = self.create_clipboard()
         self.error_revealer = None
         self.error_revealer_label = None
         self.create_error_revealer()
-        #self.error_revealer.set_has_window(True)
 
         self.add_custom_server_button_container = builder.get_object(
             "addCustomServerRow"
@@ -238,12 +237,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         register()
 
+    @run_in_main_gtk_thread
     def enter_deregistered(self):
         self.show_loading_page(
             _("Loading client"),
             _("The client is loading the servers."),
         )
 
+    @run_in_main_gtk_thread
     def exit_deregistered(self):
         self.hide_loading_page()
 
@@ -251,6 +252,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_error_state(self, old_state: str, error: str):
         self.show_error_revealer(error)
 
+    @run_in_main_gtk_thread
+    def create_clipboard(self):
+        return Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+
+    @run_in_main_gtk_thread
     def create_error_revealer(self):
         # Creat the revealer and set the properties
         self.error_revealer = Gtk.Revealer.new()
