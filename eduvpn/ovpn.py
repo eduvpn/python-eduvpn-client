@@ -98,37 +98,3 @@ class Ovpn:
         file = StringIO()
         self.write(file)
         return file.getvalue()
-
-    def contains_field(self, field_name: str) -> bool:
-        for item in self.content:
-            if isinstance(item, Field):
-                if item.name == field_name:
-                    return True
-        return False
-
-    def replace_fields(self, replace: Callable[[Field], Optional[Item]]):
-        new_content = []
-        for item in self.content:
-            if isinstance(item, Field):
-                replacement = replace(item)
-                if replacement is not None:
-                    new_content.append(replacement)
-            else:
-                new_content.append(item)
-        self.content = new_content
-
-    def force_tcp(self):
-        def replacement(field):
-            if field.name == "remote" and field.arguments[2] == "udp":
-                return Comment(f" omitted to force tcp: {field.to_string()}")
-            else:
-                return field
-
-        self.replace_fields(replacement)
-        if not self.contains_field("remote"):
-            raise InvalidOVPN(
-                _(
-                    "This connection does not provide TCP connections. "
-                    "Disable the setting 'force-tcp' to use it."
-                )
-            )

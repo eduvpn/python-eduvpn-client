@@ -1132,12 +1132,12 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkSwitch" id="settingConfigForceTCP">
+                          <object class="GtkSwitch" id="settingConfigPreferTCP">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="halign">end</property>
                             <property name="hexpand">True</property>
-                            <signal name="state-set" handler="on_config_force_tcp" swapped="no"/>
+                            <signal name="state-set" handler="on_config_prefer_tcp" swapped="no"/>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
@@ -1149,7 +1149,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes">Force TCP</property>
+                            <property name="label" translatable="yes">Prefer to use TCP for the VPN</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>

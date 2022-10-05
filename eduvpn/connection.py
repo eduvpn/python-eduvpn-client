@@ -17,9 +17,6 @@ class Connection:
             connection_type = OpenVPNConnection
         return connection_type.parse(config, protocol)
 
-    def force_tcp(self):
-        raise NotImplementedError
-
     def connect(self, callback):
         """
         Start this connection.
@@ -39,9 +36,6 @@ class OpenVPNConnection(Connection):
         ovpn = Ovpn.parse(config)
         return cls(ovpn=ovpn)
 
-    def force_tcp(self):
-        self.ovpn.force_tcp()
-
     def connect(self, callback):
         nm.start_openvpn_connection(
             self.ovpn,
@@ -60,9 +54,6 @@ class WireGuardConnection(Connection):
         config = ConfigParser()
         config.read_string(config_str)
         return cls(config=config)
-
-    def force_tcp(self):
-        raise NotImplementedError("WireGuard cannot be forced over tcp")
 
     def connect(self, callback):
         nm.start_wireguard_connection(

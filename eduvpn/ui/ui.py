@@ -86,7 +86,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_location_row_activated": self.on_location_row_activated,
             "on_acknowledge_error": self.on_acknowledge_error,
             "on_renew_session_clicked": self.on_renew_session_clicked,
-            "on_config_force_tcp": self.on_config_force_tcp,
+            "on_config_prefer_tcp": self.on_config_prefer_tcp,
             "on_config_nm_system_wide": self.on_config_nm_system_wide,
             "on_close_window": self.on_close_window,
         }
@@ -173,7 +173,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.oauth_cancel_button = builder.get_object("cancelBrowserButton")
 
         self.settings_page = builder.get_object('settingsPage')
-        self.setting_config_force_tcp = builder.get_object('settingConfigForceTCP')
+        self.setting_config_prefer_tcp = builder.get_object('settingConfigPreferTCP')
         self.setting_config_nm_system_wide = builder.get_object('settingConfigNMSystemWide')
 
         self.loading_page = builder.get_object("loadingPage")
@@ -381,7 +381,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_settings_page(self) -> None:
         assert not self.is_on_settings_page()
         self.setting_config_nm_system_wide.set_state(self.app.config.nm_system_wide)
-        self.setting_config_force_tcp.set_state(self.app.config.force_tcp)
+        self.setting_config_prefer_tcp.set_state(self.app.config.prefer_tcp)
         self.page_stack.set_visible_child(self.settings_page)
         self.show_back_button(True)
 
@@ -1125,9 +1125,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         renew_session()
 
-    def on_config_force_tcp(self, _switch: Switch, state: bool) -> None:
-        logger.debug("clicked on setting: 'force tcp'")
-        self.app.config.force_tcp = state
+    def on_config_prefer_tcp(self, _switch: Switch, state: bool) -> None:
+        logger.debug("clicked on setting: 'prefer tcp'")
+        self.app.config.prefer_tcp = state
 
     def on_config_nm_system_wide(self, switch, state: bool):
         logger.debug("clicked on setting: 'nm system wide'")
