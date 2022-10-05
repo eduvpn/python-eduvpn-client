@@ -803,9 +803,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_go_back(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked on go back")
-        # TODO: Should the Go library have a settings state?
         if self.is_on_settings_page():
             self.leave_settings_page()
+            return
 
         @run_in_background_thread('go-back')
         def go_back():
