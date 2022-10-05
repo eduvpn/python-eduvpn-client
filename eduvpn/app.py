@@ -114,8 +114,9 @@ class ApplicationModelTransitions:
 
 
 class ApplicationModel:
-    def __init__(self, common: EduVPN) -> None:
+    def __init__(self, common: EduVPN, config) -> None:
         self.common = common
+        self.config = config
         self.transitions = ApplicationModelTransitions(common)
         self.common.register_class_callbacks(self)
 
@@ -157,16 +158,16 @@ class ApplicationModel:
         try:
             if isinstance(server, InstituteServer):
                 config, config_type = self.common.get_config_institute_access(
-                    server.url
+                    server.url, self.config.force_tcp
                     )
             elif isinstance(server, DiscoServer):
                 config, config_type = self.common.get_config_institute_access(
-                    server.base_url
+                    server.base_url, self.config.force_tcp
                     )
             elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
-                config, config_type = self.common.get_config_secure_internet(server.org_id)
+                config, config_type = self.common.get_config_secure_internet(server.org_id, self.config.force_tcp)
             elif isinstance(server, Server):
-                config, config_type = self.common.get_config_custom_server(server.url)
+                config, config_type = self.common.get_config_custom_server(server.url, self.config.force_tcp)
         except WrappedError as e:
             if e.level != ErrorLevel.ERR_INFO:
                 raise e
@@ -275,7 +276,7 @@ class Application:
         self.variant = variant
         self.common = common
         self.config = Configuration.load()
-        self.model = ApplicationModel(common)
+        self.model = ApplicationModel(common, self.config)
 
     def on_network_update_callback(self, state, initial=False):
         try:
