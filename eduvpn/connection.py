@@ -3,8 +3,6 @@ from configparser import ConfigParser
 from eduvpn import nm
 from eduvpn.ovpn import Ovpn
 
-# from .session import Validity
-
 
 class Connection:
     "Base class for connection configurations."
@@ -50,7 +48,6 @@ class WireGuardConnection(Connection):
 
     @classmethod
     def parse(cls, config_str, _) -> "WireGuardConnection":
-        # TODO: validity
         config = ConfigParser()
         config.read_string(config_str)
         return cls(config=config)
