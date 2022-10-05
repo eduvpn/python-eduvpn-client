@@ -87,7 +87,6 @@ class CommandLine:
 
         if len(servers) == 1:
             server = servers[0]
-            # TODO: category
             print(f'One server found: "{str(server)}" ({server.category})')
             ask = input("Do you want to connect to it (y/n): ")
 
@@ -168,8 +167,7 @@ class CommandLine:
             return False
 
         current = self.app.model.current_server
-        # TODO: Category string
-        print(f"Connected to: {str(current)}")
+        print(f"Connected to: \"{str(current)}\" ({current.category})")
         expiry = self.app.model.current_server.expire_time
         valid_for = (
             get_validity_text(self.app.model.get_expiry(expiry))[1]
