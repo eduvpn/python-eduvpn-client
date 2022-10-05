@@ -12,7 +12,7 @@ CONFIG_FILE_NAME = "org.eduvpn.app.linux_additional.json"
 CONFIG_PATH = CONFIG_PREFIX / CONFIG_FILE_NAME
 
 DEFAULT_SETTINGS = dict(
-    force_tcp=False,
+    prefer_tcp=False,
     nm_system_wide=False,
 )
 
@@ -63,5 +63,5 @@ class Configuration:
             self.settings[name] = value
             self.save()
 
-    force_tcp = SettingDescriptor[bool]()
+    prefer_tcp = SettingDescriptor[bool]()
     nm_system_wide = SettingDescriptor[bool]()

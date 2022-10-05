@@ -298,8 +298,6 @@ def save_connection_with_config(
 ):
     ovpn = Ovpn.parse(config)
     settings = Configuration.load()
-    if settings.force_tcp:
-        ovpn.force_tcp()
     return save_connection(
         client, ovpn, private_key, certificate, callback, settings.nm_system_wide
     )
