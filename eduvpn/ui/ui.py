@@ -572,7 +572,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             except Exception as e:
                 self.show_error_revealer(str(e))
 
-        if len(servers) == 0:
+        # Do not go in a loop by checking old state
+        if len(servers) == 0 and old_state != get_ui_state(State.SEARCH_SERVER):
             set_search_server()
 
     @ui_transition(State.NO_SERVER, StateType.LEAVE)

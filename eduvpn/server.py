@@ -36,11 +36,14 @@ def is_search_match(server, query: str) -> bool:
 
 
 class ServerDatabase:
-    def __init__(self, common) -> None:
+    def __init__(self, common, enable_discovery=True) -> None:
         self.common = common
+        self.enable_discovery = enable_discovery
 
     @property
     def disco(self):
+        if not self.enable_discovery:
+            return []
         disco_orgs = self.common.get_disco_organizations()
         disco_servers = self.common.get_disco_servers()
         all_servers = disco_orgs.organizations

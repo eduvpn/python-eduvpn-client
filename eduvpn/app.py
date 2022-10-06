@@ -45,11 +45,11 @@ class Validity:
 
 
 class ApplicationModelTransitions:
-    def __init__(self, common: EduVPN) -> None:
+    def __init__(self, common: EduVPN, variant: ApplicationVariant) -> None:
         self.common = common
         self.common.register_class_callbacks(self)
         self.current_server = None
-        self.server_db = ServerDatabase(common)
+        self.server_db = ServerDatabase(common, variant.use_predefined_servers)
 
     @model_transition(State.NO_SERVER, StateType.ENTER)
     def get_previous_servers(self, old_state: str, servers):
@@ -114,10 +114,10 @@ class ApplicationModelTransitions:
 
 
 class ApplicationModel:
-    def __init__(self, common: EduVPN, config) -> None:
+    def __init__(self, common: EduVPN, config, variant: ApplicationVariant) -> None:
         self.common = common
         self.config = config
-        self.transitions = ApplicationModelTransitions(common)
+        self.transitions = ApplicationModelTransitions(common, variant)
         self.common.register_class_callbacks(self)
 
     @property
@@ -276,7 +276,7 @@ class Application:
         self.variant = variant
         self.common = common
         self.config = Configuration.load()
-        self.model = ApplicationModel(common, self.config)
+        self.model = ApplicationModel(common, self.config, variant)
 
     def on_network_update_callback(self, state, initial=False):
         try:
