@@ -206,18 +206,18 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if not nm_available():
             show_error_dialog(
                 self,
-                name=_("Error"),
-                title=_("NetworkManager not available"),
-                message=_(
+                _("Error"),
+                _("NetworkManager not available"),
+                _(
                     "The application will not be able to configure the network. Please install and set up NetworkManager."
                 ),
             )
         elif not nm_managed():
             show_error_dialog(
                 self,
-                name=_("Error"),
-                title=_("NetworkManager not managing device"),
-                message=_(
+                _("Error"),
+                _("NetworkManager not managing device"),
+                _(
                     "The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."
                 ),
             )
@@ -231,7 +231,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.exit_deregistered()
                 self.app.initialize_network()
             except Exception as e:
-                GLib.idle_add(lambda msg=str(e): show_error_dialog(self, name=_("Fatal Error"), title=_("Fatal error while starting the client"), message=msg, only_quit=True))
+                show_error_dialog(self, _("Fatal Error"), _("Fatal error while starting the client"), str(e), True)
 
         register()
 
