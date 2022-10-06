@@ -44,7 +44,7 @@ class CommandLine:
         self.variant = variant
         self.common = common
         self.app = Application(variant, common)
-        self.server_db = ServerDatabase(common)
+        self.server_db = ServerDatabase(common, variant.use_predefined_servers)
         self.transitions = CommandLineTransitions(self.app)
         self.common.register_class_callbacks(self.transitions)
 
