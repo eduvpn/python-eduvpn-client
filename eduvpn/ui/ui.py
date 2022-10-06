@@ -7,7 +7,7 @@ import logging
 import os
 import webbrowser
 from gettext import gettext as _
-from typing import List, Type, Union, Optional
+from typing import Type, Optional
 
 import gi
 
@@ -18,12 +18,10 @@ from functools import partial
 from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
-from eduvpn.app import Application
 from eduvpn.nm import nm_available, nm_managed
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX
-from eduvpn.i18n import retrieve_country_name
-from eduvpn_common.server import Server, Profile
+from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.settings import HELP_URL
 from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
                      run_periodically, ui_transition)
