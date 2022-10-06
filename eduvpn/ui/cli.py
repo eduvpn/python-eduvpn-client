@@ -3,7 +3,7 @@ import eduvpn_common.main as common
 from eduvpn_common.state import State, StateType
 
 from eduvpn.app import Application
-from eduvpn.i18n import retrieve_country_name
+from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.settings import (
     CLIENT_ID,
     CONFIG_PREFIX,
@@ -465,13 +465,13 @@ class CommandLineTransitions:
 
 
 def eduvpn():
-    _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX))
+    _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX), country())
     cmd = CommandLine("eduVPN", EDUVPN, _common)
     cmd.start()
 
 
 def letsconnect():
-    _common = common.EduVPN(LETSCONNECT_CLIENT_ID, str(LETSCONNECT_CONFIG_PREFIX))
+    _common = common.EduVPN(LETSCONNECT_CLIENT_ID, str(LETSCONNECT_CONFIG_PREFIX), country())
     cmd = CommandLine("Let's Connect!", LETS_CONNECT, _common)
     cmd.start()
 
