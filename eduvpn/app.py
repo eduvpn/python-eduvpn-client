@@ -57,7 +57,11 @@ class ApplicationModelTransitions:
 
     @model_transition(State.SEARCH_SERVER, StateType.ENTER)
     def parse_discovery(self, old_state: str, _):
-        return self.server_db.disco
+        saved_servers = self.common.get_saved_servers()
+        # Whether or not the SEARCH_SERVER screen
+        # should be the 'main' screen
+        is_main = len(saved_servers) == 0
+        return (self.server_db.disco, is_main)
 
     @model_transition(State.LOADING_SERVER, StateType.ENTER)
     def loading_server(self, old_state: str, data: str):
@@ -140,6 +144,15 @@ class ApplicationModel:
 
     def set_secure_location(self, location_id: str):
         self.common.set_secure_location(location_id)
+
+    def set_search_server(self):
+        self.common.set_search_server()
+
+    def cancel_oauth(self):
+        self.common.cancel_oauth()
+
+    def go_back(self):
+        self.common.go_back()
 
     def should_renew_button(self) -> int:
         return self.common.should_renew_button()

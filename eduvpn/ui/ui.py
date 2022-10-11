@@ -247,6 +247,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                     self.show_error_revealer(str(e))
             except Exception as e:
                 self.show_error_revealer(str(e))
+        else:
+            raise Exception(f"No such function: {func_name}")
 
     @run_in_main_gtk_thread
     def enter_deregistered(self):
@@ -548,8 +550,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     # interface state transition callbacks
 
     @ui_transition(State.SEARCH_SERVER, StateType.ENTER)
-    def enter_search(self, old_state: str, servers):
-        is_main = len(self.common.get_saved_servers()) == 0
+    def enter_search(self, old_state: str, data):
+        servers, is_main = data
         self.show_back_button(not is_main)
         self.set_search_text("")
         self.find_server_search_input.grab_focus()
@@ -578,16 +580,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         search.update_results(self, servers)
         self.change_location_button.show()
 
-        @run_in_background_thread('set-search-server')
-        def set_search_server():
-            try:
-                self.common.set_search_server()
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
         # Do not go in a loop by checking old state
         if not servers and old_state != get_ui_state(State.SEARCH_SERVER):
-            set_search_server()
+            self.call_model("set_search_server")
 
     @ui_transition(State.NO_SERVER, StateType.LEAVE)
     def exit_MainState(self, old_state, new_state):
@@ -801,23 +796,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.leave_settings_page()
             return
 
-        @run_in_background_thread('go-back')
-        def go_back():
-            self.common.go_back()
-
-        go_back()
+        self.call_model('go_back')
 
     def on_add_other_server(self, button: Button) -> None:
         logger.debug("clicked on add other server")
 
-        @run_in_background_thread('set-search-server')
-        def set_search_server():
-            try:
-                self.common.set_search_server()
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-        set_search_server()
+        self.call_model("set_search_server")
 
     def on_add_custom_server(self, button) -> None:
         logger.debug("clicked on add custom server")
@@ -851,16 +835,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         response = dialog.run()  # type: ignore
         dialog.destroy()  # type: ignore
 
-        @run_in_background_thread('connect')
-        def remove():
-            try:
-                self.app.model.remove(server)
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
         if response == gtk_remove_id:
             logger.debug(f"doing server remove for: {server!r}")
-            remove()
+            self.call_model("remove", server)
         else:
             logger.debug(f"cancelled server remove for: {server!r}")
 
@@ -907,22 +884,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_cancel_oauth_setup(self, _):
         logger.debug("clicked on cancel oauth setup")
 
-        @run_in_background_thread('change-location')
-        def cancel_oauth():
-            self.common.cancel_oauth()
-
-        cancel_oauth()
+        self.call_model("cancel_oauth")
 
     def on_change_location(self, _):
-        @run_in_background_thread('change-location')
-        def change_location():
-            try:
-                self.app.model.change_secure_location()
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-
-        change_location()
+        self.call_model("change_secure_location")
 
     def on_search_changed(self, _: Optional[SearchEntry]=None) -> None:
         query = self.find_server_search_input.get_text()
@@ -943,28 +908,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_switch_connection_state(self, _switch: Switch, state: bool) -> bool:
         logger.debug("clicked on switch connection state")
 
-        @run_in_background_thread('activate')
-        def activate():
-            try:
-                self.app.model.activate_connection()
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-        @run_in_background_thread('deactivate')
-        def deactivate():
-            try:
-                self.app.model.deactivate_connection()
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
         if state is not self.connection_switch_state:
             self.connection_switch_state = state
             # The user has toggled the connection switch,
             # as opposed to the ui itself setting it.
             if state:
-                activate()
+                self.call_model("activate_connection")
             else:
-                deactivate()
+                self.call_model("deactivate_connection")
         return True
 
     def pause_connection_info(self) -> None:
@@ -1022,14 +973,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
 
-        @run_in_background_thread('set-profile')
-        def set_profile():
-            try:
-                self.app.model.set_profile(profile)
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-        set_profile()
+        self.call_model("set_profile", profile)
 
     def profile_ask_reconnect(self) -> bool:
         gtk_reconnect_id = -10
@@ -1074,29 +1018,15 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 )
                 return
 
-        @run_in_background_thread('set-profile-connect')
-        def set_profile():
-            try:
-                self.app.model.set_profile(profile, connect=True)
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-        # Finally set the profile
-        set_profile()
+        # Set profile and connect
+        self.call_model("set_profile", profile, True)
 
     def on_location_row_activated(self, widget, row, _col):
         model = widget.get_model()
         location = model[row][2]
         logger.debug(f"activated location: {location!r}")
 
-        @run_in_background_thread('set-secure-location')
-        def set_secure_location():
-            try:
-                self.app.model.set_secure_location(location)
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-        set_secure_location()
+        self.call_model("set_secure_location", location)
         self.show_loading_page("Loading location", "The location is being configured")
 
     def on_acknowledge_error(self, event):
@@ -1106,14 +1036,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
 
-        @run_in_background_thread('renew')
-        def renew_session():
-            try:
-                self.app.model.renew_session()
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-        renew_session()
+        self.call_model("renew_session")
 
     def on_config_prefer_tcp(self, _switch: Switch, state: bool) -> None:
         logger.debug("clicked on setting: 'prefer tcp'")
