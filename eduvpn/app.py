@@ -144,6 +144,16 @@ class ApplicationModel:
     def should_renew_button(self) -> int:
         return self.common.should_renew_button()
 
+    def add(self, server):
+        if isinstance(server, Server):
+            self.common.add_custom_server(server.url)
+        elif isinstance(server, DiscoServer):
+            self.common.add_institute_access(server.base_url)
+        elif isinstance(server, DiscoOrganization):
+            self.common.add_secure_internet_home(server.org_id)
+        else:
+            raise Exception("Server cannot be added")
+
     def remove(self, server):
         if isinstance(server, InstituteServer):
             self.common.remove_institute_access(server.url)
@@ -152,10 +162,12 @@ class ApplicationModel:
         elif isinstance(server, Server):
             self.common.remove_custom_server(server.url)
 
-    def connect(self, server, callback: Optional[Callable]=None) -> None:
+    def connect(self, server, callback: Optional[Callable]=None, ensure_exists=False) -> None:
         config = None
         config_type = None
         try:
+            if ensure_exists:
+                self.add(server)
             if isinstance(server, InstituteServer):
                 config, config_type = self.common.get_config_institute_access(
                     server.url, self.config.prefer_tcp
@@ -258,6 +270,9 @@ class ApplicationModel:
 
     def is_no_server(self) -> bool:
         return self.common.in_fsm_state(State.NO_SERVER)
+
+    def is_search_server(self) -> bool:
+        return self.common.in_fsm_state(State.SEARCH_SERVER)
 
     def is_connected(self) -> bool:
         return self.common.in_fsm_state(State.CONNECTED)

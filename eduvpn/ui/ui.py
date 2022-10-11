@@ -16,6 +16,7 @@ gi.require_version("NM", "1.0")  # noqa: E402
 from functools import partial
 
 from eduvpn_common.state import State, StateType
+from eduvpn_common.error import ErrorLevel, WrappedError
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
 from eduvpn.nm import nm_available, nm_managed
@@ -234,6 +235,18 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 show_error_dialog(self, _("Fatal Error"), _("Fatal error while starting the client"), str(e), True)
 
         register()
+
+    @run_in_background_thread('call-model')
+    def call_model(self, func_name: str, *args):
+        func = getattr(self.app.model, func_name, None)
+        if func:
+            try:
+                func(*(args))
+            except WrappedError as e:
+                if e.level != ErrorLevel.ERR_INFO:
+                    self.show_error_revealer(str(e))
+            except Exception as e:
+                self.show_error_revealer(str(e))
 
     @run_in_main_gtk_thread
     def enter_deregistered(self):
@@ -573,7 +586,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.show_error_revealer(str(e))
 
         # Do not go in a loop by checking old state
-        if len(servers) == 0 and old_state != get_ui_state(State.SEARCH_SERVER):
+        if not servers and old_state != get_ui_state(State.SEARCH_SERVER):
             set_search_server()
 
     @ui_transition(State.NO_SERVER, StateType.LEAVE)
@@ -596,8 +609,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @ui_transition(State.AUTHORIZED, StateType.ENTER)
     def enter_OAuthRefreshToken(self, new_state, data):
         self.show_loading_page(
-            _("Finishing Authorization"),
-            _("The authorization token is being finished."),
+            _("Sucessfully authorized"),
+            _("You have sucessfully authorized the eduVPN Linux client."),
         )
 
     @ui_transition(State.AUTHORIZED, StateType.LEAVE)
@@ -816,14 +829,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
 
-        @run_in_background_thread('connect')
-        def connect():
-            try:
-                self.app.model.connect(server)
-            except Exception as e:
-                self.show_error_revealer(str(e))
-
-        connect()
+        if self.app.model.is_search_server():
+            self.call_model("add", server)
+        else:
+            self.call_model("connect", server)
 
     def server_ask_remove(self, server):
         gtk_remove_id = -12
