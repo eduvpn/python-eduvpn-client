@@ -1127,17 +1127,29 @@
                       </packing>
                     </child>
                     <child>
-                      <!-- n-columns=2 n-rows=2 -->
+                      <!-- n-columns=2 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <child>
-                          <object class="GtkSwitch" id="settingConfigPreferTCP">
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">All users may connect to the VPN network</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="settingConfigNMSystemWide">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="halign">end</property>
                             <property name="hexpand">True</property>
-                            <signal name="state-set" handler="on_config_prefer_tcp" swapped="no"/>
+                            <signal name="state-set" handler="on_config_nm_system_wide" swapped="no"/>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
@@ -1153,7 +1165,33 @@
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
+                            <property name="top-attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="settingConfigPreferTCP">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="halign">end</property>
+                            <property name="hexpand">True</property>
+                            <signal name="state-set" handler="on_config_prefer_tcp" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSwitch" id="settingConfigAutoconnect">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="halign">end</property>
+                            <property name="hexpand">True</property>
+                            <signal name="state-set" handler="on_config_autoconnect" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
                           </packing>
                         </child>
                         <child>
@@ -1161,23 +1199,10 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes">All users may connect to the VPN network</property>
+                            <property name="label" translatable="yes">Automatically connect to the Server after adding it</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkSwitch" id="settingConfigNMSystemWide">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="halign">end</property>
-                            <property name="hexpand">True</property>
-                            <signal name="state-set" handler="on_config_nm_system_wide" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
                             <property name="top-attach">1</property>
                           </packing>
                         </child>
