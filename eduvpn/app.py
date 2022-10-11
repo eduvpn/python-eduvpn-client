@@ -157,7 +157,7 @@ class ApplicationModel:
     def should_renew_button(self) -> int:
         return self.common.should_renew_button()
 
-    def add(self, server):
+    def add(self, server, callback=None):
         if isinstance(server, InstituteServer):
             self.common.add_institute_acces(server.url)
         elif isinstance(server, DiscoServer):
@@ -168,6 +168,9 @@ class ApplicationModel:
             self.common.add_custom_server(server.url)
         else:
             raise Exception("Server cannot be added")
+
+        if callback:
+            callback(str(server))
 
     def remove(self, server):
         if isinstance(server, InstituteServer):

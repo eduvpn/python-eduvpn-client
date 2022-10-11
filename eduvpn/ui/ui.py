@@ -813,8 +813,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
 
+        def on_added(display_name):
+            self.eduvpn_app.enter_Added(display_name)
+
         if self.app.model.is_search_server():
-            self.call_model("add", server)
+            self.call_model("add", server, on_added)
         else:
             self.call_model("connect", server)
 
