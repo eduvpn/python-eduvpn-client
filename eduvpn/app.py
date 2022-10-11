@@ -158,12 +158,14 @@ class ApplicationModel:
         return self.common.should_renew_button()
 
     def add(self, server):
-        if isinstance(server, Server):
-            self.common.add_custom_server(server.url)
+        if isinstance(server, InstituteServer):
+            self.common.add_institute_acces(server.url)
         elif isinstance(server, DiscoServer):
             self.common.add_institute_access(server.base_url)
-        elif isinstance(server, DiscoOrganization):
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
             self.common.add_secure_internet_home(server.org_id)
+        elif isinstance(server, Server):
+            self.common.add_custom_server(server.url)
         else:
             raise Exception("Server cannot be added")
 
