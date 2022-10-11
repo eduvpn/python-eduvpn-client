@@ -102,7 +102,8 @@ class CommandLine:
             try:
                 @run_in_background_thread('connect')
                 def connect_background():
-                    self.app.model.connect(server, callback)
+                    # Connect to the server and ensure it exists
+                    self.app.model.connect(server, callback, ensure_exists=True)
                 connect_background()
             except Exception as e:
                 print("Error connecting:", e, file=sys.stderr)
