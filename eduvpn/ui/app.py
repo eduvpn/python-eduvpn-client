@@ -112,8 +112,7 @@ class EduVpnGtkApplication(Gtk.Application):
             self.common.deregister()
         # Deregister is best effort
         except Exception as e:
-            # TODO: Log
-            pass
+            logger.debug("failed deregistering library", e)
         self.quit()
 
     def on_window_closed(self) -> None:
