@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 from typing import Optional, Type, Any, Dict, Generic, TypeVar
 
 from eduvpn.settings import CONFIG_PREFIX
@@ -7,9 +8,7 @@ from eduvpn.settings import CONFIG_PREFIX
 T = TypeVar("T")
 
 
-CONFIG_FILE_NAME = "org.eduvpn.app.linux_additional.json"
-
-CONFIG_PATH = CONFIG_PREFIX / CONFIG_FILE_NAME
+CONFIG_FILE_NAME = "config.json"
 
 DEFAULT_SETTINGS = dict(
     autoconnect=False,
@@ -33,14 +32,16 @@ class SettingDescriptor(Generic[T]):
 
 
 class Configuration:
-    def __init__(self, settings: Dict[str, Any]) -> None:
+    def __init__(self, config_path: Path, settings: Dict[str, Any]) -> None:
+        self.config_path = config_path
         self.settings = settings
 
     @classmethod
-    def load(cls) -> "Configuration":
-        if not CONFIG_PATH.exists():
-            return cls(dict(DEFAULT_SETTINGS))
-        with open(CONFIG_PATH, "r") as f:
+    def load(cls, config_dir) -> "Configuration":
+        config_path = Path(config_dir) / CONFIG_FILE_NAME
+        if not config_path.exists():
+            return cls(config_path, dict(DEFAULT_SETTINGS))
+        with open(config_path, "r") as f:
             try:
                 settings = json.load(f)
             except Exception:
@@ -49,11 +50,11 @@ class Configuration:
             else:
                 logger.debug(f"loaded settings: {settings}")
         settings = {**DEFAULT_SETTINGS, **settings}
-        return cls(settings)
+        return cls(config_path, settings)
 
     def save(self) -> None:
         logger.debug(f"saving settings: {self.settings}")
-        with open(CONFIG_PATH, "w") as f:
+        with open(self.config_path, "w") as f:
             json.dump(self.settings, f)
 
     def get_setting(self, name: str) -> bool:
