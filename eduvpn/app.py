@@ -15,7 +15,8 @@ from eduvpn import nm
 from eduvpn.config import Configuration
 from eduvpn.utils import (model_transition, run_in_background_thread,
                     run_in_main_gtk_thread)
-from eduvpn.variants import ApplicationVariant
+from eduvpn.variants import ApplicationVariant, get_variant_settings
+from pathlib import Path
 from typing import List
 
 logger = logging.getLogger(__name__)
@@ -122,6 +123,7 @@ class ApplicationModel:
         self.common = common
         self.config = config
         self.transitions = ApplicationModelTransitions(common, variant)
+        self.variant = variant
         self.common.register_class_callbacks(self)
 
     @property
@@ -216,7 +218,7 @@ class ApplicationModel:
         @run_in_main_gtk_thread
         def connect(config, config_type):
             connection = Connection.parse(config, config_type)
-            connection.connect(on_connect)
+            connection.connect(self.variant, on_connect)
 
         self.common.set_connecting()
         connect(config, config_type)
@@ -308,7 +310,8 @@ class Application:
     ) -> None:
         self.variant = variant
         self.common = common
-        self.config = Configuration.load()
+        directory = Path(get_variant_settings(variant)[1])
+        self.config = Configuration.load(directory)
         self.model = ApplicationModel(common, self.config, variant)
 
     def on_network_update_callback(self, state, initial=False):

@@ -1,6 +1,8 @@
-from typing import Optional
-
 from eduvpn import settings
+from eduvpn.config import Configuration
+from eduvpn.settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
+                        LETSCONNECT_CONFIG_PREFIX)
+from typing import Optional, Tuple
 
 
 class ApplicationVariant:
@@ -38,7 +40,22 @@ LETS_CONNECT = ApplicationVariant(
     icon=settings.LETS_CONNECT_ICON,
     logo=settings.LETS_CONNECT_LOGO,
     server_image=settings.SERVER_ILLUSTRATION,
-    translation_domain="LetConnect",
+    translation_domain="LetsConnect",
     use_predefined_servers=False,
     use_configured_servers=False,
 )
+
+
+def get_variant_settings(variant: ApplicationVariant) -> Tuple[str, str, str]:
+    if variant == EDUVPN:
+        return CLIENT_ID, str(CONFIG_PREFIX)
+    return LETSCONNECT_CLIENT_ID, str(LETSCONNECT_CONFIG_PREFIX)
+
+
+def get_variant_config(variant: ApplicationVariant) -> Configuration:
+    directory = get_variant_settings(variant)[1]
+    return Configuration.load(directory)
+
+
+def get_variant_vpn_name(variant: ApplicationVariant) -> str:
+    return variant.translation_domain.lower()

@@ -15,6 +15,7 @@ from eduvpn.config import Configuration
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.utils import cache
+from eduvpn.variants import get_variant_config, get_variant_vpn_name
 import gi
 gi.require_version("NM", "1.0")  # noqa: E402
 from gi.repository.Gio import Task
@@ -178,25 +179,27 @@ def nm_ovpn_import(target: Path) -> Optional["NM.Connection"]:
 
 
 def import_ovpn_and_certificate(
-    ovpn: Ovpn, private_key: str, certificate: str
+    ovpn: Ovpn, variant, private_key: str, certificate: str
 ) -> "NM.SimpleConnection":
     """
     Import the OVPN string into Network Manager.
     """
     target_parent = Path(mkdtemp())
-    target = target_parent / "eduVPN.ovpn"
+    vpn_name = get_variant_vpn_name(variant)
+    target = target_parent / f"{vpn_name}.ovpn"
     write_ovpn(ovpn, private_key, certificate, target)
     connection = nm_ovpn_import(target)
     rmtree(target_parent)
     return connection
 
 
-def import_ovpn(ovpn: Ovpn) -> "NM.SimpleConnection":
+def import_ovpn(ovpn: Ovpn, variant) -> "NM.SimpleConnection":
     """
     Import the OVPN string into Network Manager.
     """
     target_parent = Path(mkdtemp())
-    target = target_parent / "eduVPN.ovpn"
+    vpn_name = get_variant_vpn_name(variant)
+    target = target_parent / f"{vpn_name}.ovpn"
     _logger.info(f"Writing configuration to {target}")
     with open(target, mode="w+t") as f:
         ovpn.write(f)
@@ -278,6 +281,7 @@ def set_setting_ensure_permissions(
 
 def save_connection(
     client: "NM.Client",
+    variant,
     ovpn: Ovpn,
     private_key,
     certificate,
@@ -285,34 +289,36 @@ def save_connection(
     system_wide=False,
 ):
     _logger.info("writing configuration to Network Manager")
-    new_con = import_ovpn_and_certificate(ovpn, private_key, certificate)
+    new_con = import_ovpn_and_certificate(ovpn, variant, private_key, certificate)
     set_connection(client, new_con, callback, system_wide)
 
 
 def save_connection_with_config(
     client: "NM.Client",
+    variant,
     config,
     private_key,
     certificate,
     callback=None,
 ):
     ovpn = Ovpn.parse(config)
-    settings = Configuration.load()
+    settings = get_variant_config(variant)
     return save_connection(
-        client, ovpn, private_key, certificate, callback, settings.nm_system_wide
+        client, variant, ovpn, private_key, certificate, callback, settings.nm_system_wide
     )
 
 
-def start_openvpn_connection(ovpn: Ovpn, *, callback=None) -> None:
+def start_openvpn_connection(ovpn: Ovpn, variant, *, callback=None) -> None:
     client = get_client()
     _logger.info("writing ovpn configuration to Network Manager")
-    new_con = import_ovpn(ovpn)
-    settings = Configuration.load()
+    new_con = import_ovpn(ovpn, variant)
+    settings = get_variant_config(variant)
     set_connection(client, new_con, callback, settings.nm_system_wide)
 
 
 def start_wireguard_connection(
     config: ConfigParser,
+    variant,
     *,
     callback=None,
 ) -> None:
@@ -352,7 +358,8 @@ def start_wireguard_connection(
     profile = NM.SimpleConnection.new()
     s_con = NM.SettingConnection.new()
     s_con.set_property(NM.DEVICE_AUTOCONNECT, False)
-    s_con.set_property(NM.SETTING_CONNECTION_ID, "eduvpn-wireguard")
+    vpn_name = get_variant_vpn_name(variant)
+    s_con.set_property(NM.SETTING_CONNECTION_ID, f"{vpn_name}-wireguard")
     s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
     s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
     s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, "EduVPN-WG")
@@ -394,22 +401,8 @@ def start_wireguard_connection(
     profile.add_setting(s_con)
     profile.add_setting(w_con)
 
-    settings = Configuration.load()
+    settings = get_variant_config(variant)
     set_connection(client, profile, callback, settings.nm_system_wide)
-
-
-def get_cert_key(client: "NM.Client", uuid: str) -> Tuple[str, str]:
-    try:
-        connection = client.get_connection_by_uuid(uuid)
-        cert_path = connection.get_setting_vpn().get_data_item("cert")
-    except Exception:
-        _logger.error(f"Can't fetch stored VPN connection with uuid {uuid}")
-        raise IOError("Can't fetch eduVPN profile")
-
-    key_path = connection.get_setting_vpn().get_data_item("key")
-    cert = open(cert_path).read()
-    key = open(key_path).read()
-    return cert, key
 
 
 def activate_connection(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
