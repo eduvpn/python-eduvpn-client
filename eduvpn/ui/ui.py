@@ -182,6 +182,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.server_label = builder.get_object("serverLabel")
         self.server_support_label = builder.get_object("supportLabel")
 
+        self.settings_show_back_leave = False
+
         self.renew_session_button = builder.get_object("renewSessionButton")
         self.select_profile_combo = builder.get_object("selectProfileCombo")
         self.select_profile_text = builder.get_object("selectProfileText")
@@ -439,6 +441,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def enter_settings_page(self) -> None:
         assert not self.is_on_settings_page()
+        # Determine whether or not we need to show the back button after leaving
+        self.settings_show_back_leave = self.back_button_container.props.visible
         self.setting_config_autoconnect.set_state(self.app.config.autoconnect)
         self.setting_config_nm_system_wide.set_state(self.app.config.nm_system_wide)
         self.setting_config_prefer_tcp.set_state(self.app.config.prefer_tcp)
@@ -448,7 +452,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def leave_settings_page(self) -> None:
         assert self.is_on_settings_page()
         self.page_stack.set_visible_child(self.current_shown_page)
-        self.show_back_button(False)
+        self.show_back_button(self.settings_show_back_leave)
 
     def recreate_profile_combo(self, server_info) -> None:
         # Create a store of profiles
