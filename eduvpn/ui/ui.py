@@ -24,11 +24,25 @@ from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX
 from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.settings import HELP_URL
-from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, run_in_main_gtk_thread, run_in_background_thread,
-                     run_periodically, ui_transition)
+from eduvpn.utils import (
+    ERROR_STATE,
+    get_prefix,
+    get_ui_state,
+    run_in_main_gtk_thread,
+    run_in_background_thread,
+    run_periodically,
+    ui_transition,
+)
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
-from eduvpn.ui.utils import get_validity_text, link_markup, should_show_error, show_error_dialog, show_ui_component, style_tree_view, style_widget
+from eduvpn.ui.utils import (
+    get_validity_text,
+    link_markup,
+    show_error_dialog,
+    show_ui_component,
+    style_tree_view,
+    style_widget,
+)
 from datetime import datetime
 from gi.overrides.Gdk import Event, EventButton
 from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn
@@ -40,12 +54,14 @@ logger = logging.getLogger(__name__)
 UPDATE_EXPIRY_INTERVAL = 1.0  # seconds
 UPDATE_RENEW_INTERVAL = 60.0  # seconds
 
+
 def get_flag_path(country_code: str) -> Optional[str]:
-        path = f'{FLAG_PREFIX}{country_code}@1,5x.png'
-        if os.path.exists(path):
-            return path
-        else:
-            return None
+    path = f"{FLAG_PREFIX}{country_code}@1,5x.png"
+    if os.path.exists(path):
+        return path
+    else:
+        return None
+
 
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
@@ -54,7 +70,9 @@ def get_template_path(filename: str) -> str:
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
 
-    def __new__(cls: Type['EduVpnGtkWindow'], application: Type['EduVpnGtkApplication']) -> "EduVpnGtkWindow":
+    def __new__(
+        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]
+    ) -> "EduVpnGtkWindow":
         builder = Gtk.Builder()
         builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
         window = builder.get_object("eduvpn")  # type: ignore
@@ -62,7 +80,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         window.set_application(application)  # type: ignore
         return window
 
-    def setup(self, builder: Builder, application: Type['EduVpnGtkApplication']) -> None:  # type: ignore
+    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore
         self.eduvpn_app = application
         self.app = self.eduvpn_app.app  # type: ignore
         self.common = self.eduvpn_app.common
@@ -126,7 +144,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.find_server_image = builder.get_object("findServerImage")
         self.find_server_label = builder.get_object("findServerLabel")
 
-
         self.main_overlay = builder.get_object("mainOverlay")
 
         # Create a revealer
@@ -172,10 +189,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.oauth_page = builder.get_object("openBrowserPage")
         self.oauth_cancel_button = builder.get_object("cancelBrowserButton")
 
-        self.settings_page = builder.get_object('settingsPage')
-        self.setting_config_autoconnect = builder.get_object('settingConfigAutoconnect')
-        self.setting_config_prefer_tcp = builder.get_object('settingConfigPreferTCP')
-        self.setting_config_nm_system_wide = builder.get_object('settingConfigNMSystemWide')
+        self.settings_page = builder.get_object("settingsPage")
+        self.setting_config_autoconnect = builder.get_object("settingConfigAutoconnect")
+        self.setting_config_prefer_tcp = builder.get_object("settingConfigPreferTCP")
+        self.setting_config_nm_system_wide = builder.get_object(
+            "settingConfigNMSystemWide"
+        )
 
         self.loading_page = builder.get_object("loadingPage")
         self.loading_title = builder.get_object("loadingTitle")
@@ -225,7 +244,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 ),
             )
 
-        @run_in_background_thread('register')
+        @run_in_background_thread("register")
         def register():
             try:
                 self.common.register_class_callbacks(self)
@@ -236,11 +255,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             except Exception as e:
                 if not should_show_error(e):
                     return
-                show_error_dialog(self, _("Fatal Error"), _("Fatal error while starting the client"), str(e), True)
+                show_error_dialog(
+                    self,
+                    _("Fatal Error"),
+                    _("Fatal error while starting the client"),
+                    str(e),
+                    True,
+                )
 
         register()
 
-    @run_in_background_thread('call-model')
+    @run_in_background_thread("call-model")
     def call_model(self, func_name: str, *args):
         func = getattr(self.app.model, func_name, None)
         if func:
@@ -281,7 +306,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer.set_transition_duration(200)
 
         # Create a close button
-        error_revealer_close_image = Gtk.Image.new_from_icon_name("window-close", Gtk.IconSize.BUTTON)
+        error_revealer_close_image = Gtk.Image.new_from_icon_name(
+            "window-close", Gtk.IconSize.BUTTON
+        )
         error_revealer_close_button = Gtk.Button.new()
         error_revealer_close_button.set_halign(Gtk.Align.END)
         error_revealer_close_button.set_valign(Gtk.Align.START)
@@ -290,10 +317,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         error_revealer_close_button.set_relief(Gtk.ReliefStyle.NONE)
         error_revealer_close_button.connect("clicked", self.hide_error_revealer)
         error_revealer_close_button.show()
-        style_widget(error_revealer_close_button, "errorRevealerButton", "background-color: transparent; padding: 0px;")
+        style_widget(
+            error_revealer_close_button,
+            "errorRevealerButton",
+            "background-color: transparent; padding: 0px;",
+        )
 
         # Create a clipboard button
-        error_revealer_clipboard_image = Gtk.Image.new_from_icon_name("edit-copy", Gtk.IconSize.BUTTON)
+        error_revealer_clipboard_image = Gtk.Image.new_from_icon_name(
+            "edit-copy", Gtk.IconSize.BUTTON
+        )
         error_revealer_clipboard_button = Gtk.Button.new()
         error_revealer_clipboard_button.set_halign(Gtk.Align.END)
         error_revealer_clipboard_button.set_valign(Gtk.Align.START)
@@ -302,10 +335,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         error_revealer_clipboard_button.set_relief(Gtk.ReliefStyle.NONE)
         error_revealer_clipboard_button.connect("clicked", self.copy_error_revealer)
         error_revealer_clipboard_button.show()
-        style_widget(error_revealer_clipboard_button, "errorRevealerClipboardButton", "background-color: transparent; padding: 0px;")
+        style_widget(
+            error_revealer_clipboard_button,
+            "errorRevealerClipboardButton",
+            "background-color: transparent; padding: 0px;",
+        )
 
         # Create the label
-        self.error_revealer_label = Gtk.Label.new("<b>Error occurred</b>: Example error")
+        self.error_revealer_label = Gtk.Label.new(
+            "<b>Error occurred</b>: Example error"
+        )
         self.error_revealer_label.set_use_markup(True)
         self.error_revealer_label.set_margin_bottom(20)
         self.error_revealer_label.set_line_wrap(True)
@@ -331,7 +370,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # Add a frame around the box
         error_revealer_frame = Gtk.Frame.new()
         error_revealer_frame.set_valign(Gtk.Align.END)
-        style_widget(error_revealer_frame, "errorClass", "margin-left: 20px; margin-right: 20px; background-color: #B00020; margin-top: 0px; padding: 0px; color: rgba(255, 255, 255, 1);")
+        style_widget(
+            error_revealer_frame,
+            "errorClass",
+            "margin-left: 20px; margin-right: 20px; background-color: #B00020; margin-top: 0px; padding: 0px; color: rgba(255, 255, 255, 1);",
+        )
         error_revealer_frame.add(error_revealer_box)
         error_revealer_frame.show()
 
@@ -342,11 +385,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # add the error revealer to the main overlay
         self.main_overlay.add_overlay(self.error_revealer)
 
-
     @run_in_main_gtk_thread
     def show_error_revealer(self, error: str) -> None:
         self.error_revealer.set_reveal_child(True)
-        self.error_revealer_label.set_text(f"The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.\n See the log file for more information.")
+        self.error_revealer_label.set_text(
+            f"The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.\n See the log file for more information."
+        )
         self.error_revealer_label.set_use_markup(True)
 
     @run_in_main_gtk_thread
@@ -453,7 +497,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.recreate_profile_combo(server_info)
 
         if hasattr(server_info, "country_code"):
-            self.server_label.set_text(f"{retrieve_country_name(server_info.country_code)}\n(via {server_info.display_name})")
+            self.server_label.set_text(
+                f"{retrieve_country_name(server_info.country_code)}\n(via {server_info.display_name})"
+            )
             flag_path = get_flag_path(server_info.country_code)
             if flag_path:
                 self.server_image.set_from_file(flag_path)
@@ -477,7 +523,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     # every second
     def update_connection_validity(self, expire_time: datetime) -> None:
-        is_expired, expiry_text = get_validity_text(self.app.model.get_expiry(expire_time))
+        is_expired, expiry_text = get_validity_text(
+            self.app.model.get_expiry(expire_time)
+        )
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
 
@@ -491,7 +539,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.connection_validity_thread_cancel()
 
             self.eduvpn_app.enter_SessionExpiredState()
-
 
     # Show renew button or not
     def update_connection_renew(self) -> None:
@@ -697,13 +744,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         for location in locations:
             flag_path = get_flag_path(location)
             if flag_path is None:
-                logger.warning(
-                    f"No flag found for country code {location}"
-                )
+                logger.warning(f"No flag found for country code {location}")
                 flag = None
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(flag_path)
-            location_list_model.append([retrieve_country_name(location), flag, location])
+            location_list_model.append(
+                [retrieve_country_name(location), flag, location]
+            )
 
     @ui_transition(State.ASK_LOCATION, StateType.LEAVE)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
@@ -799,7 +846,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.leave_settings_page()
             return
 
-        self.call_model('go_back')
+        self.call_model("go_back")
 
     def on_add_other_server(self, button: Button) -> None:
         logger.debug("clicked on add other server")
@@ -811,7 +858,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = CustomServer(self.app.interface_state.address)
         self.app.interface_transition("connect_to_server", server)
 
-    def on_server_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
+    def on_server_row_activated(
+        self, widget: TreeView, row: TreePath, _col: TreeViewColumn
+    ) -> None:
         model = widget.get_model()
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
@@ -898,7 +947,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def on_change_location(self, _):
         self.call_model("change_secure_location")
 
-    def on_search_changed(self, _: Optional[SearchEntry]=None) -> None:
+    def on_search_changed(self, _: Optional[SearchEntry] = None) -> None:
         query = self.find_server_search_input.get_text()
         logger.debug(f"entered server search query: {query}")
         if self.app.variant.use_predefined_servers and query.count(".") < 2:
@@ -977,7 +1026,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             self.pause_connection_info()
 
-    def on_profile_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
+    def on_profile_row_activated(
+        self, widget: TreeView, row: TreePath, _col: TreeViewColumn
+    ) -> None:
         model = widget.get_model()
         profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
@@ -1022,9 +1073,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             # Asking for reconnect was not successful
             # Restore the previous profile
             if not self.profile_ask_reconnect():
-                combo.set_active(
-                    self.app.model.current_server.profiles.current_index
-                )
+                combo.set_active(self.app.model.current_server.profiles.current_index)
                 return
 
         # Set profile and connect

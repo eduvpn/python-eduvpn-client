@@ -105,7 +105,7 @@ class EduVpnGtkApplication(Gtk.Application):
         self.activate()
         return 0
 
-    def on_quit(self, action: None=None, _param: None=None) -> None:
+    def on_quit(self, action: None = None, _param: None = None) -> None:
         logger.debug("quit")
         # Deregister the common library to save settings
         try:
@@ -165,12 +165,15 @@ class EduVpnGtkApplication(Gtk.Application):
 
     @ui_transition(State.DISCONNECTED, StateType.ENTER)
     def enter_DisconnectedState(self, old_state, server):
-        is_expired, _text = get_validity_text(self.app.model.get_expiry(server.expire_time))
+        is_expired, _text = get_validity_text(
+            self.app.model.get_expiry(server.expire_time)
+        )
         reason = ""
         if is_expired:
             reason = " due to expiry"
         self.connection_notification.show(
-            title=_("Disconnected"), message=_(f"You have been disconnected from your server{reason}.")
+            title=_("Disconnected"),
+            message=_(f"You have been disconnected from your server{reason}."),
         )
 
     def enter_SessionExpiredState(self):
@@ -178,7 +181,7 @@ class EduVpnGtkApplication(Gtk.Application):
             title=_("Session expired"), message=_("Your session has expired.")
         )
 
-        @run_in_background_thread('expired-deactivate')
+        @run_in_background_thread("expired-deactivate")
         def expired_deactivate():
             self.app.model.deactivate_connection()
 

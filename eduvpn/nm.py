@@ -17,6 +17,7 @@ from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.utils import cache
 from eduvpn.variants import ApplicationVariant
 import gi
+
 gi.require_version("NM", "1.0")  # noqa: E402
 from gi.repository.Gio import Task
 from gi.repository.NM import Client, SimpleConnection
@@ -206,7 +207,9 @@ def import_ovpn(ovpn: Ovpn, variant: ApplicationVariant) -> "NM.SimpleConnection
     return connection
 
 
-def add_connection_callback(client: Client, result: Task, callback: Optional[Callable]=None) -> None:
+def add_connection_callback(
+    client: Client, result: Task, callback: Optional[Callable] = None
+) -> None:
     new_con = client.add_connection_finish(result)
     set_uuid(uuid=new_con.get_uuid())
     _logger.info(f"Connection added for uuid: {get_uuid()}")
@@ -214,7 +217,11 @@ def add_connection_callback(client: Client, result: Task, callback: Optional[Cal
         callback(new_con is not None)
 
 
-def add_connection(client: "NM.Client", connection: "NM.Connection", callback: Optional[Callable]=None) -> None:
+def add_connection(
+    client: "NM.Client",
+    connection: "NM.Connection",
+    callback: Optional[Callable] = None,
+) -> None:
     _logger.info("Adding new connection")
     client.add_connection_async(
         connection=connection,
@@ -256,7 +263,12 @@ def update_connection(
     )
 
 
-def set_connection(client: Client, new_connection: SimpleConnection, callback: Callable, system_wide: bool=False):
+def set_connection(
+    client: Client,
+    new_connection: SimpleConnection,
+    callback: Callable,
+    system_wide: bool = False,
+):
     uuid = get_uuid()
     new_connection = set_setting_ensure_permissions(new_connection, not system_wide)
     if uuid:
@@ -306,7 +318,9 @@ def save_connection_with_config(
     )
 
 
-def start_openvpn_connection(ovpn: Ovpn, variant: ApplicationVariant, *, callback=None) -> None:
+def start_openvpn_connection(
+    ovpn: Ovpn, variant: ApplicationVariant, *, callback=None
+) -> None:
     client = get_client()
     _logger.info("writing ovpn configuration to Network Manager")
     new_con = import_ovpn(ovpn, variant)
@@ -337,9 +351,9 @@ def start_wireguard_connection(
     dns_hostnames = []
 
     # DNS entries are not required
-    dns_entries = config['Interface'].get('DNS')
+    dns_entries = config["Interface"].get("DNS")
     if dns_entries:
-        for dns_entry in dns_entries.split(','):
+        for dns_entry in dns_entries.split(","):
             stripped_entry = dns_entry.strip()
             try:
                 address = ip_address(stripped_entry)
@@ -402,7 +416,9 @@ def start_wireguard_connection(
     set_connection(client, profile, callback, config.nm_system_wide)
 
 
-def activate_connection(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
+def activate_connection(
+    client: "NM.Client", uuid: str, callback: Optional[Callable] = None
+) -> None:
     con = client.get_connection_by_uuid(uuid)
     _logger.info(f"activate_connection uuid: {uuid} connection: {con}")
     if con is None:
@@ -429,7 +445,9 @@ def activate_connection(client: "NM.Client", uuid: str, callback: Optional[Calla
     )
 
 
-def deactivate_connection(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
+def deactivate_connection(
+    client: "NM.Client", uuid: str, callback: Optional[Callable] = None
+) -> None:
     connection = client.get_connection_by_uuid(uuid)
     if connection is None:
         _logger.warning(f"no connection to deactivate of uuid {uuid}")
@@ -443,7 +461,9 @@ def deactivate_connection(client: "NM.Client", uuid: str, callback: Optional[Cal
         _logger.warning(f"unexpected connection type {type} of {uuid}")
 
 
-def deactivate_connection_vpn(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
+def deactivate_connection_vpn(
+    client: "NM.Client", uuid: str, callback: Optional[Callable] = None
+) -> None:
     con = get_active_connection()
     _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
     if con:
@@ -497,7 +517,9 @@ def delete_connection(callback: Callable) -> None:
     con.delete_async(callback=on_deleted, user_data=callback)
 
 
-def deactivate_connection_wg(client: "NM.Client", uuid: str, callback: Optional[Callable]=None) -> None:
+def deactivate_connection_wg(
+    client: "NM.Client", uuid: str, callback: Optional[Callable] = None
+) -> None:
     devices = [
         device
         for device in client.get_all_devices()
@@ -725,6 +747,7 @@ def save_connection_with_mainloop(config, private_key, certificate):
             get_client(), config, private_key, certificate, callback
         )
     )
+
 
 def activate_connection_with_mainloop(uuid):
     action_with_mainloop(
