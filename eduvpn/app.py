@@ -15,7 +15,7 @@ from eduvpn import nm
 from eduvpn.config import Configuration
 from eduvpn.utils import (model_transition, run_in_background_thread,
                     run_in_main_gtk_thread)
-from eduvpn.variants import ApplicationVariant, get_variant_settings
+from eduvpn.variants import ApplicationVariant
 from pathlib import Path
 from typing import List
 
@@ -310,7 +310,7 @@ class Application:
     ) -> None:
         self.variant = variant
         self.common = common
-        directory = Path(get_variant_settings(variant)[1])
+        directory = variant.config_prefix
         self.config = Configuration.load(directory)
         self.model = ApplicationModel(common, self.config, variant)
 

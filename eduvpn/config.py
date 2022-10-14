@@ -37,8 +37,8 @@ class Configuration:
         self.settings = settings
 
     @classmethod
-    def load(cls, config_dir) -> "Configuration":
-        config_path = Path(config_dir) / CONFIG_FILE_NAME
+    def load(cls, config_dir: Path) -> "Configuration":
+        config_path = config_dir / CONFIG_FILE_NAME
         if not config_path.exists():
             return cls(config_path, dict(DEFAULT_SETTINGS))
         with open(config_path, "r") as f:
