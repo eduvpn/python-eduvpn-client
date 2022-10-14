@@ -94,6 +94,12 @@ def model_transition(state: State, state_type: StateType) -> Callable:
             except Exception as e:
                 # Run the error state event
                 self.common.event.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), e, convert=False)
+                self.common.event.run(
+                    get_ui_state(ERROR_STATE),
+                    get_ui_state(ERROR_STATE),
+                    str(e),
+                    convert=False,
+                )
 
                 # Go back to the previous state as the model transition was not successful
                 self.common.go_back()
@@ -103,9 +109,13 @@ def model_transition(state: State, state_type: StateType) -> Callable:
             ui_state = get_ui_state(state)
             # We can then pass it to the UI
             if state_type == StateType.ENTER:
-                self.common.event.run(other_ui_state, ui_state, model_converted, convert=False)
+                self.common.event.run(
+                    other_ui_state, ui_state, model_converted, convert=False
+                )
             else:
-                self.common.event.run(ui_state, other_ui_state, model_converted, convert=False)
+                self.common.event.run(
+                    ui_state, other_ui_state, model_converted, convert=False
+                )
 
         # Add the inner function on the state transition
         common.class_state_transition(state, state_type)(inner)

@@ -5,6 +5,7 @@ from gettext import ngettext
 from eduvpn.app import Validity
 from eduvpn_common.error import WrappedError, ErrorLevel
 from eduvpn.utils import run_in_main_gtk_thread
+
 gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import Gtk
 from gi.overrides.Gtk import Widget
@@ -31,8 +32,16 @@ def style_tree_view(window, tree_view):
     background_hl = "#E24301"
     # Plain white
     textcolor_hl = "#ffffff"
-    style_widget(tree_view, "TreeView", f"background-color: {background}; border-top-color: {bordercolor};")
-    style_widget(tree_view, "TreeView:hover", f"color: {textcolor_hl}; background-color: {background_hl}; border-top-color: {bordercolor}")
+    style_widget(
+        tree_view,
+        "TreeView",
+        f"background-color: {background}; border-top-color: {bordercolor};",
+    )
+    style_widget(
+        tree_view,
+        "TreeView:hover",
+        f"color: {textcolor_hl}; background-color: {background_hl}; border-top-color: {bordercolor}",
+    )
 
 
 def should_show_error(error: Exception):
@@ -54,21 +63,30 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
             minutes = delta.seconds // 60
             if minutes == 0:
                 seconds = delta.seconds
-                return (False, ngettext(
-                    "Valid for: <b>{0} second</b>",
-                    "Valid for: <b>{0} seconds</b>",
-                    seconds,
-                ).format(seconds))
+                return (
+                    False,
+                    ngettext(
+                        "Valid for: <b>{0} second</b>",
+                        "Valid for: <b>{0} seconds</b>",
+                        seconds,
+                    ).format(seconds),
+                )
             else:
-                return (False, ngettext(
-                    "Valid for: <b>{0} minute</b>",
-                    "Valid for: <b>{0} minutes</b>",
-                    minutes,
-                ).format(minutes))
+                return (
+                    False,
+                    ngettext(
+                        "Valid for: <b>{0} minute</b>",
+                        "Valid for: <b>{0} minutes</b>",
+                        minutes,
+                    ).format(minutes),
+                )
         else:
-            return (False, ngettext(
-                "Valid for: <b>{0} hour</b>", "Valid for: <b>{0} hours</b>", hours
-            ).format(hours))
+            return (
+                False,
+                ngettext(
+                    "Valid for: <b>{0} hour</b>", "Valid for: <b>{0} hours</b>", hours
+                ).format(hours),
+            )
     else:
         dstr = ngettext(
             "Valid for: <b>{0} day</b>", "Valid for: <b>{0} days</b>", days
@@ -102,7 +120,9 @@ def link_markup(link: str) -> str:
 
 
 @run_in_main_gtk_thread
-def show_error_dialog(parent, name: str, title: str, message: str, only_quit: bool = False):
+def show_error_dialog(
+    parent, name: str, title: str, message: str, only_quit: bool = False
+):
     dialog = Gtk.MessageDialog(  # type: ignore
         parent=parent,
         type=Gtk.MessageType.INFO,  # type: ignore
@@ -116,7 +136,8 @@ def show_error_dialog(parent, name: str, title: str, message: str, only_quit: bo
         dialog.add_buttons(_("Ignore and continue"), ignore_id)
 
     dialog.add_buttons(
-        _("Quit client"), quit_id,
+        _("Quit client"),
+        quit_id,
     )
     dialog.format_secondary_text(message)  # type: ignore
     dialog.show()  # type: ignore

@@ -13,8 +13,11 @@ from eduvpn.connection import Connection
 
 from eduvpn import nm
 from eduvpn.config import Configuration
-from eduvpn.utils import (model_transition, run_in_background_thread,
-                    run_in_main_gtk_thread)
+from eduvpn.utils import (
+    model_transition,
+    run_in_background_thread,
+    run_in_main_gtk_thread,
+)
 from eduvpn.variants import ApplicationVariant
 from pathlib import Path
 from typing import List
@@ -103,7 +106,7 @@ class ApplicationModelTransitions:
         self.current_server = server
         return server
 
-    @run_in_background_thread('open-browser')
+    @run_in_background_thread("open-browser")
     def open_browser(self, url):
         webbrowser.open(url)
 
@@ -164,7 +167,9 @@ class ApplicationModel:
             self.common.add_institute_acces(server.url)
         elif isinstance(server, DiscoServer):
             self.common.add_institute_access(server.base_url)
-        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
+        elif isinstance(server, SecureInternetServer) or isinstance(
+            server, DiscoOrganization
+        ):
             self.common.add_secure_internet_home(server.org_id)
         elif isinstance(server, Server):
             self.common.add_custom_server(server.url)
@@ -182,7 +187,9 @@ class ApplicationModel:
         elif isinstance(server, Server):
             self.common.remove_custom_server(server.url)
 
-    def connect(self, server, callback: Optional[Callable]=None, ensure_exists=False) -> None:
+    def connect(
+        self, server, callback: Optional[Callable] = None, ensure_exists=False
+    ) -> None:
         config = None
         config_type = None
         if ensure_exists:
@@ -236,7 +243,7 @@ class ApplicationModel:
             reconnect()
 
     @run_in_main_gtk_thread
-    def disconnect(self, callback: Optional[Callable]=None) -> None:
+    def disconnect(self, callback: Optional[Callable] = None) -> None:
         client = nm.get_client()
         uuid = nm.get_uuid()
         nm.deactivate_connection(client, uuid, callback)
@@ -266,7 +273,7 @@ class ApplicationModel:
 
         self.connect(self.current_server)
 
-    def deactivate_connection(self, callback: Optional[Callable]=None) -> None:
+    def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
         self.common.set_disconnecting()
 
         @run_in_background_thread("on-disconnected")
@@ -300,9 +307,7 @@ class ApplicationModel:
 
 
 class Application:
-    def __init__(
-        self, variant: ApplicationVariant, common: EduVPN
-    ) -> None:
+    def __init__(self, variant: ApplicationVariant, common: EduVPN) -> None:
         self.variant = variant
         self.common = common
         directory = variant.config_prefix

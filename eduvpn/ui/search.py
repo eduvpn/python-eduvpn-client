@@ -38,6 +38,7 @@ group_header_component = {
 def get_group_model(group: ServerGroup) -> ListStore:
     # Model: (name: str, server: ServerType)
     from gi.repository import GObject, Gtk
+
     return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
 
 
@@ -48,7 +49,7 @@ def server_to_model_data(server) -> list:
     return [display_string, server]
 
 
-def show_result_components(window: 'EduVpnGtkWindow', show: bool) -> None:  # type: ignore
+def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore
     """
     Set the visibility of essential server list related components.
     """
@@ -58,7 +59,7 @@ def show_result_components(window: 'EduVpnGtkWindow', show: bool) -> None:  # ty
     show_ui_component(window.other_server_list, show)
 
 
-def show_search_components(window: 'EduVpnGtkWindow', show: bool) -> None:  # type: ignore
+def show_search_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore
     """
     Set the visibility of essential search related components.
     """
@@ -68,7 +69,7 @@ def show_search_components(window: 'EduVpnGtkWindow', show: bool) -> None:  # ty
     show_ui_component(window.find_server_search_input, show)
 
 
-def show_search_results(window: 'EduVpnGtkWindow', show: bool) -> None:  # type: ignore
+def show_search_results(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore
     """
     Set the visibility of the tree of the search result component in the UI.
     """
@@ -85,9 +86,13 @@ def group_servers(servers):
         ServerGroup.OTHER: [],
     }
     for server in servers:
-        if isinstance(server, InstituteServer) or (isinstance(server, DiscoServer) and server.server_type == "institute_access"):
+        if isinstance(server, InstituteServer) or (
+            isinstance(server, DiscoServer) and server.server_type == "institute_access"
+        ):
             groups[ServerGroup.INSTITUTE_ACCESS].append(server)
-        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
+        elif isinstance(server, SecureInternetServer) or isinstance(
+            server, DiscoOrganization
+        ):
             groups[ServerGroup.SECURE_INTERNET].append(server)
         elif isinstance(server, Server):
             groups[ServerGroup.OTHER].append(server)
@@ -96,7 +101,7 @@ def group_servers(servers):
     return groups
 
 
-def show_group_tree(window: 'EduVpnGtkWindow', group: ServerGroup, show: bool) -> None:  # type: ignore
+def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -> None:  # type: ignore
     """
     Set the visibility of the tree of result for a server type.
     """
@@ -111,9 +116,10 @@ def show_group_tree(window: 'EduVpnGtkWindow', group: ServerGroup, show: bool) -
     show_ui_component(header_component, show)
 
 
-def init_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
+def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore
     "Initialize the search page components."
     from gi.repository import Gtk, Pango
+
     text_cell = Gtk.CellRendererText()
     text_cell.props.ellipsize = Pango.EllipsizeMode.END
     text_cell.set_property("size-points", 14)
@@ -132,7 +138,7 @@ def init_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
         tree_view.set_model(sorted_model)
 
 
-def exit_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
+def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore
     "Hide the search page components."
     for group in group_scroll_component:
         show_group_tree(window, group, False)
@@ -140,7 +146,7 @@ def exit_server_search(window: 'EduVpnGtkWindow') -> None:  # type: ignore
 
 
 def update_search_results_for_type(
-    window: 'EduVpnGtkWindow', group: ServerGroup, servers  # type: ignore
+    window: "EduVpnGtkWindow", group: ServerGroup, servers  # type: ignore
 ) -> None:
     """
     Update the UI with the search results
@@ -157,7 +163,8 @@ def update_search_results_for_type(
     model_has_results = len(model) > 0  # type: ignore
     show_group_tree(window, group, show=model_has_results)
 
-def update_results(window: 'EduVpnGtkWindow', servers) -> None:  # type: ignore
+
+def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore
     """
     Update the UI with the search results.
     """
