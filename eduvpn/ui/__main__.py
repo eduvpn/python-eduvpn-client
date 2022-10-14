@@ -14,7 +14,7 @@ from gi.repository import Gtk
 
 from eduvpn.i18n import country
 from eduvpn.ui.app import EduVpnGtkApplication
-from eduvpn.variants import EDUVPN, LETS_CONNECT, get_variant_settings
+from eduvpn.variants import EDUVPN, LETS_CONNECT
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def main_loop(args=None, app_variant=EDUVPN):
         args = sys.argv
 
     try:
-        variant_settings = get_variant_settings(app_variant)
+        variant_settings = app_variant.settings
         _common = common.EduVPN(*variant_settings, language=country())
         app = EduVpnGtkApplication(app_variant=app_variant, common=_common)
         app.run(args)
