@@ -278,7 +278,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer.set_valign(Gtk.Align.END)
         self.error_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_UP)
         self.error_revealer.set_transition_duration(200)
-        #self.error_revealer.set_vexpand(False)
 
         # Create a close button
         error_revealer_close_image = Gtk.Image.new_from_icon_name("window-close", Gtk.IconSize.BUTTON)
