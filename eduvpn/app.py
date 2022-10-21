@@ -1,5 +1,7 @@
 import logging
 import webbrowser
+import signal
+import sys
 from datetime import datetime, timedelta
 from typing import Any, Callable, Iterator, Optional
 from eduvpn_common.error import WrappedError, ErrorLevel
@@ -305,7 +307,6 @@ class ApplicationModel:
     def is_oauth_started(self) -> bool:
         return self.common.in_fsm_state(State.OAUTH_STARTED)
 
-
 class Application:
     def __init__(self, variant: ApplicationVariant, common: EduVPN) -> None:
         self.variant = variant
@@ -313,6 +314,14 @@ class Application:
         directory = variant.config_prefix
         self.config = Configuration.load(directory)
         self.model = ApplicationModel(common, self.config, variant)
+        def signal_handler(_signal, _frame):
+            if self.model.is_oauth_started():
+                self.common.cancel_oauth()
+            self.common.go_back()
+            self.common.deregister()
+            sys.exit(1)
+        signal.signal(signal.SIGINT, signal_handler)
+
 
     def on_network_update_callback(self, state, initial=False):
         try:
