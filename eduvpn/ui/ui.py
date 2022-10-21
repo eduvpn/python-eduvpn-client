@@ -38,6 +38,7 @@ from eduvpn.ui.stats import NetworkStats
 from eduvpn.ui.utils import (
     get_validity_text,
     link_markup,
+    should_show_error,
     show_error_dialog,
     show_ui_component,
     style_tree_view,
@@ -293,7 +294,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     @ui_transition(ERROR_STATE, StateType.ENTER)
     def enter_error_state(self, old_state: str, error: Exception):
         if should_show_error(error):
-            self.show_error_revealer(error)
+            self.show_error_revealer(str(error))
 
     @run_in_main_gtk_thread
     def create_clipboard(self):
