@@ -3,6 +3,7 @@ import gi
 from gettext import gettext as _
 from gettext import ngettext
 from eduvpn.app import Validity
+from eduvpn_common.error import WrappedError, ErrorLevel
 from eduvpn.utils import run_in_main_gtk_thread
 gi.require_version("Gtk", "3.0")  # noqa: E402
 from gi.repository import Gtk
@@ -32,6 +33,12 @@ def style_tree_view(window, tree_view):
     textcolor_hl = "#ffffff"
     style_widget(tree_view, "TreeView", f"background-color: {background}; border-top-color: {bordercolor};")
     style_widget(tree_view, "TreeView:hover", f"color: {textcolor_hl}; background-color: {background_hl}; border-top-color: {bordercolor}")
+
+
+def should_show_error(error: Exception):
+    if isinstance(error, WrappedError):
+        return error.level != ErrorLevel.ERR_INFO
+    return True
 
 
 def get_validity_text(validity: Validity) -> Tuple[bool, str]:

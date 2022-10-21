@@ -185,25 +185,20 @@ class ApplicationModel:
     def connect(self, server, callback: Optional[Callable]=None, ensure_exists=False) -> None:
         config = None
         config_type = None
-        try:
-            if ensure_exists:
-                self.add(server)
-            if isinstance(server, InstituteServer):
-                config, config_type = self.common.get_config_institute_access(
-                    server.url, self.config.prefer_tcp
-                    )
-            elif isinstance(server, DiscoServer):
-                config, config_type = self.common.get_config_institute_access(
-                    server.base_url, self.config.prefer_tcp
-                    )
-            elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
-                config, config_type = self.common.get_config_secure_internet(server.org_id, self.config.prefer_tcp)
-            elif isinstance(server, Server):
-                config, config_type = self.common.get_config_custom_server(server.url, self.config.prefer_tcp)
-        except WrappedError as e:
-            if e.level != ErrorLevel.ERR_INFO:
-                raise e
-            return
+        if ensure_exists:
+            self.add(server)
+        if isinstance(server, InstituteServer):
+            config, config_type = self.common.get_config_institute_access(
+                server.url, self.config.prefer_tcp
+            )
+        elif isinstance(server, DiscoServer):
+            config, config_type = self.common.get_config_institute_access(
+                server.base_url, self.config.prefer_tcp
+            )
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
+            config, config_type = self.common.get_config_secure_internet(server.org_id, self.config.prefer_tcp)
+        elif isinstance(server, Server):
+            config, config_type = self.common.get_config_custom_server(server.url, self.config.prefer_tcp)
 
         def on_connected():
             self.common.set_connected()

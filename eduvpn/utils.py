@@ -92,10 +92,8 @@ def model_transition(state: State, state_type: StateType) -> Callable:
             try:
                 model_converted = func(self, other_state, data)
             except Exception as e:
-                # Log as info as we're already giving the error in the UI
-                logger.info(e)
                 # Run the error state event
-                self.common.event.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), str(e), convert=False)
+                self.common.event.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), e, convert=False)
 
                 # Go back to the previous state as the model transition was not successful
                 self.common.go_back()
