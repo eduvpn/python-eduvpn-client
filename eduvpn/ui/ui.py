@@ -28,7 +28,7 @@ from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, run_in_main_gtk
                      run_periodically, ui_transition)
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
-from eduvpn.ui.utils import get_validity_text, link_markup, show_error_dialog, show_ui_component, style_tree_view, style_widget
+from eduvpn.ui.utils import get_validity_text, link_markup, should_show_error, show_error_dialog, show_ui_component, style_tree_view, style_widget
 from datetime import datetime
 from gi.overrides.Gdk import Event, EventButton
 from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn
@@ -234,6 +234,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.exit_deregistered()
                 self.app.initialize_network()
             except Exception as e:
+                if not should_show_error(e):
+                    return
                 show_error_dialog(self, _("Fatal Error"), _("Fatal error while starting the client"), str(e), True)
 
         register()
@@ -244,11 +246,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if func:
             try:
                 func(*(args))
-            except WrappedError as e:
-                if e.level != ErrorLevel.ERR_INFO:
-                    self.show_error_revealer(str(e))
             except Exception as e:
-                self.show_error_revealer(str(e))
+                if should_show_error(e):
+                    self.show_error_revealer(str(e))
         else:
             raise Exception(f"No such function: {func_name}")
 
@@ -264,8 +264,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.hide_loading_page()
 
     @ui_transition(ERROR_STATE, StateType.ENTER)
-    def enter_error_state(self, old_state: str, error: str):
-        self.show_error_revealer(error)
+    def enter_error_state(self, old_state: str, error: Exception):
+        if should_show_error(error):
+            self.show_error_revealer(error)
 
     @run_in_main_gtk_thread
     def create_clipboard(self):
