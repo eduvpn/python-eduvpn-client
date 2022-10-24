@@ -102,7 +102,9 @@ def model_transition(state: State, state_type: StateType) -> Callable:
                 )
 
                 # Go back to the previous state as the model transition was not successful
-                self.common.go_back()
+                # Do this only if we're not already in the main state
+                if not self.common.in_fsm_state(State.NO_SERVER):
+                    self.common.go_back()
                 return
 
             other_ui_state = get_ui_state(other_state)
