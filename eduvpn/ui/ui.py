@@ -981,6 +981,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             if state:
                 self.call_model("activate_connection")
             else:
+                self.stop_connection_info()
                 self.call_model("deactivate_connection")
         return True
 
