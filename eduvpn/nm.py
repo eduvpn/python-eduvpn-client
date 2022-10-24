@@ -761,6 +761,5 @@ def deactivate_connection_with_mainloop(uuid):
     )
 
 
-@cache
 def is_wireguard_supported() -> bool:
     return hasattr(NM, "WireGuardPeer")

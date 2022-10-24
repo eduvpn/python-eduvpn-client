@@ -59,6 +59,8 @@ class ApplicationModelTransitions:
 
     @model_transition(State.NO_SERVER, StateType.ENTER)
     def get_previous_servers(self, old_state: str, servers):
+        has_wireguard = nm.is_wireguard_supported()
+        self.common.set_support_wireguard(has_wireguard)
         return servers
 
     @model_transition(State.SEARCH_SERVER, StateType.ENTER)
