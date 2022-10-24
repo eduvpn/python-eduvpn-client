@@ -44,6 +44,10 @@ class ApplicationVariant:
         return Configuration.load(self.config_prefix)
 
     @property
+    def logfile(self) -> Path:
+        return self.config_prefix / "python.log"
+
+    @property
     def vpn_name(self) -> str:
         return self.translation_domain.lower()
 
