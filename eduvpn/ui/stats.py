@@ -1,13 +1,33 @@
+import functools
 import logging
 from pathlib import Path
 from typing import Optional, TextIO
 
 from eduvpn.nm import get_iface, get_ipv4, get_ipv6
-from eduvpn.utils import cache, get_human_readable_bytes, translated_property
+from eduvpn.utils import get_human_readable_bytes, translated_property
 
 logger = logging.getLogger(__name__)
 
 LINUX_NET_FOLDER = Path("/sys/class/net")
+
+
+def cached_stats_property(f):
+    @functools.wraps(f)
+    def wrapped(self):
+        try:
+            property_name = f"_{f.__name__}"
+            # check for _value
+            value = getattr(self, property_name)
+
+            # value is not valid, recompute
+            if value is None or value is self.default_text:
+                value = f(self)
+        # value does not exists, recompute
+        except Exception:
+            value = f(self)
+        setattr(self, property_name, value)
+        return value
+    return property(wrapped)
 
 
 class NetworkStats:
@@ -16,44 +36,37 @@ class NetworkStats:
 
     # These properties define an LRU cache
     # This cache is used so that we do not query these every second
-    @property  # type: ignore
-    @cache
+    @cached_stats_property
     def ipv4(self) -> str:
         _ipv4 = get_ipv4()
         if _ipv4 is None:
             _ipv4 = self.default_text
         return _ipv4
 
-    @property  # type: ignore
-    @cache
+    @cached_stats_property
     def ipv6(self) -> str:
         _ipv6 = get_ipv6()
         if _ipv6 is None:
             _ipv6 = self.default_text
         return _ipv6
 
-    @property  # type: ignore
-    @cache
+    @cached_stats_property
     def upload_file(self) -> Optional[TextIO]:
         return self.open_file("tx_bytes")
 
-    @property  # type: ignore
-    @cache
+    @cached_stats_property
     def download_file(self) -> Optional[TextIO]:
         return self.open_file("rx_bytes")
 
-    @property  # type: ignore
-    @cache
+    @cached_stats_property
     def start_bytes_upload(self) -> Optional[int]:
         return self.get_file_bytes(self.upload_file)  # type: ignore
 
-    @property  # type: ignore
-    @cache
+    @cached_stats_property
     def start_bytes_download(self) -> Optional[int]:
         return self.get_file_bytes(self.download_file)  # type: ignore
 
-    @property  # type: ignore
-    @cache
+    @cached_stats_property
     def iface(self) -> Optional[str]:
         return get_iface()
 
