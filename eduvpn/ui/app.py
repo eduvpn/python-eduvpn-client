@@ -1,6 +1,7 @@
 import logging
 from gettext import gettext as _
 
+import os
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
@@ -10,6 +11,7 @@ from gi.repository import Gio, GLib, Gtk
 
 from eduvpn import i18n, notify
 from eduvpn.app import Application
+from eduvpn.settings import CONFIG_DIR_MODE
 from eduvpn.utils import run_in_background_thread, ui_transition
 from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
@@ -100,6 +102,7 @@ class EduVpnGtkApplication(Gtk.Application):
             log_level = logging.DEBUG
         else:
             log_level = logging.INFO
+        os.makedirs(os.path.dirname(self.app.variant.logfile), mode=CONFIG_DIR_MODE, exist_ok=True)
         logging.basicConfig(level=log_level,
                             format=LOG_FORMAT,
                             handlers=[
