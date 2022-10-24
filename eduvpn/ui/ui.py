@@ -28,6 +28,7 @@ from eduvpn.utils import (
     ERROR_STATE,
     get_prefix,
     get_ui_state,
+    log_exception,
     run_in_main_gtk_thread,
     run_in_background_thread,
     run_periodically,
@@ -256,6 +257,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 self.exit_deregistered()
                 self.app.initialize_network()
             except Exception as e:
+                log_exception(e)
                 if not should_show_error(e):
                     return
                 show_error_dialog(
@@ -277,6 +279,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             except Exception as e:
                 if should_show_error(e):
                     self.show_error_revealer(str(e))
+                log_exception(e)
         else:
             raise Exception(f"No such function: {func_name}")
 
