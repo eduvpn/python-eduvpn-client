@@ -8,6 +8,7 @@ from sys import prefix
 from typing import Union, Callable, Optional
 
 import eduvpn_common.event as common
+from eduvpn_common.error import ErrorLevel, WrappedError
 from eduvpn_common.state import State, StateType
 
 logger = getLogger(__file__)
@@ -16,6 +17,10 @@ logger = getLogger(__file__)
 def get_logger(name_space: str) -> Logger:
     return getLogger(name_space)
 
+def log_exception(exception: Exception):
+    # Other exceptions are already logged by Go
+    if not isinstance(exception, WrappedError):
+        logger.error("Non-Go exception occurred", str(exception))
 
 @lru_cache(maxsize=1)
 def get_prefix() -> str:
@@ -92,6 +97,7 @@ def model_transition(state: State, state_type: StateType) -> Callable:
             try:
                 model_converted = func(self, other_state, data)
             except Exception as e:
+                log_exception(e)
                 # Run the error state event
                 self.common.event.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), e, convert=False)
                 self.common.event.run(
