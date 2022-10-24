@@ -100,7 +100,12 @@ class EduVpnGtkApplication(Gtk.Application):
             log_level = logging.DEBUG
         else:
             log_level = logging.INFO
-        logging.basicConfig(level=log_level, format=LOG_FORMAT)
+        logging.basicConfig(level=log_level,
+                            format=LOG_FORMAT,
+                            handlers=[
+                                logging.FileHandler(self.app.variant.logfile),
+                                logging.StreamHandler()
+                            ])
 
         self.activate()
         return 0
