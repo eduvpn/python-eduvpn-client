@@ -125,6 +125,42 @@ class NMManager:
         set_uuid(self.variant, new_uuid)
 
     @property
+    def connection_state(self) -> ConnectionState:
+        connections = [
+            connection
+            for connection in self.client.get_active_connections()
+            if connection.get_uuid() == self.uuid
+        ]
+        if len(connections) == 1:
+            connection = connections[0]
+        else:
+            return ConnectionState.DISCONNECTED
+        if isinstance(connection, NM.VpnConnection):
+            return ConnectionState.from_vpn_state(connection.get_vpn_state())
+        elif isinstance(connection, NM.ActiveConnection):
+            return ConnectionState.from_active_state(connection.get_state())
+        else:
+            _logger.warning(f"connection of unknown type: {connection!r}")
+            return ConnectionState.UNKNOWN
+
+    @property
+    def vpn_status(
+        self,
+    ) -> Tuple["NM.VpnConnectionState", "NM.VpnConnectionStateReason"]:
+        vpns = [
+            a
+            for a in self.client.get_active_connections()
+            if type(a) == NM.VpnConnection
+        ]
+        if len(vpns) > 1:
+            _logger.warning("more than one VPN connection active")
+            return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
+        elif len(vpns) == 0:
+            return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
+        else:
+            return vpns[0].get_state(), vpns[0].get_state_reason()
+
+    @property
     def active_connection(self) -> Optional["NM.ActiveConnection"]:
         """
         Gets the active connection for the current uuid
@@ -190,7 +226,8 @@ class NMManager:
             return None
         return addresses[0].get_address()
 
-    def get_existing_connection(self) -> Optional[str]:
+    @property
+    def existing_connection(self) -> Optional[str]:
         connection = self.client.get_connection_by_uuid(self.uuid)
         if connection is None:
             return None
@@ -293,7 +330,9 @@ class NMManager:
                 return
         self.add_connection(new_connection, callback)
 
-    def set_setting_default_gateway(self, con: "NM.SimpleConnection", enable: bool) -> "NM.SimpleConnection":
+    def set_setting_default_gateway(
+        self, con: "NM.SimpleConnection", enable: bool
+    ) -> "NM.SimpleConnection":
         "If True, make the VPN connection the default gateway."
         _logger.debug(f"setting default gateway: {enable}")
         ipv4_setting = con.get_setting_ip4_config()
@@ -338,11 +377,15 @@ class NMManager:
             vpn, private_key, certificate, callback, settings_config.nm_system_wide
         )
 
-    def start_openvpn_connection(self, ovpn: Ovpn, default_gateway, *, callback=None) -> None:
+    def start_openvpn_connection(
+        self, ovpn: Ovpn, default_gateway, *, callback=None
+    ) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
         settings_config = self.variant.config
-        self.set_connection(new_con, callback, default_gateway, settings_config.nm_system_wide)
+        self.set_connection(
+            new_con, callback, default_gateway, settings_config.nm_system_wide
+        )
 
     def start_wireguard_connection(
         self,
@@ -435,7 +478,9 @@ class NMManager:
         profile.add_setting(w_con)
 
         settings_config = self.variant.config
-        self.set_connection(profile, callback, default_gateway, settings_config.nm_system_wide)
+        self.set_connection(
+            profile, callback, default_gateway, settings_config.nm_system_wide
+        )
 
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
         con = self.client.get_connection_by_uuid(self.uuid)
@@ -608,41 +653,6 @@ class NMManager:
         uuid = con.get_uuid()
         status = con.get_state()
         return uuid, status
-
-    def get_connection_state(self) -> ConnectionState:
-        connections = [
-            connection
-            for connection in self.client.get_active_connections()
-            if connection.get_uuid() == self.uuid
-        ]
-        if len(connections) == 1:
-            connection = connections[0]
-        else:
-            return ConnectionState.DISCONNECTED
-        if isinstance(connection, NM.VpnConnection):
-            return ConnectionState.from_vpn_state(connection.get_vpn_state())
-        elif isinstance(connection, NM.ActiveConnection):
-            return ConnectionState.from_active_state(connection.get_state())
-        else:
-            _logger.warning(f"connection of unknown type: {connection!r}")
-            return ConnectionState.UNKNOWN
-
-    def get_vpn_status(
-        self,
-    ) -> Tuple["NM.VpnConnectionState", "NM.VpnConnectionStateReason"]:
-        vpns = [
-            a
-            for a in self.client.get_active_connections()
-            if type(a) == NM.VpnConnection
-        ]
-        if len(vpns) > 1:
-            _logger.warning("more than one VPN connection active")
-            return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
-        elif len(vpns) == 0:
-            return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
-        else:
-            return vpns[0].get_state(), vpns[0].get_state_reason()
-
 
 
 @lru_cache(maxsize=1)

@@ -344,9 +344,9 @@ class Application:
         Determine the current network state.
         """
         # Check if a previous network configuration exists.
-        uuid = self.nm_manager.get_existing_connection()
+        uuid = self.nm_manager.existing_connection
         if uuid:
-            self.on_network_update_callback(self.nm_manager.get_connection_state(), needs_update)
+            self.on_network_update_callback(self.nm_manager.connection_state, needs_update)
 
         @run_in_background_thread("on-network-update")
         def update(state):

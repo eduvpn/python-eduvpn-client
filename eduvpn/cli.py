@@ -282,7 +282,7 @@ class CommandLine:
 
     def update_state(self, initial: bool = False):
         def update_state_callback(callback):
-            state = self.nm_manager.get_connection_state()
+            state = self.nm_manager.connection_state
             self.app.on_network_update_callback(state, initial)
 
             # This exits the main loop and gives back control to the CLI
