@@ -126,11 +126,12 @@ class ApplicationModelTransitions:
 
 
 class ApplicationModel:
-    def __init__(self, common: EduVPN, config, variant: ApplicationVariant) -> None:
+    def __init__(self, common: EduVPN, config, variant: ApplicationVariant, nm_manager) -> None:
         self.common = common
         self.config = config
         self.transitions = ApplicationModelTransitions(common, variant)
         self.variant = variant
+        self.nm_manager = nm_manager
         self.common.register_class_callbacks(self)
 
     @property
@@ -217,14 +218,12 @@ class ApplicationModel:
                 callback()
 
         def on_connect(_):
-            client = nm.get_client()
-            uuid = nm.get_uuid()
-            nm.activate_connection(client, uuid, on_connected)
+            self.nm_manager.activate_connection(on_connected)
 
         @run_in_main_gtk_thread
         def connect(config, config_type):
             connection = Connection.parse(config, config_type)
-            connection.connect(self.variant, on_connect)
+            connection.connect(self.nm_manager, on_connect)
 
         self.common.set_connecting()
         connect(config, config_type)
@@ -248,9 +247,7 @@ class ApplicationModel:
 
     @run_in_main_gtk_thread
     def disconnect(self, callback: Optional[Callable] = None) -> None:
-        client = nm.get_client()
-        uuid = nm.get_uuid()
-        nm.deactivate_connection(client, uuid, callback)
+        self.nm_manager.deactivate_connection(callback)
 
     def set_profile(self, profile, connect=False):
         was_connected = self.is_connected()
@@ -312,10 +309,11 @@ class ApplicationModel:
 class Application:
     def __init__(self, variant: ApplicationVariant, common: EduVPN) -> None:
         self.variant = variant
+        self.nm_manager = nm.NMManager(variant)
         self.common = common
         directory = variant.config_prefix
         self.config = Configuration.load(directory)
-        self.model = ApplicationModel(common, self.config, variant)
+        self.model = ApplicationModel(common, self.config, variant, self.nm_manager)
         def signal_handler(_signal, _frame):
             if self.model.is_oauth_started():
                 self.common.cancel_oauth()
@@ -346,12 +344,12 @@ class Application:
         Determine the current network state.
         """
         # Check if a previous network configuration exists.
-        uuid = nm.get_existing_configuration_uuid()
+        uuid = self.nm_manager.get_existing_connection()
         if uuid:
-            self.on_network_update_callback(nm.get_connection_state(), needs_update)
+            self.on_network_update_callback(self.nm_manager.get_connection_state(), needs_update)
 
         @run_in_background_thread("on-network-update")
         def update(state):
             self.on_network_update_callback(state, False)
 
-        nm.subscribe_to_status_changes(update)
+        self.nm_manager.subscribe_to_status_changes(update)

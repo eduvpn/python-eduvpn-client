@@ -40,6 +40,7 @@ class CommandLine:
         self.variant = variant
         self.common = common
         self.app = Application(variant, common)
+        self.nm_manager = self.app.nm_manager
         self.server_db = ServerDatabase(common, variant.use_predefined_servers)
         self.transitions = CommandLineTransitions(self.app)
         self.common.register_class_callbacks(self.transitions)
@@ -281,7 +282,7 @@ class CommandLine:
 
     def update_state(self, initial: bool = False):
         def update_state_callback(callback):
-            state = nm.get_connection_state()
+            state = self.nm_manager.get_connection_state()
             self.app.on_network_update_callback(state, initial)
 
             # This exits the main loop and gives back control to the CLI

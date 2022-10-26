@@ -34,10 +34,9 @@ class OpenVPNConnection(Connection):
         ovpn = Ovpn.parse(config)
         return cls(ovpn=ovpn)
 
-    def connect(self, variant, callback):
-        nm.start_openvpn_connection(
+    def connect(self, manager, callback):
+        manager.start_openvpn_connection(
             self.ovpn,
-            variant,
             callback=callback,
         )
 
@@ -53,9 +52,8 @@ class WireGuardConnection(Connection):
         config.read_string(config_str)
         return cls(config=config)
 
-    def connect(self, variant, callback):
-        nm.start_wireguard_connection(
+    def connect(self, manager, callback):
+        manager.start_wireguard_connection(
             self.config,
-            variant,
             callback=callback,
         )

@@ -19,7 +19,6 @@ from eduvpn_common.state import State, StateType
 from eduvpn_common.error import ErrorLevel, WrappedError
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
-from eduvpn.nm import nm_available, nm_managed
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX
 from eduvpn.i18n import country, retrieve_country_name
@@ -229,7 +228,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_switch_state: Optional[bool] = None
 
     def initialize(self) -> None:
-        if not nm_available():
+        if not self.app.nm_manager.available:
             show_error_dialog(
                 self,
                 _("Error"),
@@ -238,7 +237,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                     "The application will not be able to configure the network. Please install and set up NetworkManager."
                 ),
             )
-        elif not nm_managed():
+        elif not self.app.nm_manager.managed:
             show_error_dialog(
                 self,
                 _("Error"),
@@ -1018,7 +1017,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.connection_info_ipv6address.set_text(ipv6)
 
         if not self.connection_info_stats:
-            self.connection_info_stats = NetworkStats()
+            self.connection_info_stats = NetworkStats(self.app.nm_manager)
 
         if not self.connection_info_thread_cancel:
             # Run every second in the background
