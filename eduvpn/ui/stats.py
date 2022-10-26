@@ -39,14 +39,14 @@ class NetworkStats:
     # This cache is used so that we do not query these every second
     @cached_stats_property
     def ipv4(self) -> str:
-        _ipv4 = self.manager.get_ipv4()
+        _ipv4 = self.manager.ipv4
         if _ipv4 is None:
             _ipv4 = self.default_text
         return _ipv4
 
     @cached_stats_property
     def ipv6(self) -> str:
-        _ipv6 = self.manager.get_ipv6()
+        _ipv6 = self.manager.ipv6
         if _ipv6 is None:
             _ipv6 = self.default_text
         return _ipv6
@@ -69,7 +69,7 @@ class NetworkStats:
 
     @cached_stats_property
     def iface(self) -> Optional[str]:
-        return self.manager.get_iface()
+        return self.manager.iface
 
     @property
     def download(self) -> str:

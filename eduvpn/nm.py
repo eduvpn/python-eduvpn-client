@@ -134,7 +134,8 @@ class NMManager:
                 return connection
         return None
 
-    def get_iface(self) -> Optional[str]:
+    @property
+    def iface(self) -> Optional[str]:
         """
         Get the interface as a string for an openvpn or wireguard connection if there is one
         """
@@ -150,7 +151,8 @@ class NMManager:
         # So get the interface for the first device we have
         return devices[0].get_iface()
 
-    def get_ipv4(self) -> Optional[str]:
+    @property
+    def ipv4(self) -> Optional[str]:
         """
         Get the ipv4 address for an openvpn or wireguard connection as a string if there is one
         """
@@ -168,7 +170,8 @@ class NMManager:
 
         return addresses[0].get_address()
 
-    def get_ipv6(self) -> Optional[str]:
+    @property
+    def ipv6(self) -> Optional[str]:
         """
         Get the ipv6 address for an openvpn or wireguard connection as a string if there is one
         """
