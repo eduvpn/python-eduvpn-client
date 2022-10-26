@@ -228,7 +228,7 @@ class NMManager:
         """
         target_parent = Path(mkdtemp())
         target = target_parent / f"{self.variant.vpn_name}.ovpn"
-        _logger.info(f"Writing configuration to {target}")
+        _logger.debug(f"Writing configuration to {target}")
         with open(target, mode="w+t") as f:
             ovpn.write(f)
         connection = self.ovpn_import(target)
@@ -240,7 +240,7 @@ class NMManager:
         connection: "NM.Connection",
         callback: Optional[Callable] = None,
     ) -> None:
-        _logger.info("Adding new connection")
+        _logger.debug("Adding new connection")
         self.client.add_connection_async(
             connection=connection,
             save_to_disk=True,
@@ -254,7 +254,7 @@ class NMManager:
         """
         Update an existing Network Manager connection with the settings from another Network Manager connection
         """
-        _logger.info("Updating existing connection with new configuration")
+        _logger.debug("Updating existing connection with new configuration")
 
         # Don't attempt to overwrite the uuid,
         # but reuse the one from the previous connection.
@@ -319,7 +319,7 @@ class NMManager:
         default_gateway,
         system_wide,
     ):
-        _logger.info("writing configuration to Network Manager")
+        _logger.debug("writing configuration to Network Manager")
         new_con = self.import_ovpn_with_certificate(ovpn, private_key, certificate)
         self.set_connection(new_con, callback, default_gateway, system_wide)
 
@@ -348,7 +348,7 @@ class NMManager:
         *,
         callback=None,
     ) -> None:
-        _logger.info("writing wireguard configuration to Network Manager")
+        _logger.debug("writing wireguard configuration to Network Manager")
 
         ipv4s = []
         ipv6s = []
@@ -436,7 +436,7 @@ class NMManager:
 
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
         con = self.client.get_connection_by_uuid(self.uuid)
-        _logger.info(f"activate_connection: {con}")
+        _logger.debug(f"activate_connection: {con}")
         if con is None:
             # Temporary workaround, connection is sometimes created too
             # late while according to the logging the connection is already
@@ -451,7 +451,7 @@ class NMManager:
             except Exception as e:
                 _logger.error(e)
             else:
-                _logger.info(f"activate_connection_async result: {result}")
+                _logger.debug(f"activate_connection_async result: {result}")
             finally:
                 if callback:
                     callback()
@@ -484,7 +484,7 @@ class NMManager:
                 except Exception as e:
                     _logger.error(e)
                 else:
-                    _logger.info(f"deactivate_connection_async result: {result}")
+                    _logger.debug(f"deactivate_connection_async result: {result}")
                 finally:
                     if callback:
                         self.delete_connection(callback)
@@ -493,7 +493,7 @@ class NMManager:
                 active=con, callback=on_deactivate_connection, user_data=callback
             )
         else:
-            _logger.info("No active connection to deactivate")
+            _logger.debug("No active connection to deactivate")
 
     def delete_connection(self, callback: Callable) -> None:
         # We run the disconnected callback early if a delete fail happens
@@ -515,7 +515,7 @@ class NMManager:
             except Exception as e:
                 _logger.error(e)
             else:
-                _logger.info(f"delete_async result: {result}")
+                _logger.debug(f"delete_async result: {result}")
             finally:
                 if callback:
                     callback()
@@ -543,7 +543,7 @@ class NMManager:
             except Exception as e:
                 _logger.error(e)
             else:
-                _logger.info(f"disconnect_async result: {result}")
+                _logger.debug(f"disconnect_async result: {result}")
             finally:
                 if callback:
                     self.delete_connection(callback)
@@ -665,11 +665,11 @@ def get_dbus() -> Optional["dbus.SystemBus"]:
 
 
 def action_with_mainloop(action: Callable):
-    _logger.info("calling action with CLI mainloop")
+    _logger.debug("calling action with CLI mainloop")
     main_loop = GLib.MainLoop()
 
     def quit_loop(*args, **kwargs):
-        _logger.info("Quiting main loop, thanks!")
+        _logger.debug("Quiting main loop, thanks!")
         main_loop.quit()
 
     # Schedule the action
@@ -685,7 +685,7 @@ def add_connection_callback(
     object, callback = user_data
     new_con = client.add_connection_finish(result)
     object.uuid = new_con.get_uuid()
-    _logger.info(f"Connection added for uuid: {object.uuid}")
+    _logger.debug(f"Connection added for uuid: {object.uuid}")
     if callback is not None:
         callback(new_con is not None)
 
