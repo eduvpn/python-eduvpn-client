@@ -205,6 +205,11 @@ class ApplicationModel:
         elif isinstance(server, Server):
             config, config_type = self.common.get_config_custom_server(server.url, self.config.prefer_tcp)
 
+        # Get the updated info from the go library
+        # Because profiles can be switched
+        # And we need the most updated profile settings for default gateway
+        server = self.current_server
+
         default_gateway = True
         if server.profiles is not None and server.profiles.current is not None:
             default_gateway = server.profiles.current.default_gateway
