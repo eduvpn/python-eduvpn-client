@@ -8,7 +8,7 @@ from sys import prefix
 from typing import Union, Callable, Optional
 
 import eduvpn_common.event as common
-from eduvpn_common.error import ErrorLevel, WrappedError
+from eduvpn_common.error import WrappedError
 from eduvpn_common.state import State, StateType
 
 logger = getLogger(__file__)

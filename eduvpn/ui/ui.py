@@ -16,12 +16,11 @@ gi.require_version("NM", "1.0")  # noqa: E402
 from functools import partial
 
 from eduvpn_common.state import State, StateType
-from eduvpn_common.error import ErrorLevel, WrappedError
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX
-from eduvpn.i18n import country, retrieve_country_name
+from eduvpn.i18n import retrieve_country_name
 from eduvpn.settings import HELP_URL
 from eduvpn.utils import (
     ERROR_STATE,

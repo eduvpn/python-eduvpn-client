@@ -11,10 +11,8 @@ from socket import AF_INET, AF_INET6
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, Tuple
 
-from eduvpn.config import Configuration
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
-from eduvpn.utils import cache
 from eduvpn.variants import ApplicationVariant
 import gi
 

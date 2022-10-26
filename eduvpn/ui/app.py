@@ -17,7 +17,6 @@ from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
 from eduvpn.ui.utils import get_validity_text
 from gi.repository.Gio import ApplicationCommandLine
-from typing import Any
 
 logger = logging.getLogger(__name__)
 

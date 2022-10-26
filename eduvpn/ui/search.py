@@ -1,6 +1,6 @@
 import enum
 from functools import lru_cache
-from typing import Union, Dict, Iterable, List, Optional
+from typing import Dict, List
 
 from eduvpn_common.discovery import DiscoServer, DiscoOrganization
 from eduvpn_common.server import Server, InstituteServer, SecureInternetServer

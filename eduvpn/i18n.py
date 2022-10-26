@@ -3,7 +3,6 @@ import json
 import locale
 import logging
 import os
-from typing import Dict, Union
 
 from eduvpn.settings import COUNTRY, COUNTRY_MAP, LANGUAGE
 from eduvpn.utils import get_prefix

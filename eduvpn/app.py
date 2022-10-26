@@ -4,7 +4,6 @@ import signal
 import sys
 from datetime import datetime, timedelta
 from typing import Any, Callable, Iterator, Optional
-from eduvpn_common.error import WrappedError, ErrorLevel
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.main import EduVPN
 from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
@@ -21,7 +20,6 @@ from eduvpn.utils import (
     run_in_main_gtk_thread,
 )
 from eduvpn.variants import ApplicationVariant
-from pathlib import Path
 from typing import List
 
 logger = logging.getLogger(__name__)
