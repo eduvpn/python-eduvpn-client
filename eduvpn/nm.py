@@ -273,8 +273,12 @@ class NMManager:
         self,
         new_connection: SimpleConnection,
         callback: Callable,
-        system_wide: bool = False,
+        default_gateway: bool,
+        system_wide: bool,
     ):
+        new_connection = self.set_setting_default_gateway(
+            new_connection, default_gateway
+        )
         new_connection = self.set_setting_ensure_permissions(
             new_connection, not system_wide
         )
@@ -284,6 +288,17 @@ class NMManager:
                 self.update_connection(old_con, new_connection, callback)
                 return
         self.add_connection(new_connection, callback)
+
+    def set_setting_default_gateway(self, con: "NM.SimpleConnection", enable: bool) -> "NM.SimpleConnection":
+        "If True, make the VPN connection the default gateway."
+        _logger.debug(f"setting default gateway: {enable}")
+        ipv4_setting = con.get_setting_ip4_config()
+        ipv6_setting = con.get_setting_ip6_config()
+        ipv4_setting.set_property("never-default", not enable)
+        ipv6_setting.set_property("never-default", not enable)
+        con.add_setting(ipv4_setting)
+        con.add_setting(ipv6_setting)
+        return con
 
     def set_setting_ensure_permissions(
         self, con: "NM.SimpleConnection", enable: bool
@@ -299,12 +314,13 @@ class NMManager:
         ovpn: Ovpn,
         private_key,
         certificate,
-        callback=None,
-        system_wide=False,
+        callback,
+        default_gateway,
+        system_wide,
     ):
         _logger.info("writing configuration to Network Manager")
         new_con = self.import_ovpn_with_certificate(ovpn, private_key, certificate)
-        self.set_connection(new_con, callback, system_wide)
+        self.set_connection(new_con, callback, default_gateway, system_wide)
 
     def save_connection_with_config(
         config,
@@ -318,15 +334,16 @@ class NMManager:
             vpn, private_key, certificate, callback, settings_config.nm_system_wide
         )
 
-    def start_openvpn_connection(self, ovpn: Ovpn, *, callback=None) -> None:
-        _logger.info("writing ovpn configuration to Network Manager")
+    def start_openvpn_connection(self, ovpn: Ovpn, default_gateway, *, callback=None) -> None:
+        _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
         settings_config = self.variant.config
-        self.set_connection(new_con, callback, settings_config.nm_system_wide)
+        self.set_connection(new_con, callback, default_gateway, settings_config.nm_system_wide)
 
     def start_wireguard_connection(
         self,
         config: ConfigParser,
+        default_gateway,
         *,
         callback=None,
     ) -> None:
@@ -414,7 +431,7 @@ class NMManager:
         profile.add_setting(w_con)
 
         settings_config = self.variant.config
-        self.set_connection(profile, callback, settings_config.nm_system_wide)
+        self.set_connection(profile, callback, default_gateway, settings_config.nm_system_wide)
 
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
         con = self.client.get_connection_by_uuid(self.uuid)
@@ -622,18 +639,6 @@ class NMManager:
         else:
             return vpns[0].get_state(), vpns[0].get_state_reason()
 
-    def set_default_gateway(self, enable: bool):
-        "If True, make the VPN connection the default gateway."
-        _logger.info(f"setting default gateway: {enable}")
-        connection = self.client.get_connection_by_uuid(self.uuid)
-        ipv4_setting = connection.get_setting_ip4_config()
-        ipv6_setting = connection.get_setting_ip6_config()
-        ipv4_setting.set_property("never-default", not enable)
-        ipv6_setting.set_property("never-default", not enable)
-        connection.commit_changes(
-            save_to_disk=True,
-            cancellable=None,
-        )
 
 
 @lru_cache(maxsize=1)

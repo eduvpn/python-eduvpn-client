@@ -54,7 +54,6 @@ class ApplicationModelTransitions:
     def __init__(self, common: EduVPN, variant: ApplicationVariant) -> None:
         self.common = common
         self.common.register_class_callbacks(self)
-        self.current_server = None
         self.server_db = ServerDatabase(common, variant.use_predefined_servers)
 
     @model_transition(State.NO_SERVER, StateType.ENTER)
@@ -81,7 +80,6 @@ class ApplicationModelTransitions:
 
     @model_transition(State.DISCONNECTING, StateType.ENTER)
     def disconnecting(self, old_state: str, server):
-        self.current_server = server
         return server
 
     @model_transition(State.ASK_PROFILE, StateType.ENTER)
@@ -107,7 +105,6 @@ class ApplicationModelTransitions:
 
     @model_transition(State.DISCONNECTED, StateType.ENTER)
     def parse_config(self, old_state: str, server):
-        self.current_server = server
         return server
 
     @run_in_background_thread("open-browser")
@@ -116,12 +113,10 @@ class ApplicationModelTransitions:
 
     @model_transition(State.CONNECTED, StateType.ENTER)
     def parse_connected(self, old_state: str, server):
-        self.current_server = server
         return server
 
     @model_transition(State.CONNECTING, StateType.ENTER)
     def parse_connecting(self, old_state: str, server):
-        self.current_server = server
         return server
 
 
@@ -140,7 +135,7 @@ class ApplicationModel:
 
     @property
     def current_server(self):
-        return self.transitions.current_server
+        return self.common.get_current_server()
 
     @current_server.setter
     def current_server(self, current_server):
@@ -212,6 +207,11 @@ class ApplicationModel:
         elif isinstance(server, Server):
             config, config_type = self.common.get_config_custom_server(server.url, self.config.prefer_tcp)
 
+        default_gateway = True
+        current_profile = server.profiles.current
+        if current_profile is not None:
+            default_gateway = current_profile.default_gateway
+
         def on_connected():
             self.common.set_connected()
             if callback:
@@ -223,7 +223,7 @@ class ApplicationModel:
         @run_in_main_gtk_thread
         def connect(config, config_type):
             connection = Connection.parse(config, config_type)
-            connection.connect(self.nm_manager, on_connect)
+            connection.connect(self.nm_manager, default_gateway, on_connect)
 
         self.common.set_connecting()
         connect(config, config_type)
