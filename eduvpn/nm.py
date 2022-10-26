@@ -124,7 +124,8 @@ class NMManager:
     def uuid(self, new_uuid):
         set_uuid(self.variant, new_uuid)
 
-    def get_active_connection(self) -> Optional["NM.ActiveConnection"]:
+    @property
+    def active_connection(self) -> Optional["NM.ActiveConnection"]:
         """
         Gets the active connection for the current uuid
         """
@@ -137,7 +138,7 @@ class NMManager:
         """
         Get the interface as a string for an openvpn or wireguard connection if there is one
         """
-        active_con = self.get_active_connection()
+        active_con = self.active_connection
         if not active_con:
             return None
 
@@ -153,7 +154,7 @@ class NMManager:
         """
         Get the ipv4 address for an openvpn or wireguard connection as a string if there is one
         """
-        active_con = self.get_active_connection()
+        active_con = self.active_connection
         if not active_con:
             return None
 
@@ -171,7 +172,7 @@ class NMManager:
         """
         Get the ipv6 address for an openvpn or wireguard connection as a string if there is one
         """
-        active_con = self.get_active_connection()
+        active_con = self.active_connection
 
         if not active_con:
             return None
@@ -460,7 +461,7 @@ class NMManager:
         )
 
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
-        connection = self.get_active_connection()
+        connection = self.active_connection
         if connection is None:
             _logger.warning(f"no connection to deactivate of uuid {uuid}")
             return
@@ -473,7 +474,7 @@ class NMManager:
             _logger.warning(f"unexpected connection type {type}")
 
     def deactivate_connection_vpn(self, callback: Optional[Callable] = None) -> None:
-        con = self.get_active_connection()
+        con = self.active_connection
         _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
         if con:
 
@@ -586,7 +587,7 @@ class NMManager:
             connect(active_con)
 
         # If a connection was found already then...
-        active_con = self.get_active_connection()
+        active_con = self.active_connection
 
         if active_con:
             connect(active_con)
