@@ -1,4 +1,3 @@
-import readline
 import eduvpn_common.main as common
 from eduvpn_common.state import State, StateType
 
@@ -11,7 +10,7 @@ from eduvpn.settings import (
     LETSCONNECT_CONFIG_PREFIX,
 )
 from eduvpn.utils import cmd_transition, run_in_background_thread
-from eduvpn.ui.search import group_servers, ServerGroup, update_results
+from eduvpn.ui.search import ServerGroup, group_servers
 from eduvpn.ui.utils import get_validity_text
 import eduvpn.nm as nm
 from eduvpn.server import ServerDatabase

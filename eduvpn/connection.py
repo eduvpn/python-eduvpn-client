@@ -1,6 +1,5 @@
 from configparser import ConfigParser
 
-from eduvpn import nm
 from eduvpn.ovpn import Ovpn
 
 

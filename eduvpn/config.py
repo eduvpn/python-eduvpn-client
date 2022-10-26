@@ -1,9 +1,8 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional, Type, Any, Dict, Generic, TypeVar
+from typing import Any, Dict, Generic, TypeVar
 
-from eduvpn.settings import CONFIG_PREFIX
 
 T = TypeVar("T")
 

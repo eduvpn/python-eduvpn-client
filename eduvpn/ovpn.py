@@ -1,6 +1,5 @@
-from gettext import gettext as _
 from io import TextIOWrapper, StringIO
-from typing import Callable, Iterable, List, Optional
+from typing import Iterable, List
 
 
 class Item:
