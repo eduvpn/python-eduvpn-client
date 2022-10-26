@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 from typing import Optional, TextIO
 
-from eduvpn.nm import get_iface, get_ipv4, get_ipv6
 from eduvpn.utils import get_human_readable_bytes, translated_property
 
 logger = logging.getLogger(__name__)
@@ -31,6 +30,8 @@ def cached_stats_property(f):
 
 
 class NetworkStats:
+    def __init__(self, manager):
+        self.manager = manager
 
     default_text = translated_property("N/A")
 
@@ -38,14 +39,14 @@ class NetworkStats:
     # This cache is used so that we do not query these every second
     @cached_stats_property
     def ipv4(self) -> str:
-        _ipv4 = get_ipv4()
+        _ipv4 = self.manager.get_ipv4()
         if _ipv4 is None:
             _ipv4 = self.default_text
         return _ipv4
 
     @cached_stats_property
     def ipv6(self) -> str:
-        _ipv6 = get_ipv6()
+        _ipv6 = self.manager.get_ipv6()
         if _ipv6 is None:
             _ipv6 = self.default_text
         return _ipv6
@@ -68,7 +69,7 @@ class NetworkStats:
 
     @cached_stats_property
     def iface(self) -> Optional[str]:
-        return get_iface()
+        return self.manager.get_iface()
 
     @property
     def download(self) -> str:

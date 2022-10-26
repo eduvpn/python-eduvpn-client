@@ -11,8 +11,8 @@ from eduvpn.utils import get_logger
 logger = get_logger(__name__)
 
 
-def get_setting(what: str) -> Optional[str]:
-    p = (CONFIG_PREFIX / what).expanduser()
+def get_setting(variant, what: str) -> Optional[str]:
+    p = (variant.config_prefix / what).expanduser()
     if p.exists():
         return open(p, "r").read().strip()
     else:
@@ -39,8 +39,8 @@ def ensure_config_dir_exists():
     check_config_dir_permissions()
 
 
-def set_setting(what: str, value: str):
-    p = (CONFIG_PREFIX / what).expanduser()
+def set_setting(variant, what: str, value: str):
+    p = (variant.config_prefix / what).expanduser()
     ensure_config_dir_exists()
     with open(p, "w") as f:
         f.write(value)
@@ -57,15 +57,15 @@ def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike)
         f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
 
 
-def get_uuid() -> Optional[str]:
+def get_uuid(variant) -> Optional[str]:
     """
     Read the UUID of the last generated eduVPN Network Manager connection.
     """
-    return get_setting("uuid")
+    return get_setting(variant, "uuid")
 
 
-def set_uuid(uuid: str):
+def set_uuid(variant, uuid: str):
     """
     Write the eduVPN network manager connection UUID to disk.
     """
-    set_setting("uuid", uuid)
+    set_setting(variant, "uuid", uuid)
