@@ -144,23 +144,6 @@ class NMManager:
             return ConnectionState.UNKNOWN
 
     @property
-    def vpn_status(
-        self,
-    ) -> Tuple["NM.VpnConnectionState", "NM.VpnConnectionStateReason"]:
-        vpns = [
-            a
-            for a in self.client.get_active_connections()
-            if type(a) == NM.VpnConnection
-        ]
-        if len(vpns) > 1:
-            _logger.warning("more than one VPN connection active")
-            return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
-        elif len(vpns) == 0:
-            return NM.VpnConnectionState.UNKNOWN, NM.VpnConnectionStateReason.UNKNOWN
-        else:
-            return vpns[0].get_state(), vpns[0].get_state_reason()
-
-    @property
     def active_connection(self) -> Optional["NM.ActiveConnection"]:
         """
         Gets the active connection for the current uuid
