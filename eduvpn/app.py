@@ -206,9 +206,8 @@ class ApplicationModel:
             config, config_type = self.common.get_config_custom_server(server.url, self.config.prefer_tcp)
 
         default_gateway = True
-        current_profile = server.profiles.current
-        if current_profile is not None:
-            default_gateway = current_profile.default_gateway
+        if server.profiles is not None and server.profiles.current is not None:
+            default_gateway = server.profiles.current.default_gateway
 
         def on_connected():
             self.common.set_connected()
