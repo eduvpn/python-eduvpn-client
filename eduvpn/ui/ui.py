@@ -110,6 +110,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         }
         builder.connect_signals(handlers)
 
+
+        # Whether or not the profile that is selected is the 'same' one as before
+        # This is used so it doesn't fully trigger the callback
+        self.set_same_profile = False
         self.is_selected = False
 
         self.app_logo = builder.get_object("appLogo")
@@ -1067,6 +1071,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if tree_iter is None:
             return
 
+        if self.set_same_profile:
+            self.set_same_profile = False
+            return
+
         model = combo.get_model()
         _profile_display, profile = model[tree_iter][:2]
         logger.debug(f"selected combo profile: {profile!r}")
@@ -1080,6 +1088,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             # Asking for reconnect was not successful
             # Restore the previous profile
             if not self.profile_ask_reconnect():
+                self.set_same_profile = True
                 combo.set_active(self.app.model.current_server.profiles.current_index)
                 return
 
