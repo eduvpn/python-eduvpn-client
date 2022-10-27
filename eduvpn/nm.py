@@ -209,6 +209,8 @@ class NMManager:
 
     @property
     def existing_connection(self) -> Optional[str]:
+        if not self.uuid:
+            return None
         connection = self.client.get_connection_by_uuid(self.uuid)
         if connection is None:
             return None
