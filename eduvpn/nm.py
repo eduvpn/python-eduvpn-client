@@ -421,7 +421,7 @@ class NMManager:
         )
         s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
         s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
-        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, "EduVPN-WG")
+        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, f"{self.variant.translation_domain}-WG")
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
         peer = NM.WireGuardPeer.new()
