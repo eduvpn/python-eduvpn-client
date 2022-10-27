@@ -44,6 +44,16 @@ class CommandLine:
         self.transitions = CommandLineTransitions(self.app)
         self.common.register_class_callbacks(self.transitions)
 
+    def ask_yes(self, label) -> bool:
+        while True:
+            yesno = input(label)
+
+            if yesno in ["y", "yes"]:
+                return True
+            if yesno in ["n", "no"]:
+                return False
+            print(f"Input \"{yesno}\" is not valid")
+
     def ask_server_input(self, servers, fallback_search=False):
         print("Multiple servers found:")
         self.list_groups(group_servers(servers))
@@ -84,9 +94,9 @@ class CommandLine:
         if len(servers) == 1:
             server = servers[0]
             print(f'One server found: "{str(server)}" ({server.category})')
-            ask = input("Do you want to connect to it (y/n): ")
+            is_yes = self.ask_yes("Do you want to connect to it (y/n): ")
 
-            if ask in ["y", "yes"]:
+            if is_yes:
                 return servers[0]
             else:
                 return None
@@ -123,9 +133,9 @@ class CommandLine:
             return self.ask_server_custom()
 
         if self.server_db.configured:
-            answer = input("Do you want to connect to an existing server? (y/n): ")
+            is_yes = self.ask_yes("Do you want to connect to an existing server? (y/n): ")
 
-            if answer in ["y", "yes"]:
+            if is_yes:
                 return self.ask_server_input(self.server_db.configured)
 
         servers = self.server_db.disco
