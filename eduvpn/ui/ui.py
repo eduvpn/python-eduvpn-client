@@ -932,19 +932,29 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         row = model[tree_iter]
         server = row[1]
 
-        cancel_item = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_CLOSE)
-        cancel_item.set_always_show_image(True)
-        cancel_item.show()
+        cancel_item = Gtk.MenuItem()
+        cancel_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        cancel_image = Gtk.Image.new_from_icon_name("edit-undo", Gtk.IconSize.MENU)
+        cancel_label = Gtk.Label.new("Cancel")
+        cancel_box.pack_start(cancel_image, False, False, 0)
+        cancel_box.pack_start(cancel_label, False, False, 8)
+        cancel_item.add(cancel_box)
+        cancel_item.show_all()
 
-        remove_item = Gtk.ImageMenuItem.new_from_stock(stock_id=Gtk.STOCK_REMOVE)
+        remove_item = Gtk.MenuItem()
         remove_item.connect("activate", lambda _: self.server_ask_remove(server))
-        remove_item.set_always_show_image(True)
-        remove_item.set_label(_("Remove server"))
-        remove_item.show()
+        remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        remove_image = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)
+        remove_label = Gtk.Label.new("Remove Server")
+        remove_box.pack_start(remove_image, False, False, 0)
+        remove_box.pack_start(remove_label, False, False, 8)
+        remove_item.add(remove_box)
+        remove_item.show_all()
 
         menu = Gtk.Menu()
+        # Icons are already added so do not reserve extra space for them
+        menu.set_reserve_toggle_size(0)
         menu.append(remove_item)
-
         menu.append(cancel_item)
         menu.attach_to_widget(widget)
         menu.popup_at_pointer()
