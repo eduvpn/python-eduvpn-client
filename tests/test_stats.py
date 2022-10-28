@@ -1,5 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch
+from eduvpn.nm import NMManager
+from eduvpn.variants import EDUVPN
 
 from eduvpn.ui import stats
 from pathlib import Path
@@ -24,6 +26,7 @@ def try_open(path: Path):
 class TestStats(TestCase):
     @patch("eduvpn.ui.stats.NetworkStats.iface", MOCK_IFACE)
     def test_download(self):
+        nm_manager = NMManager(EDUVPN)
         with TemporaryDirectory() as tempdir:
             # Create test data in the wanted files
             # Use the tempdir so it is cleaned up later
@@ -38,7 +41,7 @@ class TestStats(TestCase):
                 write_temp_stats_file(Path(tempdir), filenames[index], value)
 
             # Create the class instance
-            class_ = stats.NetworkStats()
+            class_ = stats.NetworkStats(nm_manager)
 
             # Add a file that does not exist
             filenames += ["idonotexist"]
@@ -51,7 +54,7 @@ class TestStats(TestCase):
 
             # Loop over the files,
             # patch it and check if the expected value holds
-            class_ = stats.NetworkStats()
+            class_ = stats.NetworkStats(nm_manager)
             for index, filename in enumerate(filenames):
                 location = Path(tempdir) / filename
                 file_ = try_open(location)
@@ -61,6 +64,7 @@ class TestStats(TestCase):
 
     @patch("eduvpn.ui.stats.NetworkStats.iface", MOCK_IFACE)
     def test_upload(self):
+        nm_manager = NMManager(EDUVPN)
         with TemporaryDirectory() as tempdir:
             # Create test data in the wanted files
             # Use the tempdir so it is cleaned up later
@@ -75,7 +79,7 @@ class TestStats(TestCase):
                 write_temp_stats_file(Path(tempdir), filenames[index], value)
 
             # Create the class instance
-            class_ = stats.NetworkStats()
+            class_ = stats.NetworkStats(nm_manager)
 
             # Add a file that does not exist
             filenames += ["idonotexist"]
