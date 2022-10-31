@@ -13,6 +13,9 @@ RUN dnf install -y \
     python3-wheel \
     NetworkManager-libnm
 
+ADD docker/docker-dnf-install-common /usr/local/bin/docker-dnf-install-common
+RUN docker-dnf-install-common
+
 ADD . /code
 WORKDIR /code
 RUN mkdir -p /usr/local/lib/python3.6/site-packages/

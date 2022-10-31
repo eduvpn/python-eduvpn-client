@@ -15,6 +15,8 @@ RUN dnf install -y \
     python3-dbus \
     NetworkManager-libnm
 
+ADD docker/docker-dnf-install-common /usr/local/bin/docker-dnf-install-common
+RUN docker-dnf-install-common
 
 ADD . /code
 WORKDIR /code
