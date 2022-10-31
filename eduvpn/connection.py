@@ -11,7 +11,7 @@ class Connection:
         if protocol == "wireguard":
             connection_type = WireGuardConnection
         else:
-            connection_type = OpenVPNConnection
+            connection_type = OpenVPNConnection  # type: ignore
         return connection_type.parse(config, protocol)
 
     def connect(self, callback):

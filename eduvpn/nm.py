@@ -17,8 +17,7 @@ from eduvpn.variants import ApplicationVariant
 import gi
 
 gi.require_version("NM", "1.0")  # noqa: E402
-from gi.repository.Gio import Task
-from gi.repository.NM import Client, SimpleConnection
+from gi.repository.Gio import Task  # type: ignore
 
 _logger = logging.getLogger(__name__)
 
@@ -215,7 +214,7 @@ class NMManager:
         if connection is None:
             return None
         else:
-            return uuid
+            return self.uuid
 
     def ovpn_import(self, target: Path) -> Optional["NM.Connection"]:
         """
@@ -295,7 +294,7 @@ class NMManager:
 
     def set_connection(
         self,
-        new_connection: SimpleConnection,
+        new_connection: "NM.SimpleConnection",
         callback: Callable,
         default_gateway: bool,
         system_wide: bool,
@@ -367,7 +366,7 @@ class NMManager:
         new_con = self.import_ovpn(ovpn)
         settings_config = self.variant.config
         self.set_connection(
-            new_con, callback, default_gateway, settings_config.nm_system_wide
+            new_con, callback, default_gateway, settings_config.nm_system_wide  # type: ignore
         )
 
     def start_wireguard_connection(
@@ -462,7 +461,7 @@ class NMManager:
 
         settings_config = self.variant.config
         self.set_connection(
-            profile, callback, default_gateway, settings_config.nm_system_wide
+            profile, callback, default_gateway, settings_config.nm_system_wide  # type: ignore
         )
 
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
@@ -676,7 +675,7 @@ def action_with_mainloop(action: Callable):
 
 
 def add_connection_callback(
-    client: Client, result: Task, user_data: Tuple[NMManager, Optional[Callable]]
+    client: NM.Client, result: Task, user_data: Tuple[NMManager, Optional[Callable]]
 ) -> None:
     object, callback = user_data
     new_con = client.add_connection_finish(result)

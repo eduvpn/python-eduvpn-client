@@ -72,14 +72,14 @@ class EduVpnGtkApplication(Gtk.Application):
     def do_shutdown(self) -> None:  # type: ignore
         logger.debug("shutdown")
         self.connection_notification.hide()
-        Gtk.Application.do_shutdown(self)
+        Gtk.Application.do_shutdown(self)  # type: ignore
 
     def do_activate(self) -> None:
         logger.debug("activate")
         if not self.window:
-            self.window = EduVpnGtkWindow(application=self)
-            self.window.present()
-            self.window.initialize()
+            self.window = EduVpnGtkWindow(application=self)  # type: ignore
+            self.window.present()  # type: ignore
+            self.window.initialize()  # type: ignore
         else:
             self.window.on_reopen_window()
 
@@ -89,13 +89,13 @@ class EduVpnGtkApplication(Gtk.Application):
         ## unpack the commandline args into a dict
         options = options.end().unpack()
 
-        if "version" in options:
+        if "version" in options:  # type: ignore
             from eduvpn import __version__
 
             print(f"eduVPN Linux client version {__version__}")
             return 0
 
-        self.debug = "debug" in options
+        self.debug = "debug" in options  # type: ignore
 
         if self.debug:
             log_level = logging.DEBUG

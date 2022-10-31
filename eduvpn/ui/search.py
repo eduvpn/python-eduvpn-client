@@ -6,7 +6,7 @@ from eduvpn_common.discovery import DiscoServer, DiscoOrganization
 from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.ui.utils import show_ui_component, style_tree_view
-from gi.overrides.Gtk import ListStore
+from gi.overrides.Gtk import ListStore  # type: ignore
 
 
 class ServerGroup(enum.Enum):
@@ -121,7 +121,7 @@ def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore
     from gi.repository import Gtk, Pango
 
     text_cell = Gtk.CellRendererText()
-    text_cell.props.ellipsize = Pango.EllipsizeMode.END
+    text_cell.props.ellipsize = Pango.EllipsizeMode.END  # type: ignore
     text_cell.set_property("size-points", 14)
     text_cell.set_property("ypad", 10)
     for group in group_tree_component:
@@ -132,7 +132,7 @@ def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore
             column = Gtk.TreeViewColumn("", text_cell, text=0)
             tree_view.append_column(column)
         model = get_group_model(group)
-        sorted_model = Gtk.TreeModelSort(model=model)
+        sorted_model = Gtk.TreeModelSort(model=model)  # type: ignore
         sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
         style_tree_view(window, tree_view)
         tree_view.set_model(sorted_model)
