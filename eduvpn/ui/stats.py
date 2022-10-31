@@ -26,6 +26,7 @@ def cached_stats_property(f):
             value = f(self)
         setattr(self, property_name, value)
         return value
+
     return property(wrapped)
 
 

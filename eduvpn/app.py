@@ -20,7 +20,7 @@ from eduvpn.utils import (
     run_in_main_gtk_thread,
 )
 from eduvpn.variants import ApplicationVariant
-from typing import List
+from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +136,9 @@ class ApplicationModelTransitions:
 
 
 class ApplicationModel:
-    def __init__(self, common: EduVPN, config, variant: ApplicationVariant, nm_manager) -> None:
+    def __init__(
+        self, common: EduVPN, config, variant: ApplicationVariant, nm_manager
+    ) -> None:
         self.common = common
         self.config = config
         self.transitions = ApplicationModelTransitions(common, variant)
@@ -202,6 +204,26 @@ class ApplicationModel:
         elif isinstance(server, Server):
             self.common.remove_custom_server(server.url)
 
+    def connect_get_config(self, server) -> Tuple[str, str]:
+        if isinstance(server, InstituteServer):
+            return self.common.get_config_institute_access(
+                server.url, self.config.prefer_tcp
+            )
+        elif isinstance(server, DiscoServer):
+            return self.common.get_config_institute_access(
+                server.base_url, self.config.prefer_tcp
+            )
+        elif isinstance(server, SecureInternetServer) or isinstance(
+            server, DiscoOrganization
+        ):
+            return self.common.get_config_secure_internet(
+                server.org_id, self.config.prefer_tcp
+            )
+        elif isinstance(server, Server):
+            return self.common.get_config_custom_server(
+                server.url, self.config.prefer_tcp
+            )
+
     def connect(
         self, server, callback: Optional[Callable] = None, ensure_exists=False
     ) -> None:
@@ -209,18 +231,8 @@ class ApplicationModel:
         config_type = None
         if ensure_exists:
             self.add(server)
-        if isinstance(server, InstituteServer):
-            config, config_type = self.common.get_config_institute_access(
-                server.url, self.config.prefer_tcp
-            )
-        elif isinstance(server, DiscoServer):
-            config, config_type = self.common.get_config_institute_access(
-                server.base_url, self.config.prefer_tcp
-            )
-        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
-            config, config_type = self.common.get_config_secure_internet(server.org_id, self.config.prefer_tcp)
-        elif isinstance(server, Server):
-            config, config_type = self.common.get_config_custom_server(server.url, self.config.prefer_tcp)
+
+        config, config_type = self.connect_get_config(server)
 
         # Get the updated info from the go library
         # Because profiles can be switched
@@ -325,6 +337,7 @@ class ApplicationModel:
     def is_oauth_started(self) -> bool:
         return self.common.in_fsm_state(State.OAUTH_STARTED)
 
+
 class Application:
     def __init__(self, variant: ApplicationVariant, common: EduVPN) -> None:
         self.variant = variant
@@ -333,14 +346,15 @@ class Application:
         directory = variant.config_prefix
         self.config = Configuration.load(directory)
         self.model = ApplicationModel(common, self.config, variant, self.nm_manager)
+
         def signal_handler(_signal, _frame):
             if self.model.is_oauth_started():
                 self.common.cancel_oauth()
             self.common.go_back()
             self.common.deregister()
             sys.exit(1)
-        signal.signal(signal.SIGINT, signal_handler)
 
+        signal.signal(signal.SIGINT, signal_handler)
 
     def on_network_update_callback(self, state, initial=False):
         try:
@@ -354,7 +368,7 @@ class Application:
                 if self.model.is_connected():
                     self.common.set_disconnecting()
                     self.common.set_disconnected(cleanup=False)
-        except:
+        except Exception:
             return
 
     @run_in_main_gtk_thread
@@ -365,7 +379,9 @@ class Application:
         # Check if a previous network configuration exists.
         uuid = self.nm_manager.existing_connection
         if uuid:
-            self.on_network_update_callback(self.nm_manager.connection_state, needs_update)
+            self.on_network_update_callback(
+                self.nm_manager.connection_state, needs_update
+            )
 
         @run_in_background_thread("on-network-update")
         def update(state):

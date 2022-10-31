@@ -347,18 +347,6 @@ class NMManager:
         new_con = self.import_ovpn_with_certificate(ovpn, private_key, certificate)
         self.set_connection(new_con, callback, default_gateway, system_wide)
 
-    def save_connection_with_config(
-        config,
-        private_key,
-        certificate,
-        callback=None,
-    ):
-        ovpn = Ovpn.parse(config)
-        settings_config = self.variant.config
-        return self.save_connection(
-            vpn, private_key, certificate, callback, settings_config.nm_system_wide
-        )
-
     def start_openvpn_connection(
         self, ovpn: Ovpn, default_gateway, *, callback=None
     ) -> None:
@@ -369,7 +357,7 @@ class NMManager:
             new_con, callback, default_gateway, settings_config.nm_system_wide  # type: ignore
         )
 
-    def start_wireguard_connection(
+    def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
         default_gateway,
@@ -420,7 +408,10 @@ class NMManager:
         )
         s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
         s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
-        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, f"{self.variant.translation_domain}-WG")
+        s_con.set_property(
+            NM.SETTING_CONNECTION_INTERFACE_NAME,
+            f"{self.variant.translation_domain}-WG",
+        )
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
         peer = NM.WireGuardPeer.new()
@@ -556,8 +547,7 @@ class NMManager:
         devices = [
             device
             for device in self.client.get_all_devices()
-            if device.get_type_description() == "wireguard"
-            and self.uuid
+            if device.get_type_description() == "wireguard" and self.uuid
             in {conn.get_uuid() for conn in device.get_available_connections()}
         ]
         if not devices:
