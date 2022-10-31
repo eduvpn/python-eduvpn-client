@@ -1,6 +1,9 @@
 # Dependencies
 apt update -y
-apt install -y python3 python3-pip make git golang
+apt install -y python3 python3-pip make git golang-1.13-go tree
+
+# Add to path
+export PATH=$PATH:/usr/lib/go-1.13/bin
 
 # Clone & install
 git clone https://github.com/eduvpn/eduvpn-common
