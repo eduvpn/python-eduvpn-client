@@ -12,15 +12,12 @@ RUN docker-apt-install \
     python3-requests-oauthlib \
     python3-pip \
     python3-venv \
-    make \
-    git \
-    golang
+    make
+
 RUN python3 -m pip install types-pkg_resources types-requests
 
-# Clone eduvpn-common to get types
-RUN git clone https://github.com/eduvpn/eduvpn-common
-RUN cd eduvpn-common && make && cd wrappers/python && make pack && pip install dist/*.whl
-
+ADD docker/docker-apt-install-common /usr/local/bin/docker-apt-install-common
+RUN docker-apt-install-common
 
 ADD . /code
 WORKDIR /code

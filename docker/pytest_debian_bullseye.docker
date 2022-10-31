@@ -22,6 +22,9 @@ RUN docker-apt-install \
     libgirepository1.0-dev \
     network-manager-openvpn-gnome
 
+ADD docker/docker-apt-install-common /usr/local/bin/docker-apt-install-common
+RUN docker-apt-install-common
+
 ADD . /code
 WORKDIR /code
 RUN python3 setup.py install

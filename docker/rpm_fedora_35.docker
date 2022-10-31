@@ -27,8 +27,8 @@ RUN rpmdev-setuptree
 ADD . /code
 WORKDIR /code
 
-RUN dnf -y copr enable jwijenbergh/eduvpn-common
-RUN dnf -y install python3-eduvpn-common
+ADD docker/docker-dnf-install-common /usr/local/bin/docker-dnf-install-common
+RUN docker-dnf-install-common
 
 RUN python3 setup.py sdist
 RUN cp dist/*.tar.gz ~/rpmbuild/SOURCES/.

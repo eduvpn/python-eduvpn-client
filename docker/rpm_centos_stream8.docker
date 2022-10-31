@@ -26,6 +26,9 @@ RUN yum install -y	\
 
 RUN rpmdev-setuptree
 
+ADD docker/docker-dnf-install-common /usr/local/bin/docker-dnf-install-common
+RUN docker-dnf-install-common
+
 ADD . /code
 WORKDIR /code
 
