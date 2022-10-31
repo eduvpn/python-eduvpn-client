@@ -7,8 +7,8 @@ from eduvpn_common.error import WrappedError, ErrorLevel
 from eduvpn.utils import run_in_main_gtk_thread
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
-from gi.repository import Gtk
-from gi.overrides.Gtk import Widget
+from gi.repository import Gtk  # type: ignore
+from gi.overrides.Gtk import Widget  # type: ignore
 from typing import Tuple
 
 

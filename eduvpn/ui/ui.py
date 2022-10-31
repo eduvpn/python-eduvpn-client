@@ -7,7 +7,7 @@ import logging
 import os
 import webbrowser
 from gettext import gettext as _
-from typing import Type, Optional
+from typing import Callable, Type, Optional
 
 import gi
 
@@ -44,8 +44,8 @@ from eduvpn.ui.utils import (
     style_widget,
 )
 from datetime import datetime
-from gi.overrides.Gdk import Event, EventButton
-from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn
+from gi.overrides.Gdk import Event, EventButton  # type: ignore
+from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn  # type: ignore
 from gi.repository.Gtk import EventBox, SearchEntry, Switch
 
 logger = logging.getLogger(__name__)
@@ -71,14 +71,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
 
     def __new__(
-        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]
+        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]  # type: ignore
     ) -> "EduVpnGtkWindow":
         builder = Gtk.Builder()
         builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
         window = builder.get_object("eduvpn")  # type: ignore
         window.setup(builder, application)  # type: ignore
         window.set_application(application)  # type: ignore
-        return window
+        return window  # type: ignore
 
     def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore
         self.eduvpn_app = application
@@ -178,8 +178,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "connectionInfoIpv6AddressText"
         )
         self.connection_info_thread_cancel = None
-        self.connection_validity_thread_cancel = None
-        self.connection_renew_thread_cancel = None
+        self.connection_validity_thread_cancel: Optional[Callable] = None
+        self.connection_renew_thread_cancel: Optional[Callable] = None
         self.connection_info_stats = None
 
         self.server_image = builder.get_object("serverImage")
@@ -296,7 +296,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def exit_deregistered(self):
         self.hide_loading_page()
 
-    @ui_transition(ERROR_STATE, StateType.ENTER)
+    @ui_transition(ERROR_STATE, StateType.ENTER)  # type: ignore
     def enter_error_state(self, old_state: str, error: Exception):
         if should_show_error(error):
             self.show_error_revealer(str(error))
@@ -395,6 +395,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @run_in_main_gtk_thread
     def show_error_revealer(self, error: str) -> None:
+        if self.error_revealer is None or self.error_revealer_label is None:
+            return
         self.error_revealer.set_reveal_child(True)
         self.error_revealer_label.set_text(
             f"The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.\n See the log file for more information."
@@ -403,11 +405,15 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @run_in_main_gtk_thread
     def copy_error_revealer(self, _button) -> None:
+        if self.error_revealer_label is None:
+            return
         self.clipboard.set_text(self.error_revealer_label.get_text(), -1)
-        self.eduvpn_app.enter_ClipboardError()
+        self.eduvpn_app.enter_ClipboardError()  # type: ignore
 
     @run_in_main_gtk_thread
     def hide_error_revealer(self, _button) -> None:
+        if self.error_revealer is None:
+            return
         self.error_revealer.set_reveal_child(False)
 
     # ui functions
@@ -865,8 +871,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     def on_add_custom_server(self, button) -> None:
         logger.debug("clicked on add custom server")
-        server = CustomServer(self.app.interface_state.address)
-        self.app.interface_transition("connect_to_server", server)
+        self.call_model("set_search_server")
 
     def on_server_row_activated(
         self, widget: TreeView, row: TreePath, _col: TreeViewColumn
@@ -933,7 +938,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         server = row[1]
 
         cancel_item = Gtk.MenuItem()
-        cancel_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        cancel_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
         cancel_image = Gtk.Image.new_from_icon_name("edit-undo", Gtk.IconSize.MENU)
         cancel_label = Gtk.Label.new("Cancel")
         cancel_box.pack_start(cancel_image, False, False, 0)
@@ -943,7 +948,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         remove_item = Gtk.MenuItem()
         remove_item.connect("activate", lambda _: self.server_ask_remove(server))
-        remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
         remove_image = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)
         remove_label = Gtk.Label.new("Remove Server")
         remove_box.pack_start(remove_image, False, False, 0)
@@ -953,10 +958,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         menu = Gtk.Menu()
         # Icons are already added so do not reserve extra space for them
-        menu.set_reserve_toggle_size(0)
+        menu.set_reserve_toggle_size(0)  # type: ignore
         menu.append(remove_item)
         menu.append(cancel_item)
-        menu.attach_to_widget(widget)
+        menu.attach_to_widget(widget)  # type: ignore
         menu.popup_at_pointer()
 
     def on_cancel_oauth_setup(self, _):
@@ -1139,7 +1144,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.hide()
         application = self.get_application()
         if application:
-            application.on_window_closed()
+            application.on_window_closed()  # type: ignore
         return True
 
     def on_reopen_window(self):

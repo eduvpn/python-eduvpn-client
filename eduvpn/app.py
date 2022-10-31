@@ -67,7 +67,10 @@ class ApplicationModelTransitions:
         saved_servers = self.common.get_saved_servers()
         # Whether or not the SEARCH_SERVER screen
         # should be the 'main' screen
-        is_main = len(saved_servers) == 0
+        if saved_servers is not None:
+            is_main = len(saved_servers) == 0
+        else:
+            is_main = True
         return (self.server_db.disco, is_main)
 
     @model_transition(State.LOADING_SERVER, StateType.ENTER)

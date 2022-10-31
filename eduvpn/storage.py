@@ -50,7 +50,7 @@ def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike)
     """
     Write the OVPN configuration file to target.
     """
-    _logger.info(f"Writing configuration to {target}")
+    logger.info(f"Writing configuration to {target}")
     with open(target, mode="w+t") as f:
         ovpn.write(f)
         f.writelines(f"\n<key>\n{private_key}\n</key>\n")
