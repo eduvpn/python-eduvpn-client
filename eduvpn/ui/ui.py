@@ -912,9 +912,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         else:
             logger.debug(f"cancelled server remove for: {server!r}")
 
-    def server_change_profile(self, server):
-        print("Change profile", str(server))
-
     def on_server_row_pressed(self, widget: TreeView, event: EventButton) -> None:
         # Exit if not a press
         if event.type != Gdk.EventType.BUTTON_PRESS:
