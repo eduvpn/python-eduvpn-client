@@ -23,7 +23,9 @@ class SettingDescriptor(Generic[T]):
     def __set_name__(self, owner: Type["Configuration"], name: str) -> None:
         self.name = name
 
-    def __get__(self, instance: Type["Configuration"], owner: Type["Configuration"]) -> bool:
+    def __get__(
+        self, instance: Type["Configuration"], owner: Type["Configuration"]
+    ) -> bool:
         return instance.get_setting(self.name)  # type: ignore
 
     def __set__(self, instance: Type["Configuration"], value: T) -> None:

@@ -52,7 +52,7 @@ class CommandLine:
                 return True
             if yesno in ["n", "no"]:
                 return False
-            print(f"Input \"{yesno}\" is not valid")
+            print(f'Input "{yesno}" is not valid')
 
     def ask_server_input(self, servers, fallback_search=False):
         print("Multiple servers found:")
@@ -133,7 +133,9 @@ class CommandLine:
             return self.ask_server_custom()
 
         if self.server_db.configured:
-            is_yes = self.ask_yes("Do you want to connect to an existing server? (y/n): ")
+            is_yes = self.ask_yes(
+                "Do you want to connect to an existing server? (y/n): "
+            )
 
             if is_yes:
                 return self.ask_server_input(self.server_db.configured)

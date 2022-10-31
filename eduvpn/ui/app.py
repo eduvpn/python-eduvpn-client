@@ -86,7 +86,8 @@ class EduVpnGtkApplication(Gtk.Application):
     def do_command_line(self, command_line: ApplicationCommandLine) -> int:  # type: ignore
         logger.debug(f"command line: {command_line}")
         options = command_line.get_options_dict()
-        ## unpack the commandline args into a dict
+
+        # unpack the commandline args into a dict
         options = options.end().unpack()
 
         if "version" in options:  # type: ignore
@@ -101,13 +102,19 @@ class EduVpnGtkApplication(Gtk.Application):
             log_level = logging.DEBUG
         else:
             log_level = logging.INFO
-        os.makedirs(os.path.dirname(self.app.variant.logfile), mode=CONFIG_DIR_MODE, exist_ok=True)
-        logging.basicConfig(level=log_level,
-                            format=LOG_FORMAT,
-                            handlers=[
-                                logging.FileHandler(self.app.variant.logfile),
-                                logging.StreamHandler()
-                            ])
+        os.makedirs(
+            os.path.dirname(self.app.variant.logfile),
+            mode=CONFIG_DIR_MODE,
+            exist_ok=True,
+        )
+        logging.basicConfig(
+            level=log_level,
+            format=LOG_FORMAT,
+            handlers=[
+                logging.FileHandler(self.app.variant.logfile),
+                logging.StreamHandler(),
+            ],
+        )
 
         self.activate()
         return 0

@@ -2,7 +2,6 @@ from unittest import TestCase, skipIf
 
 from eduvpn.nm import NMManager
 from eduvpn.ovpn import Ovpn
-from eduvpn.storage import get_uuid
 from eduvpn.variants import EDUVPN
 from tests.mock_config import mock_config
 

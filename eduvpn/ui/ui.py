@@ -71,7 +71,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
 
     def __new__(
-        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]  # type: ignore
+        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]  # type: ignore  # noqa: E0602
     ) -> "EduVpnGtkWindow":
         builder = Gtk.Builder()
         builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
@@ -80,7 +80,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         window.set_application(application)  # type: ignore
         return window  # type: ignore
 
-    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore
+    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore  # noqa: E0602
         self.eduvpn_app = application
         self.app = self.eduvpn_app.app  # type: ignore
         self.common = self.eduvpn_app.common
@@ -109,7 +109,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_close_window": self.on_close_window,
         }
         builder.connect_signals(handlers)
-
 
         # Whether or not the profile that is selected is the 'same' one as before
         # This is used so it doesn't fully trigger the callback
@@ -528,9 +527,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         if hasattr(server_info, "support_contact") and server_info.support_contact:
             support_text = (
-                _("Support:")
-                + "\n"
-                + "\n".join(map(link_markup, server_info.support_contact))
+                _("Support:") + "\n"
+                + "\n".join(map(link_markup, server_info.support_contact))  # noqa: W503
             )
             self.server_support_label.set_markup(support_text)
             self.server_support_label.show()

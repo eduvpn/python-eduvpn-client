@@ -4,8 +4,6 @@ import sys
 
 import gi
 
-from eduvpn.i18n import country
-
 gi.require_version("Gtk", "3.0")  # noqa: E402
 
 import eduvpn_common.main as common

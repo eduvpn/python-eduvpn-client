@@ -52,7 +52,7 @@ def should_show_error(error: Exception):
 
 def get_validity_text(validity: Validity) -> Tuple[bool, str]:
     if validity is None:
-        return (False, _(f"Valid for: <b>unknown</b>"))
+        return (False, _("Valid for: <b>unknown</b>"))
     if validity.is_expired:
         return (True, _("This session has expired"))
     delta = validity.remaining
