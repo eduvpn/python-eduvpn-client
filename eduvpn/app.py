@@ -55,13 +55,15 @@ class ApplicationModelTransitions:
         self.server_db = ServerDatabase(common, variant.use_predefined_servers)
 
     @model_transition(State.NO_SERVER, StateType.ENTER)
-    def get_previous_servers(self, old_state: str, servers):
+    def get_previous_servers(self, old_state: State, servers):
+        logger.debug(f"Transition: NO_SERVER, old state: {old_state.name}")
         has_wireguard = nm.is_wireguard_supported()
         self.common.set_support_wireguard(has_wireguard)
         return servers
 
     @model_transition(State.SEARCH_SERVER, StateType.ENTER)
-    def parse_discovery(self, old_state: str, _):
+    def parse_discovery(self, old_state: State, _):
+        logger.debug(f"Transition: SEARCH_SERVER, old state: {old_state.name}")
         saved_servers = self.common.get_saved_servers()
         # Whether or not the SEARCH_SERVER screen
         # should be the 'main' screen
@@ -69,52 +71,64 @@ class ApplicationModelTransitions:
         return (self.server_db.disco, is_main)
 
     @model_transition(State.LOADING_SERVER, StateType.ENTER)
-    def loading_server(self, old_state: str, data: str):
+    def loading_server(self, old_state: State, data: str):
+        logger.debug(f"Transition: LOADING_SERVER, old state: {old_state.name}")
         return data
 
     @model_transition(State.CHOSEN_SERVER, StateType.ENTER)
-    def chosen_server(self, old_state: str, data: str):
+    def chosen_server(self, old_state: State, data: str):
+        logger.debug(f"Transition: CHOSEN_SERVER, old state: {old_state.name}")
         return data
 
     @model_transition(State.DISCONNECTING, StateType.ENTER)
-    def disconnecting(self, old_state: str, server):
+    def disconnecting(self, old_state: State, server):
+        logger.debug(f"Transition: DISCONNECTING, old state: {old_state.name}")
         return server
 
     @model_transition(State.ASK_PROFILE, StateType.ENTER)
-    def parse_profiles(self, old_state: str, profiles):
+    def parse_profiles(self, old_state: State, profiles):
+        logger.debug(f"Transition: ASK_PROFILE, old state: {old_state.name}")
         return profiles
 
     @model_transition(State.ASK_LOCATION, StateType.ENTER)
-    def parse_locations(self, old_state: str, locations: List[str]):
+    def parse_locations(self, old_state: State, locations: List[str]):
+        logger.debug(f"Transition: ASK_LOCATION, old state: {old_state.name}")
         return locations
 
     @model_transition(State.AUTHORIZED, StateType.ENTER)
-    def authorized(self, old_state: str, data: str):
+    def authorized(self, old_state: State, data: str):
+        logger.debug(f"Transition: AUTHORIZED, old state: {old_state.name}")
         return data
 
     @model_transition(State.OAUTH_STARTED, StateType.ENTER)
-    def start_oauth(self, old_state: str, url: str):
+    def start_oauth(self, old_state: State, url: str):
+        logger.debug(f"Transition: OAUTH_STARTED, old state: {old_state.name}")
         self.open_browser(url)
         return url
 
     @model_transition(State.REQUEST_CONFIG, StateType.ENTER)
-    def parse_request_config(self, old_state: str, data: str):
+    def parse_request_config(self, old_state: State, data: str):
+        logger.debug(f"Transition: REQUEST_CONFIG, old state: {old_state.name}")
         return data
 
     @model_transition(State.DISCONNECTED, StateType.ENTER)
-    def parse_config(self, old_state: str, server):
+    def parse_config(self, old_state: State, server):
+        logger.debug(f"Transition: DISCONNECTED, old state: {old_state.name}")
         return server
 
     @run_in_background_thread("open-browser")
     def open_browser(self, url):
+        logger.debug(f"Opening web browser with url: {url}")
         webbrowser.open(url)
 
     @model_transition(State.CONNECTED, StateType.ENTER)
-    def parse_connected(self, old_state: str, server):
+    def parse_connected(self, old_state: State, server):
+        logger.debug(f"Transition: CONNECTED, old state: {old_state.name}")
         return server
 
     @model_transition(State.CONNECTING, StateType.ENTER)
-    def parse_connecting(self, old_state: str, server):
+    def parse_connecting(self, old_state: State, server):
+        logger.debug(f"Transition: CONNECTING, old state: {old_state.name}")
         return server
 
 
