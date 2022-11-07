@@ -69,7 +69,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="GPL3",
-    setup_requires=['pytest-runner'],
+    setup_requires=[],
     tests_require=tests_require,
     test_suite="tests",
     keywords="vpn openvpn networking security",
