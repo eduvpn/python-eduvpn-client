@@ -547,7 +547,8 @@ class NMManager:
         devices = [
             device
             for device in self.client.get_all_devices()
-            if device.get_type_description() == "wireguard" and self.uuid
+            if device.get_type_description() == "wireguard"
+            and self.uuid
             in {conn.get_uuid() for conn in device.get_available_connections()}
         ]
         if not devices:

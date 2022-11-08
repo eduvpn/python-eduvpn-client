@@ -18,28 +18,29 @@ logger = logging.getLogger(__file__)
 def get_logger(name_space: str) -> logging.Logger:
     return logging.getLogger(name_space)
 
+
 def init_logger(debug: bool, logfile, mode):
-        log_format = (
-            "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
-            " - %(filename)s:%(lineno)d - %(message)s"
-        )
-        os.makedirs(
-            os.path.dirname(logfile),
-            mode=mode,
-            exist_ok=True,
-        )
-        if debug:
-            log_level = logging.DEBUG
-        else:
-            log_level = logging.INFO
-        logging.basicConfig(
-            level=log_level,
-            format=log_format,
-            handlers=[
-                logging.FileHandler(logfile),
-                logging.StreamHandler(),
-            ],
-        )
+    log_format = (
+        "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
+        " - %(filename)s:%(lineno)d - %(message)s"
+    )
+    os.makedirs(
+        os.path.dirname(logfile),
+        mode=mode,
+        exist_ok=True,
+    )
+    if debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format=log_format,
+        handlers=[
+            logging.FileHandler(logfile),
+            logging.StreamHandler(),
+        ],
+    )
 
 
 def log_exception(exception: Exception):

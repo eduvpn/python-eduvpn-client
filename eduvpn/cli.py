@@ -5,7 +5,13 @@ from eduvpn.ui.utils import get_validity_text
 import eduvpn.nm as nm
 from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.server import ServerDatabase
-from eduvpn.settings import CLIENT_ID, CONFIG_PREFIX, CONFIG_DIR_MODE, LETSCONNECT_CLIENT_ID, LETSCONNECT_CONFIG_PREFIX
+from eduvpn.settings import (
+    CLIENT_ID,
+    CONFIG_PREFIX,
+    CONFIG_DIR_MODE,
+    LETSCONNECT_CLIENT_ID,
+    LETSCONNECT_CONFIG_PREFIX,
+)
 from eduvpn.variants import ApplicationVariant, EDUVPN, LETS_CONNECT
 import eduvpn_common.main as common
 from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
@@ -14,6 +20,7 @@ from eduvpn_common.state import State, StateType
 import argparse
 import signal
 import sys
+
 
 def get_grouped_index(servers, index):
     if index < 0 or index >= len(servers):
@@ -263,17 +270,20 @@ class CommandLine:
 
         def renew(callback):
             try:
-                @run_in_background_thread('renew')
+
+                @run_in_background_thread("renew")
                 def renew_background():
                     self.app.model.renew_session()
                     if callback:
                         callback()
+
                 renew_background()
             except Exception as e:
                 print("An error occurred while trying to renew")
                 print("Error renewing:", e, file=sys.stderr)
                 if callback:
                     callback()
+
         nm.action_with_mainloop(renew)
 
     def remove(self, args={}):
@@ -366,9 +376,7 @@ class CommandLine:
         )
         interactive_parser.set_defaults(func=self.interactive)
 
-        renew_parser = subparsers.add_parser(
-            "renew", help="renew the current server"
-        )
+        renew_parser = subparsers.add_parser("renew", help="renew the current server")
         renew_parser.set_defaults(func=self.renew)
 
         connect_parser = subparsers.add_parser("connect", help="connect to a server")
