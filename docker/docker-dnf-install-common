@@ -1,3 +1,4 @@
 # Add dev repo & install
+dnf install -y dnf-plugins-core
 dnf copr enable -y jwijenbergh/eduvpn-common
 dnf install -y python3-eduvpn-common
