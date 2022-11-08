@@ -1,8 +1,9 @@
+import os
 import sys
 import threading
 from functools import lru_cache, partial, wraps
 from gettext import gettext
-from logging import Logger, getLogger
+import logging
 from os import environ, path
 from sys import prefix
 from typing import Union, Callable, Optional
@@ -11,11 +12,34 @@ import eduvpn_common.event as common
 from eduvpn_common.error import WrappedError
 from eduvpn_common.state import State, StateType
 
-logger = getLogger(__file__)
+logger = logging.getLogger(__file__)
 
 
-def get_logger(name_space: str) -> Logger:
-    return getLogger(name_space)
+def get_logger(name_space: str) -> logging.Logger:
+    return logging.getLogger(name_space)
+
+def init_logger(debug: bool, logfile, mode):
+        log_format = (
+            "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
+            " - %(filename)s:%(lineno)d - %(message)s"
+        )
+        os.makedirs(
+            os.path.dirname(logfile),
+            mode=mode,
+            exist_ok=True,
+        )
+        if debug:
+            log_level = logging.DEBUG
+        else:
+            log_level = logging.INFO
+        logging.basicConfig(
+            level=log_level,
+            format=log_format,
+            handlers=[
+                logging.FileHandler(logfile),
+                logging.StreamHandler(),
+            ],
+        )
 
 
 def log_exception(exception: Exception):

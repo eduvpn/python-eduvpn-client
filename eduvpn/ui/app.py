@@ -12,19 +12,13 @@ from gi.repository import Gio, GLib, Gtk
 from eduvpn import i18n, notify
 from eduvpn.app import Application
 from eduvpn.settings import CONFIG_DIR_MODE
-from eduvpn.utils import run_in_background_thread, ui_transition
+from eduvpn.utils import run_in_background_thread, ui_transition, init_logger
 from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
 from eduvpn.ui.utils import get_validity_text
 from gi.repository.Gio import ApplicationCommandLine
 
 logger = logging.getLogger(__name__)
-
-
-LOG_FORMAT = format_ = (
-    "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
-    " - %(filename)s:%(lineno)d - %(message)s"
-)
 
 
 class EduVpnGtkApplication(Gtk.Application):
@@ -98,23 +92,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
         self.debug = "debug" in options  # type: ignore
 
-        if self.debug:
-            log_level = logging.DEBUG
-        else:
-            log_level = logging.INFO
-        os.makedirs(
-            os.path.dirname(self.app.variant.logfile),
-            mode=CONFIG_DIR_MODE,
-            exist_ok=True,
-        )
-        logging.basicConfig(
-            level=log_level,
-            format=LOG_FORMAT,
-            handlers=[
-                logging.FileHandler(self.app.variant.logfile),
-                logging.StreamHandler(),
-            ],
-        )
+        init_logger(self.debug, self.app.variant.logfile, CONFIG_DIR_MODE)
 
         self.activate()
         return 0
