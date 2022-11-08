@@ -1,26 +1,19 @@
-import eduvpn_common.main as common
-from eduvpn_common.state import State, StateType
-
 from eduvpn.app import Application
-from eduvpn.i18n import country, retrieve_country_name
-from eduvpn.settings import (
-    CLIENT_ID,
-    CONFIG_PREFIX,
-    LETSCONNECT_CLIENT_ID,
-    LETSCONNECT_CONFIG_PREFIX,
-)
-from eduvpn.utils import cmd_transition, run_in_background_thread
+from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread
 from eduvpn.ui.search import ServerGroup, group_servers
 from eduvpn.ui.utils import get_validity_text
 import eduvpn.nm as nm
+from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.server import ServerDatabase
-from eduvpn.variants import EDUVPN, LETS_CONNECT, ApplicationVariant
+from eduvpn.settings import CLIENT_ID, CONFIG_PREFIX, CONFIG_DIR_MODE, LETSCONNECT_CLIENT_ID, LETSCONNECT_CONFIG_PREFIX
+from eduvpn.variants import ApplicationVariant, EDUVPN, LETS_CONNECT
+import eduvpn_common.main as common
 from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
+from eduvpn_common.state import State, StateType
 
 import argparse
 import signal
 import sys
-
 
 def get_grouped_index(servers, index):
     if index < 0 or index >= len(servers):
@@ -262,6 +255,27 @@ class CommandLine:
 
         self.app.model.remove(server)
 
+    def renew(self, args={}):
+        current_server = self.app.model.current_server
+        if current_server is None:
+            print("No server to renew")
+            return
+
+        def renew(callback):
+            try:
+                @run_in_background_thread('renew')
+                def renew_background():
+                    self.app.model.renew_session()
+                    if callback:
+                        callback()
+                renew_background()
+            except Exception as e:
+                print("An error occurred while trying to renew")
+                print("Error renewing:", e, file=sys.stderr)
+                if callback:
+                    callback()
+        nm.action_with_mainloop(renew)
+
     def remove(self, args={}):
         if self.app.model.is_connected():
             print(
@@ -288,7 +302,7 @@ class CommandLine:
 
     def help_interactive(self):
         print(
-            "Available commands: connect, disconnect, remove, status, list, help, quit"
+            "Available commands: connect, disconnect, remove, renew, status, list, help, quit"
         )
 
     def update_state(self, initial: bool = False):
@@ -327,6 +341,7 @@ class CommandLine:
             commands = {
                 "connect": self.connect,
                 "disconnect": self.disconnect,
+                "renew": self.renew,
                 "remove": self.remove,
                 "status": self.status,
                 "list": self.list,
@@ -346,10 +361,15 @@ class CommandLine:
         )
         subparsers = parser.add_subparsers(title="subcommands")
 
-        institute_parser = subparsers.add_parser(
+        interactive_parser = subparsers.add_parser(
             "interactive", help="an interactive version of the command line"
         )
-        institute_parser.set_defaults(func=self.interactive)
+        interactive_parser.set_defaults(func=self.interactive)
+
+        renew_parser = subparsers.add_parser(
+            "renew", help="renew the current server"
+        )
+        renew_parser.set_defaults(func=self.renew)
 
         connect_parser = subparsers.add_parser("connect", help="connect to a server")
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
@@ -425,6 +445,8 @@ class CommandLine:
 
         # Handle ctrl+c
         self.handle_exit()
+
+        init_logger(parsed.debug, self.variant.logfile, CONFIG_DIR_MODE)
 
         # Register the common library
         self.common.register(parsed.debug)
