@@ -1,7 +1,6 @@
 import logging
 from gettext import gettext as _
 
-import os
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402

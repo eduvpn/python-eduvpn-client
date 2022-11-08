@@ -528,7 +528,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if hasattr(server_info, "support_contact") and server_info.support_contact:
             support_text = (
                 _("Support:")
-                + "\n"
+                + "\n"  # noqa: W503
                 + "\n".join(map(link_markup, server_info.support_contact))  # noqa: W503
             )
             self.server_support_label.set_markup(support_text)
