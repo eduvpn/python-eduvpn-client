@@ -16,13 +16,13 @@ jobs:
           - doc
           - pep8
           - pylama
-          #- pytest_centos_stream8
+          - pytest_centos_stream8
           - pytest_debian_buster
           - pytest_debian_bullseye
           - pytest_fedora_35
-          #- pytest_ubuntu_bionic
+          - pytest_ubuntu_bionic
           - pytest_ubuntu_focal
-          #- rpm_centos_stream8
+          - rpm_centos_stream8
           - rpm_fedora_35
     steps:
       - name: Checkout
