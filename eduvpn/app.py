@@ -223,6 +223,7 @@ class ApplicationModel:
             return self.common.get_config_custom_server(
                 server.url, self.config.prefer_tcp
             )
+        raise Exception("No server to get a config for")
 
     def connect(
         self, server, callback: Optional[Callable] = None, ensure_exists=False
