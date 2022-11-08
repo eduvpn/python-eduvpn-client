@@ -9,4 +9,4 @@ RUN docker-apt-install-common
 ADD . /code
 WORKDIR /code
 RUN pip3 install ".[test]" pylama
-RUN pylama --ignore C901 eduvpn tests
+RUN pylama --ignore W503,C901 eduvpn tests
