@@ -232,7 +232,9 @@ class CommandLine:
             .replace("</b>", "")
         )
         print(valid_for)
-        print(f"Current profile: {str(self.app.model.current_server.profiles.current)}")
+        print(f"Current profile: {str(current.profiles.current)}")
+        if isinstance(current, SecureInternetServer):
+            print(f"Current location: {retrieve_country_name(current.country_code)}")
 
     def connect(self, variables={}):
         if self.app.model.is_connected():
