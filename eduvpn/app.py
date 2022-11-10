@@ -300,11 +300,11 @@ class ApplicationModel:
         else:
             do_profile()
 
-    def activate_connection(self):
+    def activate_connection(self, callback: Optional[Callable] = None):
         if not self.current_server:
             return
 
-        self.connect(self.current_server)
+        self.connect(self.current_server, callback)
 
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
         self.common.set_disconnecting()
