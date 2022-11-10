@@ -150,7 +150,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.main_overlay = builder.get_object("mainOverlay")
 
         # Create a revealer
-        self.clipboard = self.create_clipboard()
+        self.clipboard = None
+        self.initialize_clipboard()
         self.error_revealer = None
         self.error_revealer_label = None
         self.create_error_revealer()
@@ -301,8 +302,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.show_error_revealer(str(error))
 
     @run_in_main_gtk_thread
-    def create_clipboard(self):
-        return Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+    def initialize_clipboard(self):
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
 
     @run_in_main_gtk_thread
     def create_error_revealer(self):
