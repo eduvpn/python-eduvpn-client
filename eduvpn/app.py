@@ -272,7 +272,7 @@ class ApplicationModel:
         self.deactivate_connection(on_disconnected)
 
     # https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
-    def renew_session(self):
+    def renew_session(self, callback: Optional[Callable] = None):
         was_connected = self.is_connected()
 
         def reconnect():
@@ -280,7 +280,7 @@ class ApplicationModel:
             # Start the OAuth authorization flow
             self.common.renew_session()
             # Automatically reconnect to the server
-            self.activate_connection()
+            self.activate_connection(callback)
 
         if was_connected:
             # Call /disconnect and reconnect with callback
