@@ -156,7 +156,8 @@ class CommandLine:
             def connect_background():
                 try:
                     # Connect to the server and ensure it exists
-                    self.app.model.connect(server, callback, ensure_exists=True)
+                    should_add = not self.server_db.has(server)
+                    self.app.model.connect(server, callback, ensure_exists=should_add)
                 except Exception as e:
                     if should_show_error(e):
                         print("Error connecting:", e, file=sys.stderr)
