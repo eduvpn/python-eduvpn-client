@@ -19,7 +19,7 @@ from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
 from eduvpn.server import StatusImage
-from eduvpn.settings import FLAG_PREFIX
+from eduvpn.settings import CONFIG_PREFIX, FLAG_PREFIX
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.settings import HELP_URL
 from eduvpn.utils import (
@@ -397,9 +397,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if self.error_revealer is None or self.error_revealer_label is None:
             return
         self.error_revealer.set_reveal_child(True)
-        self.error_revealer_label.set_text(
-            f"The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.\n See the log file for more information."
-        )
+        self.error_revealer_label.set_text(f'''
+The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.
+
+For detailed information, see the following log files:
+ - {GLib.markup_escape_text(str(CONFIG_PREFIX / "python.log"))}
+ - {GLib.markup_escape_text(str(CONFIG_PREFIX / "go.log"))}''')
         self.error_revealer_label.set_use_markup(True)
 
     @run_in_main_gtk_thread
