@@ -260,6 +260,17 @@ class ApplicationModel:
         self.common.set_connecting()
         connect(config, config_type)
 
+    def reconnect(self, callback: Optional[Callable] = None):
+        def on_connected():
+            if callback:
+                callback()
+
+        def on_disconnected():
+            self.activate_connection(on_connected)
+
+        # Reconnect
+        self.deactivate_connection(on_disconnected)
+
     # https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
     def renew_session(self):
         was_connected = self.is_connected()
