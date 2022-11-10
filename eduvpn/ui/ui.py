@@ -412,6 +412,8 @@ For detailed information, see the following log files:
     def copy_error_revealer(self, _button) -> None:
         if self.error_revealer_label is None:
             return
+        if self.clipboard is None:
+            return
         self.clipboard.set_text(self.error_revealer_label.get_text(), -1)
         self.eduvpn_app.enter_ClipboardError()  # type: ignore
 
