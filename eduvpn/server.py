@@ -52,6 +52,17 @@ class ServerDatabase:
     def configured(self):
         return self.common.get_saved_servers()
 
+    def has(self, server) -> bool:
+        # discovery servers have no url attribute
+        if not hasattr(server, 'url'):
+            return False
+
+        # The url attribute is always used as an identifier
+        for s in self.configured:
+            if server.url == s.url:
+                return True
+        return False
+
     def all(self):
         "Return all servers."
         return self.disco
