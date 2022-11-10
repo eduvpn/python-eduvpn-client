@@ -161,8 +161,8 @@ class CommandLine:
                     except Exception as e:
                         if should_show_error(e):
                             print("Error connecting:", e, file=sys.stderr)
-                    if callback:
-                        callback()
+                        if callback:
+                            callback()
 
                 connect_background()
 
