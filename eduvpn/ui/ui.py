@@ -415,7 +415,7 @@ For detailed information, see the following log files:
         if self.clipboard is None:
             return
         self.clipboard.set_text(self.error_revealer_label.get_text(), -1)
-        self.eduvpn_app.enter_ClipboardError()  # type: ignore
+        self.eduvpn_app.enter_CopiedAnError()  # type: ignore
 
     @run_in_main_gtk_thread
     def hide_error_revealer(self, _button) -> None:

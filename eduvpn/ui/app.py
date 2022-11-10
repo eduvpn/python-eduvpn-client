@@ -111,7 +111,7 @@ class EduVpnGtkApplication(Gtk.Application):
         if not self.app.model.is_connected():
             self.on_quit()
 
-    def enter_ClipboardError(self):
+    def enter_CopiedAnError(self):
         self.connection_notification.show(
             title=_("Error Copied"),
             message=_(
