@@ -2,7 +2,7 @@ import logging
 import webbrowser
 import signal
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Callable, Iterator, Optional
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.main import EduVPN
@@ -10,7 +10,7 @@ from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
 from eduvpn_common.state import State, StateType
 from eduvpn.server import ServerDatabase
 
-from eduvpn.connection import Connection
+from eduvpn.connection import Connection, Validity
 
 from eduvpn import nm
 from eduvpn.config import Configuration
@@ -23,29 +23,6 @@ from eduvpn.variants import ApplicationVariant
 from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
-
-
-def now() -> datetime:
-    return datetime.now()
-
-
-class Validity:
-    def __init__(self, end: datetime) -> None:
-        self.end = end
-
-    @property
-    def remaining(self) -> timedelta:
-        """
-        Return the duration from now until expiry.
-        """
-        return self.end - now()
-
-    @property
-    def is_expired(self) -> bool:
-        """
-        Return True if the validity has expired.
-        """
-        return now() >= self.end
 
 
 class ApplicationModelTransitions:

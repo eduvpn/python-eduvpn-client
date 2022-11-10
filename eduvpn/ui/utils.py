@@ -2,7 +2,7 @@ import gi
 
 from gettext import gettext as _
 from gettext import ngettext
-from eduvpn.app import Validity
+from eduvpn.connection import Validity
 from eduvpn_common.error import WrappedError, ErrorLevel
 from eduvpn.utils import run_in_main_gtk_thread
 

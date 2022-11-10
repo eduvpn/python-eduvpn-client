@@ -1,6 +1,30 @@
+from datetime import datetime, timedelta
 from configparser import ConfigParser
 
 from eduvpn.ovpn import Ovpn
+
+
+def now() -> datetime:
+    return datetime.now()
+
+
+class Validity:
+    def __init__(self, end: datetime) -> None:
+        self.end = end
+
+    @property
+    def remaining(self) -> timedelta:
+        """
+        Return the duration from now until expiry.
+        """
+        return self.end - now()
+
+    @property
+    def is_expired(self) -> bool:
+        """
+        Return True if the validity has expired.
+        """
+        return now() >= self.end
 
 
 class Connection:

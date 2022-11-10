@@ -54,7 +54,7 @@ class ServerDatabase:
 
     def has(self, server) -> bool:
         # discovery servers have no url attribute
-        if not hasattr(server, 'url'):
+        if not hasattr(server, "url"):
             return False
 
         # The url attribute is always used as an identifier
