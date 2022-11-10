@@ -152,19 +152,18 @@ class CommandLine:
 
     def connect_server(self, server):
         def connect(callback=None):
+            @run_in_background_thread("connect")
+            def connect_background():
+                try:
+                    # Connect to the server and ensure it exists
+                    self.app.model.connect(server, callback, ensure_exists=True)
+                except Exception as e:
+                    if should_show_error(e):
+                        print("Error connecting:", e, file=sys.stderr)
+                    if callback:
+                        callback()
 
-                @run_in_background_thread("connect")
-                def connect_background():
-                    try:
-                        # Connect to the server and ensure it exists
-                        self.app.model.connect(server, callback, ensure_exists=True)
-                    except Exception as e:
-                        if should_show_error(e):
-                            print("Error connecting:", e, file=sys.stderr)
-                        if callback:
-                            callback()
-
-                connect_background()
+            connect_background()
 
         if not server:
             print("No server found to connect to, exiting...")
@@ -327,6 +326,22 @@ class CommandLine:
 
         ask_profiles(self.app, server.profiles)
 
+        @run_in_background_thread("change-profile-reconnect")
+        def reconnect(callback=None):
+            try:
+                self.app.model.reconnect(callback)
+            except Exception as e:
+                if should_show_error(e):
+                    print(
+                        "An error occurred while trying to reconnect for profile change"
+                    )
+                    print("Error reconnecting:", e, file=sys.stderr)
+                if callback:
+                    callback()
+
+        print("Reconnecting with the configured profile...")
+        nm.action_with_mainloop(reconnect)
+
     def change_location(self, args={}):
         if not self.app.model.is_connected():
             print(
@@ -349,15 +364,16 @@ class CommandLine:
 
         @run_in_background_thread("change-location-reconnect")
         def reconnect(callback=None):
-            def on_connect():
+            try:
+                self.app.model.reconnect(callback)
+            except Exception as e:
+                if should_show_error(e):
+                    print(
+                        "An error occurred while trying to reconnect for location change"
+                    )
+                    print("Error reconnecting:", e, file=sys.stderr)
                 if callback:
                     callback()
-
-            def on_disconnect():
-                self.app.model.activate_connection(on_connect)
-
-            # Reconnect
-            self.app.model.deactivate_connection(on_disconnect)
 
         print("Reconnecting with the configured location...")
         nm.action_with_mainloop(reconnect)
@@ -368,17 +384,17 @@ class CommandLine:
             return False
 
         def renew(callback):
-                @run_in_background_thread("renew")
-                def renew_background():
-                    try:
-                        self.app.model.renew_session()
-                    except Exception as e:
-                        print("An error occurred while trying to renew")
-                        print("Error renewing:", e, file=sys.stderr)
-                    if callback:
-                        callback()
+            @run_in_background_thread("renew")
+            def renew_background():
+                try:
+                    self.app.model.renew_session()
+                except Exception as e:
+                    print("An error occurred while trying to renew")
+                    print("Error renewing:", e, file=sys.stderr)
+                if callback:
+                    callback()
 
-                renew_background()
+            renew_background()
 
         nm.action_with_mainloop(renew)
 
