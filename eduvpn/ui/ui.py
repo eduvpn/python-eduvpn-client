@@ -355,6 +355,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         )
         self.error_revealer_label.set_use_markup(True)
         self.error_revealer_label.set_margin_bottom(20)
+        self.error_revealer_label.set_margin_left(20)
+        self.error_revealer_label.set_margin_right(20)
         self.error_revealer_label.set_line_wrap(True)
         self.error_revealer_label.set_selectable(True)
         self.error_revealer_label.show()
