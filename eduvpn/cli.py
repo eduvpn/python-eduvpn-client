@@ -388,15 +388,17 @@ class CommandLine:
             @run_in_background_thread("renew")
             def renew_background():
                 try:
-                    self.app.model.renew_session()
+                    self.app.model.renew_session(callback)
                 except Exception as e:
-                    print("An error occurred while trying to renew")
-                    print("Error renewing:", e, file=sys.stderr)
-                if callback:
-                    callback()
+                    if should_show_error(e):
+                        print("An error occurred while trying to renew")
+                        print("Error renewing:", e, file=sys.stderr)
+                    if callback:
+                        callback()
 
             renew_background()
 
+        print("Disconnecting and renewing...")
         nm.action_with_mainloop(renew)
 
     def remove(self, args={}):
