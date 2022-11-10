@@ -86,9 +86,12 @@ class CommandLine:
         self.nm_manager = self.app.nm_manager
         self.server_db = ServerDatabase(common, variant.use_predefined_servers)
         self.transitions = CommandLineTransitions(self.app)
+        self.skip_yes = False
         self.common.register_class_callbacks(self.transitions)
 
     def ask_yes(self, label) -> bool:
+        if self.skip_yes:
+            return True
         while True:
             yesno = input(label)
 
@@ -465,6 +468,9 @@ class CommandLine:
         parser.add_argument(
             "-d", "--debug", action="store_true", help="enable debugging"
         )
+        parser.add_argument(
+            "-y", "--yes", action="store_true", help="answer yes for y/n prompts"
+        )
         subparsers = parser.add_subparsers(title="subcommands")
 
         interactive_parser = subparsers.add_parser(
@@ -565,6 +571,9 @@ class CommandLine:
         self.handle_exit()
 
         init_logger(parsed.debug, self.variant.logfile, CONFIG_DIR_MODE)
+
+        # Skip yes/no prompts if given
+        self.skip_yes = parsed.yes
 
         # Register the common library
         self.common.register(parsed.debug)
