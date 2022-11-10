@@ -1,7 +1,7 @@
 from eduvpn.app import Application
 from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread
 from eduvpn.ui.search import ServerGroup, group_servers
-from eduvpn.ui.utils import get_validity_text
+from eduvpn.ui.utils import get_validity_text, should_show_error
 import eduvpn.nm as nm
 from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.server import ServerDatabase
@@ -152,18 +152,19 @@ class CommandLine:
 
     def connect_server(self, server):
         def connect(callback=None):
-            try:
 
                 @run_in_background_thread("connect")
                 def connect_background():
-                    # Connect to the server and ensure it exists
-                    self.app.model.connect(server, callback, ensure_exists=True)
+                    try:
+                        # Connect to the server and ensure it exists
+                        self.app.model.connect(server, callback, ensure_exists=True)
+                    except Exception as e:
+                        if should_show_error(e):
+                            print("Error connecting:", e, file=sys.stderr)
+                    if callback:
+                        callback()
 
                 connect_background()
-            except Exception as e:
-                print("Error connecting:", e, file=sys.stderr)
-                if callback:
-                    callback()
 
         if not server:
             print("No server found to connect to, exiting...")
@@ -263,8 +264,9 @@ class CommandLine:
             try:
                 self.app.model.deactivate_connection(callback)
             except Exception as e:
-                print("An error occurred while trying to disconnect")
-                print("Error disconnecting:", e, file=sys.stderr)
+                if should_show_error(e):
+                    print("An error occurred while trying to disconnect")
+                    print("Error disconnecting:", e, file=sys.stderr)
                 if callback:
                     callback()
 
@@ -366,20 +368,17 @@ class CommandLine:
             return False
 
         def renew(callback):
-            try:
-
                 @run_in_background_thread("renew")
                 def renew_background():
-                    self.app.model.renew_session()
+                    try:
+                        self.app.model.renew_session()
+                    except Exception as e:
+                        print("An error occurred while trying to renew")
+                        print("Error renewing:", e, file=sys.stderr)
                     if callback:
                         callback()
 
                 renew_background()
-            except Exception as e:
-                print("An error occurred while trying to renew")
-                print("Error renewing:", e, file=sys.stderr)
-                if callback:
-                    callback()
 
         nm.action_with_mainloop(renew)
 
