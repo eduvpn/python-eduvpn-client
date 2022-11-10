@@ -1,3 +1,4 @@
+import readline
 from eduvpn.app import Application
 from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread
 from eduvpn.ui.search import ServerGroup, group_servers
