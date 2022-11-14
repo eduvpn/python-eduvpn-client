@@ -238,7 +238,7 @@ class NMManager:
         Import the OVPN string into Network Manager.
         """
         target_parent = Path(mkdtemp())
-        target = target_parent / f"{self.variant.vpn_name}.ovpn"
+        target = target_parent / f"{self.variant.name}.ovpn"
         write_ovpn(ovpn, private_key, certificate, target)
         connection = self.ovpn_import(target)
         rmtree(target_parent)
@@ -249,7 +249,7 @@ class NMManager:
         Import the OVPN string into Network Manager.
         """
         target_parent = Path(mkdtemp())
-        target = target_parent / f"{self.variant.vpn_name}.ovpn"
+        target = target_parent / f"{self.variant.name}.ovpn"
         _logger.debug(f"Writing configuration to {target}")
         with open(target, mode="w+t") as f:
             ovpn.write(f)
@@ -403,15 +403,10 @@ class NMManager:
         profile = NM.SimpleConnection.new()
         s_con = NM.SettingConnection.new()
         s_con.set_property(NM.DEVICE_AUTOCONNECT, False)
-        s_con.set_property(
-            NM.SETTING_CONNECTION_ID, f"{self.variant.vpn_name}-wireguard"
-        )
+        s_con.set_property(NM.SETTING_CONNECTION_ID, self.variant.name)
         s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
         s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
-        s_con.set_property(
-            NM.SETTING_CONNECTION_INTERFACE_NAME,
-            f"{self.variant.translation_domain}-WG",
-        )
+        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, "--")
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
         peer = NM.WireGuardPeer.new()
