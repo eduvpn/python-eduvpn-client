@@ -888,7 +888,7 @@ For detailed information, see the following log files:
         logger.debug(f"activated server: {server!r}")
 
         def on_added(display_name):
-            self.eduvpn_app.enter_Added(display_name)
+            logger.debug(f"Server added, {display_name}")
 
         if self.app.model.is_search_server():
             if self.app.config.autoconnect:

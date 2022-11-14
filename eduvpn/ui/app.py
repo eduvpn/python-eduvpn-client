@@ -120,15 +120,6 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    def enter_Added(self, display_name):
-        self.connection_notification.show(
-            title=_("Added"),
-            message=_(
-                f"The server {display_name} has been added. "
-                "Connect to it by clicking on it."
-            ),
-        )
-
     @ui_transition(State.CONNECTING, StateType.ENTER)
     def enter_ConnectingState(self, old_state, new_state):
         self.connection_notification.show(
