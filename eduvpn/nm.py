@@ -406,7 +406,7 @@ class NMManager:
         s_con.set_property(NM.SETTING_CONNECTION_ID, self.variant.name)
         s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
         s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
-        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, "--")
+        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, self.variant.translation_domain)
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
         peer = NM.WireGuardPeer.new()
