@@ -1,3 +1,4 @@
+import json
 import logging
 import webbrowser
 import signal
@@ -6,8 +7,9 @@ from datetime import datetime
 from typing import Any, Callable, Iterator, Optional
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.main import EduVPN
-from eduvpn_common.server import Server, InstituteServer, SecureInternetServer
+from eduvpn_common.server import Server, InstituteServer, SecureInternetServer, Config, Token
 from eduvpn_common.state import State, StateType
+from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import ServerDatabase
 
 from eduvpn.connection import Connection, Validity
@@ -118,6 +120,9 @@ class ApplicationModel:
     ) -> None:
         self.common = common
         self.config = config
+        self.keyring: TokenKeyring = DBusKeyring(variant)
+        if not self.keyring.available:
+            self.keyring = InsecureFileKeyring(variant)
         self.transitions = ApplicationModelTransitions(common, variant)
         self.variant = variant
         self.nm_manager = nm_manager
@@ -181,26 +186,75 @@ class ApplicationModel:
         elif isinstance(server, Server):
             self.common.remove_custom_server(server.url)
 
-    def connect_get_config(self, server) -> Tuple[str, str]:
+        # Delete tokens from the keyring
+        self.clear_tokens(server)
+
+    def connect_get_config(self, server, tokens=None) -> Optional[Config]:
         if isinstance(server, InstituteServer):
             return self.common.get_config_institute_access(
-                server.url, self.config.prefer_tcp
+                server.url, self.config.prefer_tcp, tokens
             )
         elif isinstance(server, DiscoServer):
             return self.common.get_config_institute_access(
-                server.base_url, self.config.prefer_tcp
+                server.base_url, self.config.prefer_tcp, tokens
             )
         elif isinstance(server, SecureInternetServer) or isinstance(
             server, DiscoOrganization
         ):
             return self.common.get_config_secure_internet(
-                server.org_id, self.config.prefer_tcp
+                server.org_id, self.config.prefer_tcp, tokens
             )
         elif isinstance(server, Server):
             return self.common.get_config_custom_server(
-                server.url, self.config.prefer_tcp
+                server.url, self.config.prefer_tcp, tokens
             )
         raise Exception("No server to get a config for")
+
+    def clear_tokens(self, server):
+        attributes = {
+            "server": server.url,
+            "category": server.category,
+        }
+        try:
+            cleared = self.keyring.clear(attributes)
+            if not cleared:
+                logger.debug("Tokens were not cleared")
+        except Exception as e:
+            logger.debug("Failed clearing tokens with exception")
+            logger.debug(e, exc_info=True)
+
+    def load_tokens(self, server) -> Optional[Token]:
+        attributes = {
+            "server": server.url,
+            "category": server.category,
+        }
+        try:
+            tokens_json = self.keyring.load(attributes)
+            if tokens_json is None:
+                logger.debug("No tokens available")
+                return None
+            tokens = json.loads(tokens_json)
+            return Token(tokens["access"],  tokens["refresh"], int(tokens["expires"]))
+        except Exception as e:
+            logger.debug("Failed loading tokens with exception:")
+            logger.debug(e, exc_info=True)
+            return None
+
+    def save_tokens(self, server, tokens):
+        tokens_dict = {}
+        tokens_dict["access"] = tokens.access
+        tokens_dict["refresh"] = tokens.refresh
+        tokens_dict["expires"] = str(tokens.expires)
+        attributes = {
+            "server": server.url,
+            "category": server.category,
+        }
+        label = f"{server.url} - OAuth Tokens"
+        try:
+            self.keyring.save(label, attributes, json.dumps(tokens_dict))
+        except Exception as e:
+            logger.debug("Failed saving tokens with exception:")
+            logger.debug(e, exc_info=True)
 
     def connect(
         self, server, callback: Optional[Callable] = None, ensure_exists=False
@@ -210,7 +264,12 @@ class ApplicationModel:
         if ensure_exists:
             self.add(server)
 
-        config, config_type = self.connect_get_config(server)
+        tokens = self.load_tokens(server)
+        config = self.connect_get_config(server, tokens)
+        if not config:
+            raise Exception("No configuration available")
+
+        self.save_tokens(server, config.tokens)
 
         # Get the updated info from the go library
         # Because profiles can be switched
@@ -231,7 +290,7 @@ class ApplicationModel:
 
         @run_in_main_gtk_thread
         def connect(config, config_type):
-            connection = Connection.parse(config, config_type)
+            connection = Connection.parse(str(config), config.config_type)
             connection.connect(self.nm_manager, default_gateway, on_connect)
 
         self.common.set_connecting()

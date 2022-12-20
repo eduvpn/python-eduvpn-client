@@ -12,6 +12,10 @@ from gi.overrides.Gtk import Widget  # type: ignore
 from typing import Tuple
 
 
+IGNORE_ID=-13
+QUIT_ID=-14
+
+
 @run_in_main_gtk_thread
 def style_widget(widget: Gtk.Widget, class_name: str, style: str):
     style_context = widget.get_style_context()
@@ -121,7 +125,7 @@ def link_markup(link: str) -> str:
 
 @run_in_main_gtk_thread
 def show_error_dialog(
-    parent, name: str, title: str, message: str, only_quit: bool = False
+        parent, name: str, title: str, message: str, only_quit: bool = False
 ):
     dialog = Gtk.MessageDialog(  # type: ignore
         parent=parent,
@@ -130,18 +134,16 @@ def show_error_dialog(
         message_format=title,
     )
 
-    ignore_id = -13
-    quit_id = -14
     if not only_quit:
-        dialog.add_buttons(_("Ignore and continue"), ignore_id)
+        dialog.add_buttons(_("Ignore and continue"), IGNORE_ID)
 
     dialog.add_buttons(
         _("Quit client"),
-        quit_id,
+        QUIT_ID,
     )
     dialog.format_secondary_text(message)  # type: ignore
     dialog.show()  # type: ignore
     close = dialog.run()  # type: ignore
     dialog.destroy()  # type: ignore
-    if close == quit_id or only_quit:
+    if close == QUIT_ID or only_quit:
         parent.close()
