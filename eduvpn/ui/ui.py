@@ -35,6 +35,8 @@ from eduvpn.utils import (
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
 from eduvpn.ui.utils import (
+    IGNORE_ID,
+    QUIT_ID,
     get_validity_text,
     link_markup,
     should_show_error,
@@ -181,6 +183,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_validity_thread_cancel: Optional[Callable] = None
         self.connection_renew_thread_cancel: Optional[Callable] = None
         self.connection_info_stats = None
+
+        self.keyring_dialog = builder.get_object("keyringDialog")
+        self.keyring_do_not_show = builder.get_object("keyringDoNotShow")
 
         self.server_image = builder.get_object("serverImage")
         self.server_label = builder.get_object("serverLabel")
@@ -656,6 +661,15 @@ For detailed information, see the following log files:
         # Do not go in a loop by checking old state
         if not servers and old_state != get_ui_state(State.SEARCH_SERVER):
             self.call_model("set_search_server")
+
+        if not self.app.model.keyring.secure and not self.app.config.ignore_keyring_warning:
+            self.keyring_dialog.show()
+            _id = self.keyring_dialog.run()
+            if _id == QUIT_ID:
+                self.close()
+            self.keyring_dialog.destroy()
+            self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
+            
 
     @ui_transition(State.NO_SERVER, StateType.LEAVE)
     def exit_MainState(self, old_state, new_state):

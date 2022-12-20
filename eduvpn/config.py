@@ -11,8 +11,9 @@ CONFIG_FILE_NAME = "config.json"
 
 DEFAULT_SETTINGS = dict(
     autoconnect=False,
-    prefer_tcp=False,
+    ignore_keyring_warning=False,
     nm_system_wide=False,
+    prefer_tcp=False,
 )
 
 
@@ -67,5 +68,6 @@ class Configuration:
             self.save()
 
     autoconnect = SettingDescriptor[bool]()
-    prefer_tcp = SettingDescriptor[bool]()
+    ignore_keyring_warning = SettingDescriptor[bool]()
     nm_system_wide = SettingDescriptor[bool]()
+    prefer_tcp = SettingDescriptor[bool]()
