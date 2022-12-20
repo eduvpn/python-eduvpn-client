@@ -7,7 +7,6 @@ from eduvpn.utils import get_human_readable_bytes, translated_property
 
 logger = logging.getLogger(__name__)
 
-LINUX_NET_FOLDER = Path("/sys/class/net")
 
 
 def cached_stats_property(f):
@@ -53,31 +52,34 @@ class NetworkStats:
         return _ipv6
 
     @cached_stats_property
+    def protocol(self) -> str:
+        _protocol = self.manager.protocol
+        if _protocol is None:
+            _protocol = self.default_text
+        return _protocol
+
+    @cached_stats_property
     def upload_file(self) -> Optional[TextIO]:
-        return self.open_file("tx_bytes")
+        return self.manager.open_stats_file("tx_bytes")
 
     @cached_stats_property
     def download_file(self) -> Optional[TextIO]:
-        return self.open_file("rx_bytes")
+        return self.manager.open_stats_file("rx_bytes")
 
     @cached_stats_property
     def start_bytes_upload(self) -> Optional[int]:
-        return self.get_file_bytes(self.upload_file)  # type: ignore
+        return self.manager.get_stats_bytes(self.upload_file)  # type: ignore
 
     @cached_stats_property
     def start_bytes_download(self) -> Optional[int]:
-        return self.get_file_bytes(self.download_file)  # type: ignore
-
-    @cached_stats_property
-    def iface(self) -> Optional[str]:
-        return self.manager.iface
+        return self.manager.get_stats_bytes(self.download_file)  # type: ignore
 
     @property
     def download(self) -> str:
         """
         Get the download as a human readable string
         """
-        file_bytes_download = self.get_file_bytes(self.download_file)  # type: ignore
+        file_bytes_download = self.manager.get_stats_bytes(self.download_file)  # type: ignore
         if file_bytes_download is None:
             return self.default_text
         if file_bytes_download <= self.start_bytes_download:  # type: ignore
@@ -89,7 +91,7 @@ class NetworkStats:
         """
         Get the upload as a human readable string
         """
-        file_bytes_upload = self.get_file_bytes(self.upload_file)  # type: ignore
+        file_bytes_upload = self.manager.get_stats_bytes(self.upload_file)  # type: ignore
         if file_bytes_upload is None:
             return self.default_text
         if file_bytes_upload <= self.start_bytes_upload:  # type: ignore
@@ -97,41 +99,6 @@ class NetworkStats:
         return get_human_readable_bytes(
             file_bytes_upload - self.start_bytes_upload
         )  # type:ignore
-
-    def open_file(self, filename: str) -> Optional[TextIO]:
-        """
-        Helper function to open a statistics network file
-        """
-        if not self.iface:
-            logger.warning(f"Network Stats: {filename}, failed to get interface")
-            return None
-        filepath = LINUX_NET_FOLDER / self.iface / "statistics" / filename  # type: ignore
-        if not filepath.is_file():
-            logger.warning(f"Network Stats: {filepath} is not a file")
-            return None
-        return open(filepath, "r")
-
-    def get_file_bytes(self, filehandler: Optional[TextIO]) -> Optional[int]:
-        """
-        Helper function to get a statistics file to calculate the total data transfer
-        """
-        # If the interface is not set
-        # or the file is not present, we cannot get the stat
-        if not self.iface:
-            # Warning was already shown
-            return None
-        if not filehandler:
-            # Warning was already shown
-            return None
-
-        # Get the statistic from the file
-        # and go to the beginning
-        try:
-            stat = int(filehandler.readline())
-        except ValueError:
-            stat = 0
-        filehandler.seek(0)
-        return stat
 
     def cleanup(self) -> None:
         """

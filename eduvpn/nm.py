@@ -9,7 +9,7 @@ from pathlib import Path
 from shutil import rmtree
 from socket import AF_INET, AF_INET6
 from tempfile import mkdtemp
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple, TextIO
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
@@ -20,6 +20,8 @@ gi.require_version("NM", "1.0")  # noqa: E402
 from gi.repository.Gio import Task  # type: ignore
 
 _logger = logging.getLogger(__name__)
+
+LINUX_NET_FOLDER = Path("/sys/class/net")
 
 try:
     import gi
@@ -98,6 +100,41 @@ class NMManager:
             return False
         return True
 
+    # TODO: Move this somewhere else?
+    def open_stats_file(self, filename: str) -> Optional[TextIO]:
+        """
+        Helper function to open a statistics network file
+        """
+        if not self.iface:
+            return None
+        filepath = LINUX_NET_FOLDER / self.iface / "statistics" / filename  # type: ignore
+        if not filepath.is_file():
+            return None
+        return open(filepath, "r")
+
+    # TODO: Move this somewhere else?
+    def get_stats_bytes(self, filehandler: Optional[TextIO]) -> Optional[int]:
+        """
+        Helper function to get a statistics file to calculate the total data transfer
+        """
+        # If the interface is not set
+        # or the file is not present, we cannot get the stat
+        if not self.iface:
+            # Warning was already shown
+            return None
+        if not filehandler:
+            # Warning was already shown
+            return None
+
+        # Get the statistic from the file
+        # and go to the beginning
+        try:
+            stat = int(filehandler.readline())
+        except ValueError:
+            stat = 0
+        filehandler.seek(0)
+        return stat
+
     @property
     def managed(self) -> bool:
         """
@@ -112,6 +149,32 @@ class NMManager:
             return False
 
         return any(d.get_managed() for d in master_devices)
+
+    @property
+    def wireguard_mtu(self) -> Optional[int]:
+        device = self.wireguard_device
+        if device is None:
+            return None
+        return device.get_mtu()
+
+    @property
+    def wireguard_endpoint(self) -> Optional[str]:
+        active_con = self.active_connection
+        if active_con is None:
+            return None
+
+        con = active_con.get_connection()
+        if con is None:
+            return None
+
+        s_wireguard = con.get_setting(NM.SettingWireGuard)
+        if s_wireguard is None:
+            return None
+
+        if s_wireguard.get_peers_len() < 1:
+            return None
+
+        return s_wireguard.get_peer(0).get_endpoint()
 
     @property
     def uuid(self):
@@ -148,6 +211,21 @@ class NMManager:
         for connection in self.client.get_active_connections():
             if connection.get_uuid() == self.uuid:
                 return connection
+        return None
+
+    @property
+    def protocol(self) -> Optional[str]:
+        """
+        Get the VPN protocol as a string for the active connection
+        """
+        connection = self.active_connection
+        if connection is None:
+            return None
+        type = connection.get_connection_type()
+        if type == "vpn":
+            return "OpenVPN"
+        elif type == "wireguard":
+            return "WireGuard"
         return None
 
     @property
@@ -204,7 +282,16 @@ class NMManager:
         addresses = ip6_config.get_addresses()
         if not addresses:
             return None
-        return addresses[0].get_address()
+
+        for addr in addresses:
+            try:
+                ipv6_str = addr.get_address()
+                ipv6 = ip_address(ipv6_str)
+                if not ipv6.is_link_local:
+                    return ipv6_str
+            except ValueError:
+                continue
+        return None
 
     @property
     def existing_connection(self) -> Optional[str]:
@@ -406,7 +493,9 @@ class NMManager:
         s_con.set_property(NM.SETTING_CONNECTION_ID, self.variant.name)
         s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
         s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
-        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, self.variant.translation_domain)
+        s_con.set_property(
+            NM.SETTING_CONNECTION_INTERFACE_NAME, self.variant.translation_domain
+        )
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
         peer = NM.WireGuardPeer.new()
@@ -538,7 +627,8 @@ class NMManager:
 
         con.delete_async(callback=on_deleted, user_data=callback)
 
-    def deactivate_connection_wg(self, callback: Optional[Callable] = None) -> None:
+    @property
+    def wireguard_device(self) -> Optional["NM.DeviceWireGuard"]:
         devices = [
             device
             for device in self.client.get_all_devices()
@@ -547,12 +637,11 @@ class NMManager:
             in {conn.get_uuid() for conn in device.get_available_connections()}
         ]
         if not devices:
-            _logger.warning("No WireGuard device to disconnect")
-            return
+            return None
 
-        assert len(devices) == 1
-        device = devices[0]
+        return devices[0]
 
+    def deactivate_connection_wg(self, callback: Optional[Callable] = None) -> None:
         def on_disconnect(a_device: "NM.DeviceWireGuard", res, callback=None):
             try:
                 result = a_device.disconnect_finish(res)
@@ -565,6 +654,10 @@ class NMManager:
                     self.delete_connection(callback)
 
         _logger.debug(f"disconnect uuid: {uuid}")
+        device = self.wireguard_device
+        if device is None:
+            _logger.warning("Cannot disconnect, no WireGuard device")
+            return
         device.disconnect_async(callback=on_disconnect, user_data=callback)
 
     def subscribe_to_status_changes(
