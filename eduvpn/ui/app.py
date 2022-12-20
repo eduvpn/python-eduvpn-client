@@ -120,22 +120,6 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    @ui_transition(State.CONNECTING, StateType.ENTER)
-    def enter_ConnectingState(self, old_state, new_state):
-        self.connection_notification.show(
-            title=_("Connecting"),
-            message=_(
-                "The connection is being established. "
-                "This should only take a moment."
-            ),
-        )
-
-    @ui_transition(State.CONNECTED, StateType.ENTER)
-    def enter_ConnectedState(self, old_state, new_state):
-        self.connection_notification.show(
-            title=_("Connected"), message=_("You are now connected to your server.")
-        )
-
     def enter_SessionPendingExpiryState(self):
         self.connection_notification.show(
             title=_("Connected"),
@@ -145,22 +129,9 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    @ui_transition(State.DISCONNECTED, StateType.ENTER)
-    def enter_DisconnectedState(self, old_state, server):
-        is_expired, _text = get_validity_text(
-            self.app.model.get_expiry(server.expire_time)
-        )
-        reason = ""
-        if is_expired:
-            reason = " due to expiry"
-        self.connection_notification.show(
-            title=_("Disconnected"),
-            message=_(f"You have been disconnected from your server{reason}."),
-        )
-
     def enter_SessionExpiredState(self):
         self.connection_notification.show(
-            title=_("Session expired"), message=_("Your session has expired.")
+            title=_("Session expired"), message=_("Your session has expired. You have been disconnected from the VPN.")
         )
 
         @run_in_background_thread("expired-deactivate")
