@@ -172,6 +172,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_info_downloaded = builder.get_object(
             "connectionInfoDownloadedText"
         )
+        self.connection_info_protocol = builder.get_object(
+            "connectionInfoProtocolText"
+        )
         self.connection_info_uploaded = builder.get_object("connectionInfoUploadedText")
         self.connection_info_ipv4address = builder.get_object(
             "connectionInfoIpv4AddressText"
@@ -618,6 +621,7 @@ For detailed information, see the following log files:
         # Disable the profile combo box and switch
         self.connection_switch.set_sensitive(False)
         self.select_profile_combo.set_sensitive(False)
+        self.call_model("cancel_failover")
 
     @ui_transition(State.DISCONNECTING, StateType.LEAVE)
     def exit_disconnecting(self, old_state: str, data):
@@ -841,6 +845,7 @@ For detailed information, see the following log files:
         self.update_connection_status(True)
         self.update_connection_server(server_info)
         self.start_validity_renew(server_info)
+        self.call_model("start_failover")
 
     def start_validity_renew(self, server_info) -> None:
         self.connection_validity_thread_cancel = run_periodically(
@@ -1045,9 +1050,12 @@ For detailed information, see the following log files:
                 return
             download = self.connection_info_stats.download
             upload = self.connection_info_stats.upload
+            protocol = self.connection_info_stats.protocol
             ipv4 = self.connection_info_stats.ipv4
             ipv6 = self.connection_info_stats.ipv6
             self.connection_info_downloaded.set_text(download)
+            self.connection_info_protocol.set_text(f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>")
+            self.connection_info_protocol.set_use_markup(True)
             self.connection_info_uploaded.set_text(upload)
             self.connection_info_ipv4address.set_text(ipv4)
             self.connection_info_ipv6address.set_text(ipv6)

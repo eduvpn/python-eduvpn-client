@@ -6,8 +6,10 @@ import sys
 from datetime import datetime
 from typing import Any, Callable, Iterator, Optional
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
+from eduvpn_common.error import WrappedError
 from eduvpn_common.main import EduVPN
 from eduvpn_common.server import Server, InstituteServer, SecureInternetServer, Config, Token
+from eduvpn_common.types import ReadRxBytes
 from eduvpn_common.state import State, StateType
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import ServerDatabase
@@ -22,7 +24,7 @@ from eduvpn.utils import (
     run_in_main_gtk_thread,
 )
 from eduvpn.variants import ApplicationVariant
-from typing import List, Tuple
+from typing import List, Tuple, TextIO
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +137,58 @@ class ApplicationModel:
     @property
     def current_server(self):
         return self.common.get_current_server()
+
+    def get_failover_rx(self, filehandler: Optional[TextIO]) -> int:
+        rx_bytes = self.nm_manager.get_stats_bytes(filehandler)
+        if rx_bytes is None:
+            return -1
+        return rx_bytes
+
+    def start_failover(self):
+        current_vpn_protocol = self.nm_manager.protocol
+        if current_vpn_protocol != "WireGuard":
+            logger.debug(
+                f"Current protocol ({current_vpn_protocol}) does not support failover"
+            )
+            return
+        try:
+            rx_bytes_file = self.nm_manager.open_stats_file("rx_bytes")
+            if rx_bytes_file is None:
+                logger.debug(
+                    "Failed to initialize failover, failed to open rx bytes file"
+                )
+                return
+            endpoint = self.nm_manager.wireguard_endpoint
+            if endpoint is None:
+                logger.debug(
+                    "Failed to initialize failover, failed to get WireGuard endpoint"
+                )
+                return
+            endpoint = endpoint.split(":")[0]
+            wg_mtu = self.nm_manager.wireguard_mtu
+            if wg_mtu is None:
+                logger.debug(
+                    "Failed to initialize failover, failed to get WireGuard MTU"
+                    )
+                return
+            dropped = self.common.start_failover(
+                endpoint, wg_mtu, ReadRxBytes(lambda: self.get_failover_rx(rx_bytes_file))
+            )
+            if dropped:
+                logger.debug("Failover exited, connection is dropped")
+                if self.is_connected():
+                    self.common.set_support_wireguard(False)
+                    self.reconnect()
+            else:
+                logger.debug("Failover exited, connection is NOT dropped")
+        except WrappedError as e:
+            logger.debug(f"Failed to start failover, error: {e}")
+
+    def cancel_failover(self):
+        try:
+            self.common.cancel_failover()
+        except WrappedError as e:
+            logger.debug(f"Failed to cancel failover, error: {e}")
 
     @current_server.setter
     def current_server(self, current_server):
@@ -376,6 +430,9 @@ class ApplicationModel:
     def is_search_server(self) -> bool:
         return self.common.in_fsm_state(State.SEARCH_SERVER)
 
+    def is_connecting(self) -> bool:
+        return self.common.in_fsm_state(State.CONNECTING)
+
     def is_connected(self) -> bool:
         return self.common.in_fsm_state(State.CONNECTED)
 
@@ -407,7 +464,7 @@ class Application:
     def on_network_update_callback(self, state, initial=False):
         try:
             if state == nm.ConnectionState.CONNECTED:
-                if self.model.is_disconnected() or initial:
+                if self.model.is_connecting() or initial:
                     self.common.set_connected()
             elif state == nm.ConnectionState.CONNECTING:
                 if self.model.is_disconnected():
