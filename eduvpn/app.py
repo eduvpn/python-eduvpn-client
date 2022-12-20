@@ -412,7 +412,13 @@ class ApplicationModel:
 
         @run_in_background_thread("on-disconnected")
         def on_disconnected():
-            self.common.set_disconnected()
+            server = self.current_server
+            tokens = None
+            if server:
+                tokens = self.load_tokens(server)
+            else:
+                logger.warning("Unable to get tokens for /disconnect, no server")
+            self.common.set_disconnected(True, tokens)
             if callback:
                 callback()
 
