@@ -996,7 +996,6 @@ For detailed information, see the log file located at:
 
     def on_search_changed(self, _: Optional[SearchEntry] = None) -> None:
         query = self.find_server_search_input.get_text()
-        logger.debug(f"entered server search query: {query}")
         if self.app.variant.use_predefined_servers and query.count(".") < 2:
             results = self.app.model.search_predefined(query)
             search.update_results(self, results)
