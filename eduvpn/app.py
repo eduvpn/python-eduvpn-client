@@ -2,6 +2,7 @@ import json
 import logging
 import webbrowser
 import signal
+import socket
 import sys
 from datetime import datetime
 from typing import Any, Callable, Iterator, Optional
@@ -158,13 +159,12 @@ class ApplicationModel:
                     "Failed to initialize failover, failed to open rx bytes file"
                 )
                 return
-            endpoint = self.nm_manager.wireguard_endpoint
+            endpoint = self.nm_manager.wg_endpoint_ip
             if endpoint is None:
                 logger.debug(
                     "Failed to initialize failover, failed to get WireGuard endpoint"
                 )
                 return
-            endpoint = endpoint.split(":")[0]
             wg_mtu = self.nm_manager.wireguard_mtu
             if wg_mtu is None:
                 logger.debug(
