@@ -45,7 +45,7 @@ class ApplicationVariant:
 
     @property
     def logfile(self) -> Path:
-        return self.config_prefix / "python.log"
+        return self.config_prefix / "log"
 
 
 EDUVPN = ApplicationVariant(
