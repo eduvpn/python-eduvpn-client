@@ -411,9 +411,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer_label.set_text(f'''
 The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.
 
-For detailed information, see the following log files:
- - {GLib.markup_escape_text(str(CONFIG_PREFIX / "python.log"))}
- - {GLib.markup_escape_text(str(CONFIG_PREFIX / "go.log"))}''')
+For detailed information, see the log file located at:
+ - {GLib.markup_escape_text(str(self.app.variant.logfile))}''')
         self.error_revealer_label.set_use_markup(True)
 
     @run_in_main_gtk_thread
