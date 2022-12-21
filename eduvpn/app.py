@@ -168,9 +168,9 @@ class ApplicationModel:
             wg_mtu = self.nm_manager.wireguard_mtu
             if wg_mtu is None:
                 logger.debug(
-                    "Failed to initialize failover, failed to get WireGuard MTU"
+                    "failed to get WireGuard MTU, setting MTU to 1000"
                     )
-                return
+                wg_mtu = 1000
             dropped = self.common.start_failover(
                 endpoint, wg_mtu, ReadRxBytes(lambda: self.get_failover_rx(rx_bytes_file))
             )
