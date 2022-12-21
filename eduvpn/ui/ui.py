@@ -47,7 +47,7 @@ from eduvpn.ui.utils import (
 from datetime import datetime
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
 from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn  # type: ignore
-from gi.repository.Gtk import EventBox, SearchEntry, Switch
+from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -481,19 +481,19 @@ For detailed information, see the log file located at:
 
     def recreate_profile_combo(self, server_info) -> None:
         # Create a store of profiles
-        profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
+        profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
         active_profile = 0
         for index, profile in enumerate(server_info.profiles.profiles):
             if profile == server_info.profiles.current:
                 active_profile = index
-            profile_store.append([str(profile), profile])
+            profile_store.append([str(profile), profile])  # type: ignore
 
         # Create a new combobox
         # We create a new one every time because Gtk has some weird behaviour regarding the width of the combo box
         # When we add items that are large, the combobox resizes to fit the content
         # However, when we add items again that are all smaller (e.g. for a new server), the combo box does not shrink back
         # The only proper way seems to be to recreate the combobox every time
-        combo = Gtk.ComboBoxText.new()
+        combo = Gtk.ComboBoxText.new()  # type: ignore
         combo.set_model(profile_store)
         combo.set_active(active_profile)
         combo.set_halign(Gtk.Align.CENTER)
@@ -668,7 +668,7 @@ For detailed information, see the log file located at:
             self.keyring_dialog.show()
             _id = self.keyring_dialog.run()
             if _id == QUIT_ID:
-                self.close()
+                self.close()  # type: ignore
             self.keyring_dialog.destroy()
             self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
 
@@ -957,26 +957,26 @@ For detailed information, see the log file located at:
         row = model[tree_iter]
         server = row[1]
 
-        cancel_item = Gtk.MenuItem()
+        cancel_item = Gtk.MenuItem()  # type: ignore
         cancel_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
-        cancel_image = Gtk.Image.new_from_icon_name("edit-undo", Gtk.IconSize.MENU)
-        cancel_label = Gtk.Label.new("Cancel")
+        cancel_image = Gtk.Image.new_from_icon_name("edit-undo", Gtk.IconSize.MENU)  # type: ignore
+        cancel_label = Gtk.Label.new("Cancel")  # type: ignore
         cancel_box.pack_start(cancel_image, False, False, 0)
         cancel_box.pack_start(cancel_label, False, False, 8)
         cancel_item.add(cancel_box)
         cancel_item.show_all()
 
-        remove_item = Gtk.MenuItem()
+        remove_item = Gtk.MenuItem()  # type: ignore
         remove_item.connect("activate", lambda _: self.server_ask_remove(server))
         remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
-        remove_image = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)
-        remove_label = Gtk.Label.new("Remove Server")
+        remove_image = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)  # type: ignore
+        remove_label = Gtk.Label.new("Remove Server")  # type: ignore
         remove_box.pack_start(remove_image, False, False, 0)
         remove_box.pack_start(remove_label, False, False, 8)
         remove_item.add(remove_box)
         remove_item.show_all()
 
-        menu = Gtk.Menu()
+        menu = Gtk.Menu()  # type: ignore
         # Icons are already added so do not reserve extra space for them
         menu.set_reserve_toggle_size(0)  # type: ignore
         menu.append(remove_item)
@@ -1092,7 +1092,7 @@ For detailed information, see the log file located at:
             title=_("Profile"),
             message_format=_("New profile selected"),
         )
-        dialog.add_buttons(
+        dialog.add_buttons(  # type: ignore
             _("Reconnect"), gtk_reconnect_id, _("Stay connected"), gtk_nop_id
         )
         dialog.format_secondary_text(_("Do you want to apply the new profile by reconnecting?"))  # type: ignore
@@ -1163,8 +1163,8 @@ For detailed information, see the log file located at:
 
     def on_close_window(self, window: "EduVpnGtkWindow", event: Event) -> bool:
         logger.debug("clicked on close window")
-        self.hide()
-        application = self.get_application()
+        self.hide()  # type: ignore
+        application = self.get_application()  # type: ignore
         if application:
             application.on_window_closed()  # type: ignore
         return True

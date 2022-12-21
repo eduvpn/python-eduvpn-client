@@ -56,7 +56,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
     def do_startup(self) -> None:
         logger.debug("startup")
-        Gtk.Application.do_startup(self)
+        Gtk.Application.do_startup(self)  # type: ignore
         i18n.initialize(self.app.variant)
         notify.initialize(self.app.variant)
         self.connection_notification = notify.Notification(self.app.variant)
@@ -92,7 +92,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
         init_logger(self.debug, self.app.variant.logfile, CONFIG_DIR_MODE)
 
-        self.activate()
+        self.activate()  # type: ignore
         return 0
 
     def on_quit(self, action: None = None, _param: None = None) -> None:
@@ -103,7 +103,7 @@ class EduVpnGtkApplication(Gtk.Application):
         # Deregister is best effort
         except Exception as e:
             logger.debug("failed deregistering library", e)
-        self.quit()
+        self.quit()  # type: ignore
 
     def on_window_closed(self) -> None:
         logger.debug("window closed")
