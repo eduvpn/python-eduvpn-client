@@ -36,6 +36,7 @@ deb:
 	apt update
 	apt install -y \
 		gir1.2-nm-1.0 \
+		gir1.2-secret-1 \
 		gir1.2-gtk-3.0 \
 		gir1.2-notify-0.7 \
 		libdbus-glib-1-dev \
@@ -53,6 +54,7 @@ deb:
 dnf:
 	sudo dnf install -y \
 		libnotify \
+		libsecret \
 		gtk3 \
 		python3-dbus \
 		python3-requests-oauthlib \
