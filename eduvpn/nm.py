@@ -7,7 +7,7 @@ from functools import lru_cache
 from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
-from socket import AF_INET, AF_INET6
+from socket import AF_INET, AF_INET6, gethostbyname, gaierror
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, Tuple, TextIO
 
@@ -87,6 +87,7 @@ class ConnectionState(enum.Enum):
 class NMManager:
     def __init__(self, variant: ApplicationVariant):
         self.variant = variant
+        self.wg_endpoint_ip: Optional[str] = None
         try:
             self.client = NM.Client.new(None)
         except Exception:
@@ -156,25 +157,6 @@ class NMManager:
         if device is None:
             return None
         return device.get_mtu()
-
-    @property
-    def wireguard_endpoint(self) -> Optional[str]:
-        active_con = self.active_connection
-        if active_con is None:
-            return None
-
-        con = active_con.get_connection()
-        if con is None:
-            return None
-
-        s_wireguard = con.get_setting(NM.SettingWireGuard)
-        if s_wireguard is None:
-            return None
-
-        if s_wireguard.get_peers_len() < 1:
-            return None
-
-        return s_wireguard.get_peer(0).get_endpoint()
 
     @property
     def uuid(self):
@@ -444,6 +426,13 @@ class NMManager:
             new_con, callback, default_gateway, settings_config.nm_system_wide  # type: ignore
         )
 
+    def get_ip(self, url) -> Optional[str]:
+        try:
+            ip = gethostbyname(url)
+        except gaierror:
+            ip = None
+        return ip
+
     def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
@@ -499,7 +488,11 @@ class NMManager:
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
         peer = NM.WireGuardPeer.new()
-        peer.set_endpoint(config["Peer"]["Endpoint"], allow_invalid=False)
+        wg_endpoint = config["Peer"]["Endpoint"]
+        peer.set_endpoint(wg_endpoint, allow_invalid=False)
+        endpoint = wg_endpoint.split(":")[0]
+        self.wg_endpoint_ip = self.get_ip(endpoint)
+
         peer.set_public_key(config["Peer"]["PublicKey"], accept_invalid=False)
         for ip in config["Peer"]["AllowedIPs"].split(","):
             peer.append_allowed_ip(ip.strip(), accept_invalid=False)
