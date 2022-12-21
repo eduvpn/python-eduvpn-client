@@ -135,9 +135,9 @@ def show_error_dialog(
     )
 
     if not only_quit:
-        dialog.add_buttons(_("Ignore and continue"), IGNORE_ID)
+        dialog.add_buttons(_("Ignore and continue"), IGNORE_ID)  # type: ignore
 
-    dialog.add_buttons(
+    dialog.add_buttons(  # type: ignore
         _("Quit client"),
         QUIT_ID,
     )

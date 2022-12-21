@@ -122,18 +122,18 @@ def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # no
 
     text_cell = Gtk.CellRendererText()
     text_cell.props.ellipsize = Pango.EllipsizeMode.END  # type: ignore
-    text_cell.set_property("size-points", 14)
-    text_cell.set_property("ypad", 10)
+    text_cell.set_property("size-points", 14)  # type: ignore
+    text_cell.set_property("ypad", 10)  # type: ignore
     for group in group_tree_component:
         component_name = group_tree_component[group]
         tree_view = getattr(window, component_name)
         if len(tree_view.get_columns()) == 0:
             # Only add this column once.
-            column = Gtk.TreeViewColumn("", text_cell, text=0)
+            column = Gtk.TreeViewColumn("", text_cell, text=0)  # type: ignore
             tree_view.append_column(column)
         model = get_group_model(group)
         sorted_model = Gtk.TreeModelSort(model=model)  # type: ignore
-        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)  # type: ignore
         style_tree_view(window, tree_view)
         tree_view.set_model(sorted_model)
 

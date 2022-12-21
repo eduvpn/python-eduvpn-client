@@ -6,7 +6,7 @@ import json
 secureKeyring = True
 try:
     gi.require_version("Secret", "1")
-    from gi.repository import Secret
+    from gi.repository import Secret  # type: ignore
 except (ValueError, ImportError):
     secureKeyring = False
 
