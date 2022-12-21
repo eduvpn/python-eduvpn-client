@@ -1142,7 +1142,7 @@ For detailed information, see the log file located at:
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")
-        self.app.interface_transition("acknowledge_error")
+        # TODO: Handle this case
 
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
@@ -1170,6 +1170,5 @@ For detailed information, see the log file located at:
         return True
 
     def on_reopen_window(self):
-        self.app.interface_transition("restart")
         self.show()
         self.present()
