@@ -7,7 +7,7 @@ secureKeyring = True
 try:
     gi.require_version("Secret", "1")
     from gi.repository import Secret
-except (ValueError, ImportError) as e:
+except (ValueError, ImportError):
     secureKeyring = False
 
 
@@ -34,6 +34,7 @@ class TokenKeyring(ABC):
     @abstractmethod
     def load(self, attributes):
         pass
+
 
 class DBusKeyring(TokenKeyring):
     """A keyring using libsecret with DBus"""
@@ -84,6 +85,7 @@ class DBusKeyring(TokenKeyring):
         """Load a password in the secret service, return None when found nothing"""
         schema = self.create_schema(attributes)
         return Secret.password_lookup_sync(schema, attributes, None)
+
 
 class InsecureFileKeyring(TokenKeyring):
     def __init__(self, variant):

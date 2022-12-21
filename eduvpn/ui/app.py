@@ -14,7 +14,6 @@ from eduvpn.settings import CONFIG_DIR_MODE
 from eduvpn.utils import run_in_background_thread, ui_transition, init_logger
 from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
-from eduvpn.ui.utils import get_validity_text
 from gi.repository.Gio import ApplicationCommandLine
 
 logger = logging.getLogger(__name__)

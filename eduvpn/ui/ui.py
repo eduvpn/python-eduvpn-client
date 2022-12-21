@@ -19,7 +19,7 @@ from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
 from eduvpn.server import StatusImage
-from eduvpn.settings import CONFIG_PREFIX, FLAG_PREFIX
+from eduvpn.settings import FLAG_PREFIX
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.settings import HELP_URL
 from eduvpn.utils import (
@@ -35,7 +35,6 @@ from eduvpn.utils import (
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
 from eduvpn.ui.utils import (
-    IGNORE_ID,
     QUIT_ID,
     get_validity_text,
     link_markup,
@@ -672,7 +671,6 @@ For detailed information, see the log file located at:
                 self.close()
             self.keyring_dialog.destroy()
             self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
-            
 
     @ui_transition(State.NO_SERVER, StateType.LEAVE)
     def exit_MainState(self, old_state, new_state):
