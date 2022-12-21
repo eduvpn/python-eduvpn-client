@@ -12,8 +12,8 @@ from gi.overrides.Gtk import Widget  # type: ignore
 from typing import Tuple
 
 
-IGNORE_ID=-13
-QUIT_ID=-14
+IGNORE_ID = -13
+QUIT_ID = -14
 
 
 @run_in_main_gtk_thread

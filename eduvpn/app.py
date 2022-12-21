@@ -2,7 +2,6 @@ import json
 import logging
 import webbrowser
 import signal
-import socket
 import sys
 from datetime import datetime
 from typing import Any, Callable, Iterator, Optional
@@ -25,7 +24,7 @@ from eduvpn.utils import (
     run_in_main_gtk_thread,
 )
 from eduvpn.variants import ApplicationVariant
-from typing import List, Tuple, TextIO
+from typing import List, TextIO
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +139,10 @@ class ApplicationModel:
     def current_server(self):
         return self.common.get_current_server()
 
+    @current_server.setter
+    def current_server(self, current_server):
+        self.transitions.current_server = current_server
+
     def get_failover_rx(self, filehandler: Optional[TextIO]) -> int:
         rx_bytes = self.nm_manager.get_stats_bytes(filehandler)
         if rx_bytes is None:
@@ -170,17 +173,18 @@ class ApplicationModel:
             if wg_mtu is None:
                 logger.debug(
                     "failed to get WireGuard MTU, setting MTU to 1000"
-                    )
+                )
                 wg_mtu = 1000
             dropped = self.common.start_failover(
                 endpoint, wg_mtu, ReadRxBytes(lambda: self.get_failover_rx(rx_bytes_file))
             )
             has_wireguard = nm.is_wireguard_supported()
-            tcp_setting = self.config.prefer_tcp
+
             def on_reconnected():
                 self.common.set_support_wireguard(has_wireguard)
                 # We re-do the failover process every reconnect
                 self.udp_blocked = False
+
             if dropped:
                 logger.debug("Failover exited, connection is dropped")
                 if self.is_connected():
@@ -200,10 +204,6 @@ class ApplicationModel:
             self.common.cancel_failover()
         except WrappedError as e:
             logger.debug(f"Failed to cancel failover, error: {e}")
-
-    @current_server.setter
-    def current_server(self, current_server):
-        self.transitions.current_server = current_server
 
     def get_expiry(self, expire_time: datetime) -> Validity:
         return Validity(expire_time)
@@ -293,7 +293,7 @@ class ApplicationModel:
     def load_tokens(self, server) -> Optional[Token]:
         attributes = {
             "server": server.url,
-            "category": server.category,
+            "category": server.category
         }
         try:
             tokens_json = self.keyring.load(attributes)
@@ -301,7 +301,7 @@ class ApplicationModel:
                 logger.debug("No tokens available")
                 return None
             tokens = json.loads(tokens_json)
-            return Token(tokens["access"],  tokens["refresh"], int(tokens["expires"]))
+            return Token(tokens["access"], tokens["refresh"], int(tokens["expires"]))
         except Exception as e:
             logger.debug("Failed loading tokens with exception:")
             logger.debug(e, exc_info=True)

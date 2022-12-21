@@ -1,12 +1,11 @@
 import functools
 import logging
-from pathlib import Path
 from typing import Optional, TextIO
 
 from eduvpn.utils import get_human_readable_bytes, translated_property
 
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 
 def cached_stats_property(f):
