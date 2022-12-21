@@ -107,8 +107,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
     def on_window_closed(self) -> None:
         logger.debug("window closed")
-        if not self.app.model.is_connected():
-            self.on_quit()
+        self.on_quit()
 
     def enter_CopiedAnError(self):
         self.connection_notification.show(
