@@ -174,11 +174,21 @@ class ApplicationModel:
             dropped = self.common.start_failover(
                 endpoint, wg_mtu, ReadRxBytes(lambda: self.get_failover_rx(rx_bytes_file))
             )
+            has_wireguard = nm.is_wireguard_supported()
+            tcp_setting = self.config.prefer_tcp
+            def on_reconnected():
+                self.common.set_support_wireguard(has_wireguard)
+                self.config.prefer_tcp = tcp_setting
             if dropped:
                 logger.debug("Failover exited, connection is dropped")
                 if self.is_connected():
+                    has_wireguard = nm.is_wireguard_supported()
+                    tcp_setting = self.config.prefer_tcp
+
+                    # Set prefer tcp and disable wireguard
+                    self.config.prefer_tcp = True
                     self.common.set_support_wireguard(False)
-                    self.reconnect()
+                    self.reconnect(on_reconnected)
             else:
                 logger.debug("Failover exited, connection is NOT dropped")
         except WrappedError as e:
