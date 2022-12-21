@@ -471,7 +471,6 @@ class Application:
         def signal_handler(_signal, _frame):
             if self.model.is_oauth_started():
                 self.common.cancel_oauth()
-            self.common.go_back()
             self.common.deregister()
             sys.exit(1)
 
