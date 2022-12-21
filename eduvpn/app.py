@@ -129,6 +129,7 @@ class ApplicationModel:
         self.transitions = ApplicationModelTransitions(common, variant)
         self.variant = variant
         self.nm_manager = nm_manager
+        self.udp_blocked = False
         self.common.register_class_callbacks(self)
 
     @property
@@ -178,15 +179,15 @@ class ApplicationModel:
             tcp_setting = self.config.prefer_tcp
             def on_reconnected():
                 self.common.set_support_wireguard(has_wireguard)
-                self.config.prefer_tcp = tcp_setting
+                # We re-do the failover process every reconnect
+                self.udp_blocked = False
             if dropped:
                 logger.debug("Failover exited, connection is dropped")
                 if self.is_connected():
                     has_wireguard = nm.is_wireguard_supported()
-                    tcp_setting = self.config.prefer_tcp
 
-                    # Set prefer tcp and disable wireguard
-                    self.config.prefer_tcp = True
+                    # Set udp blocked and disable wireguard
+                    self.udp_blocked = True
                     self.common.set_support_wireguard(False)
                     self.reconnect(on_reconnected)
             else:
@@ -254,23 +255,25 @@ class ApplicationModel:
         self.clear_tokens(server)
 
     def connect_get_config(self, server, tokens=None) -> Optional[Config]:
+        # We prefer TCP if the user has set it or UDP is determined to be blocked
+        prefer_tcp = self.config.prefer_tcp or self.udp_blocked
         if isinstance(server, InstituteServer):
             return self.common.get_config_institute_access(
-                server.url, self.config.prefer_tcp, tokens
+                server.url, prefer_tcp, tokens
             )
         elif isinstance(server, DiscoServer):
             return self.common.get_config_institute_access(
-                server.base_url, self.config.prefer_tcp, tokens
+                server.base_url, prefer_tcp, tokens
             )
         elif isinstance(server, SecureInternetServer) or isinstance(
             server, DiscoOrganization
         ):
             return self.common.get_config_secure_internet(
-                server.org_id, self.config.prefer_tcp, tokens
+                server.org_id, prefer_tcp, tokens
             )
         elif isinstance(server, Server):
             return self.common.get_config_custom_server(
-                server.url, self.config.prefer_tcp, tokens
+                server.url, prefer_tcp, tokens
             )
         raise Exception("No server to get a config for")
 
