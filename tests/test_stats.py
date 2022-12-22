@@ -1,18 +1,21 @@
+import os
+
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 from eduvpn.nm import NMManager
 from eduvpn.variants import EDUVPN
 
 from eduvpn.ui import stats
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TextIO
 
 
 MOCK_IFACE = "mock"
 
 
-def write_temp_stats_file(directory: Path, filename: str, total_bytes: int):
-    f = open(directory / filename, "w")
+def write_temp_stats_file(filepath: Path, total_bytes: int):
+    f = open(filepath, "w")
     f.write(str(total_bytes))
     f.close()
 
@@ -23,84 +26,55 @@ def try_open(path: Path):
     return open(path, "r")
 
 
+@patch("eduvpn.nm.NMManager.iface", new_callable=PropertyMock, return_value=MOCK_IFACE)
 class TestStats(TestCase):
-    @patch("eduvpn.ui.stats.NetworkStats.iface", MOCK_IFACE)
-    def test_download(self):
+    def test_stat_bytes(self, _):
         nm_manager = NMManager(EDUVPN)
         with TemporaryDirectory() as tempdir:
             # Create test data in the wanted files
             # Use the tempdir so it is cleaned up later
             values = [0, 37, 6166746255814, -43]
-            filenames = [
-                "rx_bytes",
-                "rx_bytes_increased",
-                "rx_bytes_increased_big",
-                "rx_bytes_decreased",
-            ]
-            for index, value in enumerate(values):
-                write_temp_stats_file(Path(tempdir), filenames[index], value)
-
-            # Create the class instance
-            class_ = stats.NetworkStats(nm_manager)
-
-            # Add a file that does not exist
-            filenames += ["idonotexist"]
-
             # For the expected values we want the human readable string
             # The last two are special
             #   - 0 B because the value has decreased
             #   - default text because the file does not exist
-            expected_values = ["0 B", "37 B", "5.61 TB", "0 B", class_.default_text]
+            expected_values = ["0 B", "37 B", "5.61 TB", "0 B"]
 
-            # Loop over the files,
-            # patch it and check if the expected value holds
-            class_ = stats.NetworkStats(nm_manager)
-            for index, filename in enumerate(filenames):
-                location = Path(tempdir) / filename
-                file_ = try_open(location)
-                with patch("eduvpn.ui.stats.NetworkStats.download_file", file_):
-                    self.assertEqual(class_.download, expected_values[index])
-                    class_.cleanup()
+            # Create the statistics path
+            stat_path = Path(tempdir) / MOCK_IFACE / "statistics"
+            os.makedirs(stat_path)
 
-    @patch("eduvpn.ui.stats.NetworkStats.iface", MOCK_IFACE)
-    def test_upload(self):
-        nm_manager = NMManager(EDUVPN)
-        with TemporaryDirectory() as tempdir:
-            # Create test data in the wanted files
-            # Use the tempdir so it is cleaned up later
-            values = [0, 1024, 237823782378, -47]
-            filenames = [
-                "tx_bytes",
-                "tx_bytes_increased",
-                "tx_bytes_increased_big",
-                "tx_bytes_decreased",
-            ]
-            for index, value in enumerate(values):
-                write_temp_stats_file(Path(tempdir), filenames[index], value)
+            # Create the download and upload files
+            download_file = stat_path / "rx_bytes"
+            write_temp_stats_file(download_file, "0")
+            download_filehandler = try_open(download_file)
 
-            # Create the class instance
-            class_ = stats.NetworkStats(nm_manager)
+            upload_file = stat_path / "tx_bytes"
+            write_temp_stats_file(upload_file, "0")
+            upload_filehandler = try_open(upload_file)
 
-            # Add a file that does not exist
-            filenames += ["idonotexist"]
+            def check_expected(_property: str, _file: TextIO):
+                # Create the class instance
+                class_ = stats.NetworkStats(nm_manager)
 
-            # For the expected values we want the human readable string
-            # The last two are special
-            #   - 0 B because the value has decreased
-            #   - default text because the file does not exist
-            expected_values = [
-                "0 B",
-                "1.00 kB",
-                "221.49 GB",
-                "0 B",
-                class_.default_text,
-            ]
+                # Loop over the files,
+                # patch it and check if the expected value holds
+                class_ = stats.NetworkStats(nm_manager)
+                for i, expected in enumerate(expected_values):
+                    write_temp_stats_file(Path(_file.name), values[i])
+                    self.assertEqual(getattr(class_, _property), expected)
+                _file.close()
 
-            # Loop over the files,
-            # patch it and check if the expected value holds
-            for index, filename in enumerate(filenames):
-                location = Path(tempdir) / filename
-                file_ = try_open(location)
-                with patch("eduvpn.ui.stats.NetworkStats.upload_file", file_):
-                    self.assertEqual(class_.upload, expected_values[index])
-                    class_.cleanup()
+            # Mock the files and check the expected values
+            with patch(
+                "eduvpn.ui.stats.NetworkStats.upload_file",
+                new_callable=PropertyMock,
+                return_value=upload_filehandler,
+            ):
+                check_expected("upload", upload_filehandler)
+            with patch(
+                "eduvpn.ui.stats.NetworkStats.download_file",
+                new_callable=PropertyMock,
+                return_value=download_filehandler,
+            ):
+                check_expected("download", download_filehandler)
