@@ -41,7 +41,6 @@ from eduvpn.ui.utils import (
     should_show_error,
     show_error_dialog,
     show_ui_component,
-    style_tree_view,
     style_widget,
 )
 from datetime import datetime
@@ -739,7 +738,6 @@ For detailed information, see the log file located at:
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
             profile_tree_view.append_column(column)
 
-        style_tree_view(self, profile_tree_view)
         profile_tree_view.set_model(profiles_list_model)
         profiles_list_model.clear()
         for profile in profiles.profiles:
@@ -775,7 +773,6 @@ For detailed information, see the log file located at:
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
             location_tree_view.append_column(column)
 
-            style_tree_view(self, location_tree_view)
             location_tree_view.set_model(location_list_model)
 
         location_list_model.clear()
