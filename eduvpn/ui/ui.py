@@ -85,8 +85,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.app = self.eduvpn_app.app  # type: ignore
         self.common = self.eduvpn_app.common
         handlers = {
-            "on_configure_settings": self.on_configure_settings,
-            "on_get_help": self.on_get_help,
             "on_go_back": self.on_go_back,
             "on_add_other_server": self.on_add_other_server,
             "on_add_custom_server": self.on_add_custom_server,
@@ -103,9 +101,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_location_row_activated": self.on_location_row_activated,
             "on_acknowledge_error": self.on_acknowledge_error,
             "on_renew_session_clicked": self.on_renew_session_clicked,
-            "on_config_autoconnect": self.on_config_autoconnect,
-            "on_config_prefer_tcp": self.on_config_prefer_tcp,
-            "on_config_nm_system_wide": self.on_config_nm_system_wide,
             "on_close_window": self.on_close_window,
         }
         builder.connect_signals(handlers)
@@ -192,8 +187,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.server_label = builder.get_object("serverLabel")
         self.server_support_label = builder.get_object("supportLabel")
 
-        self.settings_show_back_leave = False
-
         self.renew_session_button = builder.get_object("renewSessionButton")
         self.select_profile_combo = builder.get_object("selectProfileCombo")
         self.select_profile_text = builder.get_object("selectProfileText")
@@ -201,20 +194,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.oauth_page = builder.get_object("openBrowserPage")
         self.oauth_cancel_button = builder.get_object("cancelBrowserButton")
 
-        self.settings_page = builder.get_object("settingsPage")
-        self.setting_config_autoconnect = builder.get_object("settingConfigAutoconnect")
-        self.setting_config_prefer_tcp = builder.get_object("settingConfigPreferTCP")
-        self.setting_config_nm_system_wide = builder.get_object(
-            "settingConfigNMSystemWide"
-        )
-
         self.loading_page = builder.get_object("loadingPage")
         self.loading_title = builder.get_object("loadingTitle")
         self.loading_message = builder.get_object("loadingMessage")
-
-        self.error_page = builder.get_object("errorPage")
-        self.error_text = builder.get_object("errorText")
-        self.error_acknowledge_button = builder.get_object("errorAcknowledgeButton")
 
         self.set_title(self.app.variant.name)  # type: ignore
         self.set_icon_from_file(self.app.variant.icon)  # type: ignore
@@ -227,10 +209,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.find_server_search_input.set_placeholder_text(
                 _("Enter the server address")
             )
-
-        # Track the currently shown page so we can return to it
-        # when the settings page is closed.
-        self.current_shown_page = None
 
         # We track the switch state so we can distinguish
         # the switch being set by the ui from the user toggling it.
@@ -459,24 +437,6 @@ For detailed information, see the log file located at:
         Show a collection of pages.
         """
         self.current_shown_page = None
-
-    def is_on_settings_page(self) -> bool:
-        return self.page_stack.get_visible_child() is self.settings_page
-
-    def enter_settings_page(self) -> None:
-        assert not self.is_on_settings_page()
-        # Determine whether or not we need to show the back button after leaving
-        self.settings_show_back_leave = self.back_button_container.props.visible
-        self.setting_config_autoconnect.set_state(self.app.config.autoconnect)
-        self.setting_config_nm_system_wide.set_state(self.app.config.nm_system_wide)
-        self.setting_config_prefer_tcp.set_state(self.app.config.prefer_tcp)
-        self.page_stack.set_visible_child(self.settings_page)
-        self.show_back_button(True)
-
-    def leave_settings_page(self) -> None:
-        assert self.is_on_settings_page()
-        self.page_stack.set_visible_child(self.current_shown_page)
-        self.show_back_button(self.settings_show_back_leave)
 
     def recreate_profile_combo(self, server_info) -> None:
         # Create a store of profiles
@@ -864,24 +824,8 @@ For detailed information, see the log file located at:
             self.connection_renew_thread_cancel()
             self.connection_renew_thread_cancel = None
 
-    # ui callbacks
-    def on_configure_settings(self, widget: EventBox, event: EventButton) -> None:
-        logger.debug("clicked on configure settings")
-        if self.is_on_settings_page():
-            self.leave_settings_page()
-        else:
-            self.enter_settings_page()
-
-    def on_get_help(self, widget, event):
-        logger.debug("clicked on get help")
-        webbrowser.open(HELP_URL)
-
     def on_go_back(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked on go back")
-        if self.is_on_settings_page():
-            self.leave_settings_page()
-            return
-
         self.call_model("go_back")
 
     def on_add_other_server(self, button: Button) -> None:
@@ -904,10 +848,7 @@ For detailed information, see the log file located at:
             logger.debug(f"Server added, {display_name}")
 
         if self.app.model.is_search_server():
-            if self.app.config.autoconnect:
-                self.call_model("connect", server, None, True)
-            else:
-                self.call_model("add", server, on_added)
+            self.call_model("add", server, on_added)
         else:
             self.call_model("connect", server)
 
@@ -1145,18 +1086,6 @@ For detailed information, see the log file located at:
         logger.debug("clicked on renew session")
 
         self.call_model("renew_session")
-
-    def on_config_autoconnect(self, _switch: Switch, state: bool) -> None:
-        logger.debug("clicked on setting: 'autoconnect'")
-        self.app.config.autoconnect = state
-
-    def on_config_prefer_tcp(self, _switch: Switch, state: bool) -> None:
-        logger.debug("clicked on setting: 'prefer tcp'")
-        self.app.config.prefer_tcp = state
-
-    def on_config_nm_system_wide(self, switch, state: bool):
-        logger.debug("clicked on setting: 'nm system wide'")
-        self.app.config.nm_system_wide = state
 
     def on_close_window(self, window: "EduVpnGtkWindow", event: Event) -> bool:
         logger.debug("clicked on close window")

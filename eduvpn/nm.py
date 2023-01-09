@@ -366,13 +366,12 @@ class NMManager:
         new_connection: "NM.SimpleConnection",
         callback: Callable,
         default_gateway: bool,
-        system_wide: bool,
     ):
         new_connection = self.set_setting_default_gateway(
             new_connection, default_gateway
         )
         new_connection = self.set_setting_ensure_permissions(
-            new_connection, not system_wide
+            new_connection
         )
         if self.uuid:
             old_con = self.client.get_connection_by_uuid(self.uuid)
@@ -395,12 +394,11 @@ class NMManager:
         return con
 
     def set_setting_ensure_permissions(
-        self, con: "NM.SimpleConnection", enable: bool
+        self, con: "NM.SimpleConnection"
     ) -> "NM.SimpleConnection":
-        if enable:
-            s_con = con.get_setting_connection()
-            s_con.add_permission("user", GLib.get_user_name(), None)
-            con.add_setting(s_con)
+        s_con = con.get_setting_connection()
+        s_con.add_permission("user", GLib.get_user_name(), None)
+        con.add_setting(s_con)
         return con
 
     def save_connection(
@@ -423,7 +421,7 @@ class NMManager:
         new_con = self.import_ovpn(ovpn)
         settings_config = self.variant.config
         self.set_connection(
-            new_con, callback, default_gateway, settings_config.nm_system_wide  # type: ignore
+            new_con, callback, default_gateway  # type: ignore
         )
 
     def get_ip(self, url) -> Optional[str]:
@@ -529,7 +527,7 @@ class NMManager:
 
         settings_config = self.variant.config
         self.set_connection(
-            profile, callback, default_gateway, settings_config.nm_system_wide  # type: ignore
+            profile, callback, default_gateway  # type: ignore
         )
 
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
