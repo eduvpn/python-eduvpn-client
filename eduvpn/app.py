@@ -256,7 +256,7 @@ class ApplicationModel:
 
     def connect_get_config(self, server, tokens=None) -> Optional[Config]:
         # We prefer TCP if the user has set it or UDP is determined to be blocked
-        prefer_tcp = self.config.prefer_tcp or self.udp_blocked
+        prefer_tcp = self.udp_blocked
         if isinstance(server, InstituteServer):
             return self.common.get_config_institute_access(
                 server.url, prefer_tcp, tokens
