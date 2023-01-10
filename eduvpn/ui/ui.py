@@ -18,6 +18,7 @@ from functools import partial
 from eduvpn_common.state import State, StateType
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 
+from eduvpn import __version__
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX
 from eduvpn.i18n import retrieve_country_name
@@ -85,6 +86,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.app = self.eduvpn_app.app  # type: ignore
         self.common = self.eduvpn_app.common
         handlers = {
+            "on_info_delete": self.on_info_delete,
+            "on_info_press_event": self.on_info_button,
             "on_go_back": self.on_go_back,
             "on_add_other_server": self.on_add_other_server,
             "on_add_custom_server": self.on_add_custom_server,
@@ -113,10 +116,14 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.app_logo = builder.get_object("appLogo")
 
         self.page_stack = builder.get_object("pageStack")
-        self.settings_button = builder.get_object("settingsButton")
         self.back_button_container = builder.get_object("backButtonEventBox")
 
         self.server_list_container = builder.get_object("serverListContainer")
+
+        self.info_version = builder.get_object("infoVersion")
+        self.info_version.set_text(__version__)
+        self.info_log_location = builder.get_object("infoLogLocation")
+        self.info_log_location.set_text(str(self.app.variant.logfile))
 
         self.institute_list_header = builder.get_object("instituteAccessHeader")
         self.secure_internet_list_header = builder.get_object("secureInternetHeader")
@@ -179,6 +186,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_validity_thread_cancel: Optional[Callable] = None
         self.connection_renew_thread_cancel: Optional[Callable] = None
         self.connection_info_stats = None
+
+        self.info_dialog = builder.get_object("infoDialog")
 
         self.keyring_dialog = builder.get_object("keyringDialog")
         self.keyring_do_not_show = builder.get_object("keyringDoNotShow")
@@ -823,6 +832,16 @@ For detailed information, see the log file located at:
         if self.connection_renew_thread_cancel:
             self.connection_renew_thread_cancel()
             self.connection_renew_thread_cancel = None
+
+    def on_info_delete(self, widget, event):
+        logger.debug("info dialog delete event")
+        return widget.hide_on_delete()
+
+    def on_info_button(self, widget: EventBox, event: EventButton) -> None:
+        logger.debug("clicked info button")
+        self.info_dialog.show()
+        self.info_dialog.run()
+        self.info_dialog.hide()
 
     def on_go_back(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked on go back")
