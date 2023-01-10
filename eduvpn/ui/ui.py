@@ -913,16 +913,6 @@ For detailed information, see the log file located at:
 
         row = model[tree_iter]
         server = row[1]
-
-        cancel_item = Gtk.MenuItem()  # type: ignore
-        cancel_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
-        cancel_image = Gtk.Image.new_from_icon_name("edit-undo", Gtk.IconSize.MENU)  # type: ignore
-        cancel_label = Gtk.Label.new("Cancel")  # type: ignore
-        cancel_box.pack_start(cancel_image, False, False, 0)
-        cancel_box.pack_start(cancel_label, False, False, 8)
-        cancel_item.add(cancel_box)
-        cancel_item.show_all()
-
         remove_item = Gtk.MenuItem()  # type: ignore
         remove_item.connect("activate", lambda _: self.server_ask_remove(server))
         remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
@@ -937,7 +927,6 @@ For detailed information, see the log file located at:
         # Icons are already added so do not reserve extra space for them
         menu.set_reserve_toggle_size(0)  # type: ignore
         menu.append(remove_item)
-        menu.append(cancel_item)
         menu.attach_to_widget(widget)  # type: ignore
         menu.popup_at_pointer()
 
