@@ -115,6 +115,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.app_logo = builder.get_object("appLogo")
 
+        self.failover_text = builder.get_object("failoverText")
+
         self.page_stack = builder.get_object("pageStack")
         self.back_button_container = builder.get_object("backButtonEventBox")
 
@@ -172,9 +174,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_info_downloaded = builder.get_object(
             "connectionInfoDownloadedText"
         )
-        self.connection_info_protocol = builder.get_object(
-            "connectionInfoProtocolText"
-        )
+        self.connection_info_protocol = builder.get_object("connectionInfoProtocolText")
         self.connection_info_uploaded = builder.get_object("connectionInfoUploadedText")
         self.connection_info_ipv4address = builder.get_object(
             "connectionInfoIpv4AddressText"
@@ -393,11 +393,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if self.error_revealer is None or self.error_revealer_label is None:
             return
         self.error_revealer.set_reveal_child(True)
-        self.error_revealer_label.set_text(f'''
+        self.error_revealer_label.set_text(
+            f"""
 The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.
 
 For detailed information, see the log file located at:
- - {GLib.markup_escape_text(str(self.app.variant.logfile))}''')
+ - {GLib.markup_escape_text(str(self.app.variant.logfile))}"""
+        )
         self.error_revealer_label.set_use_markup(True)
 
     @run_in_main_gtk_thread
@@ -632,13 +634,18 @@ For detailed information, see the log file located at:
         if not servers and old_state != get_ui_state(State.SEARCH_SERVER):
             self.call_model("set_search_server")
 
-        if not self.app.model.keyring.secure and not self.app.config.ignore_keyring_warning:
+        if (
+            not self.app.model.keyring.secure
+            and not self.app.config.ignore_keyring_warning
+        ):
             self.keyring_dialog.show()
             _id = self.keyring_dialog.run()
             if _id == QUIT_ID:
                 self.close()  # type: ignore
             self.keyring_dialog.destroy()
-            self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
+            self.app.config.ignore_keyring_warning = (
+                self.keyring_do_not_show.get_active()
+            )
 
     @ui_transition(State.NO_SERVER, StateType.LEAVE)
     def exit_MainState(self, old_state, new_state):
@@ -792,6 +799,12 @@ For detailed information, see the log file located at:
         self.update_connection_status(False)
         self.update_connection_server(server_info)
 
+        # Show the UDP blocked failover text if applicable
+        if self.app.model.udp_blocked:
+            self.failover_text.show()
+        else:
+            self.failover_text.hide()
+
     @ui_transition(State.DISCONNECTED, StateType.LEAVE)
     def exit_ConnectionStatus(self, old_state, new_state):
         self.show_back_button(False)
@@ -808,6 +821,7 @@ For detailed information, see the log file located at:
         self.update_connection_status(True)
         self.update_connection_server(server_info)
         self.start_validity_renew(server_info)
+
         self.call_model("start_failover")
 
     def start_validity_renew(self, server_info) -> None:
@@ -996,7 +1010,9 @@ For detailed information, see the log file located at:
             ipv4 = self.connection_info_stats.ipv4
             ipv6 = self.connection_info_stats.ipv6
             self.connection_info_downloaded.set_text(download)
-            self.connection_info_protocol.set_text(f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>")
+            self.connection_info_protocol.set_text(
+                f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>"
+            )
             self.connection_info_protocol.set_use_markup(True)
             self.connection_info_uploaded.set_text(upload)
             self.connection_info_ipv4address.set_text(ipv4)
