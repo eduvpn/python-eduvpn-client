@@ -20,6 +20,7 @@ class ApplicationVariant:
         icon: str,
         translation_domain: str,
         logo: Optional[str] = None,
+        logo_dark: Optional[str] = None,
         server_image: Optional[str] = None,
         use_predefined_servers: bool = True,
         use_configured_servers: bool = True,
@@ -30,6 +31,7 @@ class ApplicationVariant:
         self.name = name
         self.icon = icon
         self.logo = logo
+        self.logo_dark = logo_dark
         self.server_image = server_image
         self.translation_domain = translation_domain
         self.use_predefined_servers = use_predefined_servers
@@ -54,6 +56,8 @@ EDUVPN = ApplicationVariant(
     config_prefix=CONFIG_PREFIX,
     name=settings.EDUVPN_NAME,
     icon=settings.EDUVPN_ICON,
+    logo=settings.EDUVPN_LOGO,
+    logo_dark=settings.EDUVPN_LOGO_DARK,
     translation_domain="eduVPN",
 )
 
@@ -64,6 +68,7 @@ LETS_CONNECT = ApplicationVariant(
     name=settings.LETS_CONNECT_NAME,
     icon=settings.LETS_CONNECT_ICON,
     logo=settings.LETS_CONNECT_LOGO,
+    logo_dark=settings.LETS_CONNECT_LOGO,
     server_image=settings.SERVER_ILLUSTRATION,
     translation_domain="LetsConnect",
     use_predefined_servers=False,
