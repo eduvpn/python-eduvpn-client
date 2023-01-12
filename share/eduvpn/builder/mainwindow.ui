@@ -826,7 +826,6 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="halign">center</property>
-                        <property name="margin-top">45</property>
                         <signal name="activate" handler="on_toggle_connection_info" swapped="no"/>
                         <child>
                           <object class="GtkFrame">
