@@ -25,6 +25,8 @@ LC_IMAGE_PREFIX = prefix + "/share/letsconnect/images/"
 
 EDUVPN_ICON = prefix + "/share/icons/hicolor/128x128/apps/org.eduvpn.client.png"
 EDUVPN_NAME = "eduVPN"
+EDUVPN_LOGO = IMAGE_PREFIX + "edu-vpn-logo.png"
+EDUVPN_LOGO_DARK = IMAGE_PREFIX + "edu-vpn-logo-dark.png"
 LETS_CONNECT_LOGO = LC_IMAGE_PREFIX + "letsconnect.png"
 SERVER_ILLUSTRATION = LC_IMAGE_PREFIX + "server-illustration.png"
 LETS_CONNECT_ICON = (

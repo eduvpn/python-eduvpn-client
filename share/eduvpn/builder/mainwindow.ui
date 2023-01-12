@@ -52,7 +52,7 @@
                       <object class="GtkImage" id="backButton">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="pixbuf">../images/back.png</property>
+                        <property name="icon-name">go-previous</property>
                       </object>
                     </child>
                   </object>
@@ -77,7 +77,7 @@
                           <object class="GtkImage" id="infoButton">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="icon-name">help-browser</property>
+                            <property name="pixbuf">../images/question-icon.png</property>
                             <property name="icon_size">3</property>
                           </object>
                         </child>
@@ -236,7 +236,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">15</property>
                             <child>
-                              <object class="GtkImage">
+                              <object class="GtkImage" id="instituteIcon">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="margin-left">2</property>
@@ -308,7 +308,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">15</property>
                             <child>
-                              <object class="GtkImage">
+                              <object class="GtkImage" id="earthIcon">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="margin-left">2</property>
@@ -393,7 +393,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">15</property>
                             <child>
-                              <object class="GtkImage">
+                              <object class="GtkImage" id="serverIcon">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="margin-left">2</property>

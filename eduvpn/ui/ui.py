@@ -22,7 +22,7 @@ from eduvpn import __version__
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX
 from eduvpn.i18n import retrieve_country_name
-from eduvpn.settings import HELP_URL
+from eduvpn.settings import IMAGE_PREFIX, HELP_URL
 from eduvpn.utils import (
     ERROR_STATE,
     get_prefix,
@@ -67,6 +67,18 @@ def get_flag_path(country_code: str) -> Optional[str]:
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
 
+def get_images_path(filename: str) -> str:
+    return os.path.join(IMAGE_PREFIX, filename)
+
+# See:
+# https://www.w3.org/TR/AERT/#color-contrast
+# And https://stackoverflow.com/a/946734
+# For how I came up with these magic values :^)
+def is_dark(rgb):
+    red = rgb.red * 255
+    green = rgb.green * 255
+    blue = rgb.blue * 255
+    return (red*0.299 + green*0.587 + blue*0.114) <= 186
 
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
@@ -107,6 +119,22 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_close_window": self.on_close_window,
         }
         builder.connect_signals(handlers)
+
+        style_context = self.get_style_context()
+        bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)
+        self.is_dark_theme = is_dark(bg_color)
+
+        dark_icons = {
+            "infoButton": "question-icon-dark.png",
+            "instituteIcon": "institute-icon-dark.png",
+            "earthIcon": "earth-icon-dark.png",
+            "serverIcon": "server-icon-dark.png",
+        }
+
+        if self.is_dark_theme:
+            for _id, icon in dark_icons.items():
+                obj = builder.get_object(_id)
+                obj.set_from_file(get_images_path(icon))
 
         # Whether or not the profile that is selected is the 'same' one as before
         # This is used so it doesn't fully trigger the callback
@@ -210,9 +238,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.set_title(self.app.variant.name)  # type: ignore
         self.set_icon_from_file(self.app.variant.icon)  # type: ignore
         if self.app.variant.logo:
-            self.app_logo.set_from_file(self.app.variant.logo)
+            logo = self.app.variant.logo
+            if self.is_dark_theme:
+                logo = self.app.variant.logo_dark
+            self.app_logo.set_from_file(logo)
         if self.app.variant.server_image:
-            self.find_server_image.set_from_file(self.app.variant.server_image)
+            self.find_server_image.set_from_file(self.app.variant.server_image(self.is_dark_theme))
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
             self.find_server_search_input.set_placeholder_text(
