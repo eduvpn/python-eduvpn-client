@@ -149,26 +149,29 @@ class ApplicationModel:
             return -1
         return rx_bytes
 
-    def start_failover(self):
+    def should_failover(self):
         current_vpn_protocol = self.nm_manager.protocol
         if current_vpn_protocol != "WireGuard":
             logger.debug(
                 f"Current protocol ({current_vpn_protocol}) does not support failover"
             )
-            return
+            return False
+        return True
+
+    def start_failover(self):
         try:
             rx_bytes_file = self.nm_manager.open_stats_file("rx_bytes")
             if rx_bytes_file is None:
                 logger.debug(
                     "Failed to initialize failover, failed to open rx bytes file"
                 )
-                return
+                return False
             endpoint = self.nm_manager.wg_endpoint_ip
             if endpoint is None:
                 logger.debug(
                     "Failed to initialize failover, failed to get WireGuard endpoint"
                 )
-                return
+                return False
             wg_mtu = self.nm_manager.wireguard_mtu
             if wg_mtu is None:
                 logger.debug(
@@ -182,8 +185,6 @@ class ApplicationModel:
 
             def on_reconnected():
                 self.common.set_support_wireguard(has_wireguard)
-                # We re-do the failover process every reconnect
-                self.udp_blocked = False
 
             if dropped:
                 logger.debug("Failover exited, connection is dropped")
@@ -193,11 +194,16 @@ class ApplicationModel:
                     # Set udp blocked and disable wireguard
                     self.udp_blocked = True
                     self.common.set_support_wireguard(False)
-                    self.reconnect(on_reconnected)
+                    self.reconnect(on_reconnected, prefer_tcp=True)
+                    return True
+                # Dropped but not relevant anymore
+                return False
             else:
                 logger.debug("Failover exited, connection is NOT dropped")
+                return False
         except WrappedError as e:
             logger.debug(f"Failed to start failover, error: {e}")
+            return False
 
     def cancel_failover(self):
         try:
@@ -254,9 +260,8 @@ class ApplicationModel:
         # Delete tokens from the keyring
         self.clear_tokens(server)
 
-    def connect_get_config(self, server, tokens=None) -> Optional[Config]:
+    def connect_get_config(self, server, tokens=None, prefer_tcp: bool = False) -> Optional[Config]:
         # We prefer TCP if the user has set it or UDP is determined to be blocked
-        prefer_tcp = self.udp_blocked
         if isinstance(server, InstituteServer):
             return self.common.get_config_institute_access(
                 server.url, prefer_tcp, tokens
@@ -324,7 +329,7 @@ class ApplicationModel:
             logger.debug(e, exc_info=True)
 
     def connect(
-        self, server, callback: Optional[Callable] = None, ensure_exists=False
+            self, server, callback: Optional[Callable] = None, ensure_exists=False, prefer_tcp: bool = False
     ) -> None:
         config = None
         config_type = None
@@ -332,7 +337,7 @@ class ApplicationModel:
             self.add(server)
 
         tokens = self.load_tokens(server)
-        config = self.connect_get_config(server, tokens)
+        config = self.connect_get_config(server, tokens, prefer_tcp=prefer_tcp)
         if not config:
             raise Exception("No configuration available")
 
@@ -348,7 +353,6 @@ class ApplicationModel:
             default_gateway = server.profiles.current.default_gateway
 
         def on_connected():
-            self.common.set_connected()
             if callback:
                 callback()
 
@@ -363,13 +367,13 @@ class ApplicationModel:
         self.common.set_connecting()
         connect(config, config_type)
 
-    def reconnect(self, callback: Optional[Callable] = None):
+    def reconnect(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
         def on_connected():
             if callback:
                 callback()
 
         def on_disconnected():
-            self.activate_connection(on_connected)
+            self.activate_connection(on_connected, prefer_tcp=prefer_tcp)
 
         # Reconnect
         self.deactivate_connection(on_disconnected)
@@ -414,11 +418,11 @@ class ApplicationModel:
         else:
             do_profile()
 
-    def activate_connection(self, callback: Optional[Callable] = None):
+    def activate_connection(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
         if not self.current_server:
             return
 
-        self.connect(self.current_server, callback)
+        self.connect(self.current_server, callback, prefer_tcp=prefer_tcp)
 
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
         self.common.set_disconnecting()
