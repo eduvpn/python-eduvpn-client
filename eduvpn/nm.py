@@ -370,9 +370,7 @@ class NMManager:
         new_connection = self.set_setting_default_gateway(
             new_connection, default_gateway
         )
-        new_connection = self.set_setting_ensure_permissions(
-            new_connection
-        )
+        new_connection = self.set_setting_ensure_permissions(new_connection)
         if self.uuid:
             old_con = self.client.get_connection_by_uuid(self.uuid)
             if old_con:
@@ -420,9 +418,7 @@ class NMManager:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
         settings_config = self.variant.config
-        self.set_connection(
-            new_con, callback, default_gateway  # type: ignore
-        )
+        self.set_connection(new_con, callback, default_gateway)  # type: ignore
 
     def get_ip(self, url) -> Optional[str]:
         try:
@@ -526,9 +522,7 @@ class NMManager:
         profile.add_setting(w_con)
 
         settings_config = self.variant.config
-        self.set_connection(
-            profile, callback, default_gateway  # type: ignore
-        )
+        self.set_connection(profile, callback, default_gateway)  # type: ignore
 
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
         con = self.client.get_connection_by_uuid(self.uuid)
@@ -549,8 +543,23 @@ class NMManager:
             else:
                 _logger.debug(f"activate_connection_async result: {result}")
             finally:
-                if callback:
-                    callback()
+                if not callback:
+                    return
+                signal = None
+
+                def changed_state(
+                    active: "NM.ActiveConnection", state_code: int, _reason_code: int
+                ):
+                    state = NM.ActiveConnectionState(state_code)
+                    if (
+                        ConnectionState.from_active_state(state)
+                        == ConnectionState.CONNECTED
+                    ):
+                        if signal:
+                            active.disconnect(signal)
+                        callback()
+
+                signal = self.active_connection.connect("state-changed", changed_state)
 
         self.client.activate_connection_async(
             connection=con, callback=activate_connection_callback, user_data=callback
@@ -563,11 +572,26 @@ class NMManager:
             return
         type = connection.get_connection_type()
         if type == "vpn":
-            self.deactivate_connection_vpn(callback)
+            self.deactivate_connection_vpn()
         elif type == "wireguard":
-            self.deactivate_connection_wg(callback)
+            self.deactivate_connection_wg()
         else:
             _logger.warning(f"unexpected connection type {type}")
+
+        if not callback:
+            return
+        signal = None
+
+        def changed_state(
+            active: "NM.ActiveConnection", state_code: int, _reason_code: int
+        ):
+            state = NM.ActiveConnectionState(state_code)
+            if ConnectionState.from_active_state(state) == ConnectionState.DISCONNECTED:
+                if signal:
+                    active.disconnect(signal)
+                callback()
+
+        signal = self.active_connection.connect("state-changed", changed_state)
 
     def deactivate_connection_vpn(self, callback: Optional[Callable] = None) -> None:
         con = self.active_connection
