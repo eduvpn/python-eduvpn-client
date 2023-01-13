@@ -23,6 +23,8 @@ import argparse
 import signal
 import sys
 
+from typing import Callable
+
 
 def get_grouped_index(servers, index):
     if index < 0 or index >= len(servers):
@@ -152,6 +154,19 @@ class CommandLine:
 
         return self.ask_server_input(servers)
 
+    def start_failover(self, callback: Callable):
+        if not self.app.model.should_failover():
+            callback()
+            return
+
+        def on_reconnected(dropped):
+            if dropped:
+                print("We have switched to a new VPN protocol as the previous protocol was blocked")
+            callback()
+
+        print("Connected, but we are testing your VPN if it can reach the internet...")
+        self.app.model.start_failover(on_reconnected)
+
     def connect_server(self, server):
         def connect(callback=None):
             @run_in_background_thread("connect")
@@ -159,7 +174,7 @@ class CommandLine:
                 try:
                     # Connect to the server and ensure it exists
                     should_add = not self.server_db.has(server)
-                    self.app.model.connect(server, callback, ensure_exists=should_add)
+                    self.app.model.connect(server, lambda: self.start_failover(callback), ensure_exists=should_add)
                 except Exception as e:
                     if should_show_error(e):
                         print("Error connecting:", e, file=sys.stderr)

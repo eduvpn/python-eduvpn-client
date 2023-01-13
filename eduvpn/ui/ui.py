@@ -298,13 +298,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         register()
 
     @run_in_background_thread("call-model")
-    def call_model(self, func_name: str, *args, ui_callback: Optional[Callable] = None):
+    def call_model(self, func_name: str, *args):
         func = getattr(self.app.model, func_name, None)
         if func:
             try:
-                res = func(*(args))
-                if ui_callback:
-                    ui_callback(res)
+                func(*(args))
             except Exception as e:
                 if should_show_error(e):
                     self.show_error_revealer(str(e))
@@ -842,8 +840,11 @@ For detailed information, see the log file located at:
 
     @run_in_main_gtk_thread
     def update_failover_text(self, dropped):
-        if not dropped and not self.app.model.udp_blocked:
+        if not dropped:
             self.failover_text.hide()
+        else:
+            self.failover_label.set_text("The VPN was unable to reach the internet. We have switched to a different VPN protocol")
+            self.failover_text.show()
 
     @ui_transition(State.CONNECTED, StateType.ENTER)
     def enter_ConnectedState(self, old_state, server_info):
@@ -857,17 +858,10 @@ For detailed information, see the log file located at:
         self.start_validity_renew(server_info)
 
         if self.app.model.should_failover():
-            self.failover_label.set_text("We are testing your WireGuard connection for any UDP issues...")
+            self.failover_label.set_text("We have not yet determined that the VPN is able to reach the internet...")
             self.failover_text.show()
-            self.call_model("start_failover", ui_callback=self.update_failover_text)
+            self.call_model("start_failover", self.update_failover_text)
             return
-
-        if self.app.model.udp_blocked:
-            self.failover_label.set_text("We have switched to OpenVPN due to your network blocking UDP connections")
-            self.failover_text.show()
-            self.app.model.udp_blocked = False
-            return
-        self.failover_text.hide()
 
     def start_validity_renew(self, server_info) -> None:
         self.connection_validity_thread_cancel = run_periodically(

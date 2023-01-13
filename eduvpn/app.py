@@ -128,7 +128,6 @@ class ApplicationModel:
         self.transitions = ApplicationModelTransitions(common, variant)
         self.variant = variant
         self.nm_manager = nm_manager
-        self.udp_blocked = False
         self.common.register_class_callbacks(self)
 
     @property
@@ -158,20 +157,22 @@ class ApplicationModel:
             return False
         return True
 
-    def start_failover(self):
+    def start_failover(self, callback: Callable):
         try:
             rx_bytes_file = self.nm_manager.open_stats_file("rx_bytes")
             if rx_bytes_file is None:
                 logger.debug(
                     "Failed to initialize failover, failed to open rx bytes file"
                 )
-                return False
+                callback(False)
+                return
             endpoint = self.nm_manager.wg_endpoint_ip
             if endpoint is None:
                 logger.debug(
                     "Failed to initialize failover, failed to get WireGuard endpoint"
                 )
-                return False
+                callback(False)
+                return
             wg_mtu = self.nm_manager.wireguard_mtu
             if wg_mtu is None:
                 logger.debug(
@@ -185,25 +186,27 @@ class ApplicationModel:
 
             def on_reconnected():
                 self.common.set_support_wireguard(has_wireguard)
+                callback(True)
 
             if dropped:
                 logger.debug("Failover exited, connection is dropped")
                 if self.is_connected():
                     has_wireguard = nm.is_wireguard_supported()
 
-                    # Set udp blocked and disable wireguard
-                    self.udp_blocked = True
+                    # Disable wireguard
                     self.common.set_support_wireguard(False)
                     self.reconnect(on_reconnected, prefer_tcp=True)
-                    return True
                 # Dropped but not relevant anymore
-                return False
+                callback(False)
+                return
             else:
                 logger.debug("Failover exited, connection is NOT dropped")
-                return False
+                callback(False)
+                return
         except WrappedError as e:
             logger.debug(f"Failed to start failover, error: {e}")
-            return False
+            callback(False)
+            return
 
     def cancel_failover(self):
         try:
@@ -353,6 +356,7 @@ class ApplicationModel:
             default_gateway = server.profiles.current.default_gateway
 
         def on_connected():
+            self.common.set_connected()
             if callback:
                 callback()
 
@@ -511,6 +515,9 @@ class Application:
     def on_network_update_callback(self, state, initial=False):
         try:
             if state == nm.ConnectionState.CONNECTED:
+                # Already connected
+                if self.model.is_connected():
+                    return
                 if self.model.is_connecting() or initial:
                     self.common.set_connected()
             elif state == nm.ConnectionState.CONNECTING:
