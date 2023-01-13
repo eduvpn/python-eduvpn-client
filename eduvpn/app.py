@@ -424,18 +424,43 @@ class ApplicationModel:
 
         self.connect(self.current_server, callback, prefer_tcp=prefer_tcp)
 
+    def cleanup(self):
+        tokens = None
+
+        # We retry this cleanup 2 times
+        retries = 2
+
+        # Try to get the tokens
+        server = self.current_server
+        if server:
+            tokens = self.load_tokens(server)
+        else:
+            logger.warning("Unable to get tokens for /disconnect, no server")
+            return
+
+        # Try to cleanup with a number of retries
+        for i in range(retries):
+            logger.debug(f"Cleaning up tokens...")
+            try:
+                self.common.cleanup(tokens)
+            except:
+                # We can try again
+                if i < retries-1:
+                    logger.debug(f"Got an error while cleaning up, try number: {i+1}. This could mean the connection was not fully disconnected yet. Trying again...")
+                else:
+                    # All retries are done
+                    logger.warning(f"Got an error while cleaning up, after full retries: {i+1}.")
+            else:
+                break
+
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
         self.common.set_disconnecting()
 
         @run_in_background_thread("on-disconnected")
         def on_disconnected():
-            server = self.current_server
-            tokens = None
-            if server:
-                tokens = self.load_tokens(server)
-            else:
-                logger.warning("Unable to get tokens for /disconnect, no server")
-            self.common.set_disconnected(True, tokens)
+            # Cleanup the connection by sending / disconnect
+            self.cleanup()
+            self.common.set_disconnected()
             if callback:
                 callback()
 
@@ -494,7 +519,7 @@ class Application:
             elif state == nm.ConnectionState.DISCONNECTED:
                 if self.model.is_connected():
                     self.common.set_disconnecting()
-                    self.common.set_disconnected(cleanup=False)
+                    self.common.set_disconnected()
         except Exception:
             return
 
