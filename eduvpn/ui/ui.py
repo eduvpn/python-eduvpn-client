@@ -144,6 +144,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.app_logo = builder.get_object("appLogo")
 
         self.failover_text = builder.get_object("failoverText")
+        self.failover_text_cancel = None
         self.failover_label = builder.get_object("failoverLabel")
 
         self.page_stack = builder.get_object("pageStack")
@@ -830,7 +831,6 @@ For detailed information, see the log file located at:
         self.show_page(self.connection_page)
         self.update_connection_status(False)
         self.update_connection_server(server_info)
-        self.failover_text.hide()
 
     @ui_transition(State.DISCONNECTED, StateType.LEAVE)
     def exit_ConnectionStatus(self, old_state, new_state):
@@ -840,11 +840,33 @@ For detailed information, see the log file located at:
 
     @run_in_main_gtk_thread
     def update_failover_text(self, dropped):
+        if self.failover_text_cancel is not None:
+            GLib.source_remove(self.failover_text_cancel)
+        self.failover_text_cancel = None
         if not dropped:
             self.failover_text.hide()
         else:
+            # Show the failover text for 10 seconds
+            self.failover_text_cancel = GLib.timeout_add(10_000, self.hide_failover_text_timeout)
             self.failover_label.set_text("The VPN was unable to reach the internet. We have switched to a different VPN protocol")
             self.failover_text.show()
+
+    def hide_failover_text_timeout(self):
+        self.failover_text_cancel = None
+        self.failover_text.hide()
+        return False
+
+    def show_failover_text_timeout(self):
+        self.failover_text_cancel = None
+        self.failover_text.show()
+        return False
+
+    @ui_transition(State.CONNECTED, StateType.LEAVE)
+    def leave_ConnectedState(self, old_state, server_info):
+        if self.failover_text_cancel is not None:
+            GLib.source_remove(self.failover_text_cancel)
+        self.failover_text_cancel = None
+        self.failover_text.hide()
 
     @ui_transition(State.CONNECTED, StateType.ENTER)
     def enter_ConnectedState(self, old_state, server_info):
@@ -858,8 +880,8 @@ For detailed information, see the log file located at:
         self.start_validity_renew(server_info)
 
         if self.app.model.should_failover():
+            self.failover_text_cancel = GLib.timeout_add(1000, self.show_failover_text_timeout)
             self.failover_label.set_text("We have not yet determined that the VPN is able to reach the internet...")
-            self.failover_text.show()
             self.call_model("start_failover", self.update_failover_text)
             return
 
