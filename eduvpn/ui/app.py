@@ -85,7 +85,7 @@ class EduVpnGtkApplication(Gtk.Application):
         if "version" in options:  # type: ignore
             from eduvpn import __version__
 
-            print(f"eduVPN Linux client version {__version__}")
+            print(f"eduVPN Linux client version {__version__} (pre-release)")
             return 0
 
         self.debug = "debug" in options  # type: ignore
