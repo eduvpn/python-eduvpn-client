@@ -7,14 +7,15 @@ from functools import lru_cache
 from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
-from socket import AF_INET, AF_INET6, gethostbyname, gaierror
+from socket import AF_INET, AF_INET6, gaierror, gethostbyname
 from tempfile import mkdtemp
-from typing import Any, Callable, Optional, Tuple, TextIO
+from typing import Any, Callable, Optional, TextIO, Tuple
+
+import gi
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.variants import ApplicationVariant
-import gi
 
 gi.require_version("NM", "1.0")  # noqa: E402
 from gi.repository.Gio import Task  # type: ignore

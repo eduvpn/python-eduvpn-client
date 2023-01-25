@@ -1,30 +1,27 @@
 import json
 import logging
-import webbrowser
 import signal
 import sys
+import webbrowser
 from datetime import datetime
-from typing import Any, Callable, Iterator, Optional
+from typing import Any, Callable, Iterator, List, Optional, TextIO
+
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.error import WrappedError
 from eduvpn_common.main import EduVPN
-from eduvpn_common.server import Server, InstituteServer, SecureInternetServer, Config, Token
-from eduvpn_common.types import ReadRxBytes
+from eduvpn_common.server import (Config, InstituteServer,
+                                  SecureInternetServer, Server, Token)
 from eduvpn_common.state import State, StateType
-from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
-from eduvpn.server import ServerDatabase
-
-from eduvpn.connection import Connection, Validity
+from eduvpn_common.types import ReadRxBytes
 
 from eduvpn import nm
 from eduvpn.config import Configuration
-from eduvpn.utils import (
-    model_transition,
-    run_in_background_thread,
-    run_in_main_gtk_thread,
-)
+from eduvpn.connection import Connection, Validity
+from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
+from eduvpn.server import ServerDatabase
+from eduvpn.utils import (model_transition, run_in_background_thread,
+                          run_in_main_gtk_thread)
 from eduvpn.variants import ApplicationVariant
-from typing import List, TextIO
 
 logger = logging.getLogger(__name__)
 
@@ -175,12 +172,12 @@ class ApplicationModel:
                 return
             wg_mtu = self.nm_manager.wireguard_mtu
             if wg_mtu is None:
-                logger.debug(
-                    "failed to get WireGuard MTU, setting MTU to 1000"
-                )
+                logger.debug("failed to get WireGuard MTU, setting MTU to 1000")
                 wg_mtu = 1000
             dropped = self.common.start_failover(
-                endpoint, wg_mtu, ReadRxBytes(lambda: self.get_failover_rx(rx_bytes_file))
+                endpoint,
+                wg_mtu,
+                ReadRxBytes(lambda: self.get_failover_rx(rx_bytes_file)),
             )
             has_wireguard = nm.is_wireguard_supported()
 
@@ -263,7 +260,9 @@ class ApplicationModel:
         # Delete tokens from the keyring
         self.clear_tokens(server)
 
-    def connect_get_config(self, server, tokens=None, prefer_tcp: bool = False) -> Optional[Config]:
+    def connect_get_config(
+        self, server, tokens=None, prefer_tcp: bool = False
+    ) -> Optional[Config]:
         # We prefer TCP if the user has set it or UDP is determined to be blocked
         if isinstance(server, InstituteServer):
             return self.common.get_config_institute_access(
@@ -280,9 +279,7 @@ class ApplicationModel:
                 server.org_id, prefer_tcp, tokens
             )
         elif isinstance(server, Server):
-            return self.common.get_config_custom_server(
-                server.url, prefer_tcp, tokens
-            )
+            return self.common.get_config_custom_server(server.url, prefer_tcp, tokens)
         raise Exception("No server to get a config for")
 
     def clear_tokens(self, server):
@@ -299,10 +296,7 @@ class ApplicationModel:
             logger.debug(e, exc_info=True)
 
     def load_tokens(self, server) -> Optional[Token]:
-        attributes = {
-            "server": server.url,
-            "category": server.category
-        }
+        attributes = {"server": server.url, "category": server.category}
         try:
             tokens_json = self.keyring.load(attributes)
             if tokens_json is None:
@@ -332,7 +326,11 @@ class ApplicationModel:
             logger.debug(e, exc_info=True)
 
     def connect(
-            self, server, callback: Optional[Callable] = None, ensure_exists=False, prefer_tcp: bool = False
+        self,
+        server,
+        callback: Optional[Callable] = None,
+        ensure_exists=False,
+        prefer_tcp: bool = False,
     ) -> None:
         config = None
         config_type = None
@@ -422,7 +420,9 @@ class ApplicationModel:
         else:
             do_profile()
 
-    def activate_connection(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
+    def activate_connection(
+        self, callback: Optional[Callable] = None, prefer_tcp: bool = False
+    ):
         if not self.current_server:
             return
 
@@ -449,11 +449,15 @@ class ApplicationModel:
                 self.common.cleanup(tokens)
             except:
                 # We can try again
-                if i < retries-1:
-                    logger.debug(f"Got an error while cleaning up, try number: {i+1}. This could mean the connection was not fully disconnected yet. Trying again...")
+                if i < retries - 1:
+                    logger.debug(
+                        f"Got an error while cleaning up, try number: {i+1}. This could mean the connection was not fully disconnected yet. Trying again..."
+                    )
                 else:
                     # All retries are done
-                    logger.warning(f"Got an error while cleaning up, after full retries: {i+1}.")
+                    logger.warning(
+                        f"Got an error while cleaning up, after full retries: {i+1}."
+                    )
             else:
                 break
 

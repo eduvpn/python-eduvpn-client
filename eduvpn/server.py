@@ -3,6 +3,7 @@ import logging
 from typing import Dict, Iterable, List, Union
 
 from eduvpn_common.server import Server
+
 from eduvpn.settings import IMAGE_PREFIX
 
 logger = logging.getLogger(__name__)

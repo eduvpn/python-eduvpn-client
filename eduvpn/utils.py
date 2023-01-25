@@ -1,12 +1,12 @@
+import logging
 import os
 import sys
 import threading
 from functools import lru_cache, partial, wraps
 from gettext import gettext
-import logging
 from os import environ, path
 from sys import prefix
-from typing import Union, Callable, Optional
+from typing import Callable, Optional, Union
 
 import eduvpn_common.event as common
 from eduvpn_common.error import WrappedError

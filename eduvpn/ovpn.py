@@ -1,4 +1,4 @@
-from io import TextIOWrapper, StringIO
+from io import StringIO, TextIOWrapper
 from typing import Iterable, List
 
 
