@@ -1,13 +1,10 @@
-from eduvpn import settings
-from eduvpn.config import Configuration
-from eduvpn.settings import (
-    CLIENT_ID,
-    CONFIG_PREFIX,
-    LETSCONNECT_CLIENT_ID,
-    LETSCONNECT_CONFIG_PREFIX,
-)
 from pathlib import Path
 from typing import Optional, Tuple
+
+from eduvpn import settings
+from eduvpn.config import Configuration
+from eduvpn.settings import (CLIENT_ID, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID,
+                             LETSCONNECT_CONFIG_PREFIX)
 
 
 class ApplicationVariant:

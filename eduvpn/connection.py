@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 from configparser import ConfigParser
+from datetime import datetime, timedelta
 
 from eduvpn.ovpn import Ovpn
 

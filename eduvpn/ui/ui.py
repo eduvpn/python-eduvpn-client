@@ -5,49 +5,35 @@
 
 import logging
 import os
-import webbrowser
 from gettext import gettext as _
-from typing import Callable, Type, Optional
+from typing import Callable, Optional, Type
 
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
 gi.require_version("NM", "1.0")  # noqa: E402
+from datetime import datetime
 from functools import partial
 
 from eduvpn_common.state import State, StateType
+from gi.overrides.Gdk import Event, EventButton  # type: ignore
+from gi.overrides.Gtk import (Box, Builder, Button, TreePath,  # type: ignore
+                              TreeView, TreeViewColumn)
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
+from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
 from eduvpn import __version__
-from eduvpn.server import StatusImage
-from eduvpn.settings import FLAG_PREFIX
 from eduvpn.i18n import retrieve_country_name
-from eduvpn.settings import IMAGE_PREFIX, HELP_URL
-from eduvpn.utils import (
-    ERROR_STATE,
-    get_prefix,
-    get_ui_state,
-    log_exception,
-    run_in_main_gtk_thread,
-    run_in_background_thread,
-    run_periodically,
-    ui_transition,
-)
+from eduvpn.server import StatusImage
+from eduvpn.settings import FLAG_PREFIX, HELP_URL, IMAGE_PREFIX
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
-from eduvpn.ui.utils import (
-    QUIT_ID,
-    get_validity_text,
-    link_markup,
-    should_show_error,
-    show_error_dialog,
-    show_ui_component,
-    style_widget,
-)
-from datetime import datetime
-from gi.overrides.Gdk import Event, EventButton  # type: ignore
-from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn  # type: ignore
-from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
+from eduvpn.ui.utils import (QUIT_ID, get_validity_text, link_markup,
+                             should_show_error, show_error_dialog,
+                             show_ui_component, style_widget)
+from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, log_exception,
+                          run_in_background_thread, run_in_main_gtk_thread,
+                          run_periodically, ui_transition)
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +53,10 @@ def get_flag_path(country_code: str) -> Optional[str]:
 def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
 
+
 def get_images_path(filename: str) -> str:
     return os.path.join(IMAGE_PREFIX, filename)
+
 
 # See:
 # https://www.w3.org/TR/AERT/#color-contrast
@@ -78,7 +66,8 @@ def is_dark(rgb):
     red = rgb.red * 255
     green = rgb.green * 255
     blue = rgb.blue * 255
-    return (red*0.299 + green*0.587 + blue*0.114) <= 186
+    return (red * 0.299 + green * 0.587 + blue * 0.114) <= 186
+
 
 class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
@@ -245,7 +234,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 logo = self.app.variant.logo_dark
             self.app_logo.set_from_file(logo)
         if self.app.variant.server_image:
-            self.find_server_image.set_from_file(self.app.variant.server_image(self.is_dark_theme))
+            self.find_server_image.set_from_file(
+                self.app.variant.server_image(self.is_dark_theme)
+            )
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
             self.find_server_search_input.set_placeholder_text(
@@ -667,9 +658,12 @@ For detailed information, see the log file located at:
         if not servers and old_state != get_ui_state(State.SEARCH_SERVER):
             self.call_model("set_search_server")
 
-        if (
-            not self.app.model.keyring.secure
-            and not self.app.config.ignore_keyring_warning
+        if all(
+            [
+                not self.app.model.keyring.secure,
+                not self.app.config.ignore_keyring_warning,
+                old_state == get_ui_state(State.DEREGISTERED),
+            ]
         ):
             self.keyring_dialog.show()
             _id = self.keyring_dialog.run()
@@ -847,8 +841,12 @@ For detailed information, see the log file located at:
             self.failover_text.hide()
         else:
             # Show the failover text for 10 seconds
-            self.failover_text_cancel = GLib.timeout_add(10_000, self.hide_failover_text_timeout)
-            self.failover_label.set_text("The VPN was unable to reach the internet. We have switched to a different VPN protocol")
+            self.failover_text_cancel = GLib.timeout_add(
+                10_000, self.hide_failover_text_timeout
+            )
+            self.failover_label.set_text(
+                "The VPN was unable to reach the internet. We have switched to a different VPN protocol"
+            )
             self.failover_text.show()
 
     def hide_failover_text_timeout(self):
@@ -880,8 +878,12 @@ For detailed information, see the log file located at:
         self.start_validity_renew(server_info)
 
         if self.app.model.should_failover():
-            self.failover_text_cancel = GLib.timeout_add(1000, self.show_failover_text_timeout)
-            self.failover_label.set_text("We have not yet determined that the VPN is able to reach the internet...")
+            self.failover_text_cancel = GLib.timeout_add(
+                1000, self.show_failover_text_timeout
+            )
+            self.failover_label.set_text(
+                "We have not yet determined that the VPN is able to reach the internet..."
+            )
             self.call_model("start_failover", self.update_failover_text)
             return
 

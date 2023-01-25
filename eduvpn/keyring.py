@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
-import os
-import gi
 import json
+import os
+from abc import ABC, abstractmethod
+
+import gi
 
 secureKeyring = True
 try:
@@ -38,6 +39,7 @@ class TokenKeyring(ABC):
 
 class DBusKeyring(TokenKeyring):
     """A keyring using libsecret with DBus"""
+
     def __init__(self, variant):
         super().__init__(variant)
         # None is the default collection
@@ -65,9 +67,11 @@ class DBusKeyring(TokenKeyring):
         return True
 
     def create_schema(self, attributes):
-        return Secret.Schema.new(self.variant.name, Secret.SchemaFlags.NONE, {
-            k: Secret.SchemaAttributeType.STRING
-            for k in attributes})
+        return Secret.Schema.new(
+            self.variant.name,
+            Secret.SchemaFlags.NONE,
+            {k: Secret.SchemaAttributeType.STRING for k in attributes},
+        )
 
     def clear(self, attributes) -> bool:
         schema = self.create_schema(attributes)
@@ -78,8 +82,8 @@ class DBusKeyring(TokenKeyring):
         label = f"{self.variant.name} - {label}"
         schema = self.create_schema(attributes)
         return Secret.password_store_sync(
-            schema, attributes, self.collection, label,
-            str(secret), None)
+            schema, attributes, self.collection, label, str(secret), None
+        )
 
     def load(self, attributes):
         """Load a password in the secret service, return None when found nothing"""

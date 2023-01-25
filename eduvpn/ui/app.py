@@ -7,14 +7,14 @@ gi.require_version("Gtk", "3.0")  # noqa: E402
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
 from gi.repository import Gio, GLib, Gtk
+from gi.repository.Gio import ApplicationCommandLine
 
 from eduvpn import i18n, notify
 from eduvpn.app import Application
 from eduvpn.settings import CONFIG_DIR_MODE
-from eduvpn.utils import run_in_background_thread, ui_transition, init_logger
-from eduvpn.variants import ApplicationVariant
 from eduvpn.ui.ui import EduVpnGtkWindow
-from gi.repository.Gio import ApplicationCommandLine
+from eduvpn.utils import init_logger, run_in_background_thread, ui_transition
+from eduvpn.variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +129,10 @@ class EduVpnGtkApplication(Gtk.Application):
 
     def enter_SessionExpiredState(self):
         self.connection_notification.show(
-            title=_("Session expired"), message=_("Your session has expired. You have been disconnected from the VPN.")
+            title=_("Session expired"),
+            message=_(
+                "Your session has expired. You have been disconnected from the VPN."
+            ),
         )
 
         @run_in_background_thread("expired-deactivate")

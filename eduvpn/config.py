@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Generic, Type, TypeVar
 
-
 T = TypeVar("T")
 
 
