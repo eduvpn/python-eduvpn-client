@@ -418,7 +418,6 @@ class NMManager:
     ) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
-        settings_config = self.variant.config
         self.set_connection(new_con, callback, default_gateway)  # type: ignore
 
     def get_ip(self, url) -> Optional[str]:
@@ -522,7 +521,6 @@ class NMManager:
         profile.add_setting(s_con)
         profile.add_setting(w_con)
 
-        settings_config = self.variant.config
         self.set_connection(profile, callback, default_gateway)  # type: ignore
 
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
