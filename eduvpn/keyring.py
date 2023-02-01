@@ -3,6 +3,7 @@ import os
 from abc import ABC, abstractmethod
 
 import gi
+import logging
 
 secureKeyring = True
 try:
@@ -10,6 +11,9 @@ try:
     from gi.repository import Secret  # type: ignore
 except (ValueError, ImportError):
     secureKeyring = False
+
+
+logger = logging.getLogger(__name__)
 
 
 class TokenKeyring(ABC):
@@ -53,6 +57,7 @@ class DBusKeyring(TokenKeyring):
     def available(self):
         # If import was not successful, this is definitely not available
         if not secureKeyring:
+            logger.warning("keyring not available due to import not available")
             return False
 
         # Libs available, do a test run
@@ -62,7 +67,8 @@ class DBusKeyring(TokenKeyring):
             self.save("eduVPN testing run", attributes, secret)
             assert self.load(attributes) == secret
             self.clear(attributes)
-        except (gi.repository.GLib.Error, AssertionError):
+        except (gi.repository.GLib.Error, AssertionError) as e:
+            logger.warning(f"error when checking if keyring is available: {e}")
             return False
         return True
 
