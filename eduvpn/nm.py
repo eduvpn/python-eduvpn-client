@@ -411,7 +411,7 @@ class NMManager:
     ):
         _logger.debug("writing configuration to Network Manager")
         new_con = self.import_ovpn_with_certificate(ovpn, private_key, certificate)
-        self.set_connection(new_con, callback, default_gateway, system_wide)
+        self.set_connection(new_con, callback, default_gateway)
 
     def start_openvpn_connection(
         self, ovpn: Ovpn, default_gateway, *, callback=None
@@ -588,9 +588,10 @@ class NMManager:
             if ConnectionState.from_active_state(state) == ConnectionState.DISCONNECTED:
                 if signal:
                     active.disconnect(signal)
-                callback()
+                if callback:
+                    callback()
 
-        signal = self.active_connection.connect("state-changed", changed_state)
+        signal = connection.connect("state-changed", changed_state)
 
     def deactivate_connection_vpn(self, callback: Optional[Callable] = None) -> None:
         con = self.active_connection

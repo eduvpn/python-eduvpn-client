@@ -122,7 +122,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         }
         builder.connect_signals(handlers)
 
-        style_context = self.get_style_context()
+        style_context = self.get_style_context()  # type: ignore
         bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)
         self.is_dark_theme = is_dark(bg_color)
 
