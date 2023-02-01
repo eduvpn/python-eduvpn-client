@@ -1,3 +1,47 @@
+3.3.0 (Beta/pre-release 01-02-2023)
+==
+This pre-release are a couple of QoL changes in the UI
+
+* Do not style tree views
+* Remove settings & help page and create an info popup instead
+* Remove cancel on right click on a server
+* Add dark theme support by using the right icons and using default buttons when we can
+* Improve failover UI
+* Add additonal logging to keyring
+
+
+3.2.0 (Beta/pre-release 23-12-2022)
+==
+This pre-release refactors the whole app using the [eduvpn-common](https://github.com/eduvpn/eduvpn-common) Go library.
+
+Fixes
+--------
+* #481 - The OAuth library/implementation we use now is built in house and fixes this
+* #478/#465 - A profile expander is shown now
+* #467 - The CLI has been rewritten to be more user friendly and work correctly with the V3 API
+* #453 - Back buttons are shown correctly where they are possible/needed
+* #434 - Most tests are now in the Go library that sets up a local network
+* #428 - Proper imeouts are now used
+* #426 - A renew session button is shown with accordance to the eduVPN specification https://github.com/eduvpn/documentation/blob/v3/API.md#session-expiry
+* #412 - Prehashed signatures are supported because we use the official minisign go library in the eduvpn-common codebase
+* #405 - The CLI now works correctly and should be more user friendly, especially if the interactive mode is used
+* #374 - Let's Connect! now also has a CLI
+* #351 - No longer a warning should be shown
+* #336 - Implemented
+* #335 - Exceptions are now shown in an error revealer similar to other clients
+* #333 - Implemented
+* #255 - We now implement it according to the eduVPN specification
+* #253 - Removing a connection is now possible by right clicking on a server
+
+New features/Improvements that are not mentioned yet
+--------
+* OAuth has a check for the new ISS parameter if the server supports it (https://datatracker.ietf.org/doc/rfc9207/)
+* A server is now added instead of immediately connected, making it the same as other clients. The old behaviour can be toggled in the settings
+* Let's Connect!/eduVPN now uses completely separate configurations
+* Keyring implementation using Dbus to securely store OAuth tokens
+* WireGuard to OpenVPN failover (if UDP is blocked)
+
+
 3.1.0 (2022-06-23)
 ==
 
