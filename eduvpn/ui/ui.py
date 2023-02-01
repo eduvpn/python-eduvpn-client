@@ -17,8 +17,8 @@ from functools import partial
 
 from eduvpn_common.state import State, StateType
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
-from gi.overrides.Gtk import (Box, Builder, Button, TreePath,  # type: ignore
-                              TreeView, TreeViewColumn)
+from gi.overrides.Gtk import TreePath  # type: ignore
+from gi.overrides.Gtk import Box, Builder, Button, TreeView, TreeViewColumn
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
@@ -28,12 +28,25 @@ from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX, HELP_URL, IMAGE_PREFIX
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
-from eduvpn.ui.utils import (QUIT_ID, get_validity_text, link_markup,
-                             should_show_error, show_error_dialog,
-                             show_ui_component, style_widget)
-from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, log_exception,
-                          run_in_background_thread, run_in_main_gtk_thread,
-                          run_periodically, ui_transition)
+from eduvpn.ui.utils import (
+    QUIT_ID,
+    get_validity_text,
+    link_markup,
+    should_show_error,
+    show_error_dialog,
+    show_ui_component,
+    style_widget,
+)
+from eduvpn.utils import (
+    ERROR_STATE,
+    get_prefix,
+    get_ui_state,
+    log_exception,
+    run_in_background_thread,
+    run_in_main_gtk_thread,
+    run_periodically,
+    ui_transition,
+)
 
 logger = logging.getLogger(__name__)
 

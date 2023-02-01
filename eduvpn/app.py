@@ -9,8 +9,13 @@ from typing import Any, Callable, Iterator, List, Optional, TextIO
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.error import WrappedError
 from eduvpn_common.main import EduVPN
-from eduvpn_common.server import (Config, InstituteServer,
-                                  SecureInternetServer, Server, Token)
+from eduvpn_common.server import (
+    Config,
+    InstituteServer,
+    SecureInternetServer,
+    Server,
+    Token,
+)
 from eduvpn_common.state import State, StateType
 from eduvpn_common.types import ReadRxBytes
 
@@ -19,8 +24,11 @@ from eduvpn.config import Configuration
 from eduvpn.connection import Connection, Validity
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import ServerDatabase
-from eduvpn.utils import (model_transition, run_in_background_thread,
-                          run_in_main_gtk_thread)
+from eduvpn.utils import (
+    model_transition,
+    run_in_background_thread,
+    run_in_main_gtk_thread,
+)
 from eduvpn.variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
