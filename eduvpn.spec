@@ -31,7 +31,7 @@ Summary:        %{sum}
 %{?python_provide:%python_provide python3-eduvpn-client}
 Requires: python3-gobject
 Requires: python3-dbus
-Requires: python3-eduvpn-common >= 0.2.0, python3-eduvpn-common < 0.3.0
+Requires: python3-eduvpn-common >= 0.3.0, python3-eduvpn-common < 0.4.0
 Requires: NetworkManager-openvpn
 Requires: libsecret
 Conflicts: python3-letsconnect-client
