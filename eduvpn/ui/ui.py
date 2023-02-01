@@ -25,7 +25,7 @@ from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 from eduvpn import __version__
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.server import StatusImage
-from eduvpn.settings import FLAG_PREFIX, HELP_URL, IMAGE_PREFIX
+from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
 from eduvpn.ui.utils import (

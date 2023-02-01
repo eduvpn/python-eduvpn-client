@@ -10,8 +10,6 @@ LETSCONNECT_CONFIG_PREFIX = (
 ).resolve()
 CONFIG_DIR_MODE = 0o700  # Same as the Go library
 
-HELP_URL = "https://www.eduvpn.org"
-
 CLIENT_ID = "org.eduvpn.app.linux"
 LETSCONNECT_CLIENT_ID = "org.letsconnect-vpn.app.linux"
 LANGUAGE = "nl"

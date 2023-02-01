@@ -452,10 +452,10 @@ class ApplicationModel:
 
         # Try to cleanup with a number of retries
         for i in range(retries):
-            logger.debug(f"Cleaning up tokens...")
+            logger.debug("Cleaning up tokens...")
             try:
                 self.common.cleanup(tokens)
-            except:
+            except Exception:
                 # We can try again
                 if i < retries - 1:
                     logger.debug(
