@@ -81,7 +81,7 @@ def group_servers(servers):
     """
     Separate the servers into three groups.
     """
-    groups: Dict[ServerGroup, List[Server]] = {
+    groups: Dict[ServerGroup, List[Server]] = {  # type: ignore
         ServerGroup.INSTITUTE_ACCESS: [],
         ServerGroup.SECURE_INTERNET: [],
         ServerGroup.OTHER: [],
