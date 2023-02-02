@@ -5,7 +5,7 @@ import gi
 from eduvpn_common.error import ErrorLevel, WrappedError
 
 from eduvpn.connection import Validity
-from eduvpn.utils import run_in_main_gtk_thread
+from eduvpn.utils import run_in_glib_thread
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
 from typing import Tuple
@@ -17,7 +17,7 @@ IGNORE_ID = -13
 QUIT_ID = -14
 
 
-@run_in_main_gtk_thread
+@run_in_glib_thread
 def style_widget(widget: Gtk.Widget, class_name: str, style: str):
     style_context = widget.get_style_context()
     provider = Gtk.CssProvider.new()
@@ -79,7 +79,7 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
         return (False, (dstr + hstr))
 
 
-@run_in_main_gtk_thread
+@run_in_glib_thread
 def show_ui_component(component: Widget, show: bool) -> None:
     """
     Set the visibility of a UI component.
@@ -101,7 +101,7 @@ def link_markup(link: str) -> str:
         return f'<a href="{link}">{rest}</a>'
 
 
-@run_in_main_gtk_thread
+@run_in_glib_thread
 def show_error_dialog(
     parent, name: str, title: str, message: str, only_quit: bool = False
 ):

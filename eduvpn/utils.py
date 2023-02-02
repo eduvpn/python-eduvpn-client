@@ -95,7 +95,7 @@ ERROR_STATE = len(State)
 
 def ui_transition(state: State, state_type: StateType) -> Callable:
     def decorator(func):
-        @run_in_main_gtk_thread
+        @run_in_glib_thread
         @common.class_state_transition(get_ui_state(state), state_type)
         def inner(self, other_state, data):
             func(self, other_state, data)
@@ -182,7 +182,7 @@ def run_in_background_thread(name: Optional[str] = None) -> Callable:
     return decorator
 
 
-def run_in_main_gtk_thread(func: Union[partial, Callable]) -> Callable:
+def run_in_glib_thread(func: Union[partial, Callable]) -> Callable:
     """
     Decorator for functions that must always run
     in the main GTK thread.
