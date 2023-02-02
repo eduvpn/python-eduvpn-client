@@ -24,10 +24,7 @@ from eduvpn.config import Configuration
 from eduvpn.connection import Connection, Validity
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import ServerDatabase
-from eduvpn.utils import (
-    model_transition,
-    run_in_background_thread,
-)
+from eduvpn.utils import model_transition, run_in_background_thread
 from eduvpn.variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
