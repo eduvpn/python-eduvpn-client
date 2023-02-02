@@ -27,7 +27,6 @@ from eduvpn.server import ServerDatabase
 from eduvpn.utils import (
     model_transition,
     run_in_background_thread,
-    run_in_main_gtk_thread,
 )
 from eduvpn.variants import ApplicationVariant
 
@@ -369,7 +368,6 @@ class ApplicationModel:
         def on_connect(_):
             self.nm_manager.activate_connection(on_connected)
 
-        @run_in_main_gtk_thread
         def connect(config, config_type):
             connection = Connection.parse(str(config), config.config_type)
             connection.connect(self.nm_manager, default_gateway, on_connect)
@@ -405,7 +403,6 @@ class ApplicationModel:
         else:
             reconnect()
 
-    @run_in_main_gtk_thread
     def disconnect(self, callback: Optional[Callable] = None) -> None:
         self.nm_manager.deactivate_connection(callback)
 
@@ -542,7 +539,6 @@ class Application:
         except Exception:
             return
 
-    @run_in_main_gtk_thread
     def initialize_network(self, needs_update=True) -> None:
         """
         Determine the current network state.

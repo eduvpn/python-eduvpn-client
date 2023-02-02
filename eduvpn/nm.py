@@ -15,6 +15,7 @@ import gi
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
+from eduvpn.utils import run_in_main_gtk_thread
 from eduvpn.variants import ApplicationVariant
 
 gi.require_version("NM", "1.0")  # noqa: E402
@@ -327,6 +328,7 @@ class NMManager:
         rmtree(target_parent)
         return connection
 
+    @run_in_main_gtk_thread
     def add_connection(
         self,
         connection: "NM.Connection",
@@ -340,6 +342,7 @@ class NMManager:
             user_data=(self, callback),
         )
 
+    @run_in_main_gtk_thread
     def update_connection(
         self, old_con: "NM.Connection", new_con: "NM.Connection", callback=None
     ):
@@ -523,6 +526,7 @@ class NMManager:
 
         self.set_connection(profile, callback, default_gateway)  # type: ignore
 
+    @run_in_main_gtk_thread
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
         con = self.client.get_connection_by_uuid(self.uuid)
         _logger.debug(f"activate_connection: {con}")
@@ -593,6 +597,7 @@ class NMManager:
 
         signal = connection.connect("state-changed", changed_state)
 
+    @run_in_main_gtk_thread
     def deactivate_connection_vpn(self, callback: Optional[Callable] = None) -> None:
         con = self.active_connection
         _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
@@ -615,6 +620,7 @@ class NMManager:
         else:
             _logger.debug("No active connection to deactivate")
 
+    @run_in_main_gtk_thread
     def delete_connection(self, callback: Callable) -> None:
         # We run the disconnected callback early if a delete fail happens
         if self.uuid is None:
@@ -656,6 +662,7 @@ class NMManager:
 
         return devices[0]
 
+    @run_in_main_gtk_thread
     def deactivate_connection_wg(self, callback: Optional[Callable] = None) -> None:
         def on_disconnect(a_device: "NM.DeviceWireGuard", res, callback=None):
             try:
