@@ -1,3 +1,11 @@
+3.3.1 (Beta/pre-release 07-02-2023)
+==
+This pre-release are a couple of Let's Connect! and threading changes
+
+* Try to fix threading issues by only running async nm functions in the glib thread
+* Fix launching of Let's Connect!
+* Properly hide certain elements that are only applicable for eduVPN
+
 3.3.0 (Beta/pre-release 01-02-2023)
 ==
 This pre-release are a couple of QoL changes in the UI
