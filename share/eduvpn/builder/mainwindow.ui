@@ -1146,7 +1146,7 @@
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkImage" id="appLogoInfo1">
+                  <object class="GtkImage" id="appLogoInfo">
                     <property name="width-request">120</property>
                     <property name="height-request">36</property>
                     <property name="visible">True</property>
@@ -1211,7 +1211,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="infoSupportBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
