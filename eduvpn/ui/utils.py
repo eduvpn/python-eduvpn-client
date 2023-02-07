@@ -7,18 +7,24 @@ from eduvpn_common.error import ErrorLevel, WrappedError
 from eduvpn.connection import Validity
 from eduvpn.utils import run_in_glib_thread
 
-gi.require_version("Gtk", "3.0")  # noqa: E402
 from typing import Tuple
 
-from gi.overrides.Gtk import Widget  # type: ignore
-from gi.repository import Gtk  # type: ignore
+GtkAvailable = True
+try:
+    gi.require_version("Gtk", "3.0")  # noqa: E402
+    from gi.overrides.Gtk import Widget  # type: ignore
+    from gi.repository import Gtk  # type: ignore
+except ValueError:
+    GtkAvailable = False
+
 
 IGNORE_ID = -13
 QUIT_ID = -14
 
 
 @run_in_glib_thread
-def style_widget(widget: Gtk.Widget, class_name: str, style: str):
+def style_widget(widget, class_name: str, style: str):
+    assert GtkAvailable
     style_context = widget.get_style_context()
     provider = Gtk.CssProvider.new()
     provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))
@@ -80,7 +86,7 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
 
 
 @run_in_glib_thread
-def show_ui_component(component: Widget, show: bool) -> None:
+def show_ui_component(component, show: bool) -> None:
     """
     Set the visibility of a UI component.
     """
@@ -105,6 +111,7 @@ def link_markup(link: str) -> str:
 def show_error_dialog(
     parent, name: str, title: str, message: str, only_quit: bool = False
 ):
+    assert GtkAvailable
     dialog = Gtk.MessageDialog(  # type: ignore
         parent=parent,
         type=Gtk.MessageType.INFO,  # type: ignore
