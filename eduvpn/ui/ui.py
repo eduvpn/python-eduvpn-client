@@ -144,6 +144,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.is_selected = False
 
         self.app_logo = builder.get_object("appLogo")
+        self.app_logo_info = builder.get_object("appLogoInfo")
+        self.info_support_box = builder.get_object("infoSupportBox")
 
         self.failover_text = builder.get_object("failoverText")
         self.failover_text_cancel = None
@@ -246,15 +248,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             if self.is_dark_theme:
                 logo = self.app.variant.logo_dark
             self.app_logo.set_from_file(logo)
+            self.app_logo_info.set_from_file(logo)
         if self.app.variant.server_image:
             self.find_server_image.set_from_file(
-                self.app.variant.server_image(self.is_dark_theme)
+                self.app.variant.server_image
             )
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
             self.find_server_search_input.set_placeholder_text(
                 _("Enter the server address")
             )
+            self.info_support_box.hide()
 
         # We track the switch state so we can distinguish
         # the switch being set by the ui from the user toggling it.
