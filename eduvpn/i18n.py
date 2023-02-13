@@ -3,6 +3,7 @@ import json
 import locale
 import logging
 import os
+from typing import Dict, Union
 
 from eduvpn.settings import COUNTRY, COUNTRY_MAP, LANGUAGE
 from eduvpn.utils import get_prefix
@@ -56,6 +57,18 @@ def language() -> str:
         return locale_setting.split("_")[0]
     except Exception:
         return LANGUAGE
+
+
+def extract_translation(d: Union[str, Dict[str, str]]):
+    if isinstance(d, dict):
+        for m in [country(), language(), "en-US", "en"]:
+            try:
+                return d[m]
+            except KeyError:
+                continue
+        return list(d.values())[0]  # otherwise just return first in list
+    else:
+        return d
 
 
 def retrieve_country_name(country_code: str) -> str:

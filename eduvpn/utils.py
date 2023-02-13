@@ -2,14 +2,15 @@ import logging
 import os
 import sys
 import threading
+import traceback
 from functools import lru_cache, partial, wraps
 from gettext import gettext
 from os import environ, path
 from sys import prefix
 from typing import Callable, Optional, Union
 
-import eduvpn_common.event as common
-from eduvpn_common.error import WrappedError
+from eduvpn_common.event import class_state_transition
+from eduvpn_common.main import WrappedError
 from eduvpn_common.state import State, StateType
 
 logger = logging.getLogger(__file__)
@@ -25,6 +26,71 @@ def handle_exceptions(exc_type, exc_value, exc_traceback):
         return
 
     logger.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+def get_ui_state(state: State) -> int:
+    # The UI state will have as identifier the last state id + offset of the state
+    # So for example the UI DEREGISTERED state will come directly after the last normal state
+    return len(State) + state
+
+
+ERROR_STATE = 2 * len(State) + 1
+
+
+def model_transition(state: State, state_type: StateType) -> Callable:
+    def decorator(func):
+        @run_in_background_thread(str(func))
+        def inner(self, other_state, data):
+            # The model converts the data
+            try:
+                model_converted = func(self, other_state, data)
+            except Exception as e:
+                log_exception(e)
+                # Run the error state event
+                self.common.event_handler.run(
+                    get_ui_state(ERROR_STATE),
+                    get_ui_state(ERROR_STATE),
+                    str(e),
+                )
+                return
+
+            other_ui_state = get_ui_state(other_state)
+            ui_state = get_ui_state(state)
+            # We can then pass it to the UI
+            if state_type == StateType.ENTER:
+                self.common.event_handler.run(other_ui_state, ui_state, model_converted)
+            else:
+                self.common.event_handler.run(ui_state, other_ui_state, model_converted)
+
+        # Add the inner function on the state transition
+        class_state_transition(state, state_type)(inner)
+
+        # Return the inner function to be called
+        return inner
+
+    return decorator
+
+
+def ui_transition(state: State, state_type: StateType) -> Callable:
+    def decorator(func):
+        @run_in_glib_thread
+        @class_state_transition(get_ui_state(state), state_type)
+        def inner(self, other_state, data):
+            func(self, other_state, data)
+
+        return inner
+
+    return decorator
+
+
+def cmd_transition(state: State, state_type: StateType):
+    def decorator(func):
+        @class_state_transition(get_ui_state(state), state_type)
+        def inner(self, other_state, data):
+            func(self, other_state, data)
+
+        return inner
+
+    return decorator
 
 
 def init_logger(debug: bool, logfile, mode):
@@ -56,7 +122,8 @@ def init_logger(debug: bool, logfile, mode):
 def log_exception(exception: Exception):
     # Other exceptions are already logged by Go
     if not isinstance(exception, WrappedError):
-        logger.error(f"Error occurred: {str(exception)}")
+        logger.error(f"Non-Go exception occurred: {str(exception)}")
+        traceback.print_exc()
 
 
 @lru_cache(maxsize=1)
@@ -94,88 +161,6 @@ def thread_helper(func: Callable, *, name: Optional[str] = None) -> threading.Th
     return thread
 
 
-def get_ui_state(state: State) -> int:
-    # The UI state will have as identifier the last state id + offset of the state
-    # So for example the UI DEREGISTERED state will come directly after the last normal state
-    return len(State) + state
-
-
-ERROR_STATE = len(State)
-
-
-def ui_transition(state: State, state_type: StateType) -> Callable:
-    def decorator(func):
-        @run_in_glib_thread
-        @common.class_state_transition(get_ui_state(state), state_type)
-        def inner(self, other_state, data):
-            func(self, other_state, data)
-
-        return inner
-
-    return decorator
-
-
-def cmd_transition(state: State, state_type: StateType):
-    def decorator(func):
-        @common.class_state_transition(get_ui_state(state), state_type)
-        def inner(self, other_state, data):
-            func(self, other_state, data)
-
-        return inner
-
-    return decorator
-
-
-def model_transition(state: State, state_type: StateType) -> Callable:
-    def decorator(func):
-        @run_in_background_thread(str(func))
-        def inner(self, other_state, data):
-            # The model converts the data
-            try:
-                model_converted = func(self, other_state, data)
-            except Exception as e:
-                log_exception(e)
-                # Run the error state event
-                self.common.event.run(
-                    get_ui_state(ERROR_STATE),
-                    get_ui_state(ERROR_STATE),
-                    e,
-                    convert=False,
-                )
-                self.common.event.run(
-                    get_ui_state(ERROR_STATE),
-                    get_ui_state(ERROR_STATE),
-                    str(e),
-                    convert=False,
-                )
-
-                # Go back to the previous state as the model transition was not successful
-                # Do this only if we're not already in the main state
-                if not self.common.in_fsm_state(State.NO_SERVER):
-                    self.common.go_back()
-                return
-
-            other_ui_state = get_ui_state(other_state)
-            ui_state = get_ui_state(state)
-            # We can then pass it to the UI
-            if state_type == StateType.ENTER:
-                self.common.event.run(
-                    other_ui_state, ui_state, model_converted, convert=False
-                )
-            else:
-                self.common.event.run(
-                    ui_state, other_ui_state, model_converted, convert=False
-                )
-
-        # Add the inner function on the state transition
-        common.class_state_transition(state, state_type)(inner)
-
-        # Return the inner function to be called
-        return inner
-
-    return decorator
-
-
 def run_in_background_thread(name: Optional[str] = None) -> Callable:
     """
     Decorator for functions that must always run
@@ -201,7 +186,7 @@ def run_in_glib_thread(func: Union[partial, Callable]) -> Callable:
 
     @wraps(func)
     def main_gtk_thread_func(*args, **kwargs):
-        GLib.idle_add(func, *args, **kwargs)
+        GLib.idle_add(partial(func, *args, **kwargs))
 
     return main_gtk_thread_func
 
