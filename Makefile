@@ -41,10 +41,7 @@ deb:
 		gir1.2-notify-0.7 \
 		libdbus-glib-1-dev \
 		python3-gi \
-		python3-requests-oauthlib \
-		python3-cryptography \
 		python3-setuptools \
-		python3-nacl \
 		python3-pytest \
 		python3-wheel \
 		python3-dbus \
@@ -57,18 +54,12 @@ dnf:
 		libsecret \
 		gtk3 \
 		python3-dbus \
-		python3-requests-oauthlib \
 		python3-gobject \
-		python3-pynacl \
 		python3-pytest \
 		python3-cairo-devel \
 		gobject-introspection-devel \
 		cairo-gobject-devel \
 		dbus-python-devel
-
-# install required binary packages when running GUI on OSX
-osx:
-	brew install gobject-introspection cairo # py3cairo pygobject3
 
 doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt
@@ -107,15 +98,8 @@ pycodestyle: $(VENV)/bin/pycodestyle
 
 test: $(VENV)/bin/pytest
 	$(VENV)/bin/pytest
-	
+
 checks: test mypy pycodestyle
-
-$(VENV)/bin/jupyter-notebook: $(VENV)/bin/eduvpn-gui
-	$(VENV)/bin/pip install -r notebooks/requirements.txt
-	touch $(VENV)/bin/jupyter-notebook
-
-notebook: $(VENV)/bin/jupyter-notebook
-	$(VENV)/bin/jupyter-notebook --notebook-dir= notebooks/
 
 clean:
 	rm -rf $(VENV) dist .eggs eduvpn_client.egg-info .pytest_cache tests/__pycache__/
@@ -135,15 +119,9 @@ rpmbuild: sdist
 	cp dist/*.tar.gz ~/rpmbuild/SOURCES/.
 	rpmbuild -bs eduvpn.spec
 	rpmbuild -bb eduvpn.spec
-
-$(VENV)/bin/copr-cli: $(VENV)
-	$(VENV)/bin/pip install copr-cli
-
 $(VENV)/bin/twine: $(VENV)
 	$(VENV)/bin/pip install twine
 
-copr-upload: srpm-fedora $(VENV)/bin/copr-cli
-	$(VENV)/bin/copr-cli build @eduvpn/eduvpn-client dist/*.src.rpm
 
 twine-upload: sdist bdist_wheel $(VENV)/bin/twine
 	$(VENV)/bin/twine upload dist/*.tar.gz dist/*.whl
