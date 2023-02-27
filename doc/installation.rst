@@ -2,17 +2,17 @@
 Installation
 ============
 
-The Desktop client only works on Linux, but the command-line interface and most parts of the API are usable on other
-platforms also. Python 3.6+ is required. It is recommended to use a deb or rpm package to install the eduVPN client.
-You can also install using pip from pypi or directly from Github. We distribute RPM packages for Fedora, and deb
-packages for Debian and Ubuntu.
+The Desktop client only works on Linux. Python 3.6+ is required. It is
+recommended to use a deb or rpm package to install the eduVPN client.
+You can also install using pip from pypi or directly from Github. We
+distribute RPM packages for Fedora, and deb packages for Debian and
+Ubuntu.
 
 The eduVPN client has been tested with:
 
- * Debian 10 (Buster)
- * Ubuntu 20.04 LTS and 18.04 LTS
- * CentOS 8
- * Fedora 34 and 35
+ * Debian 11 (Bullseye)
+ * Ubuntu 20.04 LTS and 20.04 LTS
+ * Fedora 36 and 37
 
 .. note::
 
@@ -68,7 +68,7 @@ For Debian or Ubuntu:
 
     $ sudo apt install build-essential git make
 
-For fedora:
+For Fedora:
 
 .. code-block:: console
 
@@ -80,12 +80,18 @@ For Debian or Ubuntu we made a make target to install the required debian packag
 
     $ sudo make deb
 
-For fedora we did the same:
+For Fedora we did the same:
 
 .. code-block:: console
 
     $ sudo make dnf
 
+However, since version 4 of this Linux client, we use the eduvpn-common Go library to
+provide most of the core functionality. Thus these commands cannot
+provide you the complete development dependencies as eduvpn-common is
+not in the official repositories. To install this library and to see
+how it works we refer to `their documentation
+<https://eduvpn.github.io/eduvpn-common>`_.
 Pip
 ---
 

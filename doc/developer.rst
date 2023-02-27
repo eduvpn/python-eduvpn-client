@@ -12,20 +12,6 @@ use ``eduvpn.utils.run_in_main_gtk_thread`` to decorate functions
 that must run on the main thread (eg. UI updates).
 
 
-``eduvpn.actions`` are the entrypoints to the application and are triggered from the main menu or a VPN status
-change.
-
-``eduvpn.remote`` contains all remote requests.
-
-
-Flow schema
------------
-
-.. image:: flow.png
-   :target: _images/flow.png
-   :alt: The application flow
-
-
 Running the tests
 -----------------
 
@@ -36,22 +22,13 @@ use the following command from the root of the project.
 
     $ pytest
 
-To include integration tests against an actual server,
-you'll need to provide the address and login credentials
-in an environment variable.
-
-.. code-block:: console
-
-    $ TEST_SERVER=username:password@example.com pytest
-
-
 How to make a release
 ---------------------
 
 Prepare the code
 ^^^^^^^^^^^^^^^^
 
-* Determine version number (for example 1.0.2)
+* Determine version number (for example 4.1.0)
 
 * Compose a list of changes (check issue tracker)
 
@@ -87,37 +64,10 @@ There is also a make shortcut:
 
     $ make twine-upload
     
-Build on copr for RPMs
+Building RPMs
 ^^^^^^^^^^^^^^^^^^^^^^
-
-Build packages to the `COPR repository <https://copr.fedorainfracloud.org/coprs/g/eduvpn/eduvpn-client/>`_:
-
-  * on copr -> builds -> new build -> scm.
-  * for clone URL field: https://github.com/eduvpn/python-eduvpn-client
-  * Committish: the tag / version of the build
-  * for spec file use: eduvpn.spec
-  * Build for all supported/configured platforms
-
-You can also trigger this build from the cli. First fetch your token from the `COPR api <https://copr.fedorainfracloud.org/api/>`_ page and dump this in `~/.config/copr`. Next, you install the copr cli and trigger the build with:
-
-.. code-block:: console
-
-   $ venv/bin/pip install copr-cli
-   $ copr-cli buildscm \
-      --clone-url https://github.com/edupvn/python-eduvpn-client \
-      --commit <version> \
-      --spec eduvpn.spec
-      @eduvpn/eduvpn-client 
-
-where `<version>` is the tag/version of the release.
-
-There is also a make shortcut:
-
-.. code-block:: console
-
-    $ make copr-upload
+We use `builder.rpm <https://git.sr.ht/~fkooman/builder.rpm>`_, to build the RPM packages.
 
 Build Debian packages
 ^^^^^^^^^^^^^^^^^^^^^
-   
-* Update the debian package using the `eduVPN Debian meta files <https://github.com/eduvpn-debian/packaging>`_.
+We use `nbuilder.deb <https://git.sr.ht/~fkooman/builder.deb>`_, to build the DEB packages.
