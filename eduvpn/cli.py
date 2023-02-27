@@ -133,7 +133,7 @@ class CommandLine:
                         return server
 
     def get_server_search(self, search_query):
-        servers = self.server_db.disco
+        servers = self.get_discovery()
         servers = list(self.server_db.search_predefined(search_query))
         if search_query.count(".") >= 2:
             servers.append(Server(search_query, search_query))
@@ -199,6 +199,14 @@ class CommandLine:
         custom = input("Enter a URL to connect to: ")
         return Server(custom, custom)
 
+    def get_discovery(self):
+        try:
+            self.server_db.disco_update()
+        except Exception as e:
+            print(f"Failed to get discovery list: {str(e)}", file=sys.stderr)
+            return []
+        return self.server_db.disco
+
     def ask_server(self):
         if not self.variant.use_predefined_servers:
             return self.ask_server_custom()
@@ -211,7 +219,7 @@ class CommandLine:
             if is_yes:
                 return self.ask_server_input(self.server_db.configured)
 
-        servers = self.server_db.disco
+        servers = self.get_discovery()
         return self.ask_server_input(servers, fallback_search=True)
 
     def parse_server(self, variables):
@@ -237,7 +245,7 @@ class CommandLine:
             if not server:
                 print(f"Configured server with number: {number} does not exist")
         elif number_all is not None:
-            servers = self.server_db.disco
+            servers = self.get_discovery()
             server = get_grouped_index(servers, number_all - 1)
             if not server:
                 print(
@@ -326,7 +334,7 @@ class CommandLine:
     def list(self, args={}):
         servers = self.server_db.configured
         if args.get("all"):
-            servers = self.server_db.disco
+            servers = self.get_discovery()
         self.list_groups(group_servers(servers))
 
     def remove_server(self, server):
