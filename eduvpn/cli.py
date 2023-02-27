@@ -164,6 +164,8 @@ class CommandLine:
                 print(
                     "We have switched to a new VPN protocol as the previous protocol was blocked"
                 )
+            else:
+                print("Done testing, you are connected")
             callback()
 
         print("Connected, but we are testing your VPN if it can reach the internet...")
