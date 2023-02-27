@@ -381,7 +381,7 @@ class CommandLine:
     def change_location(self, args={}):
         if not self.app.model.is_connected():
             print(
-                "Please connect to a secure internet server first before changing locations",
+                "Please connect to a Secure Internet server first before changing locations",
                 file=sys.stderr,
             )
             return False
@@ -389,7 +389,7 @@ class CommandLine:
         server = self.app.model.current_server
         if not isinstance(server, SecureInternetServer):
             print(
-                "The currently connected server is not a secure internet server",
+                "The currently connected server is not a Secure Internet server",
                 file=sys.stderr,
             )
             return False
