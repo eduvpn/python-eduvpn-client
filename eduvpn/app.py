@@ -281,6 +281,10 @@ class ApplicationModel:
             return self.common.get_config_institute_access(
                 server.base_url, prefer_tcp, tokens
             )
+        elif isinstance(server, DiscoOrganization):
+            return self.common.get_config_secure_internet(
+                server.org_id, prefer_tcp, tokens
+            )
         elif isinstance(server, SecureInternetServer) or isinstance(
             server, DiscoOrganization
         ):
@@ -346,17 +350,21 @@ class ApplicationModel:
         if ensure_exists:
             self.add(server)
 
-        tokens = self.load_tokens(server)
+        tokens = None
+        if not isinstance(server, DiscoServer) and not isinstance(
+            server, DiscoOrganization
+        ):
+            tokens = self.load_tokens(server)
         config = self.connect_get_config(server, tokens, prefer_tcp=prefer_tcp)
         if not config:
             raise Exception("No configuration available")
-
-        self.save_tokens(server, config.tokens)
 
         # Get the updated info from the go library
         # Because profiles can be switched
         # And we need the most updated profile settings for default gateway
         server = self.current_server
+
+        self.save_tokens(server, config.tokens)
 
         default_gateway = True
         if server.profiles is not None and server.profiles.current is not None:
