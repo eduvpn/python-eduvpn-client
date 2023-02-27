@@ -202,6 +202,7 @@ class ApplicationModel:
                     # Disable wireguard
                     self.common.set_support_wireguard(False)
                     self.reconnect(on_reconnected, prefer_tcp=True)
+                    return
                 # Dropped but not relevant anymore
                 callback(False)
                 return
