@@ -213,7 +213,7 @@ class CommandLine:
 
         if self.server_db.configured:
             is_yes = self.ask_yes(
-                "Do you want to connect to an existing server? (y/n): "
+                "Do you want to connect to an already configured server? (y/n): "
             )
 
             if is_yes:
