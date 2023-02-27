@@ -42,7 +42,7 @@ def ask_profiles(app, profiles):
     if len(profiles.profiles) == 1:
         print("There is only a single profile for this server:", profiles.profiles[0])
         app.model.set_profile(profiles.profiles[0])
-        return
+        return False
 
     # Multiple profiles, print the index
     for index, profile in enumerate(profiles.profiles):
@@ -58,7 +58,7 @@ def ask_profiles(app, profiles):
                 print(f"Invalid profile choice: {profile_index}")
                 continue
             app.model.set_profile(profiles.profiles[profile_index - 1])
-            return
+            return True
         except ValueError:
             print(f"Input is not a number: {profile_nr}")
 
@@ -357,7 +357,8 @@ class CommandLine:
 
         print("Current profile:", server.profiles.current)
 
-        ask_profiles(self.app, server.profiles)
+        if not ask_profiles(self.app, server.profiles):
+            return
 
         @run_in_background_thread("change-profile-reconnect")
         def reconnect(callback=None):
