@@ -520,19 +520,19 @@ For detailed information, see the log file located at:
         self.select_profile_combo = combo
 
         self.select_profile_combo.show()
-        self.select_profile_text.set_text("Select Profile: ")
 
     # network state transition callbacks
     def update_connection_server(self, server_info) -> None:
         if not server_info:
             return
 
+        self.select_profile_text.show()
+        self.recreate_profile_combo(server_info)
+
         if len(server_info.profiles.profiles) <= 1:
-            self.select_profile_text.hide()
-            self.select_profile_combo.hide()
+            self.select_profile_text.set_text("One profile available: ")
         else:
-            self.select_profile_text.show()
-            self.recreate_profile_combo(server_info)
+            self.select_profile_text.set_text("Select Profile: ")
 
         if hasattr(server_info, "country_code"):
             self.server_label.set_text(
@@ -899,6 +899,7 @@ For detailed information, see the log file located at:
             GLib.source_remove(self.failover_text_cancel)
         self.failover_text_cancel = None
         self.failover_text.hide()
+        self.connection_info_expander.hide()
 
     @ui_transition(State.CONNECTED, StateType.ENTER)
     def enter_ConnectedState(self, old_state, server_info):
@@ -910,6 +911,7 @@ For detailed information, see the log file located at:
         self.update_connection_status(True)
         self.update_connection_server(server_info)
         self.start_validity_renew(server_info)
+        self.connection_info_expander.show()
 
         if self.app.model.should_failover():
             self.failover_text_cancel = GLib.timeout_add(
