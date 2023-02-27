@@ -270,6 +270,7 @@ class CommandLine:
         print(f"Current profile: {str(current.profiles.current)}")
         if isinstance(current, SecureInternetServer):
             print(f"Current location: {retrieve_country_name(current.country_code)}")
+        print(f"VPN Protocol: {self.nm_manager.protocol}")
 
     def connect(self, variables={}):
         if self.app.model.is_connected():
