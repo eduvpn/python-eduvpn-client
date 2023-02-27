@@ -471,7 +471,7 @@ class ApplicationModel:
                     )
                 else:
                     # All retries are done
-                    logger.warning(
+                    logger.debug(
                         f"Got an error while cleaning up, after full retries: {i+1}."
                     )
             else:
