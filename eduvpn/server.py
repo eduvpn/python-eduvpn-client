@@ -2,6 +2,7 @@ import enum
 import logging
 from typing import Dict, Iterable, List, Union
 
+from eduvpn_common.error import WrappedError
 from eduvpn_common.server import Server
 
 from eduvpn.settings import IMAGE_PREFIX
@@ -38,16 +39,29 @@ class ServerDatabase:
     def __init__(self, common, enable_discovery=True) -> None:
         self.common = common
         self.enable_discovery = enable_discovery
+        self.all_servers = []
+
+    def disco_update(self):
+        disco_orgs = self.common.get_disco_organizations()
+        disco_servers = self.common.get_disco_servers()
+        all_servers = []
+        if disco_orgs is not None:
+            all_servers = disco_orgs.organizations
+        if disco_servers is not None:
+            all_servers.extend(disco_servers.servers)
+        # Only update the server list if we have a non-empty list
+        if len(all_servers) > 0:
+            self.all_servers = all_servers
+        else:
+            raise Exception(
+                "Could not obtain discovery servers and organizations, see the log file for more information"
+            )
 
     @property
     def disco(self):
         if not self.enable_discovery:
             return []
-        disco_orgs = self.common.get_disco_organizations()
-        disco_servers = self.common.get_disco_servers()
-        all_servers = disco_orgs.organizations
-        all_servers.extend(disco_servers.servers)
-        return all_servers
+        return self.all_servers
 
     @property
     def configured(self):

@@ -53,7 +53,12 @@ class ApplicationModelTransitions:
             is_main = len(saved_servers) == 0
         else:
             is_main = True
-        return (self.server_db.disco, is_main)
+
+        def update_disco():
+            self.server_db.disco_update()
+            return self.server_db.disco
+
+        return (self.server_db.disco, is_main, update_disco)
 
     @model_transition(State.LOADING_SERVER, StateType.ENTER)
     def loading_server(self, old_state: State, data: str):

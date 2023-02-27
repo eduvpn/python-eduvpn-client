@@ -250,9 +250,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.app_logo.set_from_file(logo)
             self.app_logo_info.set_from_file(logo)
         if self.app.variant.server_image:
-            self.find_server_image.set_from_file(
-                self.app.variant.server_image
-            )
+            self.find_server_image.set_from_file(self.app.variant.server_image)
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
             self.find_server_search_input.set_placeholder_text(
@@ -638,11 +636,27 @@ For detailed information, see the log file located at:
         self.connection_switch.set_sensitive(True)
         self.select_profile_combo.set_sensitive(True)
 
-    # interface state transition callbacks
+    @run_in_background_thread("update-search-async")
+    def update_search_async(self, update_disco: Callable):
+        try:
+            update_disco()
+        except Exception as e:
+            self.show_error_revealer(str(e))
+            return
+
+        @run_in_glib_thread
+        def update_results():
+            # If we have left search server we should do nothing
+            # We should find a better way to do this as this is pretty racy
+            if not self.app.model.is_search_server():
+                return
+            self.on_search_changed()
+
+        update_results()
 
     @ui_transition(State.SEARCH_SERVER, StateType.ENTER)
     def enter_search(self, old_state: str, data):
-        servers, is_main = data
+        servers, is_main, update_disco = data
         self.show_back_button(not is_main)
         self.set_search_text("")
         self.find_server_search_input.grab_focus()
@@ -650,6 +664,9 @@ For detailed information, see the log file located at:
         search.show_search_components(self, True)
         search.update_results(self, servers)
         search.init_server_search(self)
+
+        # asynchronously update the search results
+        self.update_search_async(update_disco)
 
     @ui_transition(State.SEARCH_SERVER, StateType.LEAVE)
     def exit_search(self, new_state: str, data: str):
