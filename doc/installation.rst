@@ -16,9 +16,7 @@ The eduVPN client has been tested with:
 
 .. note::
 
-    If you target is not supported the client might still work with limited functionality. You need to have
-    `Network Manager <https://wiki.gnome.org/Projects/NetworkManager>`_ and `OpenVPN 2.4.0+ <https://openvpn.net/>`_
-    installed.
+    If your target is not supported you can make an issue on the `GitHub <https://github.com/eduvpn/python-eduvpn-client>`_ and we will see if we can provide it.
 
 
 Debian and Ubuntu
