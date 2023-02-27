@@ -46,7 +46,7 @@ def init_logger(debug: bool, logfile, mode):
 def log_exception(exception: Exception):
     # Other exceptions are already logged by Go
     if not isinstance(exception, WrappedError):
-        logger.error("Non-Go exception occurred", str(exception))
+        logger.error(f"Error occurred: {str(exception)}")
 
 
 @lru_cache(maxsize=1)
