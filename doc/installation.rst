@@ -11,7 +11,7 @@ Ubuntu.
 The eduVPN client has been tested with:
 
  * Debian 11 (Bullseye)
- * Ubuntu 20.04 LTS and 20.04 LTS
+ * Ubuntu 20.04 LTS and 22.04 LTS
  * Fedora 36 and 37
 
 .. note::
