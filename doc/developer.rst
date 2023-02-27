@@ -11,6 +11,18 @@ Never call GTK functions directly from a background thread,
 use ``eduvpn.utils.run_in_main_gtk_thread`` to decorate functions
 that must run on the main thread (eg. UI updates).
 
+This library closely follows eduvpn-common. To see the API for that,
+`see here
+<https://eduvpn.github.io/eduvpn-common/api/python/rtd/index.html>`_
+
+Most of the interaction with this library is in ``eduvpn.app``, the ui
+is in ``eduvpn.ui.ui`` and the cli in ``eduvpn.cli``. In these files
+you can see lots of state transitions defined. The state transitions
+that are used are closely in line with the Finite State machine from
+the eduvpn-common library. A figure for this state machine can be
+`found here
+<https://eduvpn.github.io/eduvpn-common/gettingstarted/debugging/fsm.html>`_.
+
 
 Running the tests
 -----------------
@@ -34,7 +46,7 @@ Prepare the code
 
 * Make sure the test suite runs with python3
 
-* Set version number in ``setup.py``, and ``eduvpn.spec``
+* Set version number in ``setup.py``, and ``eduvpn.spec`` and ensure eduvpn-common has the targeted version set
 
 * add changes to CHANGES.md
 
@@ -42,12 +54,12 @@ Prepare the code
 
 * Press release button on github. List all changes here also
 
-* Check if github actions builds.
+* Check if GitHub Actions builds.
 
 * The release will trigger a build on readthedocs, but the active version still needs to be set manually here:
   https://readthedocs.org/projects/python-eduvpn-client/versions/
 
-Upload to pypi
+Upload to PyPi
 ^^^^^^^^^^^^^^
 
 do a manual wheel upload using `twine <https://github.com/pypa/twine>`_:
@@ -63,6 +75,8 @@ There is also a make shortcut:
 .. code-block:: console
 
     $ make twine-upload
+
+You should also make sure that eduvpn-common is updated in PyPi!
     
 Building RPMs
 ^^^^^^^^^^^^^^^^^^^^^^
