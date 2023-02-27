@@ -601,6 +601,7 @@ class CommandLine:
             "remove", help="remove a configured server"
         )
         remove_parser.add_argument(
+            "-n",
             "--number",
             type=int,
             required=True,
