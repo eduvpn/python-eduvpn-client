@@ -530,7 +530,7 @@ For detailed information, see the log file located at:
         self.recreate_profile_combo(server_info)
 
         if len(server_info.profiles.profiles) <= 1:
-            self.select_profile_text.set_text("One profile available: ")
+            self.select_profile_text.set_text("One Profile Available: ")
         else:
             self.select_profile_text.set_text("Select Profile: ")
 
