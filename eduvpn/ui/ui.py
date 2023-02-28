@@ -1099,6 +1099,7 @@ For detailed information, see the log file located at:
             logger.info("Connection Info: VPN is not active")
             return
 
+        @run_in_background_thread("update-connection-info")
         def update_connection_info_callback():
             # Do nothing if we have no stats object
             if not self.connection_info_stats:
@@ -1108,14 +1109,19 @@ For detailed information, see the log file located at:
             protocol = self.connection_info_stats.protocol
             ipv4 = self.connection_info_stats.ipv4
             ipv6 = self.connection_info_stats.ipv6
-            self.connection_info_downloaded.set_text(download)
-            self.connection_info_protocol.set_text(
-                f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>"
-            )
-            self.connection_info_protocol.set_use_markup(True)
-            self.connection_info_uploaded.set_text(upload)
-            self.connection_info_ipv4address.set_text(ipv4)
-            self.connection_info_ipv6address.set_text(ipv6)
+
+            @run_in_glib_thread
+            def update_ui():
+                self.connection_info_downloaded.set_text(download)
+                self.connection_info_protocol.set_text(
+                    f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>"
+                )
+                self.connection_info_protocol.set_use_markup(True)
+                self.connection_info_uploaded.set_text(upload)
+                self.connection_info_ipv4address.set_text(ipv4)
+                self.connection_info_ipv6address.set_text(ipv6)
+
+            update_ui()
 
         if not self.connection_info_stats:
             self.connection_info_stats = NetworkStats(self.app.nm_manager)
