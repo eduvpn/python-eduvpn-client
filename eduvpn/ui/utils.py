@@ -2,7 +2,7 @@ from gettext import gettext as _
 from gettext import ngettext
 
 import gi
-from eduvpn_common.error import ErrorLevel, WrappedError
+from eduvpn_common.error import WrappedError
 
 from eduvpn.connection import Validity
 from eduvpn.utils import run_in_glib_thread
@@ -34,7 +34,8 @@ def style_widget(widget, class_name: str, style: str):
 
 def should_show_error(error: Exception):
     if isinstance(error, WrappedError):
-        return error.level != ErrorLevel.ERR_INFO
+        if "cancelled OAuth" in str(error):
+            return False
     return True
 
 
