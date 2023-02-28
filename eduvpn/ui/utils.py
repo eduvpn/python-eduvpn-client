@@ -1,5 +1,6 @@
 from gettext import gettext as _
 from gettext import ngettext
+from typing import Tuple
 
 import gi
 from eduvpn_common.error import WrappedError
@@ -7,12 +8,9 @@ from eduvpn_common.error import WrappedError
 from eduvpn.connection import Validity
 from eduvpn.utils import run_in_glib_thread
 
-from typing import Tuple
-
 GtkAvailable = True
 try:
     gi.require_version("Gtk", "3.0")  # noqa: E402
-    from gi.overrides.Gtk import Widget  # type: ignore
     from gi.repository import Gtk  # type: ignore
 except ValueError:
     GtkAvailable = False
