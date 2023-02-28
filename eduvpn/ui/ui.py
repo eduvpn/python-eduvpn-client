@@ -123,7 +123,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         builder.connect_signals(handlers)
 
         style_context = self.get_style_context()  # type: ignore
-        bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)
+        bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)  # type: ignore
         self.is_dark_theme = is_dark(bg_color)
 
         dark_icons = {
@@ -503,7 +503,7 @@ For detailed information, see the log file located at:
         # However, when we add items again that are all smaller (e.g. for a new server), the combo box does not shrink back
         # The only proper way seems to be to recreate the combobox every time
         combo = Gtk.ComboBoxText.new()  # type: ignore
-        combo.set_model(profile_store)
+        combo.set_model(profile_store)  # type: ignore
         combo.set_active(active_profile)
         combo.set_halign(Gtk.Align.CENTER)
         combo.connect("changed", self.on_profile_combo_changed)
@@ -1031,8 +1031,8 @@ For detailed information, see the log file located at:
         remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
         remove_image = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)  # type: ignore
         remove_label = Gtk.Label.new("Remove Server")  # type: ignore
-        remove_box.pack_start(remove_image, False, False, 0)
-        remove_box.pack_start(remove_label, False, False, 8)
+        remove_box.pack_start(remove_image, False, False, 0)  # type: ignore
+        remove_box.pack_start(remove_label, False, False, 8)  # type: ignore
         remove_item.add(remove_box)
         remove_item.show_all()
 
