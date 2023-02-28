@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional, Tuple
 
-from eduvpn import settings
+from eduvpn import __version__, settings
 from eduvpn.config import Configuration
 from eduvpn.settings import (
     CLIENT_ID,
@@ -40,7 +40,7 @@ class ApplicationVariant:
 
     @property
     def settings(self) -> Tuple[str, str]:
-        return self.client_id, str(self.config_prefix)
+        return self.client_id, str(__version__), str(self.config_prefix)
 
     @property
     def config(self) -> Configuration:

@@ -10,6 +10,7 @@ from eduvpn_common.server import InstituteServer, SecureInternetServer, Server
 from eduvpn_common.state import State, StateType
 
 import eduvpn.nm as nm
+from eduvpn import __version__
 from eduvpn.app import Application
 from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.server import ServerDatabase
@@ -663,14 +664,14 @@ class CommandLineTransitions:
 
 
 def eduvpn():
-    _common = common.EduVPN(CLIENT_ID, str(CONFIG_PREFIX), country())
+    _common = common.EduVPN(CLIENT_ID, str(__version__) str(CONFIG_PREFIX), country())
     cmd = CommandLine("eduVPN", EDUVPN, _common)
     cmd.start()
 
 
 def letsconnect():
     _common = common.EduVPN(
-        LETSCONNECT_CLIENT_ID, str(LETSCONNECT_CONFIG_PREFIX), country()
+        LETSCONNECT_CLIENT_ID, str(__version__), str(LETSCONNECT_CONFIG_PREFIX), country()
     )
     cmd = CommandLine("Let's Connect!", LETS_CONNECT, _common)
     cmd.start()
