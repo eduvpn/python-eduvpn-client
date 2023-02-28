@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import signal
 import sys
 import webbrowser
@@ -110,6 +111,11 @@ class ApplicationModelTransitions:
     def open_browser(self, url):
         logger.debug(f"Opening web browser with url: {url}")
         webbrowser.open(url)
+        # Explicitly wait to not have zombie processes
+        # See https://bugs.python.org/issue5993
+        logger.debug(f"Running os.wait for browser")
+        os.wait()
+        logger.debug(f"Done waiting for browser")
 
     @model_transition(State.CONNECTED, StateType.ENTER)
     def parse_connected(self, old_state: State, server):
