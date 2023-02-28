@@ -114,7 +114,10 @@ class ApplicationModelTransitions:
         # Explicitly wait to not have zombie processes
         # See https://bugs.python.org/issue5993
         logger.debug(f"Running os.wait for browser")
-        os.wait()
+        try:
+            os.wait()
+        except ChildProcessError:
+            pass
         logger.debug(f"Done waiting for browser")
 
     @model_transition(State.CONNECTED, StateType.ENTER)
