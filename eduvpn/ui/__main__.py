@@ -9,7 +9,6 @@ gi.require_version("Gtk", "3.0")  # noqa: E402
 import eduvpn_common.main as common
 from gi.repository import Gtk
 
-from eduvpn import __version__
 from eduvpn.i18n import country
 from eduvpn.ui.app import EduVpnGtkApplication
 from eduvpn.variants import EDUVPN, LETS_CONNECT
