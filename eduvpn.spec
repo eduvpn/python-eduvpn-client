@@ -2,7 +2,7 @@
 %global sum client for eduVPN
 
 Name:           eduvpn_client
-Version:        3.3.1
+Version:        3.99.0
 Release:        0.1%{?dist}
 Summary:        %{sum}
 
@@ -20,7 +20,7 @@ BuildRequires: python3-devel
 BuildRequires: python3-wheel
 BuildRequires: python3-pip
 BuildRequires: python3-pycodestyle
-BuildRequires: python3-eduvpn-common
+BuildRequires: python3-eduvpn-common >= 0.99.0, python3-eduvpn-common < 1.0.0
 BuildRequires: desktop-file-utils
 
 %description
@@ -31,7 +31,7 @@ Summary:        %{sum}
 %{?python_provide:%python_provide python3-eduvpn-client}
 Requires: python3-gobject
 Requires: python3-dbus
-Requires: python3-eduvpn-common >= 0.3.0, python3-eduvpn-common < 0.4.0
+Requires: python3-eduvpn-common >= 0.99.0, python3-eduvpn-common < 1.0.0
 Requires: NetworkManager-openvpn
 Requires: libsecret
 Conflicts: python3-letsconnect-client

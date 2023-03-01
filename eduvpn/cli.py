@@ -664,7 +664,7 @@ class CommandLineTransitions:
 
 
 def eduvpn():
-    _common = common.EduVPN(CLIENT_ID, str(__version__) str(CONFIG_PREFIX), country())
+    _common = common.EduVPN(CLIENT_ID, str(__version__), str(CONFIG_PREFIX), country())
     cmd = CommandLine("eduVPN", EDUVPN, _common)
     cmd.start()
 
