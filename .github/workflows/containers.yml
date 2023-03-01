@@ -23,9 +23,6 @@ jobs:
           - pytest_fedora_37
           - pytest_ubuntu_bionic
           - pytest_ubuntu_focal
-          - rpm_centos_stream8
-          - rpm_fedora_36
-          - rpm_fedora_37
     steps:
       - name: Checkout
         uses: actions/checkout@v2
