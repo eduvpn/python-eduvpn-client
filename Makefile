@@ -65,22 +65,6 @@ doc:  $(VENV)/
 	$(VENV)/bin/pip install -r doc/requirements.txt
 	$(VENV)/bin/python -msphinx doc doc/_build
 
-srpm-fedora:
-	rm -f dist/*.src.rpm
-	docker build --progress=plain -t rpm_fedora_37 -f docker/rpm_fedora_37.docker .
-	mkdir -p dist
-	docker run -v `pwd`/dist:/dist:rw rpm_fedora_37 sh -c "cp /root/rpmbuild/SRPMS/* /dist"
-
-rpm-fedora:
-	docker build --progress=plain -t rpm_fedora_37 -f docker/rpm_fedora_37.docker .
-	mkdir -p dist
-	docker run -v `pwd`/dist:/dist:rw rpm_fedora_37 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
-
-rpm-centos:
-	docker build --progress=plain -t rpm_centos_stream8 -f docker/rpm_centos_stream8.docker .
-	mkdir -p dist
-	docker run -v `pwd`/dist:/dist:rw rpm_centos_stream8 sh -c "cp /root/rpmbuild/RPMS/noarch/* /dist"
-
 $(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
 	touch $(VENV)/bin/pytest
@@ -114,11 +98,6 @@ bdist_wheel: $(VENV)
 	rm -f dist/*.whl
 	$(VENV)/bin/python setup.py bdist_wheel
 
-rpmbuild: sdist
-	mkdir -p ~/rpmbuild/SOURCES/.
-	cp dist/*.tar.gz ~/rpmbuild/SOURCES/.
-	rpmbuild -bs eduvpn.spec
-	rpmbuild -bb eduvpn.spec
 $(VENV)/bin/twine: $(VENV)
 	$(VENV)/bin/pip install twine
 
