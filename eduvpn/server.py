@@ -2,8 +2,8 @@ import enum
 import logging
 from typing import Dict, Iterable, List, Union
 
+from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.server import Server
-from eduvpn_common.discovery import DiscoServer, DiscoOrganization
 
 from eduvpn.settings import IMAGE_PREFIX
 
