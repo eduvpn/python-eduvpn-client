@@ -39,7 +39,7 @@ class ApplicationVariant:
         self.use_configured_servers = use_configured_servers
 
     @property
-    def settings(self) -> Tuple[str, str]:
+    def settings(self) -> Tuple[str, str, str]:
         return self.client_id, str(__version__), str(self.config_prefix)
 
     @property
