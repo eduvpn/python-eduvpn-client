@@ -157,7 +157,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.server_list_container = builder.get_object("serverListContainer")
 
         self.info_version = builder.get_object("infoVersion")
-        self.info_version.set_text(f"{__version__} (pre-release)")
+        self.info_version.set_text(f"{__version__}")
         self.info_log_location = builder.get_object("infoLogLocation")
         self.info_log_location.set_text(str(self.app.variant.logfile))
 
