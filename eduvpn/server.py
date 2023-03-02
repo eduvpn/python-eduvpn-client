@@ -42,6 +42,8 @@ class ServerDatabase:
         self.all_servers: List[Union[DiscoServer, DiscoOrganization]] = []
 
     def disco_update(self):
+        if not self.enable_discovery:
+            return
         disco_orgs = self.common.get_disco_organizations()
         disco_servers = self.common.get_disco_servers()
         all_servers = []
