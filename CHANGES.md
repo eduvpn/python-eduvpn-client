@@ -1,4 +1,21 @@
-3.3.1 (Beta/pre-release 07-02-2023)
+4.0.0 (2022-03-02)
+==
+First release using eduvpn-common, changes since 3.3.1:
+
+* Update to eduvpn-common 1.0.0
+* Fix CLI by making GTK optional on runtime
+* Asynchronously update discovery
+* Show profile combo for 1 profile too
+* CLI: ensure shorthand flag is available for --number
+* CLI: Add VPN protocol to status
+* CLI: Improve messages and error handling
+* Drop OSX support, use eduvpn-common for an API
+* Remove notebook files
+* Update docs
+* Try to fix Fedora freezes by ensuring connection info is run in the proper thread
+* Make sure browser child processes are not left open by using `os.wait()`
+
+3.3.1 (Beta/pre-release 2023-02-07)
 ==
 This pre-release are a couple of Let's Connect! and threading changes
 
@@ -6,7 +23,7 @@ This pre-release are a couple of Let's Connect! and threading changes
 * Fix launching of Let's Connect!
 * Properly hide certain elements that are only applicable for eduVPN
 
-3.3.0 (Beta/pre-release 01-02-2023)
+3.3.0 (Beta/pre-release 2023-02-01)
 ==
 This pre-release are a couple of QoL changes in the UI
 
@@ -18,7 +35,7 @@ This pre-release are a couple of QoL changes in the UI
 * Add additonal logging to keyring
 
 
-3.2.0 (Beta/pre-release 23-12-2022)
+3.2.0 (Beta/pre-release 2022-12-23)
 ==
 This pre-release refactors the whole app using the [eduvpn-common](https://github.com/eduvpn/eduvpn-common) Go library.
 
