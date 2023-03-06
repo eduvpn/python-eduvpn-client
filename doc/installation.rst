@@ -98,12 +98,23 @@ For Fedora we did the same:
 
     $ sudo make dnf
 
-However, since version 4 of this Linux client, we use the eduvpn-common Go library to
-provide most of the core functionality. Thus these commands cannot
-provide you the complete development dependencies as eduvpn-common is
-not in the official repositories. To install this library and to see
-how it works we refer to `their documentation
+You can then continue with installing via e.g. Pip
+
+If you're not installing the rest via Pip, note that since version 4
+of this Linux client, we use the eduvpn-common Go library to provide
+most of the core functionality. Thus these commands cannot provide you
+the complete development dependencies as eduvpn-common is not in the
+official repositories. To install this library manually and to see how it works
+we refer to `their documentation
 <https://eduvpn.github.io/eduvpn-common>`_.
+
+Eduvpn-common, however is available to install with Pip (it includes
+precompiled shared libraries).  The aforementioned repositories
+(e.g. Fedora, Debian) also include the latest stable release of
+eduvpn-common.
+
+Development packages for eduvpn-common and this client will follow later.
+
 Pip
 ---
 
@@ -122,8 +133,7 @@ Or, if you want to try out the bleeding edge development version:
 .. note::
 
     This requires the installation of system packages
-    using your distributions package manager.
-    Consult the `Makefile`_ for the complete list.
+    using your distributions package manager. See the previous section for the `Makefile` targets for your system.
 
 
 Development version
