@@ -11,40 +11,52 @@ Ubuntu.
 The eduVPN client has been tested with:
 
  * Debian 11 (Bullseye)
- * Ubuntu 20.04 LTS and 22.04 LTS
+ * Ubuntu 22.04 LTS
  * Fedora 36 and 37
 
 .. note::
 
-    If your target is not supported you can make an issue on the `GitHub <https://github.com/eduvpn/python-eduvpn-client>`_ and we will see if we can provide it.
+    If your target is not supported you can make an issue on the `GitHub <https://github.com/eduvpn/python-eduvpn-client>`_ and we will see if we can provide it. Right now we only provide `x86_64` packages (we use a compiled dependency), if you want an ARM package for a certain target you can also make an issue.
 
 
-Debian and Ubuntu
+Debian (11) and Ubuntu (22.04 & 22.10)
 =================
-
-You can install the latest release on Debian or Ubuntu using the eduVPN packaging repository by running these commands:
 
 .. code-block:: console
 
-    $ sudo apt install apt-transport-https wget
-    $ wget -O- https://app.eduvpn.org/linux/deb/eduvpn.key | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn.gpg >/dev/null
-    $ echo "deb [signed-by=/usr/share/keyrings/eduvpn.gpg] https://app.eduvpn.org/linux/deb/ stable main" | sudo tee -a /etc/apt/sources.list.d/eduvpn.list
+    $ sudo apt install apt-transport-https lsb-release
+    $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
+    $ echo "deb [signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/eduvpn-v4.list
     $ sudo apt update
     $ sudo apt install eduvpn-client
 
-
-Fedora and CentOS
+Fedora (36 & 37)
 =================
-
-You can install the latest release of the eduVPN client on Fedora or CentOS by running these commands :
 
 .. code-block:: console
 
-    $ sudo dnf install dnf-plugins-core
-    $ sudo dnf copr enable @eduvpn/eduvpn-client
+    $ wget https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
+    $ sudo rpm --import app+linux@eduvpn.org.asc
+    $ cat << 'EOF' | sudo tee /etc/yum.repos.d/python-eduvpn-client_v4.repo
+    [python-eduvpn-client_v4]
+    name=eduVPN for Linux 4.x (Fedora $releasever)
+    baseurl=https://app.eduvpn.org/linux/v4/rpm/fedora-$releasever-$basearch
+    gpgcheck=1
+    EOF
     $ sudo dnf install eduvpn-client
 
-More information is available at `fedora copr <https://copr.fedorainfracloud.org/coprs/g/eduvpn/eduvpn-client/>`_.
+CentOS (Stream 9)
+=================
+
+    $ wget https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
+    $ sudo rpm --import app+linux@eduvpn.org.asc
+    $ cat << 'EOF' | sudo tee /etc/yum.repos.d/python-eduvpn-client_v4.repo
+    [python-eduvpn-client_v4]
+    name=eduVPN for Linux 4.x (CentOS Stream 9)
+    baseurl=https://app.eduvpn.org/linux/v4/rpm/centos-stream+epel-next-9-$basearch
+    gpgcheck=1
+    EOF
+    $ sudo dnf install eduvpn-client
 
 Arch (Unofficial)
 =================
@@ -138,7 +150,9 @@ Issues
 If you experience any issues you could and should report them at our
 `issue tracker <https://github.com/eduvpn/python-eduvpn-client/issues>`_. Please don't forget to mention your OS,
 method of installation, eduVPN client version and instructions on how to reproduce the problem. If you have a problem
-enabling your VPN connection please also examine the `journalctl -u NetworkManager` logs.
+enabling your VPN connection please also examine the `journalctl -u NetworkManager` logs. The log file of the eduVPN app
+can also help us figure out the problem, running the gui or cli in debug mode (-d) flag will print debug logging to the log file
+located at: ~/.config/eduvpn/log or ~/.config/letsconnect/log for Let's Connect!.
 
 
 Source code
