@@ -35,7 +35,7 @@ Fedora (36 & 37)
 
 .. code-block:: console
 
-    $ wget https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
+    $ curl -O https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
     $ sudo rpm --import app+linux@eduvpn.org.asc
     $ cat << 'EOF' | sudo tee /etc/yum.repos.d/python-eduvpn-client_v4.repo
     [python-eduvpn-client_v4]
@@ -50,7 +50,7 @@ CentOS (Stream 9)
 
 .. code-block:: console
 
-    $ wget https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
+    $ curl -O https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
     $ sudo rpm --import app+linux@eduvpn.org.asc
     $ cat << 'EOF' | sudo tee /etc/yum.repos.d/python-eduvpn-client_v4.repo
     [python-eduvpn-client_v4]
