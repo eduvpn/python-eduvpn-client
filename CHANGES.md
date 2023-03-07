@@ -1,3 +1,13 @@
+4.0.1 (2022-03-07)
+==
+Hotfix release. Changes since 4.0.0:
+
+* Make sure the insecure file keyring supports multiple servers
+* Insecure file keyring should not error out on invalid JSON
+* Add a version field to the insecure file keyring
+* Properly delete the eduVPN connection on disconnect
+
+
 4.0.0 (2022-03-02)
 ==
 First release using eduvpn-common, changes since 3.3.1:
