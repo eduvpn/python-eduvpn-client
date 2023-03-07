@@ -97,6 +97,9 @@ class DBusKeyring(TokenKeyring):
         return Secret.password_lookup_sync(schema, attributes, None)
 
 
+JSON_VERSION = "v1"
+
+
 class InsecureFileKeyring(TokenKeyring):
     def __init__(self, variant):
         super().__init__(variant)
@@ -105,23 +108,25 @@ class InsecureFileKeyring(TokenKeyring):
     def filename(self):
         return self.variant.config_prefix / "keys"
 
-    def hash_key(self, attributes):
-        return str(hash(tuple(sorted(attributes))))
+    def unique_key(self, attributes):
+        return ",".join(list(attributes.values()))
 
     def load_previous(self):
         with open(self.filename, "r") as f:
-            return json.load(f)
+            c = json.load(f)
+            return c.get(JSON_VERSION, {})
 
     def write(self, vals):
+        towrite = {JSON_VERSION: vals}
         with open(self.filename, "w+") as f:
-            json.dump(vals, f)
+            json.dump(towrite, f)
 
     def clear(self, attributes) -> bool:
         # Get previous entries
         new = {}
         if os.path.exists(self.filename):
             new = self.load_previous()
-        key = self.hash_key(attributes)
+        key = self.unique_key(attributes)
         new.pop(key, None)
         self.write(new)
         return True
@@ -134,7 +139,7 @@ class InsecureFileKeyring(TokenKeyring):
             new = self.load_previous()
 
         # add/overwrite new entry
-        key = self.hash_key(attributes)
+        key = self.unique_key(attributes)
         new[key] = secret
 
         # Write new values
@@ -144,5 +149,5 @@ class InsecureFileKeyring(TokenKeyring):
         if not os.path.exists(self.filename):
             return None
         previous = self.load_previous()
-        key = self.hash_key(attributes)
+        key = self.unique_key(attributes)
         return previous.get(key, None)
