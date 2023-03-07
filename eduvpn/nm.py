@@ -611,8 +611,7 @@ class NMManager:
                 else:
                     _logger.debug(f"deactivate_connection_async result: {result}")
                 finally:
-                    if callback:
-                        self.delete_connection(callback)
+                    self.delete_connection(callback)
 
             self.client.deactivate_connection_async(
                 active=con, callback=on_deactivate_connection, user_data=callback
@@ -672,8 +671,7 @@ class NMManager:
             else:
                 _logger.debug(f"disconnect_async result: {result}")
             finally:
-                if callback:
-                    self.delete_connection(callback)
+                self.delete_connection(callback)
 
         _logger.debug(f"disconnect uuid: {uuid}")
         device = self.wireguard_device
