@@ -1,4 +1,4 @@
-4.0.1 (2022-03-07)
+4.0.1 (2023-03-07)
 ==
 Hotfix release. Changes since 4.0.0:
 
@@ -9,7 +9,7 @@ Hotfix release. Changes since 4.0.0:
 * Properly delete the eduVPN connection on disconnect
 
 
-4.0.0 (2022-03-02)
+4.0.0 (2023-03-02)
 ==
 First release using eduvpn-common, changes since 3.3.1:
 
