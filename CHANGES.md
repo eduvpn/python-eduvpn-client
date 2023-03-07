@@ -2,9 +2,10 @@
 ==
 Hotfix release. Changes since 4.0.0:
 
-* Make sure the insecure file keyring supports multiple servers
-* Insecure file keyring should not error out on invalid JSON
-* Add a version field to the insecure file keyring
+* File keyring:
+  - Make sure it supports multiple servers
+  - Do not error out on invalid JSON
+  - Add a version field to the JSON
 * Properly delete the eduVPN connection on disconnect
 
 
