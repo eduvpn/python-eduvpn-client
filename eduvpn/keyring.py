@@ -113,7 +113,11 @@ class InsecureFileKeyring(TokenKeyring):
 
     def load_previous(self):
         with open(self.filename, "r") as f:
-            c = json.load(f)
+            try:
+                c = json.load(f)
+            except Exception as e:
+                logger.debug(f"failed to load JSON: {str(e)}")
+                c = {}
             return c.get(JSON_VERSION, {})
 
     def write(self, vals):
