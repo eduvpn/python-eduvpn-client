@@ -575,27 +575,11 @@ class NMManager:
             return
         type = connection.get_connection_type()
         if type == "vpn":
-            self.deactivate_connection_vpn()
+            self.deactivate_connection_vpn(callback)
         elif type == "wireguard":
-            self.deactivate_connection_wg()
+            self.deactivate_connection_wg(callback)
         else:
             _logger.warning(f"unexpected connection type {type}")
-
-        if not callback:
-            return
-        signal = None
-
-        def changed_state(
-            active: "NM.ActiveConnection", state_code: int, _reason_code: int
-        ):
-            state = NM.ActiveConnectionState(state_code)
-            if ConnectionState.from_active_state(state) == ConnectionState.DISCONNECTED:
-                if signal:
-                    active.disconnect(signal)
-                if callback:
-                    callback()
-
-        signal = connection.connect("state-changed", changed_state)
 
     @run_in_glib_thread
     def deactivate_connection_vpn(self, callback: Optional[Callable] = None) -> None:
@@ -623,14 +607,14 @@ class NMManager:
     def delete_connection(self, callback: Callable) -> None:
         # We run the disconnected callback early if a delete fail happens
         if self.uuid is None:
-            callback()
             _logger.warning("No uuid found for deleting the connection")
+            callback()
             return
 
         con = self.client.get_connection_by_uuid(self.uuid)
         if con is None:
-            callback()
             _logger.warning(f"No uuid connection found to delete with uuid {uuid}")
+            callback()
             return
 
         # Delete the connection and after that do the callback
