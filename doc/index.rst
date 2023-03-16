@@ -18,6 +18,7 @@ required.
    installation
    usage
    developer
+   knownissues
 
 
 Indices and tables
