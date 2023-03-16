@@ -14,6 +14,10 @@ What version of the client you are running? Try your package manager or otherwis
 
 Double check that you are running the latest version, see [the releases page](https://github.com/eduvpn/python-eduvpn-client/releases) if a new version is available.
 
+# Check if your issue is in the known issues list
+
+The known issues list is available here: <https://python-eduvpn-client.readthedocs.io/en/latest/knownissues.html>
+
 # OS/Distribution
 
 What operating system/distribution and version you are running?
