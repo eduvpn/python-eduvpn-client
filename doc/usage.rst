@@ -27,10 +27,8 @@ There is also a command line interface available for eduVPN since 2.0. To see th
 
     $ eduvpn-cli --help
 
-For example, to refresh your configured configuration and certicates one can run the refresh subcommand:
+There is also an interactive mode that is aimed to be more user friendly.
 
 .. code-block:: bash
 
-    $ eduvpn-cli refresh
-    INFO:eduvpn.remote:Requesting https://demo.eduvpn.nl/.well-known/vpn-user-portal
-    INFO:eduvpn.storage:updating token for https://demo.eduvpn.nl/
+    $ eduvpn-cli interactive
