@@ -1,3 +1,10 @@
+3.1.1 (2023-03-29)
+==
+
+Additions
+--------
+- Add an update dialog to indicate that users must update to 4.x manually
+
 3.1.0 (2022-06-23)
 ==
 
