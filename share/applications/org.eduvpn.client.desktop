@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
 Encoding=UTF-8
-Name=eduVPN client
-Comment=a configuration tool to connect to eduVPN using OpenVPN
+Name=eduVPN
+Comment=a GUI to connect to eduVPN using OpenVPN and WireGuard
 Exec=eduvpn-gui
 Icon=org.eduvpn.client
 Terminal=false
