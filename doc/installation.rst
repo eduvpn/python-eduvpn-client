@@ -30,20 +30,6 @@ Debian (11) and Ubuntu (22.04 & 22.10)
     $ sudo apt update
     $ sudo apt install eduvpn-client
 
-.. note::
-    If you are updating from an older version (< 4.0.0), you can use the following to remove the old repository, signing keys and associated files:
-
-    .. code-block:: console
-
-        $ rm -r ~/.config/eduvpn
-        $ sudo rm /etc/apt/sources.list.d/eduvpn.list
-        $ sudo rm /etc/apt/trusted.gpg.d/eduvpn-client.gpg
-        $ sudo rm /usr/share/keyrings/eduvpn.gpg
-        $ sudo apt-key del 9BF9BF69E5DDE77F5ABE20DC966A924CE91888D2
-
-    It's fine if you get errors that some of these entries don't exist
-
-
 Fedora (36 & 37)
 =================
 
@@ -58,21 +44,6 @@ Fedora (36 & 37)
     gpgcheck=1
     EOF
     $ sudo dnf install eduvpn-client
-
-.. note::
-    If you are updating from an older version (< 4.0.0), you can use the following to remove the old repository and associated files:
-
-    .. code-block:: console
-
-        $ rm -r ~/.config/eduvpn
-        $ sudo dnf copr remove @eduvpn/eduvpn-client
-
-    Or if you had the beta repo
-
-    .. code-block:: console
-
-        $ rm -r ~/.config/eduvpn
-        $ sudo dnf copr remove @eduvpn/eduvpn-client-beta
 
 CentOS (Stream 9)
 =================

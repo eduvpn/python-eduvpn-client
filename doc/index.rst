@@ -16,6 +16,7 @@ required.
    :caption: Contents:
 
    installation
+   updating
    usage
    developer
    knownissues
