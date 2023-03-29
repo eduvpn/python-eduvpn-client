@@ -7,14 +7,15 @@ Depending on the client that you want to update from, there might be some manual
 For most version updates you can simply do an update with your package manager.
 
 Additional instructions when coming from 3.x
--------------------
+--------------------------------------------
 
 When upgrading from version 3 to the newest version (currently 4.x), there are some manual steps needed for updating. The main part is that we have moved to a new repository for this major version update. We will go over the distro specific update instructions (distros that are not listed here do not need specific instructions, go to `Installation <./installation.html>`_).
 
 Before you continue, it might be wise to close the client if you have it open. Note that once the new client is installed, you will have to add your servers again.
 
-Debian (11) and Ubuntu (22.04 & 22.10)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Debian and Ubuntu (both x86)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we must remove the old files, repository and associated signing keys:
 
@@ -29,7 +30,7 @@ First we must remove the old files, repository and associated signing keys:
 It's fine if you get errors that some of these entries don't exist.
 
 
-You can then continue installing the new client by adding the new repository:
+You can then continue installing the new client by adding the new repository if you have Ubuntu >= 22.04 or Debian 11:
 
 .. code-block:: console
 
@@ -39,9 +40,10 @@ You can then continue installing the new client by adding the new repository:
     $ sudo apt update
     $ sudo apt install eduvpn-client
 
+For other Debian based distros, you can use Pip, see `Pip Installation <./installation.html#pip>`_
 
-Fedora (36 & 37)
-~~~~~~~~~~~~~~~~
+Fedora (36 & 37, both x86)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we must remove the old files, repository and associated signing keys:
 
