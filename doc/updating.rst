@@ -38,7 +38,6 @@ You can then continue installing the new client by adding the new repository if 
     $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
     $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
     $ sudo apt update
-    $ sudo apt install eduvpn-client
     $ sudo apt upgrade
 
 For other Debian based distros, you can use Pip, see `Pip Installation <./installation.html#pip>`_
@@ -65,5 +64,4 @@ You can then continue installing the new client by adding the new repository:
     baseurl=https://app.eduvpn.org/linux/v4/rpm/fedora-$releasever-$basearch
     gpgcheck=1
     EOF
-    $ sudo dnf install eduvpn-client
-    $ sudo dnf update
+    $ sudo dnf --refresh update
