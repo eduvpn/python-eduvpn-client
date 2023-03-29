@@ -374,8 +374,6 @@ class ApplicationModel:
         # And we need the most updated profile settings for default gateway
         server = self.current_server
 
-        self.save_tokens(server, config.tokens)
-
         default_gateway = True
         if server.profiles is not None and server.profiles.current is not None:
             default_gateway = server.profiles.current.default_gateway
