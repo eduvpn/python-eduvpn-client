@@ -135,10 +135,12 @@ def parse_letsconnect(args: List[str]):
 
 
 def eduvpn():
+    print("There is a major update available for this client. To update, follow the instructions at https://python-eduvpn-client.readthedocs.io/en/latest/updating.html#additional-instructions-when-coming-from-3-x")
     logging.basicConfig(level=logging.INFO)
     parse_eduvpn(argv[1:])
 
 
 def letsconnect():
+    print("There is a major update available for this client. To update, follow the instructions at https://python-eduvpn-client.readthedocs.io/en/latest/updating.html#additional-instructions-when-coming-from-3-x")
     logging.basicConfig(level=logging.INFO)
     parse_letsconnect(argv[1:])

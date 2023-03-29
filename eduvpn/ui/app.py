@@ -78,9 +78,11 @@ class EduVpnGtkApplication(Gtk.Application):
         logger.debug('activate')
         if not self.window:
             self.window = EduVpnGtkWindow(application=self)
-            self.window.initialize()
-            self.window.present()
-            self.app.initialize()
+            if not self.window.initialize():
+                self.window.present()
+                self.app.initialize()
+            else:
+                self.on_quit()
         else:
             self.window.on_reopen_window()
 

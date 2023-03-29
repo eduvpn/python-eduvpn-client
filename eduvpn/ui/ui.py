@@ -149,6 +149,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.server_label = builder.get_object('serverLabel')
         self.server_support_label = builder.get_object('supportLabel')
 
+        self.update_dialog = builder.get_object('updateDialog')
+
         self.renew_session_button = builder.get_object('renewSessionButton')
 
         self.oauth_page = builder.get_object('openBrowserPage')
@@ -187,6 +189,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def initialize(self):
         self.app.connect_state_transition_callbacks(self)
 
+        if self.show_update_dialog():
+            return True
+
         if not nm_available():
             show_error_dialog(
                 self,
@@ -199,6 +204,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 name=_("Error"),
                 title=_("NetworkManager not managing device"),
                 message=_("The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."))
+        return False
 
     # ui functions
 
@@ -380,6 +386,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def exit_ConfigureCustomServer(self, old_state, new_state):
         if not self.app.variant.use_predefined_servers:
             self.add_custom_server_button_container.hide()
+
+    def show_update_dialog(self):
+        self.update_dialog.set_title(self.app.variant.name + " update available")  # type: ignore
+        self.update_dialog.show()
+        _id = self.update_dialog.run()
+        self.update_dialog.destroy()
+        return _id == -14
 
     @transition_edge_callback(ENTER, interface_state.MainState)
     def enter_MainState(self, old_state, new_state):
