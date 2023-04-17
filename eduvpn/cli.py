@@ -631,6 +631,7 @@ class CommandLine:
 
         # Register the common library
         self.common.register(parsed.debug)
+        self.common.set_token_updater(self.app.model.save_tokens)
 
         # Update the state by asking NetworkManager
         self.update_state(True)
