@@ -1,4 +1,5 @@
 import enum
+import ipaddress
 import logging
 import time
 import uuid
@@ -91,7 +92,7 @@ class NMManager:
         self.variant = variant
         try:
             self.client = NM.Client.new(None)
-            self.wg_gateway_ip = None
+            self.wg_gateway_ip: Optional[ipaddress.IPv4Address] = None
         except Exception:
             self.client = None
 
