@@ -875,7 +875,7 @@ For detailed information, see the log file located at:
                 # not dropped but it took a while
                 self.reconnect_tcp_button.show()
                 self.failover_label.set_text(
-                    "We have determined that there might be a problem with the connection. If so press 'Reconnect with TCP'."
+                    "There might be a problem with the VPN connection. If you observe any issues, press 'Reconnect with TCP'."
                 )
                 self.failover_text.show()
         else:
@@ -884,7 +884,7 @@ For detailed information, see the log file located at:
                 10_000, self.hide_failover_text_timeout
             )
             self.failover_label.set_text(
-                "The VPN was unable to reach the internet. We have switched to a different protocol"
+                "The VPN had issues with connectivity. We have switched to a different protocol"
             )
             self.failover_text.show()
 
@@ -926,7 +926,7 @@ For detailed information, see the log file located at:
                 2500, self.show_failover_text_timeout
             )
             self.failover_label.set_text(
-                "We have not yet determined that the VPN is able to reach the internet..."
+                "Checking the VPN for connectivity issues..."
             )
             self.call_model("start_failover", self.update_failover_text)
             return
