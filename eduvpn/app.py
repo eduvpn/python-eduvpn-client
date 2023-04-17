@@ -165,7 +165,7 @@ class ApplicationModel:
     def reconnect_tcp(self, callback: Callable):
         def on_reconnected():
             self.common.set_support_wireguard(has_wireguard)
-            self.is_failovered = True
+            self.is_failovered = False
             callback(True)
 
         has_wireguard = nm.is_wireguard_supported()
