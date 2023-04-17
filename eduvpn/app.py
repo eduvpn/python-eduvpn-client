@@ -144,6 +144,7 @@ class ApplicationModel:
         self.variant = variant
         self.nm_manager = nm_manager
         self.common.register_class_callbacks(self)
+        self.is_failovered = False
 
     @property
     def server_db(self):
@@ -164,13 +165,20 @@ class ApplicationModel:
         return rx_bytes
 
     def should_failover(self):
-        current_vpn_protocol = self.nm_manager.protocol
-        if current_vpn_protocol != "WireGuard":
-            logger.debug(
-                f"Current protocol ({current_vpn_protocol}) does not support failover"
-            )
-            return False
-        return True
+        return not self.is_failovered
+
+    def reconnect_tcp(self, callback: Callable):
+        def on_reconnected():
+            self.common.set_support_wireguard(has_wireguard)
+            self.is_failovered = True
+            callback(True)
+
+        has_wireguard = nm.is_wireguard_supported()
+
+        # Disable wireguard
+        self.common.set_support_wireguard(False)
+        self.is_failovered = True
+        self.reconnect(on_reconnected, prefer_tcp=True)
 
     def start_failover(self, callback: Callable):
         try:
@@ -181,36 +189,27 @@ class ApplicationModel:
                 )
                 callback(False)
                 return
-            endpoint = self.nm_manager.wg_endpoint_ip
+            endpoint = self.nm_manager.failover_endpoint_ip
             if endpoint is None:
                 logger.debug(
-                    "Failed to initialize failover, failed to get WireGuard endpoint"
+                    "Failed to initialize failover, failed to get endpoint"
                 )
                 callback(False)
                 return
-            wg_mtu = self.nm_manager.wireguard_mtu
-            if wg_mtu is None:
-                logger.debug("failed to get WireGuard MTU, setting MTU to 1000")
-                wg_mtu = 1000
+            mtu = self.nm_manager.mtu
+            if mtu is None:
+                logger.debug("failed to get MTU for failover, setting MTU to 1000")
+                mtu = 1000
             dropped = self.common.start_failover(
                 endpoint,
-                wg_mtu,
+                mtu,
                 ReadRxBytes(lambda: self.get_failover_rx(rx_bytes_file)),
             )
-            has_wireguard = nm.is_wireguard_supported()
-
-            def on_reconnected():
-                self.common.set_support_wireguard(has_wireguard)
-                callback(True)
 
             if dropped:
                 logger.debug("Failover exited, connection is dropped")
                 if self.is_connected():
-                    has_wireguard = nm.is_wireguard_supported()
-
-                    # Disable wireguard
-                    self.common.set_support_wireguard(False)
-                    self.reconnect(on_reconnected, prefer_tcp=True)
+                    self.reconnect_tcp(callback)
                     return
                 # Dropped but not relevant anymore
                 callback(False)
@@ -253,7 +252,7 @@ class ApplicationModel:
 
     def add(self, server, callback=None):
         if isinstance(server, InstituteServer):
-            self.common.add_institute_acces(server.url)
+            self.common.add_institute_access(server.url)
         elif isinstance(server, DiscoServer):
             self.common.add_institute_access(server.base_url)
         elif isinstance(server, SecureInternetServer) or isinstance(
