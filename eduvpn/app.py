@@ -162,20 +162,16 @@ class ApplicationModel:
     def should_failover(self):
         current_vpn_protocol = self.nm_manager.protocol
         if current_vpn_protocol == "WireGuard":
-            logger.debug(
-                f"Current protocol is WireGuard, failover should continue"
-            )
+            logger.debug("Current protocol is WireGuard, failover should continue")
             return True
 
         if not self.was_tcp:
             logger.debug(
-                f"Protocol is not WireGuard and TCP was not previously triggered, failover should continue"
+                "Protocol is not WireGuard and TCP was not previously triggered, failover should continue"
             )
             return True
 
-        logger.debug(
-            f"Failover should not continue"
-        )
+        logger.debug("Failover should not continue")
         return False
 
     def reconnect_tcp(self, callback: Callable):
@@ -207,7 +203,9 @@ class ApplicationModel:
             if mtu is None:
                 logger.debug("failed to get MTU for failover, setting MTU to 1000")
                 mtu = 1000
-            logger.debug(f"starting failover with gateway {endpoint} and MTU {mtu} for protocol {self.nm_manager.protocol}")
+            logger.debug(
+                f"starting failover with gateway {endpoint} and MTU {mtu} for protocol {self.nm_manager.protocol}"
+            )
             dropped = self.common.start_failover(
                 endpoint,
                 mtu,

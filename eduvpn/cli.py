@@ -187,7 +187,7 @@ class CommandLine:
                         server,
                         lambda: self.start_failover(callback),
                         ensure_exists=should_add,
-                        prefer_tcp = prefer_tcp,
+                        prefer_tcp=prefer_tcp,
                     )
                 except Exception as e:
                     if should_show_error(e):
@@ -293,7 +293,7 @@ class CommandLine:
         else:
             server = self.parse_server(variables)
 
-        return self.connect_server(server, variables['tcp'])
+        return self.connect_server(server, variables["tcp"])
 
     def disconnect(self, _arg={}):
         if not self.app.model.is_connected():
