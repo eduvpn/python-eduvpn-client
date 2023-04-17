@@ -117,6 +117,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_profile_combo_changed": self.on_profile_combo_changed,
             "on_location_row_activated": self.on_location_row_activated,
             "on_acknowledge_error": self.on_acknowledge_error,
+            "on_reconnect_tcp_clicked": self.on_reconnect_tcp_clicked,
             "on_renew_session_clicked": self.on_renew_session_clicked,
             "on_close_window": self.on_close_window,
         }
@@ -148,6 +149,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.info_support_box = builder.get_object("infoSupportBox")
 
         self.failover_text = builder.get_object("failoverText")
+        self.failover_text_timeout_shown = False
         self.failover_text_cancel = None
         self.failover_label = builder.get_object("failoverLabel")
 
@@ -231,6 +233,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.server_support_label = builder.get_object("supportLabel")
 
         self.renew_session_button = builder.get_object("renewSessionButton")
+        self.reconnect_tcp_button = builder.get_object("reconnectTCPButton")
         self.select_profile_combo = builder.get_object("selectProfileCombo")
         self.select_profile_text = builder.get_object("selectProfileText")
 
@@ -866,6 +869,7 @@ For detailed information, see the log file located at:
         self.show_page(self.connection_page)
         self.update_connection_status(False)
         self.update_connection_server(server_info)
+        self.reconnect_tcp_button.hide()
 
     @ui_transition(State.DISCONNECTED, StateType.LEAVE)
     def exit_ConnectionStatus(self, old_state, new_state):
@@ -878,15 +882,22 @@ For detailed information, see the log file located at:
         if self.failover_text_cancel is not None:
             GLib.source_remove(self.failover_text_cancel)
         self.failover_text_cancel = None
+
         if not dropped:
-            self.failover_text.hide()
+            if self.failover_text_timeout_shown:
+                # not dropped but it took a while
+                self.reconnect_tcp_button.show()
+                self.failover_label.set_text(
+                    "We have determined that there might be a problem with the connection. If so press 'Reconnect with TCP'."
+                )
+                self.failover_text.show()
         else:
             # Show the failover text for 10 seconds
             self.failover_text_cancel = GLib.timeout_add(
                 10_000, self.hide_failover_text_timeout
             )
             self.failover_label.set_text(
-                "The VPN was unable to reach the internet. We have switched to a different VPN protocol"
+                "The VPN was unable to reach the internet. We have switched to a different protocol"
             )
             self.failover_text.show()
 
@@ -897,6 +908,7 @@ For detailed information, see the log file located at:
 
     def show_failover_text_timeout(self):
         self.failover_text_cancel = None
+        self.failover_text_timeout_shown = True
         self.failover_text.show()
         return False
 
@@ -904,6 +916,8 @@ For detailed information, see the log file located at:
     def leave_ConnectedState(self, old_state, server_info):
         if self.failover_text_cancel is not None:
             GLib.source_remove(self.failover_text_cancel)
+        self.failover_text_timeout_shown = False
+        self.reconnect_tcp_button.hide()
         self.failover_text_cancel = None
         self.failover_text.hide()
         self.connection_info_expander.hide()
@@ -922,7 +936,7 @@ For detailed information, see the log file located at:
 
         if self.app.model.should_failover():
             self.failover_text_cancel = GLib.timeout_add(
-                1000, self.show_failover_text_timeout
+                2500, self.show_failover_text_timeout
             )
             self.failover_label.set_text(
                 "We have not yet determined that the VPN is able to reach the internet..."
@@ -1222,6 +1236,15 @@ For detailed information, see the log file located at:
         logger.debug("clicked on renew session")
 
         self.call_model("renew_session")
+
+    def on_reconnect_tcp_clicked(self, event):
+        logger.debug("clicked on reconnect TCP")
+
+        def on_reconnected(_: bool):
+            logger.debug("done reconnecting with tcp")
+            self.reconnect_tcp_button.hide()
+
+        self.call_model("reconnect_tcp", on_reconnected)
 
     def on_close_window(self, window: "EduVpnGtkWindow", event: Event) -> bool:
         logger.debug("clicked on close window")
