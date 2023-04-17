@@ -176,7 +176,7 @@ class CommandLine:
         print("Connected, but we are testing your VPN if it can reach the internet...")
         self.app.model.start_failover(on_reconnected)
 
-    def connect_server(self, server):
+    def connect_server(self, server, prefer_tcp: bool):
         def connect(callback=None):
             @run_in_background_thread("connect")
             def connect_background():
@@ -187,6 +187,7 @@ class CommandLine:
                         server,
                         lambda: self.start_failover(callback),
                         ensure_exists=should_add,
+                        prefer_tcp = prefer_tcp,
                     )
                 except Exception as e:
                     if should_show_error(e):
@@ -292,7 +293,7 @@ class CommandLine:
         else:
             server = self.parse_server(variables)
 
-        return self.connect_server(server)
+        return self.connect_server(server, variables['tcp'])
 
     def disconnect(self, _arg={}):
         if not self.app.model.is_connected():
@@ -553,6 +554,12 @@ class CommandLine:
         change_profile_parser.set_defaults(func=self.change_profile)
 
         connect_parser = subparsers.add_parser("connect", help="connect to a server")
+        connect_parser.add_argument(
+            "-t",
+            "--tcp",
+            action="store_true",
+            help="connect using TCP if available. Useful if your network blocks UDP connections and the client/NetworkManager does not properly detect issues",
+        )
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
         if self.variant.use_predefined_servers:
             connect_group.add_argument(
