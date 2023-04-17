@@ -7,7 +7,7 @@ from functools import lru_cache
 from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
-from socket import AF_INET, AF_INET6, gaierror, gethostbyname
+from socket import AF_INET, AF_INET6
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, TextIO, Tuple
 

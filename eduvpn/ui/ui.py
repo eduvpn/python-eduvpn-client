@@ -28,25 +28,12 @@ from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
-from eduvpn.ui.utils import (
-    QUIT_ID,
-    get_validity_text,
-    link_markup,
-    should_show_error,
-    show_error_dialog,
-    show_ui_component,
-    style_widget,
-)
-from eduvpn.utils import (
-    ERROR_STATE,
-    get_prefix,
-    get_ui_state,
-    log_exception,
-    run_in_background_thread,
-    run_in_glib_thread,
-    run_periodically,
-    ui_transition,
-)
+from eduvpn.ui.utils import (QUIT_ID, get_validity_text, link_markup,
+                             should_show_error, show_error_dialog,
+                             show_ui_component, style_widget)
+from eduvpn.utils import (ERROR_STATE, get_prefix, get_ui_state, log_exception,
+                          run_in_background_thread, run_in_glib_thread,
+                          run_periodically, ui_transition)
 
 logger = logging.getLogger(__name__)
 
