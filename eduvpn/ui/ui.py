@@ -776,7 +776,9 @@ For detailed information, see the log file located at:
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
             profile_tree_view.append_column(column)
 
-        profile_tree_view.set_model(profiles_list_model)
+        sorted_model = Gtk.TreeModelSort(model=profiles_list_model)
+        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+        profile_tree_view.set_model(sorted_model)
         profiles_list_model.clear()
         for profile in profiles.profiles:
             profiles_list_model.append([str(profile), profile])
@@ -811,7 +813,9 @@ For detailed information, see the log file located at:
             column = Gtk.TreeViewColumn(None, text_cell, text=0)
             location_tree_view.append_column(column)
 
-            location_tree_view.set_model(location_list_model)
+            sorted_model = Gtk.TreeModelSort(model=location_list_model)
+            sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+            location_tree_view.set_model(sorted_model)
 
         location_list_model.clear()
         for location in locations:
