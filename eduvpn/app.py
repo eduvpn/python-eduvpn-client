@@ -207,6 +207,7 @@ class ApplicationModel:
             if mtu is None:
                 logger.debug("failed to get MTU for failover, setting MTU to 1000")
                 mtu = 1000
+            logger.debug(f"starting failover with gateway {endpoint} and MTU {mtu} for protocol {self.nm_manager.protocol}")
             dropped = self.common.start_failover(
                 endpoint,
                 mtu,
