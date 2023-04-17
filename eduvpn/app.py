@@ -10,13 +10,8 @@ from typing import Any, Callable, Iterator, List, Optional, TextIO
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.error import WrappedError
 from eduvpn_common.main import EduVPN
-from eduvpn_common.server import (
-    Config,
-    InstituteServer,
-    SecureInternetServer,
-    Server,
-    Token,
-)
+from eduvpn_common.server import (Config, InstituteServer,
+                                  SecureInternetServer, Server, Token)
 from eduvpn_common.state import State, StateType
 from eduvpn_common.types import ReadRxBytes
 
@@ -191,9 +186,7 @@ class ApplicationModel:
                 return
             endpoint = self.nm_manager.failover_endpoint_ip
             if endpoint is None:
-                logger.debug(
-                    "Failed to initialize failover, failed to get endpoint"
-                )
+                logger.debug("Failed to initialize failover, failed to get endpoint")
                 callback(False)
                 return
             mtu = self.nm_manager.mtu
