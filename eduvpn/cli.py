@@ -173,7 +173,7 @@ class CommandLine:
         def on_reconnected(dropped):
             if dropped:
                 print(
-                    "We have switched to a new VPN protocol as the previous protocol was blocked"
+                    "We have switched to a new protocol as the previous protocol was blocked"
                 )
             else:
                 print("Done testing, you are connected")
