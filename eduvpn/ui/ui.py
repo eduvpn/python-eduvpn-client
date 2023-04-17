@@ -493,8 +493,9 @@ For detailed information, see the log file located at:
         # Create a store of profiles
         profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
         active_profile = 0
-        for index, profile in enumerate(server_info.profiles.profiles):
-            if profile == server_info.profiles.current:
+        sorted_profiles = sorted(server_info.profiles.profiles, key=lambda p: str(p))
+        for index, profile in enumerate(sorted_profiles):
+            if index == server_info.profiles.current:
                 active_profile = index
             profile_store.append([str(profile), profile])  # type: ignore
 
@@ -504,6 +505,7 @@ For detailed information, see the log file located at:
         # However, when we add items again that are all smaller (e.g. for a new server), the combo box does not shrink back
         # The only proper way seems to be to recreate the combobox every time
         combo = Gtk.ComboBoxText.new()  # type: ignore
+        # Sort the model too
         combo.set_model(profile_store)  # type: ignore
         combo.set_active(active_profile)
         combo.set_halign(Gtk.Align.CENTER)
