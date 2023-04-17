@@ -139,7 +139,7 @@ class ApplicationModel:
         self.variant = variant
         self.nm_manager = nm_manager
         self.common.register_class_callbacks(self)
-        self.is_failovered = False
+        self.was_tcp = False
 
     @property
     def server_db(self):
@@ -160,19 +160,33 @@ class ApplicationModel:
         return rx_bytes
 
     def should_failover(self):
-        return not self.is_failovered
+        current_vpn_protocol = self.nm_manager.protocol
+        if current_vpn_protocol == "WireGuard":
+            logger.debug(
+                f"Current protocol is WireGuard, failover should continue"
+            )
+            return True
+
+        if not self.was_tcp:
+            logger.debug(
+                f"Protocol is not WireGuard and TCP was not previously triggered, failover should continue"
+            )
+            return True
+
+        logger.debug(
+            f"Failover should not continue"
+        )
+        return False
 
     def reconnect_tcp(self, callback: Callable):
         def on_reconnected():
             self.common.set_support_wireguard(has_wireguard)
-            self.is_failovered = False
             callback(True)
 
         has_wireguard = nm.is_wireguard_supported()
 
         # Disable wireguard
         self.common.set_support_wireguard(False)
-        self.is_failovered = True
         self.reconnect(on_reconnected, prefer_tcp=True)
 
     def start_failover(self, callback: Callable):
@@ -274,7 +288,6 @@ class ApplicationModel:
     def connect_get_config(
         self, server, tokens=None, prefer_tcp: bool = False
     ) -> Optional[Config]:
-        # We prefer TCP if the user has set it or UDP is determined to be blocked
         if isinstance(server, InstituteServer):
             return self.common.get_config_institute_access(
                 server.url, prefer_tcp, tokens
@@ -347,6 +360,11 @@ class ApplicationModel:
         ensure_exists=False,
         prefer_tcp: bool = False,
     ) -> None:
+        # Variable to be used as a last resort or for debugging
+        # to override the prefer TCP setting
+        if os.environ.get("EDUVPN_PREFER_TCP", "0") == "1":
+            prefer_tcp = True
+
         config = None
         config_type = None
         if ensure_exists:
@@ -357,6 +375,10 @@ class ApplicationModel:
             server, DiscoOrganization
         ):
             tokens = self.load_tokens(server)
+        # keep track if we preferred TCP
+        # this is for failover
+        self.was_tcp = prefer_tcp
+
         config = self.connect_get_config(server, tokens, prefer_tcp=prefer_tcp)
         if not config:
             raise Exception("No configuration available")
