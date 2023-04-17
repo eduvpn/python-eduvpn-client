@@ -89,9 +89,9 @@ class ConnectionState(enum.Enum):
 class NMManager:
     def __init__(self, variant: ApplicationVariant):
         self.variant = variant
-        self.wg_endpoint_ip: Optional[str] = None
         try:
             self.client = NM.Client.new(None)
+            self.wg_gateway_ip = None
         except Exception:
             self.client = None
 
@@ -154,11 +154,18 @@ class NMManager:
         return any(d.get_managed() for d in master_devices)
 
     @property
-    def wireguard_mtu(self) -> Optional[int]:
-        device = self.wireguard_device
-        if device is None:
-            return None
-        return device.get_mtu()
+    def mtu(self) -> Optional[int]:
+        protocol = self.protocol
+        # For WireGuard, we can get the MTU from the device
+        if protocol == "WireGuard":
+            device = self.wireguard_device
+            if device is None:
+                return None
+            return device.get_mtu()
+        elif protocol == "OpenVPN":
+            # TODO: How to query networkmanager for this?
+            return 1500
+        return None
 
     @property
     def uuid(self):
@@ -230,15 +237,22 @@ class NMManager:
         return devices[0].get_iface()
 
     @property
-    def ipv4(self) -> Optional[str]:
+    def ipv4_config(self) -> Optional[NM.IPConfig]:
         """
-        Get the ipv4 address for an openvpn or wireguard connection as a string if there is one
+        Get the ipv4 config for the active VPN connection
         """
         active_con = self.active_connection
         if not active_con:
             return None
 
-        ip4_config = active_con.get_ip4_config()
+        return active_con.get_ip4_config()
+
+    @property
+    def ipv4(self) -> Optional[str]:
+        """
+        Get the ipv4 address for an openvpn or wireguard connection as a string if there is one
+        """
+        ip4_config = self.ipv4_config
         if not ip4_config:
             return None
 
@@ -276,6 +290,23 @@ class NMManager:
             except ValueError:
                 continue
         return None
+
+    @property
+    def failover_endpoint_ip(self) -> Optional[str]:
+        protocol = self.protocol
+        if protocol == "OpenVPN":
+            # if OpenVPN return the gateway from the ip config
+            ipv4_config = self.ipv4_config
+            if not ipv4_config:
+                return None
+            return ipv4_config.get_gateway()
+        elif protocol == "WireGuard":
+            # if WireGuard return the cached IP
+            if not self.wg_gateway_ip:
+                return None
+            return str(self.wg_gateway_ip)
+        else:
+            return None
 
     @property
     def existing_connection(self) -> Optional[str]:
@@ -423,13 +454,6 @@ class NMManager:
         new_con = self.import_ovpn(ovpn)
         self.set_connection(new_con, callback, default_gateway)  # type: ignore
 
-    def get_ip(self, url) -> Optional[str]:
-        try:
-            ip = gethostbyname(url)
-        except gaierror:
-            ip = None
-        return ip
-
     def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
@@ -441,9 +465,12 @@ class NMManager:
 
         ipv4s = []
         ipv6s = []
+        self.wg_gateway_ip = None
         for ip in config["Interface"]["Address"].split(","):
             addr = ip_interface(ip.strip())
             if addr.version == 4:
+                if not self.wg_gateway_ip:
+                    self.wg_gateway_ip = addr.network[1]
                 ipv4s.append(
                     NM.IPAddress(AF_INET, str(addr.ip), addr.network.prefixlen)
                 )
@@ -487,8 +514,6 @@ class NMManager:
         peer = NM.WireGuardPeer.new()
         wg_endpoint = config["Peer"]["Endpoint"]
         peer.set_endpoint(wg_endpoint, allow_invalid=False)
-        endpoint = wg_endpoint.split(":")[0]
-        self.wg_endpoint_ip = self.get_ip(endpoint)
 
         peer.set_public_key(config["Peer"]["PublicKey"], accept_invalid=False)
         for ip in config["Peer"]["AllowedIPs"].split(","):
