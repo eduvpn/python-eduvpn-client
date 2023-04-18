@@ -337,6 +337,9 @@ class ApplicationModel:
             return None
 
     def save_tokens(self, server, tokens):
+        if tokens.access == "" and tokens.refresh == "":
+            logger.warning("Got empty tokens, not saving them to the keyring")
+            return
         tokens_dict = {}
         tokens_dict["access"] = tokens.access
         tokens_dict["refresh"] = tokens.refresh
@@ -349,8 +352,8 @@ class ApplicationModel:
         try:
             self.keyring.save(label, attributes, json.dumps(tokens_dict))
         except Exception as e:
-            logger.debug("Failed saving tokens with exception:")
-            logger.debug(e, exc_info=True)
+            logger.error("Failed saving tokens with exception:")
+            logger.error(e, exc_info=True)
 
     def connect(
         self,
