@@ -930,9 +930,7 @@ For detailed information, see the log file located at:
             self.failover_text_cancel = GLib.timeout_add(
                 2500, self.show_failover_text_timeout
             )
-            self.failover_label.set_text(
-                "Checking the VPN for connectivity issues..."
-            )
+            self.failover_label.set_text("Checking the VPN for connectivity issues...")
             self.call_model("start_failover", self.update_failover_text)
             return
 
