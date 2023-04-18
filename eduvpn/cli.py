@@ -170,7 +170,7 @@ class CommandLine:
                     "We have switched to a new protocol as the previous protocol was blocked"
                 )
             else:
-                print("Done testing, you are connected")
+                print("Done testing, you are connected. If you experience any connectivity issues, you can disconnect and try again with the --tcp flag")
             callback()
 
         print("Connected, but we are testing your VPN if it can reach the internet...")
