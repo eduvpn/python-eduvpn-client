@@ -481,15 +481,6 @@ class CommandLine:
 
         nm.action_with_mainloop(update_state_callback)
 
-    def handle_exit(self):
-        def signal_handler(_signal, _frame):
-            if self.app.model.is_oauth_started():
-                self.common.cancel_oauth()
-            self.common.deregister()
-            sys.exit(1)
-
-        signal.signal(signal.SIGINT, signal_handler)
-
     def interactive(self, _):
         # Show a title and the help
         print(f"Welcome to the {self.name} interactive commandline")
@@ -631,9 +622,6 @@ class CommandLine:
         status_parser.set_defaults(func=self.status)
 
         parsed = parser.parse_args()
-
-        # Handle ctrl+c
-        self.handle_exit()
 
         init_logger(parsed.debug, self.variant.logfile, CONFIG_DIR_MODE)
 
