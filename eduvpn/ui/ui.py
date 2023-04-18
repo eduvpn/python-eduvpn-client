@@ -606,12 +606,14 @@ For detailed information, see the log file located at:
         # Disable the profile combo box and switch
         self.connection_switch.set_sensitive(False)
         self.select_profile_combo.set_sensitive(False)
+        self.connection_session_label.hide()
 
     @ui_transition(State.CONNECTING, StateType.LEAVE)
     def exit_connecting(self, old_state: str, data):
         # Re-enable the profile combo box and switch
         self.connection_switch.set_sensitive(True)
         self.select_profile_combo.set_sensitive(True)
+        self.connection_session_label.show()
 
     @ui_transition(State.DISCONNECTING, StateType.ENTER)
     def enter_disconnecting(self, old_state: str, data):
