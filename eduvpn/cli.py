@@ -562,7 +562,7 @@ class CommandLine:
                 "-s",
                 "--search",
                 type=str,
-                help="connect to a server by searching for one",
+                help="connect to a new server by searching for one",
             )
             connect_group.add_argument(
                 "-o",
@@ -593,7 +593,7 @@ class CommandLine:
                 "-a",
                 "--number-all",
                 type=int,
-                help="connect to a server using the number for all servers. Run the 'list --all' command to see all the available servers with their number",
+                help="connect to a new server using the number for all servers. Run the 'list --all' command to see all the available servers with their number",
             )
         connect_group.set_defaults(func=lambda args: self.connect(vars(args)))
 
