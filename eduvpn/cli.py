@@ -1,7 +1,6 @@
 # readline is used! It is for going up and down in interactive mode
 import argparse
 import readline  # noqa: W0611
-import signal
 import sys
 from typing import Callable
 
