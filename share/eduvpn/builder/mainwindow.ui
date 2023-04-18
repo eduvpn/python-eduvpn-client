@@ -824,7 +824,7 @@
                     <child>
                       <object class="GtkButton" id="reconnectTCPButton">
                         <property name="label" translatable="yes">Reconnect with TCP</property>
-                        <property name="visible">True</property>
+                        <property name="visible">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="halign">center</property>
