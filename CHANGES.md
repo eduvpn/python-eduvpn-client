@@ -9,7 +9,7 @@ Changes since 4.0.1:
 * Sort profiles and locations in CLI and UI, fixes #523
 * Failover: The procedure that tries to detect issues with UDP connectivity
     - Support failover for OpenVPN, fixes #519
-    - If failover was unable to determine connectivity issues but it took longer than (meaning: after the 2 second timeout where we try to get a pong from the server), a "reconnect with TCP" button is shown in the UI. For the CLI a --tcp flag is added, fixes #519
+    - If failover was unable to determine connectivity issues but it took longer than normal (meaning: after the 2 second timeout where we try to get a pong from the server), a "reconnect with TCP" button is shown in the UI. For the CLI a --tcp flag is added, fixes #519
     - Use the first available IP in the subnet for the WireGuard gateway, for OpenVPN we request the gateway IP from NetworkManager
 * CLI
     - Various fixes with regards to connecting, e.g. supplying an organisation ID previously resulted in an error
