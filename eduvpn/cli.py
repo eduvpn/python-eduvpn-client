@@ -41,7 +41,7 @@ def ask_profiles(app, profiles):
         return False
 
     # Multiple profiles, print the index
-    sorted_profiles = sorted(profiles.profiles)
+    sorted_profiles = sorted(profiles.profiles, key=lambda p: str(p))
     for index, profile in enumerate(sorted_profiles):
         print(f"[{index+1}]: {str(profile)}")
 
