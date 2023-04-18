@@ -567,19 +567,19 @@ class CommandLine:
                 "-o",
                 "--orgid",
                 type=str,
-                help="connect to a secure internet server using the organisation ID",
+                help="connect to a new secure internet server using the organisation ID",
             )
             connect_group.add_argument(
                 "-u",
                 "--url",
                 type=str,
-                help="connect to an institute access server using the URL",
+                help="connect to a new institute access server using the URL",
             )
         connect_group.add_argument(
             "-c",
             "--custom-url",
             type=str,
-            help="connect to a custom server using the URL",
+            help="connect to a new custom server using the URL",
         )
         connect_group.add_argument(
             "-n",
