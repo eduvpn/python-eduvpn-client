@@ -14,7 +14,7 @@ When upgrading from version 3 to the newest version (currently 4.x), there are s
 Before you continue, it might be wise to close the client if you have it open. Note that once the new client is installed, you will have to add your servers again.
 
 
-Debian and Ubuntu (both x86)
+Debian and Ubuntu (both x86_64)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we must remove the old files, repository and associated signing keys:
@@ -42,7 +42,7 @@ You can then continue installing the new client by adding the new repository if 
 
 For other Debian based distros, you can use Pip, see `Pip Installation <./installation.html#pip>`_
 
-Fedora (36 & 37, both x86)
+Fedora (36 & 37, both x86_64)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we must remove the old files, repository and associated signing keys:
