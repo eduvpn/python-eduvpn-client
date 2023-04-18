@@ -2,6 +2,7 @@
 import argparse
 import readline  # noqa: W0611
 import sys
+from functools import partial
 from typing import Callable
 
 import eduvpn_common.main as common
@@ -467,10 +468,9 @@ class CommandLine:
                 print(f"Configured server with number: {number} does not exist")
         return self.remove_server(server)
 
-    def help_interactive(self):
-        print(
-            "Available commands: change-location, change-profile, connect, disconnect, renew, remove, status, list, help, quit"
-        )
+    def help_interactive(self, commands):
+        command_keys = sorted(list(commands.keys()))
+        print(f"Available commands: {', '.join(command_keys)}")
 
     def update_state(self, initial: bool = False):
         def update_state_callback(callback):
@@ -485,7 +485,21 @@ class CommandLine:
     def interactive(self, _):
         # Show a title and the help
         print(f"Welcome to the {self.name} interactive commandline")
-        self.help_interactive()
+        # Execute the right command
+        commands = {
+            "change-profile": self.change_profile,
+            "connect": self.connect,
+            "disconnect": self.disconnect,
+            "renew": self.renew,
+            "remove": self.remove,
+            "status": self.status,
+            "list": self.list,
+            "help": self.help_interactive,
+            "quit": lambda: print("Exiting..."),
+        }
+        if self.variant.use_predefined_servers:
+            commands["change-location"] = self.change_location
+        self.help_interactive(commands)
         command = ""
         while command != "quit":
             # Ask for the command to execute
@@ -494,20 +508,7 @@ class CommandLine:
             # Update the state right before we execute
             self.update_state()
 
-            # Execute the right command
-            commands = {
-                "change-location": self.change_location,
-                "change-profile": self.change_profile,
-                "connect": self.connect,
-                "disconnect": self.disconnect,
-                "renew": self.renew,
-                "remove": self.remove,
-                "status": self.status,
-                "list": self.list,
-                "help": self.help_interactive,
-                "quit": lambda: print("Exiting..."),
-            }
-            func = commands.get(command, self.help_interactive)
+            func = commands.get(command, partial(self.help_interactive, commands))
             func()
 
     def start(self):
@@ -533,11 +534,12 @@ class CommandLine:
         )
         renew_parser.set_defaults(func=self.renew)
 
-        change_profile_parser = subparsers.add_parser(
-            "change-location",
-            help="change the location for the currently connected secure internet server",
-        )
-        change_profile_parser.set_defaults(func=self.change_location)
+        if self.variant.use_predefined_servers:
+            change_profile_parser = subparsers.add_parser(
+                "change-location",
+                help="change the location for the currently connected secure internet server",
+            )
+            change_profile_parser.set_defaults(func=self.change_location)
 
         change_profile_parser = subparsers.add_parser(
             "change-profile",
