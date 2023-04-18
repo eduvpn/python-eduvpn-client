@@ -30,7 +30,7 @@ Debian (11) and Ubuntu (22.04 & 22.10)
     $ sudo apt update
     $ sudo apt install eduvpn-client
 
-Fedora (36 & 37)
+Fedora (36, 37 & 38)
 =================
 
 .. code-block:: console
