@@ -963,6 +963,7 @@ For detailed information, see the log file located at:
 
     def on_info_button(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked info button")
+        self.info_dialog.set_title(f"{self.app.variant.name} Info")
         self.info_dialog.show()
         self.info_dialog.run()
         self.info_dialog.hide()
