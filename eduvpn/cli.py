@@ -554,7 +554,7 @@ class CommandLine:
             "-t",
             "--tcp",
             action="store_true",
-            help="connect using TCP if available. Useful if your network blocks UDP connections and the client/NetworkManager does not properly detect issues",
+            help="prefer to connect using TCP if available. Useful if your network blocks UDP connections and the client/NetworkManager does not properly detect issues",
         )
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
         if self.variant.use_predefined_servers:
