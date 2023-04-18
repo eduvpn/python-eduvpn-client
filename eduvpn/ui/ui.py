@@ -857,6 +857,7 @@ For detailed information, see the log file located at:
         self.update_connection_status(False)
         self.update_connection_server(server_info)
         self.reconnect_tcp_button.hide()
+        self.renew_session_button.hide()
 
     @ui_transition(State.DISCONNECTED, StateType.LEAVE)
     def exit_ConnectionStatus(self, old_state, new_state):
@@ -908,9 +909,11 @@ For detailed information, see the log file located at:
         self.failover_text_cancel = None
         self.failover_text.hide()
         self.connection_info_expander.hide()
+        self.renew_session_button.hide()
 
     @ui_transition(State.CONNECTED, StateType.ENTER)
     def enter_ConnectedState(self, old_state, server_info):
+        self.renew_session_button.hide()
         self.show_page(self.connection_page)
         self.show_back_button(False)
         is_expanded = self.connection_info_expander.get_expanded()
