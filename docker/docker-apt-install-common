@@ -1,9 +1,5 @@
 # Update & Install wget
 apt-get update
-apt-get install -y wget
+apt-get install -y python3 python3-pip
 
-# Install eduvpn-common python library
-wget -O- https://jeroen.surfcloud.nl/repo/linux/deb/jwijenbergh.key | gpg --dearmor | tee /usr/share/keyrings/jwijenbergh.gpg >/dev/null
-echo "deb [signed-by=/usr/share/keyrings/jwijenbergh.gpg] https://jeroen.surfcloud.nl/repo/linux/deb/ stable main" | tee -a /etc/apt/sources.list.d/jwijenbergh.list
-apt-get update
-apt-get install -y python3-eduvpn-common
+python3 -m pip install --index-url https://test.pypi.org/simple/ eduvpn_common
