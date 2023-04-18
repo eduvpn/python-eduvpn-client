@@ -246,7 +246,7 @@ class CommandLine:
             server = InstituteServer(url, "Institute Server", [], None, 0)
         elif org_id:
             server = SecureInternetServer(
-                org_id, "Organisation Server", [], None, 0, "NL"
+                org_id, "Organisation Server", [], [], None, 0, "NL"
             )
         elif custom_url:
             server = Server(custom_url, "Custom Server")
