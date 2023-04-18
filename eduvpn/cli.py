@@ -471,7 +471,7 @@ class CommandLine:
         return self.remove_server(server)
 
     def help_interactive(self, commands):
-        command_keys = sorted(list(commands.keys()))
+        command_keys = sorted(list(commands.keys()) + ["help"])
         print(f"Available commands: {', '.join(command_keys)}")
 
     def update_state(self, initial: bool = False):
@@ -496,7 +496,6 @@ class CommandLine:
             "remove": self.remove,
             "status": self.status,
             "list": self.list,
-            "help": self.help_interactive,
             "quit": lambda: print("Exiting..."),
         }
         if self.variant.use_predefined_servers:
