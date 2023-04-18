@@ -295,7 +295,9 @@ class CommandLine:
         else:
             server = self.parse_server(variables)
 
-        return self.connect_server(server, variables["tcp"])
+        prefer_tcp = variables.get("tcp", False)
+
+        return self.connect_server(server, prefer_tcp)
 
     def disconnect(self, _arg={}):
         if not self.app.model.is_connected():
