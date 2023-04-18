@@ -337,6 +337,7 @@ class ApplicationModel:
             return None
 
     def save_tokens(self, server, tokens):
+        logger.debug("Save tokens called")
         if tokens.access == "" and tokens.refresh == "":
             logger.warning("Got empty tokens, not saving them to the keyring")
             return
