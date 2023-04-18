@@ -1,3 +1,23 @@
+4.1.0 (2023-04-18)
+==
+Changes since 4.0.1:
+
+* Update internal API to use eduvpn-common 1.1.0
+  - Fixes OAuth issues with version 2 servers (empty refresh tokens on getting new tokens with a refresh token), fixes #521
+  - Makes sure tokens are kept in sync between client and lib with a callback
+  - Secure Internet: The default home location is chosen on adding
+* Sort profiles and locations in CLI and UI, fixes #523
+* Failover: The procedure that tries to detect issues with UDP connectivity
+  - Support failover for OpenVPN, fixes #519
+  - If failover was unable to determine connectivity issues but it took longer than (meaning: after the 2 second timeout where we try to get a pong from the server), a "reconnect with TCP" button is shown in the UI. For the CLI a --tcp flag is added, fixes #519
+  - Use the first available IP in the subnet for the WireGuard gateway, for OpenVPN we request the gateway IP from NetworkManager
+* Misc
+  - Hide the connection validity text when connecting
+  - Be sure the renew session button is hidden when not connected
+  - Update issues URL to link to the Linux client repo instead of eduvpn-common
+  - Update desktop files with the correct name, fixes #522
+
+
 4.0.1 (2023-03-07)
 ==
 Hotfix release. Changes since 4.0.0:
