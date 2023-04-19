@@ -15,7 +15,7 @@ Before you continue, it might be wise to close the client if you have it open. N
 
 
 Debian and Ubuntu (both x86_64)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we must remove the old files, repository and associated signing keys:
 
@@ -47,10 +47,10 @@ For other Debian based distros, you can use Pip . If you do the upgrade via Pip,
     $ sudo apt purge eduvpn-client
     $ sudo apt autoremove
 
-Then install via Pip, see `Pip Installation <./installation.html#pip>`_
+Then install via Pip, see `Pip Installation <./installation.html#pip-installation>`_
 
 Fedora (36 & 37, both x86_64)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we must remove the old files, repository and associated signing keys:
 

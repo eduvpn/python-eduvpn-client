@@ -20,7 +20,7 @@ The eduVPN client has been tested with:
 
 
 Debian (11) and Ubuntu (22.04 & 22.10)
-=================
+======================================
 
 .. code-block:: console
 
@@ -31,7 +31,7 @@ Debian (11) and Ubuntu (22.04 & 22.10)
     $ sudo apt install eduvpn-client
 
 Fedora (36, 37 & 38)
-=================
+====================
 
 .. code-block:: console
 
@@ -66,59 +66,54 @@ Arch (Unofficial)
 There is an unofficial package in the `Arch User Repository (AUR) <https://aur.archlinux.org/packages/python-eduvpn-client/>`_.
 
 
-Manual source installation
+Pip installation
 ==========================
+We also provide pip packages. These are useful if your distro is not officially supported in our packaging (yet).
 
 Dependencies
 ------------
 
-To manually install the eduVPN package you first need to satisfy the build requirements.
+To manually install the eduVPN package via Pip you first need to satisfy the dependencies.
 
 For Debian or Ubuntu:
 
 .. code-block:: console
 
-    $ sudo apt install build-essential git make
+    $ sudo apt update
+    $ sudo apt install \
+		gir1.2-nm-1.0 \
+		gir1.2-secret-1 \
+		gir1.2-gtk-3.0 \
+		gir1.2-notify-0.7 \
+		libgirepository1.0-dev \
+		libdbus-glib-1-dev \
+		python3-gi \
+		python3-setuptools \
+		python3-pytest \
+		python3-wheel \
+		python3-dbus \
+		network-manager-openvpn-gnome
 
 For Fedora:
 
 .. code-block:: console
 
-    $ sudo dnf install git make
+    $ sudo dnf install \
+		libnotify \
+		libsecret \
+		gtk3 \
+		python3-dbus \
+		python3-gobject \
+		python3-pytest \
+		python3-cairo-devel \
+		gobject-introspection-devel \
+		cairo-gobject-devel \
+		dbus-python-devel
 
-For Debian or Ubuntu we made a make target to install the required debian packages:
+Pip commands
+------------
 
-.. code-block:: console
-
-    $ sudo make deb
-
-For Fedora we did the same:
-
-.. code-block:: console
-
-    $ sudo make dnf
-
-You can then continue with installing via e.g. Pip
-
-If you're not installing the rest via Pip, note that since version 4
-of this Linux client, we use the eduvpn-common Go library to provide
-most of the core functionality. Thus these commands cannot provide you
-the complete development dependencies as eduvpn-common is not in the
-official repositories. To install this library manually and to see how it works
-we refer to `their documentation
-<https://eduvpn.github.io/eduvpn-common>`_.
-
-Eduvpn-common, however is available to install with Pip (it includes
-precompiled shared libraries).  The aforementioned repositories
-(e.g. Fedora, Debian) also include the latest stable release of
-eduvpn-common.
-
-Development packages for eduvpn-common and this client will follow later.
-
-Pip
----
-
-You can install the client API from pypi:
+You can then continue with installing via Pip:
 
 .. code-block:: console
 
@@ -129,31 +124,6 @@ Or, if you want to try out the bleeding edge development version:
 .. code-block:: console
 
     $ pip install git+https://github.com/eduvpn/python-eduvpn-client.git
-
-.. note::
-
-    This requires the installation of system packages
-    using your distributions package manager. See the previous section for the `Makefile` targets for your system.
-
-
-Development version
--------------------
-
-You first need to obtain the code:
-
-.. code-block:: console
-
-    $ git clone https://github.com/eduvpn/python-eduvpn-client.git
-    $ cd python-eduvpn-client
-
-
-We've made various Makefile targets to quickly get started. For example to start the eduVPN GUI:
-
-.. code-block:: console
-
-    $ make eduvpn-gui
-
-Please have a look in the `Makefile`_ to find out the available targets.
 
 
 Issues
