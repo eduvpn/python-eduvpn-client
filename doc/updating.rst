@@ -40,7 +40,14 @@ You can then continue installing the new client by adding the new repository if 
     $ sudo apt update
     $ sudo apt upgrade
 
-For other Debian based distros, you can use Pip, see `Pip Installation <./installation.html#pip>`_
+For other Debian based distros, you can use Pip . If you do the upgrade via Pip, remove the old client first with:
+
+.. code-block:: console
+
+    $ sudo apt purge eduvpn-client
+    $ sudo apt autoremove
+
+Then install via Pip, see `Pip Installation <./installation.html#pip>`_
 
 Fedora (36 & 37, both x86_64)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
