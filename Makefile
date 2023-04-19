@@ -39,6 +39,7 @@ deb:
 		gir1.2-secret-1 \
 		gir1.2-gtk-3.0 \
 		gir1.2-notify-0.7 \
+		libgirepository1.0-dev \
 		libdbus-glib-1-dev \
 		python3-gi \
 		python3-setuptools \
