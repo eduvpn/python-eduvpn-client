@@ -1,3 +1,9 @@
+4.1.1 (2023-04-20)
+==
+Small hotfix for 4.1.0:
+
+* Fix profile combo in UI not selecting the actual current profile
+
 4.1.0 (2023-04-18)
 ==
 Changes since 4.0.1:
