@@ -485,7 +485,7 @@ For detailed information, see the log file located at:
         active_profile = 0
         sorted_profiles = sorted(server_info.profiles.profiles, key=lambda p: str(p))
         for index, profile in enumerate(sorted_profiles):
-            if index == server_info.profiles.current:
+            if server_info.profiles.current is not None and profile.identifier == server_info.profiles.current.identifier:
                 active_profile = index
             profile_store.append([str(profile), profile])  # type: ignore
 
