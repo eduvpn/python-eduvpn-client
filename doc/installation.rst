@@ -8,18 +8,12 @@ You can also install using pip from pypi or directly from Github. We
 distribute RPM packages for Fedora, and deb packages for Debian and
 Ubuntu.
 
-The eduVPN client has been tested with:
-
- * Debian 11 (Bullseye)
- * Ubuntu 22.04 LTS
- * Fedora 36 and 37
-
 .. note::
 
     If your target is not supported you can make an issue on the `GitHub <https://github.com/eduvpn/python-eduvpn-client>`_ and we will see if we can provide it. Right now we only provide `x86_64` packages (we use a compiled dependency), if you want an ARM package for a certain target you can also make an issue.
 
 
-Debian (11) and Ubuntu (22.04 & 22.10)
+Debian (11, 12) and Ubuntu (22.04, 22.10 & 23.04)
 ======================================
 
 .. code-block:: console
