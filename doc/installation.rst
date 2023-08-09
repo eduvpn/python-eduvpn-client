@@ -13,14 +13,75 @@ Ubuntu.
     If your target is not supported you can make an issue on the `GitHub <https://github.com/eduvpn/python-eduvpn-client>`_ and we will see if we can provide it. Right now we only provide `x86_64` packages (we use a compiled dependency), if you want an ARM package for a certain target you can also make an issue.
 
 
-Debian (11, 12) and Ubuntu (22.04, 22.10 & 23.04)
+Debian 11
 ======================================
 
 .. code-block:: console
 
-    $ sudo apt install apt-transport-https lsb-release wget
+    $ sudo apt update
+    $ sudo apt install apt-transport-https wget
     $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
-    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
+    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ bullseye main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
+    $ sudo apt update
+    $ sudo apt install eduvpn-client
+
+Debian 12
+======================================
+
+.. code-block:: console
+
+    $ sudo apt update
+    $ sudo apt install apt-transport-https wget
+    $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
+    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ bookworm main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
+    $ sudo apt update
+    $ sudo apt install eduvpn-client
+
+Ubuntu 22.04
+======================================
+
+.. code-block:: console
+
+    $ sudo apt update
+    $ sudo apt install apt-transport-https wget
+    $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
+    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ jammy main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
+    $ sudo apt update
+    $ sudo apt install eduvpn-client
+
+Ubuntu 22.10
+======================================
+
+.. code-block:: console
+
+    $ sudo apt update
+    $ sudo apt install apt-transport-https wget
+    $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
+    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ kinetic main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
+    $ sudo apt update
+    $ sudo apt install eduvpn-client
+
+Ubuntu 23.04
+======================================
+
+.. code-block:: console
+
+    $ sudo apt update
+    $ sudo apt install apt-transport-https wget
+    $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
+    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ lunar main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
+    $ sudo apt update
+    $ sudo apt install eduvpn-client
+
+Linux Mint 21.x
+======================================
+
+.. code-block:: console
+
+    $ sudo apt update
+    $ sudo apt install apt-transport-https wget
+    $ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
+    $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ jammy main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
     $ sudo apt update
     $ sudo apt install eduvpn-client
 
