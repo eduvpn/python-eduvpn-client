@@ -1,3 +1,11 @@
+4.1.2 (2023-08-29)
+==
+Small hotfixes for 4.1.1:
+
+* Make sure profile combo indexes are always set correctly when ignoring the reconnect dialog
+* Support MTU for WireGuard
+* Bump eduvpn-common to 1.1.1 in order to fix OAuth endpoint caching issues
+
 4.1.1 (2023-04-20)
 ==
 Small hotfix for 4.1.0:
