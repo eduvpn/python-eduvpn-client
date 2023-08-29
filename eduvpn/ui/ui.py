@@ -1205,7 +1205,14 @@ For detailed information, see the log file located at:
             # Restore the previous profile
             if not self.profile_ask_reconnect():
                 self.set_same_profile = True
-                combo.set_active(self.app.model.current_server.profiles.current_index)
+                profiles = self.app.model.current_server.profiles
+                active_profile = 0
+                sorted_profiles = sorted(profiles.profiles, key=lambda p: str(p))
+                for index, profile in enumerate(sorted_profiles):
+                    if profiles.current is not None and profile.identifier == profiles.current.identifier:
+                        active_profile = index
+
+                combo.set_active(active_profile)
                 return
 
         # Set profile and connect
