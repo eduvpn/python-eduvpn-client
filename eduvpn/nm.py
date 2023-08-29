@@ -747,7 +747,7 @@ class NMManager:
         self,
     ) -> Tuple[Optional[str], Optional["NM.ActiveConnectionState"]]:
         con = self.client.get_primary_connection()
-        if type(con) != NM.VpnConnection:
+        if not isinstance(con, NM.VpnConnection):
             return None, None
         uuid = con.get_uuid()
         status = con.get_state()
