@@ -545,6 +545,14 @@ class NMManager:
         private_key = config["Interface"]["PrivateKey"]
         w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, private_key)
 
+        # set MTU if available in the config
+        mtu = config["Interface"].get("MTU")
+        if mtu:
+            try:
+                w_con.set_property(NM.SETTING_WIREGUARD_MTU, int(mtu))
+            except ValueError:
+                _logger.warning(f"got invalid WireGuard MTU value: {mtu}")
+
         profile.add_setting(s_ip4)
         profile.add_setting(s_ip6)
         profile.add_setting(s_con)
