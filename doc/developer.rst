@@ -40,7 +40,7 @@ How to make a release
 Prepare the code
 ^^^^^^^^^^^^^^^^
 
-* Determine version number (for example 4.1.1)
+* Determine version number (for example 4.1.2)
 
 * Compose a list of changes (check issue tracker)
 
