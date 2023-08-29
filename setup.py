@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 install_requires = [
     'wheel',
-    'eduvpn_common==1.1.0',
+    'eduvpn_common==1.1.1',
 ]
 
 tests_require = [
