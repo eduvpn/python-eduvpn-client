@@ -25,7 +25,7 @@ def style_widget(widget, class_name: str, style: str):
     assert GtkAvailable
     style_context = widget.get_style_context()
     provider = Gtk.CssProvider.new()
-    provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))
+    provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))  # type: ignore
     style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     style_context.add_class(class_name.split(":")[0])
 
