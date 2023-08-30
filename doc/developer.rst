@@ -84,4 +84,4 @@ We use `builder.rpm <https://git.sr.ht/~fkooman/builder.rpm>`_, to build the RPM
 
 Build Debian packages
 ^^^^^^^^^^^^^^^^^^^^^
-We use `nbuilder.deb <https://git.sr.ht/~fkooman/builder.deb>`_, to build the DEB packages.
+We use `nbuilder.deb <https://git.sr.ht/~fkooman/nbuilder.deb>`_, to build the DEB packages.
