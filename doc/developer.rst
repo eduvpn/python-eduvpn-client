@@ -76,7 +76,7 @@ There is also a make shortcut:
 
     $ make twine-upload
 
-You should also make sure that eduvpn-common is updated in PyPi!
+You should also make sure that eduvpn-common is updated in PyPi! Update in the test PyPi first so that CI passes.
     
 Building RPMs
 ^^^^^^^^^^^^^^^^^^^^^^
