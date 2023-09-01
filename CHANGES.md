@@ -1,3 +1,11 @@
+4.1.3 (2023-09-01)
+==
+Small hotfixes for 4.1.2:
+
+* Bump eduvpn-common to 1.1.2 to further handle endpoint caching
+* Mention eduvpn-common version in the UI
+* Add a version flag to the CLI
+
 4.1.2 (2023-08-29)
 ==
 Small hotfixes for 4.1.1:
