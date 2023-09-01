@@ -637,7 +637,9 @@ class CommandLine:
         parsed = parser.parse_args()
 
         if parsed.version:
-            print(f"eduVPN CLI version: {__version__} with eduvpn-common version: {commonver}")
+            print(
+                f"eduVPN CLI version: {__version__} with eduvpn-common version: {commonver}"
+            )
             return
 
         init_logger(parsed.debug, self.variant.logfile, CONFIG_DIR_MODE)
