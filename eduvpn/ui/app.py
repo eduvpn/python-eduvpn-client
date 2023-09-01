@@ -84,8 +84,9 @@ class EduVpnGtkApplication(Gtk.Application):
 
         if "version" in options:  # type: ignore
             from eduvpn import __version__
+            from eduvpn_common import __version__ as commonver
 
-            print(f"{self.app.variant.name} client version {__version__}")
+            print(f"{self.app.variant.name} GUI version: {__version__} with eduvpn-common version: {commonver}")
             return 0
 
         self.debug = "debug" in options  # type: ignore

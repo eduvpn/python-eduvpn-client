@@ -23,6 +23,7 @@ from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
 from eduvpn import __version__
+from eduvpn_common import __version__ as commonver
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
@@ -160,6 +161,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.info_version = builder.get_object("infoVersion")
         self.info_version.set_text(f"{__version__}")
+        self.common_version = builder.get_object("commonVersion")
+        self.common_version.set_text(f"{commonver}")
         self.info_log_location = builder.get_object("infoLogLocation")
         self.info_log_location.set_text(str(self.app.variant.logfile))
 
