@@ -30,4 +30,4 @@ eduVPN/Let's Connect! will print out information to the console while running. P
 
 ## Do you have a problem during or after connecting?
 
-Please examine the eduVPN/Let's Connect! for errors or messages while connecting. Note that the actual VPN connection management is not done by eduVPN, but by network management tool bundeled with your OS named NetworkManager. You can examine the NetworkManager logs with `$ sudo journalctl -u NetworkManager`.
+Please examine the eduVPN/Let's Connect! for errors or messages while connecting. Note that the actual VPN connection management is not done by eduVPN, but by network management tool bundled with your OS named NetworkManager. You can examine the NetworkManager logs with `$ sudo journalctl -u NetworkManager`.
