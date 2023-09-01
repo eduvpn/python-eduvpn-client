@@ -10,6 +10,7 @@ from eduvpn_common.server import InstituteServer, SecureInternetServer, Server
 from eduvpn_common.state import State, StateType
 
 import eduvpn.nm as nm
+from eduvpn_common import __version__ as commonver
 from eduvpn import __version__
 from eduvpn.app import Application
 from eduvpn.i18n import country, retrieve_country_name
@@ -528,6 +529,9 @@ class CommandLine:
         parser.add_argument(
             "-y", "--yes", action="store_true", help="answer yes for y/n prompts"
         )
+        parser.add_argument(
+            "-v", "--version", action="store_true", help="get version info"
+        )
         subparsers = parser.add_subparsers(title="subcommands")
 
         interactive_parser = subparsers.add_parser(
@@ -631,6 +635,10 @@ class CommandLine:
         status_parser.set_defaults(func=self.status)
 
         parsed = parser.parse_args()
+
+        if parsed.version:
+            print(f"eduVPN CLI version: {__version__} with eduvpn-common version: {commonver}")
+            return
 
         init_logger(parsed.debug, self.variant.logfile, CONFIG_DIR_MODE)
 
