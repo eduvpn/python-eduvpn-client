@@ -488,7 +488,8 @@ class CommandLine:
             # This exits the main loop and gives back control to the CLI
             callback()
 
-        nm.action_with_mainloop(update_state_callback)
+        if self.nm_manager.available:
+            nm.action_with_mainloop(update_state_callback)
 
     def interactive(self, _):
         # Show a title and the help

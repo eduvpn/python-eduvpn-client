@@ -11,7 +11,6 @@ from typing import Callable, Optional, Type
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
-gi.require_version("NM", "1.0")  # noqa: E402
 from datetime import datetime
 from functools import partial
 
