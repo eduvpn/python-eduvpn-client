@@ -30,7 +30,7 @@ First we must remove the old files, repository and associated signing keys:
 It's fine if you get errors that some of these entries don't exist.
 
 
-You can then continue installing the new client by adding the new repository if you have Ubuntu >= 22.04 or Debian 11/12:
+You can then continue installing the new client by adding the new repository if you have Ubuntu 20.04, >= 22.04 or Debian 11/12:
 
 .. code-block:: console
 
@@ -49,7 +49,7 @@ For other Debian based distros, you can use Pip . If you do the upgrade via Pip,
 
 Then install via Pip, see `Pip Installation <./installation.html#pip-installation>`_
 
-Fedora (36, 37 & 38, x86_64)
+Fedora (37 & 38, x86_64)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First we must remove the old files, repository and associated signing keys:
