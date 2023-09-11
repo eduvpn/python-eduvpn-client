@@ -34,4 +34,4 @@ https://docs.eduvpn.org/
 
 # License
 
-[GPLv3](./LICENSE)
+[GPLv3+](./LICENSE)
