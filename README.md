@@ -26,7 +26,7 @@ mailto:eduvpn-support@lists.geant.org
 
 The full documentation for this client is available on:
 
-https://python-eduvpn-client.readthedocs.io/en/latest/installation.html
+https://python-eduvpn-client.readthedocs.io/
 
 if you're looking for eduVPN server documentation, see:
 
