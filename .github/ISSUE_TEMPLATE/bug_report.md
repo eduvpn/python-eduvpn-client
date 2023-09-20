@@ -16,7 +16,7 @@ Double check that you are running the latest version, see [the releases page](ht
 
 # Check if your issue is in the known issues list
 
-The known issues list is available here: <https://docs.eduvpn.org/client/linux/known-issues.html>
+The known issues list is available here: <https://docs.eduvpn.org/client/linux/support.html#known-issues>
 
 # OS/Distribution
 
