@@ -12,7 +12,22 @@ packages for Fedora, and Deb packages for Debian and Ubuntu.
 > packages (we use a compiled dependency), if you want an ARM package for
 > a certain target you can also make an issue.
 
-## Debian 11
+
+## Installation using a script
+> **Note**
+> This needs curl installed, `sudo apt update && sudo apt install curl` on Debian/Ubuntu systems.
+> Fedora systems automatically have curl installed
+
+We provide a script to ease the installation. This script works on the platforms we have official packages for: Debian/Ubuntu/Fedora/CentOS
+
+```console
+$ curl --proto '=https' --tlsv1.2 https://docs.eduvpn.org/client/linux/install.sh -O
+$ bash ./install.sh
+```
+
+## Manual installation
+
+### Debian 11
 
 ``` console
 $ sudo apt update
@@ -23,7 +38,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Debian 12
+### Debian 12
 
 ``` console
 $ sudo apt update
@@ -34,7 +49,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Ubuntu 20.04
+### Ubuntu 20.04
 
 ``` console
 $ sudo apt update
@@ -45,7 +60,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Ubuntu 22.04
+### Ubuntu 22.04
 
 ``` console
 $ sudo apt update
@@ -56,7 +71,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Ubuntu 22.10
+### Ubuntu 22.10
 
 ``` console
 $ sudo apt update
@@ -67,7 +82,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Ubuntu 23.04
+### Ubuntu 23.04
 
 ``` console
 $ sudo apt update
@@ -78,7 +93,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Linux Mint 20.x
+### Linux Mint 20.x
 
 ``` console
 $ sudo apt update
@@ -89,7 +104,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Linux Mint 21.x
+### Linux Mint 21.x
 
 ``` console
 $ sudo apt update
@@ -100,7 +115,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-## Fedora (37 & 38)
+### Fedora (37 & 38)
 
 ``` console
 $ curl -O https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
@@ -114,7 +129,7 @@ EOF
 $ sudo dnf install eduvpn-client
 ```
 
-## CentOS (Stream 9)
+### CentOS (Stream 9)
 
 ``` console
 $ curl -O https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
@@ -128,17 +143,17 @@ EOF
 $ sudo dnf install eduvpn-client
 ```
 
-## Arch (Unofficial)
+### Arch (Unofficial)
 
 There is an unofficial package in the [Arch User Repository
 (AUR)](https://aur.archlinux.org/packages/python-eduvpn-client/).
 
-## Pip installation
+### Pip installation
 
 We also provide Pip packages. These are useful if your distro is not
 officially supported in our packaging (yet).
 
-### Dependencies
+#### Dependencies
 
 To manually install the eduVPN package via Pip you first need to satisfy
 the dependencies.
@@ -178,7 +193,7 @@ $ sudo dnf install \
     dbus-python-devel
 ```
 
-### Pip commands
+#### Pip commands
 
 You can then continue with installing via Pip:
 
