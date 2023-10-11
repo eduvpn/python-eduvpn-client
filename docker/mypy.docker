@@ -8,7 +8,6 @@ RUN docker-apt-install \
     libnotify4 \
     python3-gi \
     python3-nacl \
-    python3-dbus \
     python3-requests-oauthlib \
     python3-pip \
     python3-venv \

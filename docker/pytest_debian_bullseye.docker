@@ -13,7 +13,6 @@ RUN docker-apt-install \
     python3-nacl \
     python3-pytest \
     python3-pip \
-    python3-dbus \
     pkg-config \
     libcairo2-dev \
     build-essential \

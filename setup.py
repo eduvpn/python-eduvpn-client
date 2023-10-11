@@ -26,7 +26,6 @@ mypy_require = [
 ]
 
 gui_require = [
-    'dbus-python',
     'pygobject',
 ]
 

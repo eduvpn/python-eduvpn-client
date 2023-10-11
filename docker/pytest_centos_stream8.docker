@@ -12,7 +12,6 @@ RUN dnf install -y \
     python3-gobject \
     python3-pytest \
     python3-cryptography \
-    python3-dbus \
     NetworkManager-libnm
 
 ADD docker/docker-dnf-install-common /usr/local/bin/docker-dnf-install-common
