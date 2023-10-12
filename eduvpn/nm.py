@@ -9,7 +9,7 @@ from pathlib import Path
 from shutil import rmtree
 from socket import AF_INET, AF_INET6
 from tempfile import mkdtemp
-from typing import Any, Callable, Optional, TextIO, Tuple
+from typing import Any, Callable, List, Optional, TextIO, Tuple
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
@@ -393,9 +393,10 @@ class NMManager:
         new_connection: "NM.SimpleConnection",
         callback: Callable,
         default_gateway: bool,
+        dns_search_domains: List[str]=[],
     ):
-        new_connection = self.set_setting_default_gateway(
-            new_connection, default_gateway
+        new_connection = self.set_setting_ip_config(
+            new_connection, default_gateway, dns_search_domains
         )
         new_connection = self.set_setting_ensure_permissions(new_connection)
         if self.uuid:
@@ -405,15 +406,18 @@ class NMManager:
                 return
         self.add_connection(new_connection, callback)
 
-    def set_setting_default_gateway(
-        self, con: "NM.SimpleConnection", enable: bool
+    def set_setting_ip_config(
+            self, con: "NM.SimpleConnection", default_gateway: bool, dns_search_domains: List[str]=[]
     ) -> "NM.SimpleConnection":
-        "If True, make the VPN connection the default gateway."
-        _logger.debug(f"setting default gateway: {enable}")
+        "Set IP config settings like default gateway and search domains."
+        _logger.debug(f"setting ip config, default gateway: {default_gateway}, dns_search_domains: {dns_search_domains}")
         ipv4_setting = con.get_setting_ip4_config()
         ipv6_setting = con.get_setting_ip6_config()
-        ipv4_setting.set_property("never-default", not enable)
-        ipv6_setting.set_property("never-default", not enable)
+        ipv4_setting.set_property("never-default", not default_gateway)
+        ipv6_setting.set_property("never-default", not default_gateway)
+        if dns_search_domains:
+            ipv4_setting.set_property("dns-search", dns_search_domains)
+            ipv6_setting.set_property("dns-search", dns_search_domains)
         con.add_setting(ipv4_setting)
         con.add_setting(ipv6_setting)
         return con
@@ -427,11 +431,11 @@ class NMManager:
         return con
 
     def start_openvpn_connection(
-        self, ovpn: Ovpn, default_gateway, *, callback=None
+        self, ovpn: Ovpn, default_gateway, dns_search_domains, *, callback=None
     ) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
-        self.set_connection(new_con, callback, default_gateway)  # type: ignore
+        self.set_connection(new_con, callback, default_gateway, dns_search_domains)  # type: ignore
 
     def start_wireguard_connection(  # noqa: C901
         self,
