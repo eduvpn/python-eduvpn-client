@@ -426,19 +426,6 @@ class NMManager:
         con.add_setting(s_con)
         return con
 
-    def save_connection(
-        self,
-        ovpn: Ovpn,
-        private_key,
-        certificate,
-        callback,
-        default_gateway,
-        system_wide,
-    ):
-        _logger.debug("writing configuration to Network Manager")
-        new_con = self.import_ovpn_with_certificate(ovpn, private_key, certificate)
-        self.set_connection(new_con, callback, default_gateway)
-
     def start_openvpn_connection(
         self, ovpn: Ovpn, default_gateway, *, callback=None
     ) -> None:
