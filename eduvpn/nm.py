@@ -394,7 +394,7 @@ class NMManager:
         self,
         new_connection: "NM.SimpleConnection",
         callback: Callable,
-        default_gateway: bool,
+        default_gateway: Optional[bool],
         dns_search_domains: List[str]=[],
     ):
         new_connection = self.set_setting_ip_config(
@@ -409,14 +409,15 @@ class NMManager:
         self.add_connection(new_connection, callback)
 
     def set_setting_ip_config(
-            self, con: "NM.SimpleConnection", default_gateway: bool, dns_search_domains: List[str]=[]
+            self, con: "NM.SimpleConnection", default_gateway: Optional[bool], dns_search_domains: List[str]=[]
     ) -> "NM.SimpleConnection":
         "Set IP config settings like default gateway and search domains."
         _logger.debug(f"setting ip config, default gateway: {default_gateway}, dns_search_domains: {dns_search_domains}")
         ipv4_setting = con.get_setting_ip4_config()
         ipv6_setting = con.get_setting_ip6_config()
-        ipv4_setting.set_property("never-default", not default_gateway)
-        ipv6_setting.set_property("never-default", not default_gateway)
+        if default_gateway is not None:
+            ipv4_setting.set_property("never-default", not default_gateway)
+            ipv6_setting.set_property("never-default", not default_gateway)
         if dns_search_domains:
             ipv4_setting.set_property("dns-search", dns_search_domains)
             ipv6_setting.set_property("dns-search", dns_search_domains)
@@ -442,7 +443,6 @@ class NMManager:
     def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
-        default_gateway,
         *,
         callback=None,
     ) -> None:
@@ -582,7 +582,7 @@ class NMManager:
         profile.add_setting(s_con)
         profile.add_setting(w_con)
 
-        self.set_connection(profile, callback, default_gateway)  # type: ignore
+        self.set_connection(profile, callback, None)  # type: ignore
 
     @run_in_glib_thread
     def activate_connection(self, callback: Optional[Callable] = None) -> None:

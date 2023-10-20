@@ -80,6 +80,5 @@ class WireGuardConnection(Connection):
     def connect(self, manager, default_gateway, dns_search_domains, callback):
         manager.start_wireguard_connection(
             self.config,
-            default_gateway,
             callback=callback,
         )
