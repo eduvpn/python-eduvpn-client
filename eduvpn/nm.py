@@ -18,7 +18,6 @@ from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.utils import run_in_glib_thread
 from eduvpn.variants import ApplicationVariant
 
-gi.require_version("NM", "1.0")  # noqa: E402
 from gi.repository.Gio import Task  # type: ignore
 
 _logger = logging.getLogger(__name__)
@@ -232,7 +231,7 @@ class NMManager:
         return devices[0].get_iface()
 
     @property
-    def ipv4_config(self) -> Optional[NM.IPConfig]:
+    def ipv4_config(self) -> Optional["NM.IPConfig"]:
         """
         Get the ipv4 config for the active VPN connection
         """
@@ -764,7 +763,7 @@ def action_with_mainloop(action: Callable):
 
 
 def add_connection_callback(
-    client: NM.Client, result: Task, user_data: Tuple[NMManager, Optional[Callable]]
+    client: "NM.Client", result: Task, user_data: Tuple[NMManager, Optional[Callable]]
 ) -> None:
     object, callback = user_data
     new_con = client.add_connection_finish(result)
