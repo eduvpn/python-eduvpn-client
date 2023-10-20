@@ -1,6 +1,8 @@
 import enum
 import ipaddress
 import logging
+import os
+import socket
 import time
 import uuid
 from configparser import ConfigParser
@@ -523,6 +525,46 @@ class NMManager:
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/SettingWireGuard.html
         w_con = NM.SettingWireGuard.new()
+
+        # manual routing
+        w_con.set_property(NM.SETTING_WIREGUARD_IP4_AUTO_DEFAULT_ROUTE, 0)
+        w_con.set_property(NM.SETTING_WIREGUARD_IP6_AUTO_DEFAULT_ROUTE, 0)
+
+        # we set some sensible default with an override using EDUVPN_WG_FWMARK
+        fwmark = int(os.environ.get("EDUVPN_WG_FWMARK", 51860))
+
+        s_ip4.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
+        s_ip6.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
+        w_con.set_property(NM.DEVICE_WIREGUARD_FWMARK, fwmark)
+
+        # The routing that is done by NM by default doesn't cut it
+        # It automatically adds a suppress prefixlength rule such that LAN traffic is allowed
+        # We want to make this configurable
+        # Additionally, the overlap case with split tunnel doesn't work: https://github.com/eduvpn/python-eduvpn-client/issues/551
+
+        allow_lan = True
+
+        rules = [(socket.AF_INET, s_ip4), (socket.AF_INET6, s_ip6)]
+        # priority 1 not fwmark fwmarknum table fwmarknum
+        for (family, setting) in rules:
+            rule = NM.IPRoutingRule.new(family)
+            rule.set_priority(1)
+            rule.set_invert(True)
+            # fwmask 0xffffffff is the default
+            rule.set_fwmark(fwmark, 0xffffffff)
+            rule.set_table(fwmark)
+
+            # when LAN should be allowed, we have to add a higher priority suppress prefixlength rule
+            if allow_lan:
+                lan_rule = NM.IPRoutingRule.new(family)
+                # Downgrade the default wireguard rule priority
+                # And set the lan rule to a higher priority
+                rule.set_priority(2)
+                lan_rule.set_priority(1)
+                lan_rule.set_suppress_prefixlength(0)
+                setting.add_routing_rule(lan_rule)
+            setting.add_routing_rule(rule)
+
         w_con.append_peer(peer)
         private_key = config["Interface"]["PrivateKey"]
         w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, private_key)
