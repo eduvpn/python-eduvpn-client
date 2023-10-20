@@ -1,0 +1,26 @@
+:root {
+  --accent: #e24301;
+}
+
+div.page-footer {
+  text-align: center;
+  font-size: small;
+}
+
+@media screen and (min-width: 800px) {
+    body > header {
+        background-image: url("../img/eduvpn_logo.png");
+        background-repeat: no-repeat;
+        background-position: 5% 50%; 
+    }
+
+    @media (prefers-color-scheme: dark) {
+        body > header {
+            background-image: url("../img/eduvpn_logo_dark.png");
+        }
+    }
+}
+
+main a.headerlink {
+    margin-left: 0.15em;
+}

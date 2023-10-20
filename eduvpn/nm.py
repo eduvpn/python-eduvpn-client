@@ -4,15 +4,12 @@ import logging
 import time
 import uuid
 from configparser import ConfigParser
-from functools import lru_cache
 from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
 from socket import AF_INET, AF_INET6
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, TextIO, Tuple
-
-import gi
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
@@ -32,11 +29,6 @@ try:
 except (ImportError, ValueError):
     _logger.warning("Network Manager not available")
     NM = None
-
-try:
-    import dbus
-except ImportError:
-    dbus = None
 
 
 class ConnectionState(enum.Enum):
@@ -750,28 +742,6 @@ class NMManager:
         uuid = con.get_uuid()
         status = con.get_state()
         return uuid, status
-
-
-@lru_cache(maxsize=1)
-def get_dbus() -> Optional["dbus.SystemBus"]:
-    """
-    Get the DBus system bus.
-
-    None is returned on failure.
-    """
-    if dbus is None:
-        logging.debug("DBus module could not be imported")
-        return None
-    try:
-        from dbus.mainloop.glib import DBusGMainLoop
-
-        DBusGMainLoop(set_as_default=True)
-        bus = dbus.SystemBus(private=True)
-    except Exception:
-        logging.debug("Unable to access dbus", exc_info=True)
-        return None
-    else:
-        return bus
 
 
 def action_with_mainloop(action: Callable):

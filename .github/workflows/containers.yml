@@ -13,7 +13,6 @@ jobs:
       matrix:
         dist:
           - mypy
-          - doc
           - pep8
           - pylama
           - pytest_centos_stream8

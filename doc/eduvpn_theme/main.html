@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/simple.css">
+    <link rel="stylesheet" href="css/screen.css">
+    <title>{% if page.title %}{{ page.title }} - {% endif %}{{ config.site_name }}</title>
+</head>
+<body>
+  <header>
+    <h1>{{ config.site_name }}</h1>
+{% if config.site_description %}
+    <p>{{ config.site_description }}</p>
+{% endif %}
+{% if nav|length>0 %}
+    <nav>
+    {% for nav_item in nav %}
+        <a href="{{ nav_item.url|url }}">{{ nav_item.title }}</a>
+    {% endfor %}
+    </nav>
+{% endif %}
+  </header>
+  <main>
+{% if page.toc %}
+  <aside>
+    {% macro toc_item(item) %}
+        {%- if item.level <= config.theme.navigation_depth %}
+            <li class="nav-item" data-level="{{ item.level }}"><a href="{{ item.url }}" class="nav-link">{{ item.title }}</a>
+              <ul class="nav flex-column">
+                {%- for child in item.children %}
+                    {{- toc_item(child) }}
+                {%- endfor %}
+              </ul>
+            </li>
+        {%- endif %}
+    {%- endmacro %}
+    <ul>
+        {%- for item in page.toc %}
+            {{ toc_item(item) }}
+        {%- endfor %}
+    </ul>
+  </aside>
+{% endif %}
+      {{ page.content }}
+  </main>
+
+  <footer>
+    <p>{{ config.site_name }} - {{ config.site_description }}</p>
+  </footer>
+</body>
+</html>

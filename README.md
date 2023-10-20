@@ -1,21 +1,14 @@
+# eduVPN for Linux
 
-Linux eduVPN client and Python API
-==================================
+This is the Linux desktop client for eduVPN.
 
-This is the GNU/Linux desktop client for eduVPN. It also is a Python client API.
+Read more about the eduVPN project on the eduVPN website https://www.eduvpn.org/.
 
-Read more about eduVPN on the eduVPN website http://eduvpn.org/.
+# Documentation
 
-Installation
-============
+The docs for this client are available on:
+https://docs.eduvpn.org/client/linux
 
-The recommended way to install the eduVPN client for Linux is using one of the packages for your Linux distribution.
-The online documentation at [http://python-eduvpn-client.readthedocs.io](http://python-eduvpn-client.readthedocs.io)
-contains detailed installation instructions.
+# License
 
-To directly install eduVPN from a checkout of this repository run:
-
-```bash
-$ python3 -m venv venv
-$ venv/bin/pip install ".[gui]"
-```
+[GPLv3+](./LICENSE)
