@@ -699,7 +699,6 @@ For detailed information, see the log file located at:
         search.show_search_components(self, False)
         search.exit_server_search(self)
 
-    # TODO: Implement with Go callback
     def exit_ConfigureCustomServer(self, old_state, new_state):
         if not self.app.variant.use_predefined_servers:
             self.add_custom_server_button_container.hide()
@@ -1130,7 +1129,6 @@ For detailed information, see the log file located at:
 
     def on_search_activate(self, _=None):
         logger.debug("activated server search")
-        # TODO
 
     def on_switch_connection_state(self, _switch: Switch, state: bool) -> bool:
         logger.debug("clicked on switch connection state")
@@ -1285,7 +1283,6 @@ For detailed information, see the log file located at:
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")
-        # TODO: Handle this case
 
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
