@@ -444,6 +444,7 @@ class NMManager:
         self,
         config: ConfigParser,
         *,
+        allow_wg_lan=False,
         callback=None,
     ) -> None:
         _logger.debug("writing wireguard configuration to Network Manager")
@@ -542,8 +543,6 @@ class NMManager:
         # We want to make this configurable
         # Additionally, the overlap case with split tunnel doesn't work: https://github.com/eduvpn/python-eduvpn-client/issues/551
 
-        allow_lan = True
-
         rules = [(socket.AF_INET, s_ip4), (socket.AF_INET6, s_ip6)]
         # priority 1 not fwmark fwmarknum table fwmarknum
         for (family, setting) in rules:
@@ -555,7 +554,7 @@ class NMManager:
             rule.set_table(fwmark)
 
             # when LAN should be allowed, we have to add a higher priority suppress prefixlength rule
-            if allow_lan:
+            if allow_wg_lan:
                 lan_rule = NM.IPRoutingRule.new(family)
                 # Downgrade the default wireguard rule priority
                 # And set the lan rule to a higher priority
