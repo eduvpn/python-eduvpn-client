@@ -102,6 +102,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.common = self.eduvpn_app.common
         handlers = {
             "on_info_delete": self.on_info_delete,
+            "on_settings_press_event": self.on_settings_button,
             "on_info_press_event": self.on_info_button,
             "on_go_back": self.on_go_back,
             "on_add_other_server": self.on_add_other_server,
@@ -111,6 +112,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_server_row_activated": self.on_server_row_activated,
             "on_server_row_pressed": self.on_server_row_pressed,
             "on_search_changed": self.on_search_changed,
+            "on_allow_wg_lan_state_set": self.on_allow_wg_lan_state_set,
             "on_search_activate": self.on_search_activate,
             "on_switch_connection_state": self.on_switch_connection_state,
             "on_toggle_connection_info": self.on_toggle_connection_info,
@@ -192,6 +194,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.main_overlay = builder.get_object("mainOverlay")
 
+        self.previous_page_settings = None
+        self.previous_back_button = False
+        self.settings_page = builder.get_object("settingsPage")
+        self.settings_button = builder.get_object("settingsButton")
+        self.allow_wg_lan_switch = builder.get_object("allowWgLanSwitch")
+
         # Create a revealer
         self.clipboard = None
         self.initialize_clipboard()
@@ -225,6 +233,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_validity_thread_cancel: Optional[Callable] = None
         self.connection_renew_thread_cancel: Optional[Callable] = None
         self.connection_info_stats = None
+        self.current_shown_page = None
 
         self.info_dialog = builder.get_object("infoDialog")
 
@@ -471,12 +480,13 @@ For detailed information, see the log file located at:
         self.find_server_search_input.set_text(text)
 
     def show_loading_page(self, title: str, message: str) -> None:
+        self.loading_page.show()
         self.show_page(self.loading_page)
         self.loading_title.set_text(title)
         self.loading_message.set_text(message)
 
     def hide_loading_page(self) -> None:
-        self.hide_page(self.loading_page)
+        self.loading_page.hide()
 
     def set_connection_switch_state(self, state: bool) -> None:
         self.connection_switch_state = state
@@ -987,9 +997,31 @@ For detailed information, see the log file located at:
         self.info_dialog.run()
         self.info_dialog.hide()
 
+    def on_settings_button(self, widget: EventBox, event: EventButton) -> None:
+        logger.debug("clicked settings button")
+        if self.current_shown_page is None:
+            return
+        self.settings_button.hide()
+        self.show_back_button(True)
+        self.previous_page_settings = self.current_shown_page 
+        self.previous_back_button = self.back_button_container.props.visible
+        self.settings_page.show()
+        self.allow_wg_lan_switch.set_state(self.app.config.allow_wg_lan)
+        self.show_page(self.settings_page)
+
     def on_go_back(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked on go back")
-        self.call_model("go_back")
+        # We are in the settings if we have stored the previous settings page
+        # if so show the settings page and reset the previous page settings
+        if self.previous_page_settings is not None:
+            self.settings_button.show()
+            self.show_back_button(self.previous_back_button)
+            self.show_page(self.previous_page_settings)
+            self.settings_page.hide()
+            self.previous_page_settings = None
+            self.previous_back_button = False
+        else:
+            self.call_model("go_back")
 
     def on_add_other_server(self, button: Button) -> None:
         logger.debug("clicked on add other server")
@@ -1092,6 +1124,9 @@ For detailed information, see the log file located at:
             # as a custom server address.
             results = self.app.model.search_custom(query)
             search.update_results(self, results)
+
+    def on_allow_wg_lan_state_set(self, switch, state) -> None:
+        self.app.config.allow_wg_lan = state
 
     def on_search_activate(self, _=None):
         logger.debug("activated server search")
