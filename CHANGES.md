@@ -1,27 +1,40 @@
-4.1.3 (2023-09-01)
-==
+# 4.1.99.0 (2023-10-25)
+Pre-release for 4.2.0:
+
+* Remove unused dbus dependency (thanks! @a-andre)
+* Make tests work without NetworkManager
+* Do manual WireGuard routing using a fixed fwmark and a custom route table:
+  - Have the ability to block LAN
+  - Fix split tunnel where the VPN peer IP overlaps with the tunneled subnet (#551)
+  - Do not set the never-default setting
+* Settings:
+  - Add back settings with only the WireGuard allow LAN toggle for now (default = True)
+* Bump eduvpn-common to 1.1.99.0
+* Manually configure DNS search domains with OpenVPN to fix #550
+* Releases:
+  - Add development GPG key to `keys/app+linux+dev@eduvpn.org.asc`
+  - Update make script to automatically create a (pre-)release and upload tarballs with signatures
+
+# 4.1.3 (2023-09-01)
 Small hotfixes for 4.1.2:
 
 * Bump eduvpn-common to 1.1.2 to further handle endpoint caching
 * Mention eduvpn-common version in the UI
 * Add a version flag to the CLI
 
-4.1.2 (2023-08-29)
-==
+# 4.1.2 (2023-08-29)
 Small hotfixes for 4.1.1:
 
 * Make sure profile combo indexes are always set correctly when ignoring the reconnect dialog
 * Support MTU for WireGuard
 * Bump eduvpn-common to 1.1.1 in order to fix OAuth endpoint caching issues
 
-4.1.1 (2023-04-20)
-==
+# 4.1.1 (2023-04-20)
 Small hotfix for 4.1.0:
 
 * Fix profile combo in UI not selecting the actual current profile
 
-4.1.0 (2023-04-18)
-==
+# 4.1.0 (2023-04-18)
 Changes since 4.0.1:
 
 * Update internal API to use eduvpn-common 1.1.0
@@ -44,8 +57,7 @@ Changes since 4.0.1:
     - Update desktop files with the correct name, fixes #522
 
 
-4.0.1 (2023-03-07)
-==
+# 4.0.1 (2023-03-07)
 Hotfix release. Changes since 4.0.0:
 
 * File keyring:
@@ -55,8 +67,7 @@ Hotfix release. Changes since 4.0.0:
 * Properly delete the eduVPN connection on disconnect
 
 
-4.0.0 (2023-03-02)
-==
+# 4.0.0 (2023-03-02)
 First release using eduvpn-common, changes since 3.3.1:
 
 * Update to eduvpn-common 1.0.0
@@ -72,16 +83,14 @@ First release using eduvpn-common, changes since 3.3.1:
 * Try to fix Fedora freezes by ensuring connection info is run in the proper thread
 * Make sure browser child processes are not left open by using `os.wait()`
 
-3.3.1 (Beta/pre-release 2023-02-07)
-==
+# 3.3.1 (Beta/pre-release 2023-02-07)
 This pre-release are a couple of Let's Connect! and threading changes
 
 * Try to fix threading issues by only running async nm functions in the glib thread
 * Fix launching of Let's Connect!
 * Properly hide certain elements that are only applicable for eduVPN
 
-3.3.0 (Beta/pre-release 2023-02-01)
-==
+# 3.3.0 (Beta/pre-release 2023-02-01)
 This pre-release are a couple of QoL changes in the UI
 
 * Do not style tree views
@@ -92,12 +101,10 @@ This pre-release are a couple of QoL changes in the UI
 * Add additonal logging to keyring
 
 
-3.2.0 (Beta/pre-release 2022-12-23)
-==
+# 3.2.0 (Beta/pre-release 2022-12-23)
 This pre-release refactors the whole app using the [eduvpn-common](https://github.com/eduvpn/eduvpn-common) Go library.
 
-Fixes
---------
+## Fixes
 * #481 - The OAuth library/implementation we use now is built in house and fixes this
 * #478/#465 - A profile expander is shown now
 * #467 - The CLI has been rewritten to be more user friendly and work correctly with the V3 API
@@ -115,8 +122,7 @@ Fixes
 * #255 - We now implement it according to the eduVPN specification
 * #253 - Removing a connection is now possible by right clicking on a server
 
-New features/Improvements that are not mentioned yet
---------
+## New features/Improvements that are not mentioned yet
 * OAuth has a check for the new ISS parameter if the server supports it (https://datatracker.ietf.org/doc/rfc9207/)
 * A server is now added instead of immediately connected, making it the same as other clients. The old behaviour can be toggled in the settings
 * Let's Connect!/eduVPN now uses completely separate configurations
@@ -124,57 +130,47 @@ New features/Improvements that are not mentioned yet
 * WireGuard to OpenVPN failover (if UDP is blocked)
 
 
-3.1.0 (2022-06-23)
-==
+# 3.1.0 (2022-06-23)
 
-Additions
---------
+## Additions
 * #489 Make NetworkManager connections optionally for the current user only by @jwijenbergh. This can get rid of authentication popups depending on your polkit settings
 * #490 Add a quick note for the AUR package by @jwijenbergh
 
-Bugfixes
---------
+## Bugfixes
 * #491 Refactor selections by @jwijenbergh. This fixes profiles/servers being selected automatically
 * #494 Simplify getting interface/IP info and fix inconsistencies by @jwijenbergh. This gives a more accurate way to get the network interface across all systems
 * #495 Cleanup network states by @jwijenbergh. This makes sure that we use the right connection for state updates, which fixes bugs when using eduVPN with another VPN/Connection. Additionally it fixes a major bug with reconnecting when using OpenVPN
 * #497 Fix server info launch by @jwijenbergh. This guarantees that server info is correctly displayed when launching the app with an active eduVPN connection
 
-3.0.0 (2022-05-09)
-===
+# 3.0.0 (2022-05-09)
 
 This version of the client makes it API compatible with eduVPN server version 3. A notable addition that this brings is Wireguard support.
 
-Additions
---------
+## Additions
 * #457 Update API to V3 by @alvra
 * #461 Add a connection info expander by @jwijenbergh
 * #466 WireGuard support by @alvra
 
-Bugfixes
---------
+## Bugfixes
 * #455  Update makefile centos paths by @jwijenbergh
 * #456  Makefile: do not fail rm if files do not exist by @jwijenbergh
 * #472  Fix OpenVPN parsing by @dahooz
 * #477  Make tests pass when running with NetworkManager by @jwijenbergh
 * #483  Correct version flag by @gijzelaerr
 
-Enhancements
---------
+## Enhancements
 * #459  Add dates of releases by @fkooman
 * #475  Wireguard: Disable autoconnect to match OpenVPN behaviour by @jwijenbergh
 * #484  Add long description to pypi by @gijzelaerr
 
 
-2.2.1 (2022-02-18)
-===
+# 2.2.1 (2022-02-18)
 
-Bugfixes
---------
+## Bugfixes
 * #440  Fix authorization for the Pale Moon browser by @jwijenbergh
 * #448  Fix backwards compatibility with older GTK versions (e.g. Ubuntu 18.04) by @jwijenbergh
 
-Enhancements
-------------
+## Enhancements
 * #437  Switch from /info.json to /.well-known/vpn-user-portal by @fkooman
 * #443  Use the vault archive for CentOS 8 in the CI by @jwijenbergh
 * #449  Add an error popup if no device of the primary connection is managed by NetworkManager by @jwijenbergh
@@ -182,19 +178,16 @@ Enhancements
 * #452  Move from CentOS 8 in the CI to CentOS stream 8 by @jwijenbergh
 * #453  Remove change location button by @jwijenbergh
 
-2.2 (2022-12-20)
-===
+# 2.2 (2022-12-20)
 
-Bugfixes
---------
+## Bugfixes
 * #408  Fix issue with missing country flags by @alvra
 * #416  Fix config directory permissions by @alvra
 * #420  RPM icon issue by @gijzelaerr
 * #431  Fix os.chdir by @fkooman
 * #436  Fix split tunnel by @fkooman
 
-Enhancements
-------------
+## Enhancements
 * #400  Various improvements by @alvra
 * #401  Update license references to GPLv3+ by @fkooman
 * #409  Allow the window to remain open by @alvra
@@ -203,11 +196,9 @@ Enhancements
 * #427  Allow user defined config directory using $XDG_CONFIG_HOME by @Jesse-Bakker
 
 
-2.1 (2021-07-07)
-===
+# 2.1 (2021-07-07)
 
-Bugfixes
---------
+## Bugfixes
 
 * #386  Connexion still load details server  
 * #384  Can't select my Organisation a second time
@@ -219,8 +210,7 @@ Bugfixes
 * #370  GTK app icon not set (only used in some edge cases)
 * #358  eduVPN 2.0 package should depend on gir1.2-nm-1.0 
 
-Enhancements
-------------
+# Enhancements
 
 * #340  Show notifications for session expiry   
 * #332  Provide test coverage     
@@ -231,8 +221,7 @@ Enhancements
 * #257  Improve documentation
 
 
-2.0 (2021-04-09)
-===
+# 2.0 (2021-04-09)
 
 This is a complete rewrite of the code base.
 
@@ -301,8 +290,7 @@ Bug fixes:
  * #151  No need to create new keypair per profile
  * #139  Add connect-timeout to settings
 
-1.1
-===
+# 1.1
 
  * Remove Python 2 support #192
  * Remove CentOS 7 support #192
@@ -312,8 +300,7 @@ Bug fixes:
  * Make sure Centos 8 rpm builds properly (on copr) #220
 
 
-1.0.3
-=====
+# 1.0.3
 
 bugfixes:
 
@@ -328,8 +315,7 @@ changes:
  * Remove DNS leaking warming for 18.04 since it seems to be fixed. #177
  
 
-1.0.2
-=====
+# 1.0.2
 
  * client expects multiple remotes #156
  * use LC client_id for for LC client #155
@@ -337,20 +323,17 @@ changes:
  * debian tls-crypt config parse bug #157
  
 
-1.0.1
-=====
+# 1.0.1
 
  * pypi doesnt show latest version - make 1.0(.1) release #135
  
 
-1.0rc17
-=======
+# 1.0rc17
 
  * Let's Connect integration #134
  
  
-1.0rc16
-=======
+# 1.0rc16
 
  * Make all UI element uniform (again) #143
  * make sure OTP enroll dialog fits on 1366x768 resolution #146
@@ -377,20 +360,17 @@ changes:
  * add cli flags to switch to debug server #131
  
 
-1.0rc15
-=======
+# 1.0rc15
 
 * Disable connect-timeout setting #138
 
 
-1.0rc14
-=======
+# 1.0rc14
 
 * Dev servers were accidentally enabled for 1.0rc13
 
 
-1.0rc13
-=======
+# 1.0rc13
 
  * 'distributed' does not work #124 
  *  server-poll-timeout ignored #122
@@ -403,8 +383,7 @@ changes:
  * Add Ubuntu 18.04 to supported architectures in doc #98
 
 
-1.0rc12
-=======
+# 1.0rc12
 
  * comp-lzo should not (always) be on bug #107 
  * problems with lambdas handling exception in Python 3.6 #106 
@@ -420,16 +399,14 @@ changes:
  * Ubuntu 17.10 > no protocol specified #93 
 
 
-1.0rc9
-======
+# 1.0rc9
 
  * AttributeError #86
  * python test suite fails during debian package build low priority #61
  * test suite passes but raises errors in threads low priority #75
 
 
-1.0rc8
-======
+# 1.0rc8
 
  * Add distributed support #71
  * don't look at user_info to see if 2fa is enabled for profile #79
@@ -437,37 +414,32 @@ changes:
  * enable timing in logs #81
  
  
-1.0.rc7
-=======
+# 1.0.rc7
 
  * client disabled dialog broken #80
  * rpm buid fails for 1.05c6 due to missing pytest-runner #76
  
 
-1.0rc6
-======
+# 1.0rc6
 
  * Fedora 27 build fails #68
  * can't handle non ascii code in display_name on python2 #70
  * selection screen not working in case of more than one 2fa methods #69
  
  
-1.0rc5
-======
+# 1.0rc5
 
  * settings don't update for a new connection #67
  
  
-1.0rc4
-======
+# 1.0rc4
 
  * resturcture metadata to make more robust and future ready #66
  * profile model not cleared on new flow #65
  * ERROR:eduvpn.util:Can't fetch user messages: Invalid scope (config), must be string, tuple, set, or list. #64
  
  
-1.0rc3
-======
+# 1.0rc3
 
  * add choice for 2FA method (if enabled) #59
  * make python 3 debian package low priority #44
@@ -484,24 +456,21 @@ changes:
  * The "Connected" button breaks often #56
  
  
-1.0rc2
-======
+# 1.0rc2
 
  * revoked token gives error #49
  * choosing profile does not work #50
  * refresh tokens not implemented #48
  
  
-1.0rc1
-======
+# 1.0rc1
 
  * missing README.md? #46
  * go one last time over all graphical elements #35
  * some changes in use of text #47
  
  
-0.8
-===
+# 0.8
 
  * add headers to all files #29
  * modify 'display_name' to "eduVPN for Linux" #37
