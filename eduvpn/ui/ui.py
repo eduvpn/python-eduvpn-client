@@ -1002,7 +1002,7 @@ For detailed information, see the log file located at:
             return
         self.settings_button.hide()
         self.show_back_button(True)
-        self.previous_page_settings = self.current_shown_page 
+        self.previous_page_settings = self.current_shown_page
         self.previous_back_button = self.back_button_container.props.visible
         self.settings_page.show()
         self.allow_wg_lan_switch.set_state(self.app.config.allow_wg_lan)

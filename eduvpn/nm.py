@@ -395,7 +395,7 @@ class NMManager:
         new_connection: "NM.SimpleConnection",
         callback: Callable,
         default_gateway: Optional[bool],
-        dns_search_domains: List[str]=[],
+        dns_search_domains: List[str] = [],
     ):
         new_connection = self.set_setting_ip_config(
             new_connection, default_gateway, dns_search_domains
@@ -409,10 +409,15 @@ class NMManager:
         self.add_connection(new_connection, callback)
 
     def set_setting_ip_config(
-            self, con: "NM.SimpleConnection", default_gateway: Optional[bool], dns_search_domains: List[str]=[]
+        self,
+        con: "NM.SimpleConnection",
+        default_gateway: Optional[bool],
+        dns_search_domains: List[str] = [],
     ) -> "NM.SimpleConnection":
         "Set IP config settings like default gateway and search domains."
-        _logger.debug(f"setting ip config, default gateway: {default_gateway}, dns_search_domains: {dns_search_domains}")
+        _logger.debug(
+            f"setting ip config, default gateway: {default_gateway}, dns_search_domains: {dns_search_domains}"
+        )
         ipv4_setting = con.get_setting_ip4_config()
         ipv6_setting = con.get_setting_ip6_config()
         if default_gateway is not None:
@@ -545,12 +550,12 @@ class NMManager:
 
         rules = [(socket.AF_INET, s_ip4), (socket.AF_INET6, s_ip6)]
         # priority 1 not fwmark fwmarknum table fwmarknum
-        for (family, setting) in rules:
+        for family, setting in rules:
             rule = NM.IPRoutingRule.new(family)
             rule.set_priority(1)
             rule.set_invert(True)
             # fwmask 0xffffffff is the default
-            rule.set_fwmark(fwmark, 0xffffffff)
+            rule.set_fwmark(fwmark, 0xFFFFFFFF)
             rule.set_table(fwmark)
 
             # when LAN should be allowed, we have to add a higher priority suppress prefixlength rule
