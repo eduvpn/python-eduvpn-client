@@ -397,7 +397,7 @@ class ApplicationModel:
         server = self.current_server
 
         default_gateway = True
-        dns_search_domains = []
+        dns_search_domains: List[str] = []
         if server.profiles is not None and server.profiles.current is not None:
             default_gateway = server.profiles.current.default_gateway
             dns_search_domains = getattr(
