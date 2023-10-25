@@ -57,7 +57,9 @@ class OpenVPNConnection(Connection):
         ovpn = Ovpn.parse(config)
         return cls(ovpn=ovpn)
 
-    def connect(self, manager, default_gateway, allow_lan, dns_search_domains, callback):
+    def connect(
+        self, manager, default_gateway, allow_lan, dns_search_domains, callback
+    ):
         manager.start_openvpn_connection(
             self.ovpn,
             default_gateway,
@@ -77,7 +79,9 @@ class WireGuardConnection(Connection):
         config.read_string(config_str)
         return cls(config=config)
 
-    def connect(self, manager, default_gateway, allow_lan, dns_search_domains, callback):
+    def connect(
+        self, manager, default_gateway, allow_lan, dns_search_domains, callback
+    ):
         manager.start_wireguard_connection(
             self.config,
             allow_wg_lan=allow_lan,
