@@ -9,9 +9,9 @@
 set -e
 
 # change these to your liking
-BRANCH=dev
+BRANCH=master
 IS_PRERELEASE=true
-REPO="jwijenbergh/python-eduvpn-client"
+REPO="eduvpn/python-eduvpn-client"
 
 # make a fresh clone
 rm -rf /tmp/python-eduvpn-client
