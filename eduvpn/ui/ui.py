@@ -12,7 +12,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
 gi.require_version("NM", "1.0")  # noqa: E402
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 
 from eduvpn_common.state import State, StateType
@@ -24,6 +24,7 @@ from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
 from eduvpn import __version__
 from eduvpn_common import __version__ as commonver
+from eduvpn.connection import Validity
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
@@ -439,6 +440,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # Add the frame to the revealer and show it
         self.error_revealer.add(error_revealer_frame)
         self.error_revealer.show()
+        self.shown_notification_times = set()
 
         # add the error revealer to the main overlay
         self.main_overlay.add_overlay(self.error_revealer)
@@ -583,9 +585,8 @@ For detailed information, see the log file located at:
 
     # every second
     def update_connection_validity(self, expire_time: datetime) -> None:
-        is_expired, expiry_text = get_validity_text(
-            self.app.model.get_expiry(expire_time)
-        )
+        validity = self.app.model.get_expiry(expire_time)
+        is_expired, expiry_text = get_validity_text(validity)
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
 
@@ -600,20 +601,28 @@ For detailed information, see the log file located at:
 
             self.eduvpn_app.enter_SessionExpiredState()
 
-    # Show renew button or not
-    def update_connection_renew(self) -> None:
-        if self.app.model.should_renew_button():
-            # Stop polling for updates as we're done toggling the button
-            if self.connection_renew_thread_cancel:
-                self.connection_renew_thread_cancel()
+    # Shows notifications according to https://docs.eduvpn.org/server/v3/client-implementation-notes.html#expiry
+    # The 0th case is handled with a separate notification inside of the expiry text handler
+    def ensure_expiry_notification_text(self, validity: Validity) -> None:
+        hours = [4, 2, 1]
+        for h in hours:
+            if h in self.shown_notification_times:
+                continue
+            delta = validity.remaining - timedelta(hours=h)
+            total_secs = delta.total_seconds()
+            if total_secs <= 0 and total_secs >= -120:
+                self.eduvpn_app.enter_SessionPendingExpiryState(h)
+                self.shown_notification_times.add(h)
+                break
 
-            # This is the first time that the renew session button will be visible
-            # Show a notification that it is pending expiry
-            if not self.renew_session_button.is_visible():
-                self.eduvpn_app.enter_SessionPendingExpiryState()
+    # Show renew button or not
+    def update_connection_renew(self, expire_time) -> None:
+        if self.app.model.should_renew_button():
+            # Show renew button
             self.renew_session_button.show()
-        else:
-            self.renew_session_button.hide()
+
+            validity = self.app.model.get_expiry(expire_time)
+            self.ensure_expiry_notification_text(validity)
 
     def update_connection_status(self, connected: bool) -> None:
         if connected:
@@ -940,9 +949,11 @@ For detailed information, see the log file located at:
         self.failover_text.hide()
         self.connection_info_expander.hide()
         self.renew_session_button.hide()
+        self.shown_notification_times.clear()
 
     @ui_transition(State.CONNECTED, StateType.ENTER)
     def enter_ConnectedState(self, old_state, server_info):
+        self.shown_notification_times.clear()
         self.renew_session_button.hide()
         self.show_page(self.connection_page)
         self.show_back_button(False)
@@ -971,7 +982,7 @@ For detailed information, see the log file located at:
             "update-validity",
         )
         self.connection_renew_thread_cancel = run_periodically(
-            run_in_glib_thread(self.update_connection_renew),
+            run_in_glib_thread(partial(self.update_connection_renew, server_info.expire_time)),
             UPDATE_RENEW_INTERVAL,
             "update-renew",
         )
