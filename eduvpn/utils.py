@@ -19,6 +19,14 @@ def get_logger(name_space: str) -> logging.Logger:
     return logging.getLogger(name_space)
 
 
+def handle_exceptions(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
 def init_logger(debug: bool, logfile, mode):
     log_format = (
         "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
@@ -41,6 +49,8 @@ def init_logger(debug: bool, logfile, mode):
             logging.StreamHandler(),
         ],
     )
+    # Log unhandled exceptions
+    sys.excepthook = handle_exceptions
 
 
 def log_exception(exception: Exception):
