@@ -874,6 +874,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="halign">center</property>
+                        <property name="expanded">True</property>
                         <signal name="activate" handler="on_toggle_connection_info" swapped="no"/>
                         <child>
                           <object class="GtkFrame">
@@ -888,7 +889,7 @@
                                 <property name="can-focus">False</property>
                                 <property name="left-padding">12</property>
                                 <child>
-                                  <!-- n-columns=4 n-rows=4 -->
+                                  <!-- n-columns=4 n-rows=6 -->
                                   <object class="GtkGrid">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
@@ -915,19 +916,6 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkLabel" id="connectionInfoDownloadedText">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="halign">start</property>
-                                        <property name="hexpand">True</property>
-                                        <property name="label" translatable="yes">N/A</property>
-                                      </object>
-                                      <packing>
-                                        <property name="left-attach">1</property>
-                                        <property name="top-attach">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
                                       <object class="GtkLabel">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
@@ -940,19 +928,6 @@
                                       </object>
                                       <packing>
                                         <property name="left-attach">2</property>
-                                        <property name="top-attach">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkLabel" id="connectionInfoUploadedText">
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="halign">start</property>
-                                        <property name="hexpand">True</property>
-                                        <property name="label" translatable="yes">N/A</property>
-                                      </object>
-                                      <packing>
-                                        <property name="left-attach">3</property>
                                         <property name="top-attach">0</property>
                                       </packing>
                                     </child>
@@ -1017,6 +992,102 @@
                                       </packing>
                                     </child>
                                     <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="label" translatable="yes">Valid for</property>
+                                        <attributes>
+                                          <attribute name="weight" value="bold"/>
+                                        </attributes>
+                                      </object>
+                                      <packing>
+                                        <property name="left-attach">0</property>
+                                        <property name="top-attach">4</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="connectionInfoProtocolText">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="label" translatable="yes">N/A</property>
+                                      </object>
+                                      <packing>
+                                        <property name="left-attach">2</property>
+                                        <property name="top-attach">5</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="label" translatable="yes">Protocol</property>
+                                        <attributes>
+                                          <attribute name="weight" value="bold"/>
+                                        </attributes>
+                                      </object>
+                                      <packing>
+                                        <property name="left-attach">2</property>
+                                        <property name="top-attach">4</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="connectionInfoDurationText">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="label" translatable="yes">N/A</property>
+                                      </object>
+                                      <packing>
+                                        <property name="left-attach">0</property>
+                                        <property name="top-attach">5</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="connectionInfoDownloadedText">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="label" translatable="yes">N/A</property>
+                                      </object>
+                                      <packing>
+                                        <property name="left-attach">0</property>
+                                        <property name="top-attach">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="connectionInfoUploadedText">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="label" translatable="yes">N/A</property>
+                                      </object>
+                                      <packing>
+                                        <property name="left-attach">2</property>
+                                        <property name="top-attach">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
                                       <placeholder/>
                                     </child>
                                     <child>
@@ -1039,10 +1110,9 @@
                               </object>
                             </child>
                             <child type="label">
-                              <object class="GtkLabel" id="connectionInfoProtocolText">
-                                <property name="visible">True</property>
+                              <object class="GtkLabel">
+                                <property name="visible">False</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Protocol: N/A</property>
                                 <property name="use-markup">True</property>
                               </object>
                             </child>

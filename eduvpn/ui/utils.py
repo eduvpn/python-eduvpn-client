@@ -37,21 +37,21 @@ def should_show_error(error: Exception):
     return True
 
 
-def get_validity_text(validity: Validity) -> Tuple[bool, str]:
+def get_validity_text(validity: Validity) -> Tuple[bool, str, str]:
     if validity is None:
-        return (False, _("Valid for: <b>unknown</b>"))
+        return (False, _("N/A"), _("Valid for: <b>unknown</b>"))
     if validity.is_expired:
-        return (True, _("This session has expired"))
+        return (True, _("expired"), _("This session has expired"))
     delta = validity.remaining
     days = delta.days
-    hours = delta.seconds // 3600
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
     if days == 0:
         if hours == 0:
-            minutes = delta.seconds // 60
             if minutes == 0:
-                seconds = delta.seconds
                 return (
                     False,
+                    f"{seconds}s",
                     ngettext(
                         "Valid for: <b>{0} second</b>",
                         "Valid for: <b>{0} seconds</b>",
@@ -61,6 +61,7 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
             else:
                 return (
                     False,
+                    f"{minutes}m {seconds}s",
                     ngettext(
                         "Valid for: <b>{0} minute</b>",
                         "Valid for: <b>{0} minutes</b>",
@@ -70,18 +71,13 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
         else:
             return (
                 False,
+                f"{hours}h {minutes}m {seconds}s",
                 ngettext(
                     "Valid for: <b>{0} hour</b>", "Valid for: <b>{0} hours</b>", hours
                 ).format(hours),
             )
     else:
-        dstr = ngettext(
-            "Valid for: <b>{0} day</b>", "Valid for: <b>{0} days</b>", days
-        ).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>", " and <b>{0} hours</b>", hours).format(
-            hours
-        )
-        return (False, (dstr + hstr))
+        return (False, f"{days}d {hours}h {minutes}m {seconds}s", "")
 
 
 @run_in_glib_thread
