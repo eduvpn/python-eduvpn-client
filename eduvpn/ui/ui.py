@@ -217,6 +217,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_status_image = builder.get_object("connectionStatusImage")
         self.connection_status_label = builder.get_object("connectionStatusLabel")
         self.connection_session_label = builder.get_object("connectionSessionLabel")
+        self.connection_info_duration_text = builder.get_object("connectionInfoDurationText")
         self.connection_switch = builder.get_object("connectionSwitch")
         self.connection_info_expander = builder.get_object("connectionInfoExpander")
         self.connection_info_downloaded = builder.get_object(
@@ -586,9 +587,14 @@ For detailed information, see the log file located at:
     # every second
     def update_connection_validity(self, expire_time: datetime) -> None:
         validity = self.app.model.get_expiry(expire_time)
-        is_expired, expiry_text = get_validity_text(validity)
-        self.connection_session_label.show()
+        is_expired, detailed_text, expiry_text = get_validity_text(validity)
         self.connection_session_label.set_markup(expiry_text)
+        if expiry_text:
+            self.connection_session_label.show()
+        else:
+            self.connection_session_label.hide()
+        self.connection_info_duration_text.show()
+        self.connection_info_duration_text.set_markup(detailed_text)
 
         # The connection is expired, show a notification
         if is_expired:
@@ -957,9 +963,7 @@ For detailed information, see the log file located at:
         self.renew_session_button.hide()
         self.show_page(self.connection_page)
         self.show_back_button(False)
-        is_expanded = self.connection_info_expander.get_expanded()
-        if is_expanded:
-            self.start_connection_info()
+        self.start_connection_info()
         self.update_connection_status(True)
         self.update_connection_server(server_info)
         self.start_validity_renew(server_info)
@@ -1189,7 +1193,7 @@ For detailed information, see the log file located at:
             def update_ui():
                 self.connection_info_downloaded.set_text(download)
                 self.connection_info_protocol.set_text(
-                    f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>"
+                    f"{GLib.markup_escape_text(protocol)}"
                 )
                 self.connection_info_protocol.set_use_markup(True)
                 self.connection_info_uploaded.set_text(upload)
@@ -1209,12 +1213,6 @@ For detailed information, see the log file located at:
 
     def on_toggle_connection_info(self, _):
         logger.debug("clicked on connection info")
-        was_expanded = self.connection_info_expander.get_expanded()
-
-        if not was_expanded:
-            self.start_connection_info()
-        else:
-            self.pause_connection_info()
 
     def on_profile_row_activated(
         self, widget: TreeView, row: TreePath, _col: TreeViewColumn
