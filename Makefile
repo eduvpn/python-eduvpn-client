@@ -46,7 +46,7 @@ dnf:
 		cairo-gobject-devel
 
 install-mypy: $(VENV)/
-	PYGOBJECT_STUB_CONFIG=Gtk3,Gdk3 $(VENV)/bin/pip install -e ".[mypy]" --no-cache-dir
+	PYGOBJECT_STUB_CONFIG=Gtk3,Gdk3 $(VENV)/bin/pip install ".[mypy]" --no-cache-dir
 
 mypy:
 ifeq ("$(wildcard $(MYPY))","")
@@ -56,7 +56,7 @@ endif
 	$(MYPY) eduvpn tests
 
 install-lint: $(VENV)/
-	$(VENV)/bin/pip install -e ".[lint]"
+	$(VENV)/bin/pip install ".[lint]"
 
 lint:
 ifeq ("$(wildcard $(RUFF))","")
@@ -69,7 +69,7 @@ endif
 	$(RUFF) format --check eduvpn tests
 
 install-test: $(VENV)/
-	$(VENV)/bin/pip install -e ".[test]"
+	$(VENV)/bin/pip install ".[test]"
 
 test: install-test
 	$(VENV)/bin/python3 -m pytest tests
