@@ -2,7 +2,7 @@
 #       install the client.
 #
 
-.PHONY: all
+.PHONY: build
 
 VENV=./venv
 RUFF := $(shell command -v ruff 2> /dev/null)
@@ -78,9 +78,11 @@ install-eduvpn-common: $(VENV)/
 	$(VENV)/bin/pip install --index-url "https://test.pypi.org/simple/" eduvpn-common
 
 clean:
-	rm -rf $(VENV) dist .eggs eduvpn_client.egg-info .pytest_cache tests/__pycache__/
+	rm -rf $(VENV) build dist .eggs eduvpn_client.egg-info .pytest_cache tests/__pycache__/
 	find  . -name *.pyc -delete
 	find  . -name __pycache__ -delete
 
 build: $(VENV)/
+	rm -rf build
+	rm -rf dist
 	$(VENV)/bin/python3 -m build --sdist --wheel .
