@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.server import InstituteServer, SecureInternetServer, Server
-from gi.overrides.Gtk import ListStore  # type: ignore
+from gi.overrides.Gtk import ListStore  # type: ignore[import-untyped]
 
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.ui.utils import show_ui_component
@@ -40,7 +40,7 @@ def get_group_model(group: ServerGroup) -> ListStore:
     # Model: (name: str, server: ServerType)
     from gi.repository import GObject, Gtk
 
-    return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
+    return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
 
 
 def server_to_model_data(server) -> list:
@@ -50,7 +50,7 @@ def server_to_model_data(server) -> list:
     return [display_string, server]
 
 
-def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore[name-defined] # noqa: F821
     """
     Set the visibility of essential server list related components.
     """
@@ -61,7 +61,7 @@ def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # ty
     show_ui_component(window.other_server_list, show)
 
 
-def show_search_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_search_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore[name-defined] # noqa: F821
     """
     Set the visibility of essential search related components.
     """
@@ -71,7 +71,7 @@ def show_search_components(window: "EduVpnGtkWindow", show: bool) -> None:  # ty
     show_ui_component(window.find_server_search_input, show)
 
 
-def show_search_results(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_search_results(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore[name-defined] # noqa: F821
     """
     Set the visibility of the tree of the search result component in the UI.
     """
@@ -82,7 +82,7 @@ def group_servers(servers):
     """
     Separate the servers into three groups.
     """
-    groups: Dict[ServerGroup, List[Server]] = {  # type: ignore
+    groups: Dict[ServerGroup, List[Server]] = {
         ServerGroup.INSTITUTE_ACCESS: [],
         ServerGroup.SECURE_INTERNET: [],
         ServerGroup.OTHER: [],
@@ -92,9 +92,7 @@ def group_servers(servers):
             isinstance(server, DiscoServer) and server.server_type == "institute_access"
         ):
             groups[ServerGroup.INSTITUTE_ACCESS].append(server)
-        elif isinstance(server, SecureInternetServer) or isinstance(
-            server, DiscoOrganization
-        ):
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
             groups[ServerGroup.SECURE_INTERNET].append(server)
         elif isinstance(server, Server):
             groups[ServerGroup.OTHER].append(server)
@@ -103,7 +101,7 @@ def group_servers(servers):
     return groups
 
 
-def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -> None:  # type: ignore[name-defined] # noqa: F821
     """
     Set the visibility of the tree of result for a server type.
     """
@@ -118,28 +116,28 @@ def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -
     show_ui_component(header_component, show)
 
 
-def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # noqa: E0602
+def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore[name-defined] # noqa: F821
     "Initialize the search page components."
     from gi.repository import Gtk, Pango
 
     text_cell = Gtk.CellRendererText()
-    text_cell.props.ellipsize = Pango.EllipsizeMode.END  # type: ignore
-    text_cell.set_property("size-points", 14)  # type: ignore
-    text_cell.set_property("ypad", 10)  # type: ignore
+    text_cell.props.ellipsize = Pango.EllipsizeMode.END
+    text_cell.set_property("size-points", 14)
+    text_cell.set_property("ypad", 10)
     for group in group_tree_component:
         component_name = group_tree_component[group]
         tree_view = getattr(window, component_name)
         if len(tree_view.get_columns()) == 0:
             # Only add this column once.
-            column = Gtk.TreeViewColumn("", text_cell, text=0)  # type: ignore
+            column = Gtk.TreeViewColumn("", text_cell, text=0)  # type: ignore[arg-type,call-arg]
             tree_view.append_column(column)
         model = get_group_model(group)
-        sorted_model = Gtk.TreeModelSort(model=model)  # type: ignore
-        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)  # type: ignore
+        sorted_model = Gtk.TreeModelSort(model=model)
+        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
         tree_view.set_model(sorted_model)
 
 
-def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # noqa: E0602
+def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore[name-defined] # noqa: F821
     "Hide the search page components."
     for group in group_scroll_component:
         show_group_tree(window, group, False)
@@ -147,25 +145,27 @@ def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # no
 
 
 def update_search_results_for_type(
-    window: "EduVpnGtkWindow", group: ServerGroup, servers  # type: ignore  # noqa: E0602
+    window: "EduVpnGtkWindow",  # type: ignore[name-defined] # noqa: F821
+    group: ServerGroup,
+    servers,  # noqa: E0602
 ) -> None:
     """
     Update the UI with the search results
     for a single type of server.
     """
-    model = get_group_model(group)  # type: ignore
+    model = get_group_model(group)
     # Remove the old search results.
-    model.clear()  # type: ignore
+    model.clear()
     # Add the new search results.
     for server in servers:
         model_data = server_to_model_data(server)
-        model.append(model_data)  # type: ignore
+        model.append(model_data)
     # Update the UI.
-    model_has_results = len(model) > 0  # type: ignore
+    model_has_results = len(model) > 0
     show_group_tree(window, group, show=model_has_results)
 
 
-def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore  # noqa: E0602
+def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore[name-defined] # noqa: F821
     """
     Update the UI with the search results.
     """

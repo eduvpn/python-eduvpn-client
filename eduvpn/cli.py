@@ -1,6 +1,6 @@
 # readline is used! It is for going up and down in interactive mode
 import argparse
-import readline  # noqa: W0611
+import readline  # noqa: F401
 import sys
 from functools import partial
 from typing import Callable
@@ -122,9 +122,7 @@ class CommandLine:
 
         while True:
             if fallback_search:
-                server_nr = input(
-                    "\nPlease select a server number or enter a search query: "
-                )
+                server_nr = input("\nPlease select a server number or enter a search query: ")
             else:
                 server_nr = input("\nPlease select a server number: ")
             try:
@@ -172,12 +170,11 @@ class CommandLine:
 
         def on_reconnected(dropped):
             if dropped:
-                print(
-                    "We have switched to a new protocol as the previous protocol was blocked"
-                )
+                print("We have switched to a new protocol as the previous protocol was blocked")
             else:
                 print(
-                    "Done testing, you are connected. If you experience any connectivity issues, you can disconnect and try again with the --tcp flag"
+                    "Done testing, you are connected. If you experience any connectivity issues, you can disconnect and"
+                    " try again with the --tcp flag"
                 )
             callback()
 
@@ -228,9 +225,7 @@ class CommandLine:
             return self.ask_server_custom()
 
         if self.server_db.configured:
-            is_yes = self.ask_yes(
-                "Do you want to connect to an already configured server? (y/n): "
-            )
+            is_yes = self.ask_yes("Do you want to connect to an already configured server? (y/n): ")
 
             if is_yes:
                 return self.ask_server_input(self.server_db.configured)
@@ -251,9 +246,7 @@ class CommandLine:
         elif url:
             server = InstituteServer(url, "Institute Server", [], None, 0)
         elif org_id:
-            server = SecureInternetServer(
-                org_id, "Organisation Server", [], [], None, 0, "NL"
-            )
+            server = SecureInternetServer(org_id, "Organisation Server", [], [], None, 0, "NL")
         elif custom_url:
             server = Server(custom_url, "Custom Server")
         elif number is not None:
@@ -265,7 +258,8 @@ class CommandLine:
             server = get_grouped_index(servers, number_all - 1)
             if not server:
                 print(
-                    f"Server with number: {number_all} does not exist. Maybe the server list had an update? Make sure to re-run list --all"
+                    f"Server with number: {number_all} does not exist. Maybe the server list had an update? Make sure"
+                    " to re-run list --all"
                 )
         return server
 
@@ -277,11 +271,7 @@ class CommandLine:
         current = self.app.model.current_server
         print(f'Connected to: "{str(current)}" ({current.category})')
         expiry = self.app.model.current_server.expire_time
-        valid_for = (
-            get_validity_text(self.app.model.get_expiry(expiry))[1]
-            .replace("<b>", "")
-            .replace("</b>", "")
-        )
+        valid_for = get_validity_text(self.app.model.get_expiry(expiry))[1].replace("<b>", "").replace("</b>", "")
         print(valid_for)
         print(f"Current profile: {str(current.profiles.current)}")
         if isinstance(current, SecureInternetServer):
@@ -384,9 +374,7 @@ class CommandLine:
                 self.app.model.reconnect(callback)
             except Exception as e:
                 if should_show_error(e):
-                    print(
-                        "An error occurred while trying to reconnect for profile change"
-                    )
+                    print("An error occurred while trying to reconnect for profile change")
                     print("Error reconnecting:", e, file=sys.stderr)
                 if callback:
                     callback()
@@ -420,9 +408,7 @@ class CommandLine:
                 self.app.model.reconnect(callback)
             except Exception as e:
                 if should_show_error(e):
-                    print(
-                        "An error occurred while trying to reconnect for location change"
-                    )
+                    print("An error occurred while trying to reconnect for location change")
                     print("Error reconnecting:", e, file=sys.stderr)
                 if callback:
                     callback()
@@ -519,29 +505,17 @@ class CommandLine:
             func()
 
     def start(self):
-        parser = argparse.ArgumentParser(
-            description=f"The {self.name} command line client"
-        )
+        parser = argparse.ArgumentParser(description=f"The {self.name} command line client")
         parser.set_defaults(func=lambda _: parser.print_usage())
-        parser.add_argument(
-            "-d", "--debug", action="store_true", help="enable debugging"
-        )
-        parser.add_argument(
-            "-y", "--yes", action="store_true", help="answer yes for y/n prompts"
-        )
-        parser.add_argument(
-            "-v", "--version", action="store_true", help="get version info"
-        )
+        parser.add_argument("-d", "--debug", action="store_true", help="enable debugging")
+        parser.add_argument("-y", "--yes", action="store_true", help="answer yes for y/n prompts")
+        parser.add_argument("-v", "--version", action="store_true", help="get version info")
         subparsers = parser.add_subparsers(title="subcommands")
 
-        interactive_parser = subparsers.add_parser(
-            "interactive", help="an interactive version of the command line"
-        )
+        interactive_parser = subparsers.add_parser("interactive", help="an interactive version of the command line")
         interactive_parser.set_defaults(func=self.interactive)
 
-        renew_parser = subparsers.add_parser(
-            "renew", help="renew the validity for the currently connected server"
-        )
+        renew_parser = subparsers.add_parser("renew", help="renew the validity for the currently connected server")
         renew_parser.set_defaults(func=self.renew)
 
         if self.variant.use_predefined_servers:
@@ -562,7 +536,10 @@ class CommandLine:
             "-t",
             "--tcp",
             action="store_true",
-            help="prefer to connect using TCP if available. Useful if your network blocks UDP connections and the client/NetworkManager does not properly detect issues",
+            help=(
+                "prefer to connect using TCP if available. Useful if your network blocks UDP connections and the"
+                " client/NetworkManager does not properly detect issues"
+            ),
         )
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
         if self.variant.use_predefined_servers:
@@ -594,32 +571,32 @@ class CommandLine:
             "-n",
             "--number",
             type=int,
-            help="connect to an already configured server using the number. Run the 'list' subcommand to see the currently configured servers with their number",
+            help=(
+                "connect to an already configured server using the number. Run the 'list' subcommand to see the"
+                " currently configured servers with their number"
+            ),
         )
         if self.variant.use_predefined_servers:
             connect_group.add_argument(
                 "-a",
                 "--number-all",
                 type=int,
-                help="connect to a new server using the number for all servers. Run the 'list --all' command to see all the available servers with their number",
+                help=(
+                    "connect to a new server using the number for all servers. Run the 'list --all' command to see all"
+                    " the available servers with their number"
+                ),
             )
         connect_group.set_defaults(func=lambda args: self.connect(vars(args)))
 
-        disconnect_parser = subparsers.add_parser(
-            "disconnect", help="disconnect the currently active server"
-        )
+        disconnect_parser = subparsers.add_parser("disconnect", help="disconnect the currently active server")
         disconnect_parser.set_defaults(func=self.disconnect)
 
         list_parser = subparsers.add_parser("list", help="list all configured servers")
         if self.variant.use_predefined_servers:
-            list_parser.add_argument(
-                "--all", action="store_true", help="list all available servers"
-            )
+            list_parser.add_argument("--all", action="store_true", help="list all available servers")
         list_parser.set_defaults(func=lambda args: self.list(vars(args)))
 
-        remove_parser = subparsers.add_parser(
-            "remove", help="remove a configured server"
-        )
+        remove_parser = subparsers.add_parser("remove", help="remove a configured server")
         remove_parser.add_argument(
             "-n",
             "--number",
@@ -629,17 +606,13 @@ class CommandLine:
         )
         remove_parser.set_defaults(func=lambda args: self.remove(vars(args)))
 
-        status_parser = subparsers.add_parser(
-            "status", help="see the current status of eduVPN"
-        )
+        status_parser = subparsers.add_parser("status", help="see the current status of eduVPN")
         status_parser.set_defaults(func=self.status)
 
         parsed = parser.parse_args()
 
         if parsed.version:
-            print(
-                f"eduVPN CLI version: {__version__} with eduvpn-common version: {commonver}"
-            )
+            print(f"eduVPN CLI version: {__version__} with eduvpn-common version: {commonver}")
             return
 
         init_logger(parsed.debug, self.variant.logfile, CONFIG_DIR_MODE)
@@ -667,9 +640,7 @@ class CommandLineTransitions:
 
     @cmd_transition(State.ASK_LOCATION, StateType.ENTER)
     def on_ask_location(self, old_state: State, locations):
-        print(
-            "This Secure Internet Server has the multiple available locations. Please choose one to continue..."
-        )
+        print("This Secure Internet Server has the multiple available locations. Please choose one to continue...")
         ask_locations(self.app, locations)
 
     @cmd_transition(State.ASK_PROFILE, StateType.ENTER)

@@ -6,12 +6,13 @@ import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
 
-import eduvpn_common.main as common
-from gi.repository import Gtk
+import eduvpn_common.main as common  # noqa: E402
+from gi.repository import Gtk  # noqa: E402
 
-from eduvpn.i18n import country
-from eduvpn.ui.app import EduVpnGtkApplication
-from eduvpn.variants import EDUVPN, LETS_CONNECT
+from eduvpn.i18n import country  # noqa: E402
+from eduvpn.ui.app import EduVpnGtkApplication  # noqa: E402
+from eduvpn.variants import EDUVPN, LETS_CONNECT  # noqa: E402
+
 
 logger = logging.getLogger(__name__)
 

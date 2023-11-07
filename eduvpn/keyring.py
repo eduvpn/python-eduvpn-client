@@ -8,7 +8,7 @@ import gi
 secureKeyring = True
 try:
     gi.require_version("Secret", "1")
-    from gi.repository import Secret  # type: ignore
+    from gi.repository import Secret  # type: ignore[attr-defined]
 except (ValueError, ImportError):
     secureKeyring = False
 
@@ -87,9 +87,7 @@ class DBusKeyring(TokenKeyring):
         # Prefix the label with the client name
         label = f"{self.variant.name} - {label}"
         schema = self.create_schema(attributes)
-        return Secret.password_store_sync(
-            schema, attributes, self.collection, label, str(secret), None
-        )
+        return Secret.password_store_sync(schema, attributes, self.collection, label, str(secret), None)
 
     def load(self, attributes):
         """Load a password in the secret service, return None when found nothing"""

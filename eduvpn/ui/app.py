@@ -3,11 +3,11 @@ from gettext import gettext as _
 
 import gi
 
-gi.require_version("Gtk", "3.0")  # noqa: E402
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
 from gi.repository import Gio, GLib, Gtk
 from gi.repository.Gio import ApplicationCommandLine
+from typing import Optional
 
 from eduvpn import i18n, notify
 from eduvpn.app import Application
@@ -16,17 +16,17 @@ from eduvpn.ui.ui import EduVpnGtkWindow
 from eduvpn.utils import init_logger, run_in_background_thread, ui_transition
 from eduvpn.variants import ApplicationVariant
 
+gi.require_version("Gtk", "3.0")  # noqa: E402
+
 logger = logging.getLogger(__name__)
 
 
 class EduVpnGtkApplication(Gtk.Application):
-    def __init__(
-        self, *args, app_variant: ApplicationVariant, common: EduVPN, **kwargs
-    ) -> None:
-        super().__init__(  # type: ignore
+    def __init__(self, *args, app_variant: ApplicationVariant, common: EduVPN, **kwargs) -> None:
+        super().__init__(  # type: ignore[misc]
             *args,
             application_id=app_variant.app_id,
-            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,  # type: ignore
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
             **kwargs,
         )
 
@@ -35,67 +35,67 @@ class EduVpnGtkApplication(Gtk.Application):
         self.common.register_class_callbacks(self)
         self.debug = False
         # Only allow a single window and track it on the app.
-        self.window = None
+        self.window: Optional[EduVpnGtkWindow] = None
 
-        self.add_main_option(  # type: ignore
+        self.add_main_option(
             "version",
             ord("v"),
-            GLib.OptionFlags.NONE,  # type: ignore
-            GLib.OptionArg.NONE,  # type: ignore
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
             "print version and exit",
             None,
         )
-        self.add_main_option(  # type: ignore
+        self.add_main_option(
             "debug",
             ord("d"),
-            GLib.OptionFlags.NONE,  # type: ignore
-            GLib.OptionArg.NONE,  # type: ignore
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
             "enable debug logging",
             None,
         )
 
     def do_startup(self) -> None:
         logger.debug("startup")
-        Gtk.Application.do_startup(self)  # type: ignore
+        Gtk.Application.do_startup(self)
         i18n.initialize(self.app.variant)
         notify.initialize(self.app.variant)
         self.connection_notification = notify.Notification(self.app.variant)
 
-    def do_shutdown(self) -> None:  # type: ignore
+    def do_shutdown(self) -> None:
         logger.debug("shutdown")
         self.connection_notification.hide()
-        Gtk.Application.do_shutdown(self)  # type: ignore
+        Gtk.Application.do_shutdown(self)
 
     def do_activate(self) -> None:
         logger.debug("activate")
         if not self.window:
-            self.window = EduVpnGtkWindow(application=self)  # type: ignore
-            self.window.present()  # type: ignore
-            self.window.initialize()  # type: ignore
+            self.window = EduVpnGtkWindow(application=self)  # type: ignore[arg-type]
+            self.window.present()
+            self.window.initialize()
         else:
             self.window.on_reopen_window()
 
-    def do_command_line(self, command_line: ApplicationCommandLine) -> int:  # type: ignore
+    def do_command_line(self, command_line: ApplicationCommandLine) -> int:
         logger.debug(f"command line: {command_line}")
         options = command_line.get_options_dict()
 
         # unpack the commandline args into a dict
         options = options.end().unpack()
 
-        if "version" in options:  # type: ignore
+        # mypy bug?
+        if "version" in options:  # type: ignore[operator]
             from eduvpn import __version__
             from eduvpn_common import __version__ as commonver
 
-            print(
-                f"{self.app.variant.name} GUI version: {__version__} with eduvpn-common version: {commonver}"
-            )
+            print(f"{self.app.variant.name} GUI version: {__version__} with eduvpn-common version: {commonver}")
             return 0
 
-        self.debug = "debug" in options  # type: ignore
+        # mypy bug?
+        self.debug = "debug" in options  # type: ignore[operator]
 
         init_logger(self.debug, self.app.variant.logfile, CONFIG_DIR_MODE)
 
-        self.activate()  # type: ignore
+        self.activate()
         return 0
 
     def on_quit(self, action: None = None, _param: None = None) -> None:
@@ -106,7 +106,7 @@ class EduVpnGtkApplication(Gtk.Application):
         # Deregister is best effort
         except Exception as e:
             logger.debug("failed deregistering library", e)
-        self.quit()  # type: ignore
+        self.quit()
 
     def on_window_closed(self) -> None:
         logger.debug("window closed")
@@ -124,18 +124,13 @@ class EduVpnGtkApplication(Gtk.Application):
     def enter_SessionPendingExpiryState(self):
         self.connection_notification.show(
             title=_("Connected"),
-            message=_(
-                "Your session is about to expire. "
-                "Renew the session to remain connected."
-            ),
+            message=_("Your session is about to expire. Renew the session to remain connected."),
         )
 
     def enter_SessionExpiredState(self):
         self.connection_notification.show(
             title=_("Session expired"),
-            message=_(
-                "Your session has expired. You have been disconnected from the VPN."
-            ),
+            message=_("Your session has expired. You have been disconnected from the VPN."),
         )
 
         @run_in_background_thread("expired-deactivate")

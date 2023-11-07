@@ -8,19 +8,15 @@ import os
 from gettext import gettext as _
 from typing import Callable, Optional, Type
 
-import gi
 
-gi.require_version("Gtk", "3.0")  # noqa: E402
-gi.require_version("NM", "1.0")  # noqa: E402
 from datetime import datetime
 from functools import partial
 
 from eduvpn_common.state import State, StateType
-from gi.overrides.Gdk import Event, EventButton  # type: ignore
-from gi.overrides.Gtk import TreePath  # type: ignore
-from gi.overrides.Gtk import Box, Builder, Button, TreeView, TreeViewColumn
 from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
-from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
+from gi.overrides.Gdk import Event, EventButton  # type: ignore[import-untyped]
+from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn  # type: ignore[import-untyped]
+from gi.repository.Gtk import EventBox, SearchEntry, Switch
 
 from eduvpn import __version__
 from eduvpn_common import __version__ as commonver
@@ -87,18 +83,20 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
 
     def __new__(
-        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]  # type: ignore  # noqa: E0602
+        cls: Type["EduVpnGtkWindow"],
+        application: Type["EduVpnGtkApplication"],  # type: ignore[name-defined] # noqa: F821
     ) -> "EduVpnGtkWindow":
         builder = Gtk.Builder()
-        builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
-        window = builder.get_object("eduvpn")  # type: ignore
-        window.setup(builder, application)  # type: ignore
-        window.set_application(application)  # type: ignore
-        return window  # type: ignore
+        builder.add_from_file(get_template_path("mainwindow.ui"))
+        window = builder.get_object("eduvpn")
+        assert window is not None
+        window.setup(builder, application)  # type: ignore[attr-defined]
+        window.set_application(application)  # type: ignore[attr-defined]
+        return window  # type: ignore[return-value]
 
-    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore  # noqa: E0602
+    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore[name-defined] #noqa: F821
         self.eduvpn_app = application
-        self.app = self.eduvpn_app.app  # type: ignore
+        self.app = self.eduvpn_app.app
         self.common = self.eduvpn_app.common
         handlers = {
             "on_info_delete": self.on_info_delete,
@@ -126,8 +124,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         }
         builder.connect_signals(handlers)
 
-        style_context = self.get_style_context()  # type: ignore
-        bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)  # type: ignore
+        style_context = self.get_style_context()
+        bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)
         self.is_dark_theme = is_dark(bg_color)
 
         dark_icons = {
@@ -207,9 +205,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer_label = None
         self.create_error_revealer()
 
-        self.add_custom_server_button_container = builder.get_object(
-            "addCustomServerRow"
-        )
+        self.add_custom_server_button_container = builder.get_object("addCustomServerRow")
         self.add_other_server_button_container = builder.get_object("addOtherServerRow")
 
         self.connection_page = builder.get_object("connectionPage")
@@ -218,17 +214,11 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_session_label = builder.get_object("connectionSessionLabel")
         self.connection_switch = builder.get_object("connectionSwitch")
         self.connection_info_expander = builder.get_object("connectionInfoExpander")
-        self.connection_info_downloaded = builder.get_object(
-            "connectionInfoDownloadedText"
-        )
+        self.connection_info_downloaded = builder.get_object("connectionInfoDownloadedText")
         self.connection_info_protocol = builder.get_object("connectionInfoProtocolText")
         self.connection_info_uploaded = builder.get_object("connectionInfoUploadedText")
-        self.connection_info_ipv4address = builder.get_object(
-            "connectionInfoIpv4AddressText"
-        )
-        self.connection_info_ipv6address = builder.get_object(
-            "connectionInfoIpv6AddressText"
-        )
+        self.connection_info_ipv4address = builder.get_object("connectionInfoIpv4AddressText")
+        self.connection_info_ipv6address = builder.get_object("connectionInfoIpv6AddressText")
         self.connection_info_thread_cancel = None
         self.connection_validity_thread_cancel: Optional[Callable] = None
         self.connection_renew_thread_cancel: Optional[Callable] = None
@@ -256,8 +246,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.loading_title = builder.get_object("loadingTitle")
         self.loading_message = builder.get_object("loadingMessage")
 
-        self.set_title(self.app.variant.name)  # type: ignore
-        self.set_icon_from_file(self.app.variant.icon)  # type: ignore
+        self.set_title(self.app.variant.name)
+        self.set_icon_from_file(self.app.variant.icon)
         if self.app.variant.logo:
             logo = self.app.variant.logo
             if self.is_dark_theme:
@@ -268,9 +258,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.find_server_image.set_from_file(self.app.variant.server_image)
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
-            self.find_server_search_input.set_placeholder_text(
-                _("Enter the server address")
-            )
+            self.find_server_search_input.set_placeholder_text(_("Enter the server address"))
             self.info_support_box.hide()
 
         # We track the switch state so we can distinguish
@@ -284,7 +272,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 _("Error"),
                 _("NetworkManager not available"),
                 _(
-                    "The application will not be able to configure the network. Please install and set up NetworkManager."
+                    "The application will not be able to configure the network. Please install and set up"
+                    " NetworkManager."
                 ),
             )
         elif not self.app.nm_manager.managed:
@@ -293,7 +282,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 _("Error"),
                 _("NetworkManager not managing device"),
                 _(
-                    "The application will not be able to configure the network. NetworkManager is installed but no device of the primary connection is currently managed by it."
+                    "The application will not be able to configure the network. NetworkManager is installed but no"
+                    " device of the primary connection is currently managed by it."
                 ),
             )
 
@@ -344,7 +334,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def exit_deregistered(self):
         self.hide_loading_page()
 
-    @ui_transition(ERROR_STATE, StateType.ENTER)  # type: ignore
+    @ui_transition(ERROR_STATE, StateType.ENTER)  # type: ignore[arg-type]
     def enter_error_state(self, old_state: str, error: Exception):
         if should_show_error(error):
             self.show_error_revealer(str(error))
@@ -362,9 +352,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer.set_transition_duration(200)
 
         # Create a close button
-        error_revealer_close_image = Gtk.Image.new_from_icon_name(
-            "window-close", Gtk.IconSize.BUTTON
-        )
+        error_revealer_close_image = Gtk.Image.new_from_icon_name("window-close", Gtk.IconSize.BUTTON)
         error_revealer_close_button = Gtk.Button.new()
         error_revealer_close_button.set_halign(Gtk.Align.END)
         error_revealer_close_button.set_valign(Gtk.Align.START)
@@ -380,9 +368,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         )
 
         # Create a clipboard button
-        error_revealer_clipboard_image = Gtk.Image.new_from_icon_name(
-            "edit-copy", Gtk.IconSize.BUTTON
-        )
+        error_revealer_clipboard_image = Gtk.Image.new_from_icon_name("edit-copy", Gtk.IconSize.BUTTON)
         error_revealer_clipboard_button = Gtk.Button.new()
         error_revealer_clipboard_button.set_halign(Gtk.Align.END)
         error_revealer_clipboard_button.set_valign(Gtk.Align.START)
@@ -398,9 +384,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         )
 
         # Create the label
-        self.error_revealer_label = Gtk.Label.new(
-            "<b>Error occurred</b>: Example error"
-        )
+        self.error_revealer_label = Gtk.Label.new("<b>Error occurred</b>: Example error")
         self.error_revealer_label.set_use_markup(True)
         self.error_revealer_label.set_margin_bottom(20)
         self.error_revealer_label.set_margin_left(20)
@@ -431,7 +415,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         style_widget(
             error_revealer_frame,
             "errorClass",
-            "margin-left: 20px; margin-right: 20px; background-color: #B00020; margin-top: 0px; padding: 0px; color: rgba(255, 255, 255, 1);",
+            "margin-left: 20px; margin-right: 20px; background-color: #B00020; margin-top: 0px; padding: 0px; color:"
+            " rgba(255, 255, 255, 1);",
         )
         error_revealer_frame.add(error_revealer_box)
         error_revealer_frame.show()
@@ -464,7 +449,7 @@ For detailed information, see the log file located at:
         if self.clipboard is None:
             return
         self.clipboard.set_text(self.error_revealer_label.get_text(), -1)
-        self.eduvpn_app.enter_CopiedAnError()  # type: ignore
+        self.eduvpn_app.enter_CopiedAnError()
 
     @run_in_glib_thread
     def hide_error_revealer(self, _button) -> None:
@@ -507,7 +492,7 @@ For detailed information, see the log file located at:
 
     def recreate_profile_combo(self, server_info) -> None:
         # Create a store of profiles
-        profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
+        profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
         active_profile = 0
         sorted_profiles = sorted(server_info.profiles.profiles, key=lambda p: str(p))
         for index, profile in enumerate(sorted_profiles):
@@ -516,24 +501,23 @@ For detailed information, see the log file located at:
                 and profile.identifier == server_info.profiles.current.identifier
             ):
                 active_profile = index
-            profile_store.append([str(profile), profile])  # type: ignore
+            profile_store.append([str(profile), profile])
 
         # Create a new combobox
         # We create a new one every time because Gtk has some weird behaviour regarding the width of the combo box
         # When we add items that are large, the combobox resizes to fit the content
-        # However, when we add items again that are all smaller (e.g. for a new server), the combo box does not shrink back
+        # However, when we add items again that are all smaller (e.g. for a new server),
+        # the combo box does not shrink back
         # The only proper way seems to be to recreate the combobox every time
-        combo = Gtk.ComboBoxText.new()  # type: ignore
+        combo = Gtk.ComboBoxText.new()
         # Sort the model too
-        combo.set_model(profile_store)  # type: ignore
+        combo.set_model(profile_store)
         combo.set_active(active_profile)
         combo.set_halign(Gtk.Align.CENTER)
         combo.connect("changed", self.on_profile_combo_changed)
 
         # Get the position of the current combobox in the connection page
-        position = self.connection_page.child_get_property(
-            self.select_profile_combo, "position"
-        )
+        position = self.connection_page.child_get_property(self.select_profile_combo, "position")
 
         # Destroy the combobox and add the new one
         self.select_profile_combo.destroy()
@@ -571,11 +555,7 @@ For detailed information, see the log file located at:
             self.server_image.hide()
 
         if hasattr(server_info, "support_contact") and server_info.support_contact:
-            support_text = (
-                _("Support:")
-                + "\n"
-                + "\n".join(map(link_markup, server_info.support_contact))
-            )
+            support_text = _("Support:") + "\n" + "\n".join(map(link_markup, server_info.support_contact))
             self.server_support_label.set_markup(support_text)
             self.server_support_label.show()
         else:
@@ -583,9 +563,7 @@ For detailed information, see the log file located at:
 
     # every second
     def update_connection_validity(self, expire_time: datetime) -> None:
-        is_expired, expiry_text = get_validity_text(
-            self.app.model.get_expiry(expire_time)
-        )
+        is_expired, expiry_text = get_validity_text(self.app.model.get_expiry(expire_time))
         self.connection_session_label.show()
         self.connection_session_label.set_markup(expiry_text)
 
@@ -725,11 +703,9 @@ For detailed information, see the log file located at:
             self.keyring_dialog.show()
             _id = self.keyring_dialog.run()
             if _id == QUIT_ID:
-                self.close()  # type: ignore
+                self.close()
             self.keyring_dialog.destroy()
-            self.app.config.ignore_keyring_warning = (
-                self.keyring_do_not_show.get_active()
-            )
+            self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
 
     @ui_transition(State.NO_SERVER, StateType.LEAVE)
     def exit_MainState(self, old_state, new_state):
@@ -818,9 +794,7 @@ For detailed information, see the log file located at:
         self.location_list.show()
 
         location_tree_view = self.location_list
-        location_list_model = Gtk.ListStore(
-            GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT
-        )
+        location_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT)
 
         if len(location_tree_view.get_columns()) == 0:
             # Only initialize this tree view once.
@@ -847,9 +821,7 @@ For detailed information, see the log file located at:
                 flag = None
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(flag_path)
-            location_list_model.append(
-                [retrieve_country_name(location), flag, location]
-            )
+            location_list_model.append([retrieve_country_name(location), flag, location])
 
     @ui_transition(State.ASK_LOCATION, StateType.LEAVE)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
@@ -906,14 +878,13 @@ For detailed information, see the log file located at:
                 # not dropped but it took a while
                 self.reconnect_tcp_button.show()
                 self.failover_label.set_text(
-                    "There might be a problem with the VPN connection. If you observe any issues, press 'Reconnect with TCP'."
+                    "There might be a problem with the VPN connection. If you observe any issues, press 'Reconnect with"
+                    " TCP'."
                 )
                 self.failover_text.show()
         else:
             # Show the failover text for 10 seconds
-            self.failover_text_cancel = GLib.timeout_add(
-                10_000, self.hide_failover_text_timeout
-            )
+            self.failover_text_cancel = GLib.timeout_add(10_000, self.hide_failover_text_timeout)
             self.failover_label.set_text(
                 "The VPN had issues with connectivity. We have switched to a different protocol"
             )
@@ -955,18 +926,14 @@ For detailed information, see the log file located at:
         self.connection_info_expander.show()
 
         if self.app.model.should_failover():
-            self.failover_text_cancel = GLib.timeout_add(
-                2500, self.show_failover_text_timeout
-            )
+            self.failover_text_cancel = GLib.timeout_add(2500, self.show_failover_text_timeout)
             self.failover_label.set_text("Checking the VPN for connectivity issues...")
             self.call_model("start_failover", self.update_failover_text)
             return
 
     def start_validity_renew(self, server_info) -> None:
         self.connection_validity_thread_cancel = run_periodically(
-            run_in_glib_thread(
-                partial(self.update_connection_validity, server_info.expire_time)
-            ),
+            run_in_glib_thread(partial(self.update_connection_validity, server_info.expire_time)),
             UPDATE_EXPIRY_INTERVAL,
             "update-validity",
         )
@@ -1031,9 +998,7 @@ For detailed information, see the log file located at:
         logger.debug("clicked on add custom server")
         self.call_model("set_search_server")
 
-    def on_server_row_activated(
-        self, widget: TreeView, row: TreePath, _col: TreeViewColumn
-    ) -> None:
+    def on_server_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
         model = widget.get_model()
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
@@ -1049,19 +1014,17 @@ For detailed information, see the log file located at:
     def server_ask_remove(self, server):
         gtk_remove_id = -12
         gtk_nop_id = -11
-        dialog = Gtk.MessageDialog(  # type: ignore
+        dialog = Gtk.MessageDialog(
             parent=self,
-            type=Gtk.MessageType.QUESTION,  # type: ignore
+            type=Gtk.MessageType.QUESTION,
             title=_("Server"),
             message_format=_("Removing server"),
         )
-        dialog.add_buttons(
-            _("Remove server"), gtk_remove_id, _("Do nothing"), gtk_nop_id
-        )
-        dialog.format_secondary_text(_(f"Are you sure you want to remove server {str(server)}?"))  # type: ignore
-        dialog.show()  # type: ignore
-        response = dialog.run()  # type: ignore
-        dialog.destroy()  # type: ignore
+        dialog.add_buttons(_("Remove server"), gtk_remove_id, _("Do nothing"), gtk_nop_id)
+        dialog.format_secondary_text(_(f"Are you sure you want to remove server {str(server)}?"))
+        dialog.show()
+        response = dialog.run()
+        dialog.destroy()
 
         if response == gtk_remove_id:
             logger.debug(f"doing server remove for: {server!r}")
@@ -1088,21 +1051,21 @@ For detailed information, see the log file located at:
 
         row = model[tree_iter]
         server = row[1]
-        remove_item = Gtk.MenuItem()  # type: ignore
+        remove_item = Gtk.MenuItem()
         remove_item.connect("activate", lambda _: self.server_ask_remove(server))
-        remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)  # type: ignore
-        remove_image = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)  # type: ignore
-        remove_label = Gtk.Label.new("Remove Server")  # type: ignore
-        remove_box.pack_start(remove_image, False, False, 0)  # type: ignore
-        remove_box.pack_start(remove_label, False, False, 8)  # type: ignore
+        remove_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        remove_image = Gtk.Image.new_from_icon_name("edit-delete", Gtk.IconSize.MENU)
+        remove_label = Gtk.Label.new("Remove Server")
+        remove_box.pack_start(remove_image, False, False, 0)
+        remove_box.pack_start(remove_label, False, False, 8)
         remove_item.add(remove_box)
         remove_item.show_all()
 
-        menu = Gtk.Menu()  # type: ignore
+        menu = Gtk.Menu()
         # Icons are already added so do not reserve extra space for them
-        menu.set_reserve_toggle_size(0)  # type: ignore
+        menu.set_reserve_toggle_size(False)
         menu.append(remove_item)
-        menu.attach_to_widget(widget)  # type: ignore
+        menu.attach_to_widget(widget)
         menu.popup_at_pointer()
 
     def on_cancel_oauth_setup(self, _):
@@ -1177,9 +1140,7 @@ For detailed information, see the log file located at:
             @run_in_glib_thread
             def update_ui():
                 self.connection_info_downloaded.set_text(download)
-                self.connection_info_protocol.set_text(
-                    f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>"
-                )
+                self.connection_info_protocol.set_text(f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>")
                 self.connection_info_protocol.set_use_markup(True)
                 self.connection_info_uploaded.set_text(upload)
                 self.connection_info_ipv4address.set_text(ipv4)
@@ -1192,9 +1153,7 @@ For detailed information, see the log file located at:
 
         if not self.connection_info_thread_cancel:
             # Run every second in the background
-            self.connection_info_thread_cancel = run_periodically(
-                update_connection_info_callback, 1
-            )
+            self.connection_info_thread_cancel = run_periodically(update_connection_info_callback, 1)
 
     def on_toggle_connection_info(self, _):
         logger.debug("clicked on connection info")
@@ -1205,9 +1164,7 @@ For detailed information, see the log file located at:
         else:
             self.pause_connection_info()
 
-    def on_profile_row_activated(
-        self, widget: TreeView, row: TreePath, _col: TreeViewColumn
-    ) -> None:
+    def on_profile_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
         model = widget.get_model()
         profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
@@ -1217,19 +1174,17 @@ For detailed information, see the log file located at:
     def profile_ask_reconnect(self) -> bool:
         gtk_reconnect_id = -10
         gtk_nop_id = -11
-        dialog = Gtk.MessageDialog(  # type: ignore
+        dialog = Gtk.MessageDialog(  # type: ignore[call-arg]
             parent=self,
-            type=Gtk.MessageType.QUESTION,  # type: ignore
+            type=Gtk.MessageType.QUESTION,  # type: ignore[arg-type]
             title=_("Profile"),
             message_format=_("New profile selected"),
         )
-        dialog.add_buttons(  # type: ignore
-            _("Reconnect"), gtk_reconnect_id, _("Stay connected"), gtk_nop_id
-        )
-        dialog.format_secondary_text(_("Do you want to apply the new profile by reconnecting?"))  # type: ignore
-        dialog.show()  # type: ignore
-        response = dialog.run()  # type: ignore
-        dialog.destroy()  # type: ignore
+        dialog.add_buttons(_("Reconnect"), gtk_reconnect_id, _("Stay connected"), gtk_nop_id)
+        dialog.format_secondary_text(_("Do you want to apply the new profile by reconnecting?"))
+        dialog.show()
+        response = dialog.run()
+        dialog.destroy()
 
         return response == gtk_reconnect_id
 
@@ -1261,10 +1216,7 @@ For detailed information, see the log file located at:
                 active_profile = 0
                 sorted_profiles = sorted(profiles.profiles, key=lambda p: str(p))
                 for index, profile in enumerate(sorted_profiles):
-                    if (
-                        profiles.current is not None
-                        and profile.identifier == profiles.current.identifier
-                    ):
+                    if profiles.current is not None and profile.identifier == profiles.current.identifier:
                         active_profile = index
 
                 combo.set_active(active_profile)
@@ -1300,10 +1252,10 @@ For detailed information, see the log file located at:
 
     def on_close_window(self, window: "EduVpnGtkWindow", event: Event) -> bool:
         logger.debug("clicked on close window")
-        self.hide()  # type: ignore
-        application = self.get_application()  # type: ignore
+        self.hide()
+        application = self.get_application()
         if application:
-            application.on_window_closed()  # type: ignore
+            application.on_window_closed()  # type: ignore[attr-defined]
         return True
 
     def on_reopen_window(self):

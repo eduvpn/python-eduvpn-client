@@ -26,8 +26,7 @@ def is_config_dir_permissions_correct() -> bool:
 def check_config_dir_permissions():
     if not is_config_dir_permissions_correct():
         logger.warning(
-            f"The permissions for the config dir ({CONFIG_PREFIX}) "
-            f"are not as expected, it may be world readable!"
+            f"The permissions for the config dir ({CONFIG_PREFIX}) are not as expected, it may be world readable!"
         )
 
 

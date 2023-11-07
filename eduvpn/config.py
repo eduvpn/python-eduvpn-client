@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, Generic, Type, TypeVar
+from typing import Any, Dict, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -18,19 +18,20 @@ logger = logging.getLogger(__name__)
 
 
 class SettingDescriptor(Generic[T]):
-    def __set_name__(self, owner: Type["Configuration"], name: str) -> None:
+    def __set_name__(self, owner: type["Configuration"], name: str) -> None:
         self.name = name
 
-    def __get__(
-        self, instance: Type["Configuration"], owner: Type["Configuration"]
-    ) -> bool:
-        return instance.get_setting(self.name)  # type: ignore
+    def __get__(self, instance: type["Configuration"], owner: type["Configuration"]) -> bool:
+        return instance.get_setting(self.name)  # type: ignore[arg-type,call-arg]
 
-    def __set__(self, instance: Type["Configuration"], value: T) -> None:
-        instance.set_setting(self.name, value)  # type: ignore
+    def __set__(self, instance: type["Configuration"], value: T) -> None:
+        instance.set_setting(self.name, value)  # type: ignore[arg-type,call-arg]
 
 
 class Configuration:
+    ignore_keyring_warning = SettingDescriptor[bool]()
+    allow_wg_lan = SettingDescriptor[bool]()
+
     def __init__(self, config_path: Path, settings: Dict[str, Any]) -> None:
         self.config_path = config_path
         self.settings = settings
@@ -63,6 +64,3 @@ class Configuration:
         if value != self.settings[name]:
             self.settings[name] = value
             self.save()
-
-    ignore_keyring_warning = SettingDescriptor[bool]()
-    allow_wg_lan = SettingDescriptor[bool]()

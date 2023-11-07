@@ -66,37 +66,35 @@ class NetworkStats:
 
     @cached_stats_property
     def start_bytes_upload(self) -> Optional[int]:
-        return self.manager.get_stats_bytes(self.upload_file)  # type: ignore
+        return self.manager.get_stats_bytes(self.upload_file)
 
     @cached_stats_property
     def start_bytes_download(self) -> Optional[int]:
-        return self.manager.get_stats_bytes(self.download_file)  # type: ignore
+        return self.manager.get_stats_bytes(self.download_file)
 
     @property
     def download(self) -> str:
         """
         Get the download as a human readable string
         """
-        file_bytes_download = self.manager.get_stats_bytes(self.download_file)  # type: ignore
+        file_bytes_download = self.manager.get_stats_bytes(self.download_file)
         if file_bytes_download is None:
             return self.default_text
-        if file_bytes_download <= self.start_bytes_download:  # type: ignore
+        if file_bytes_download <= self.start_bytes_download:
             return get_human_readable_bytes(0)
-        return get_human_readable_bytes(file_bytes_download - self.start_bytes_download)  # type: ignore
+        return get_human_readable_bytes(file_bytes_download - self.start_bytes_download)
 
     @property
     def upload(self) -> str:
         """
         Get the upload as a human readable string
         """
-        file_bytes_upload = self.manager.get_stats_bytes(self.upload_file)  # type: ignore
+        file_bytes_upload = self.manager.get_stats_bytes(self.upload_file)
         if file_bytes_upload is None:
             return self.default_text
-        if file_bytes_upload <= self.start_bytes_upload:  # type: ignore
+        if file_bytes_upload <= self.start_bytes_upload:
             return get_human_readable_bytes(0)
-        return get_human_readable_bytes(
-            file_bytes_upload - self.start_bytes_upload
-        )  # type:ignore
+        return get_human_readable_bytes(file_bytes_upload - self.start_bytes_upload)  # type:ignore
 
     def cleanup(self) -> None:
         """

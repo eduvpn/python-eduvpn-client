@@ -11,7 +11,7 @@ from eduvpn.utils import run_in_glib_thread
 GtkAvailable = True
 try:
     gi.require_version("Gtk", "3.0")  # noqa: E402
-    from gi.repository import Gtk  # type: ignore
+    from gi.repository import Gtk
 except ValueError:
     GtkAvailable = False
 
@@ -25,7 +25,7 @@ def style_widget(widget, class_name: str, style: str):
     assert GtkAvailable
     style_context = widget.get_style_context()
     provider = Gtk.CssProvider.new()
-    provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))  # type: ignore
+    provider.load_from_data(f".{class_name} {{{style}}}".encode("utf-8"))
     style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     style_context.add_class(class_name.split(":")[0])
 
@@ -70,17 +70,11 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
         else:
             return (
                 False,
-                ngettext(
-                    "Valid for: <b>{0} hour</b>", "Valid for: <b>{0} hours</b>", hours
-                ).format(hours),
+                ngettext("Valid for: <b>{0} hour</b>", "Valid for: <b>{0} hours</b>", hours).format(hours),
             )
     else:
-        dstr = ngettext(
-            "Valid for: <b>{0} day</b>", "Valid for: <b>{0} days</b>", days
-        ).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>", " and <b>{0} hours</b>", hours).format(
-            hours
-        )
+        dstr = ngettext("Valid for: <b>{0} day</b>", "Valid for: <b>{0} days</b>", days).format(days)
+        hstr = ngettext(" and <b>{0} hour</b>", " and <b>{0} hours</b>", hours).format(hours)
         return (False, (dstr + hstr))
 
 
@@ -90,9 +84,9 @@ def show_ui_component(component, show: bool) -> None:
     Set the visibility of a UI component.
     """
     if show:
-        component.show()  # type: ignore
+        component.show()
     else:
-        component.hide()  # type: ignore
+        component.hide()
 
 
 def link_markup(link: str) -> str:
@@ -107,27 +101,25 @@ def link_markup(link: str) -> str:
 
 
 @run_in_glib_thread
-def show_error_dialog(
-    parent, name: str, title: str, message: str, only_quit: bool = False
-):
+def show_error_dialog(parent, name: str, title: str, message: str, only_quit: bool = False):
     assert GtkAvailable
-    dialog = Gtk.MessageDialog(  # type: ignore
+    dialog = Gtk.MessageDialog(  # type: ignore[call-arg]
         parent=parent,
-        type=Gtk.MessageType.INFO,  # type: ignore
+        type=Gtk.MessageType.INFO,  # type: ignore[arg-type]
         title=name,
         message_format=title,
     )
 
     if not only_quit:
-        dialog.add_buttons(_("Ignore and continue"), IGNORE_ID)  # type: ignore
+        dialog.add_buttons(_("Ignore and continue"), IGNORE_ID)
 
-    dialog.add_buttons(  # type: ignore
+    dialog.add_buttons(
         _("Quit client"),
         QUIT_ID,
     )
-    dialog.format_secondary_text(message)  # type: ignore
-    dialog.show()  # type: ignore
-    close = dialog.run()  # type: ignore
-    dialog.destroy()  # type: ignore
+    dialog.format_secondary_text(message)
+    dialog.show()
+    close = dialog.run()
+    dialog.destroy()
     if close == QUIT_ID or only_quit:
         parent.close()

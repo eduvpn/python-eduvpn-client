@@ -28,10 +28,7 @@ def handle_exceptions(exc_type, exc_value, exc_traceback):
 
 
 def init_logger(debug: bool, logfile, mode):
-    log_format = (
-        "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
-        " - %(filename)s:%(lineno)d - %(message)s"
-    )
+    log_format = "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s"
     os.makedirs(
         os.path.dirname(logfile),
         mode=mode,
@@ -159,13 +156,9 @@ def model_transition(state: State, state_type: StateType) -> Callable:
             ui_state = get_ui_state(state)
             # We can then pass it to the UI
             if state_type == StateType.ENTER:
-                self.common.event.run(
-                    other_ui_state, ui_state, model_converted, convert=False
-                )
+                self.common.event.run(other_ui_state, ui_state, model_converted, convert=False)
             else:
-                self.common.event.run(
-                    ui_state, other_ui_state, model_converted, convert=False
-                )
+                self.common.event.run(ui_state, other_ui_state, model_converted, convert=False)
 
         # Add the inner function on the state transition
         common.class_state_transition(state, state_type)(inner)
@@ -246,7 +239,7 @@ if sys.version_info < (3, 9):
         return lru_cache(maxsize=None)(func)
 
 else:
-    from functools import cache  # noqa: W0611
+    pass  # noqa: W0611
 
 
 def get_human_readable_bytes(total_bytes: int) -> str:
@@ -268,4 +261,4 @@ def get_human_readable_bytes(total_bytes: int) -> str:
 
 
 def translated_property(text: str) -> property:
-    return property(lambda self: gettext(text))  # type: ignore
+    return property(lambda self: gettext(text))

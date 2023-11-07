@@ -132,9 +132,7 @@ class ApplicationModelTransitions:
 
 
 class ApplicationModel:
-    def __init__(
-        self, common: EduVPN, config, variant: ApplicationVariant, nm_manager
-    ) -> None:
+    def __init__(self, common: EduVPN, config, variant: ApplicationVariant, nm_manager) -> None:
         self.common = common
         self.config = config
         self.keyring: TokenKeyring = DBusKeyring(variant)
@@ -171,9 +169,7 @@ class ApplicationModel:
             return True
 
         if not self.was_tcp:
-            logger.debug(
-                "Protocol is not WireGuard and TCP was not previously triggered, failover should continue"
-            )
+            logger.debug("Protocol is not WireGuard and TCP was not previously triggered, failover should continue")
             return True
 
         logger.debug("Failover should not continue")
@@ -194,9 +190,7 @@ class ApplicationModel:
         try:
             rx_bytes_file = self.nm_manager.open_stats_file("rx_bytes")
             if rx_bytes_file is None:
-                logger.debug(
-                    "Failed to initialize failover, failed to open rx bytes file"
-                )
+                logger.debug("Failed to initialize failover, failed to open rx bytes file")
                 callback(False)
                 return
             endpoint = self.nm_manager.failover_endpoint_ip
@@ -266,9 +260,7 @@ class ApplicationModel:
             self.common.add_institute_access(server.url)
         elif isinstance(server, DiscoServer):
             self.common.add_institute_access(server.base_url)
-        elif isinstance(server, SecureInternetServer) or isinstance(
-            server, DiscoOrganization
-        ):
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
             self.common.add_secure_internet_home(server.org_id)
         elif isinstance(server, Server):
             self.common.add_custom_server(server.url)
@@ -289,27 +281,15 @@ class ApplicationModel:
         # Delete tokens from the keyring
         self.clear_tokens(server)
 
-    def connect_get_config(
-        self, server, tokens=None, prefer_tcp: bool = False
-    ) -> Optional[Config]:
+    def connect_get_config(self, server, tokens=None, prefer_tcp: bool = False) -> Optional[Config]:
         if isinstance(server, InstituteServer):
-            return self.common.get_config_institute_access(
-                server.url, prefer_tcp, tokens
-            )
+            return self.common.get_config_institute_access(server.url, prefer_tcp, tokens)
         elif isinstance(server, DiscoServer):
-            return self.common.get_config_institute_access(
-                server.base_url, prefer_tcp, tokens
-            )
+            return self.common.get_config_institute_access(server.base_url, prefer_tcp, tokens)
         elif isinstance(server, DiscoOrganization):
-            return self.common.get_config_secure_internet(
-                server.org_id, prefer_tcp, tokens
-            )
-        elif isinstance(server, SecureInternetServer) or isinstance(
-            server, DiscoOrganization
-        ):
-            return self.common.get_config_secure_internet(
-                server.org_id, prefer_tcp, tokens
-            )
+            return self.common.get_config_secure_internet(server.org_id, prefer_tcp, tokens)
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
+            return self.common.get_config_secure_internet(server.org_id, prefer_tcp, tokens)
         elif isinstance(server, Server):
             return self.common.get_config_custom_server(server.url, prefer_tcp, tokens)
         raise Exception("No server to get a config for")
@@ -379,9 +359,7 @@ class ApplicationModel:
             self.add(server)
 
         tokens = None
-        if not isinstance(server, DiscoServer) and not isinstance(
-            server, DiscoOrganization
-        ):
+        if not isinstance(server, DiscoServer) and not isinstance(server, DiscoOrganization):
             tokens = self.load_tokens(server)
         # keep track if we preferred TCP
         # this is for failover
@@ -400,9 +378,7 @@ class ApplicationModel:
         dns_search_domains: List[str] = []
         if server.profiles is not None and server.profiles.current is not None:
             default_gateway = server.profiles.current.default_gateway
-            dns_search_domains = getattr(
-                server.profiles.current, "dns_search_domains", []
-            )
+            dns_search_domains = getattr(server.profiles.current, "dns_search_domains", [])
 
         def on_connected():
             self.common.set_connected()
@@ -475,9 +451,7 @@ class ApplicationModel:
         else:
             do_profile()
 
-    def activate_connection(
-        self, callback: Optional[Callable] = None, prefer_tcp: bool = False
-    ):
+    def activate_connection(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
         if not self.current_server:
             return
 
@@ -506,13 +480,12 @@ class ApplicationModel:
                 # We can try again
                 if i < retries - 1:
                     logger.debug(
-                        f"Got an error while cleaning up, try number: {i+1}. This could mean the connection was not fully disconnected yet. Trying again..."
+                        f"""Got an error while cleaning up, try number: {i+1}.
+ This could mean the connection was not fully disconnected yet. Trying again..."""
                     )
                 else:
                     # All retries are done
-                    logger.debug(
-                        f"Got an error while cleaning up, after full retries: {i+1}."
-                    )
+                    logger.debug(f"Got an error while cleaning up, after full retries: {i+1}.")
             else:
                 break
 
@@ -596,9 +569,7 @@ class Application:
         # Check if a previous network configuration exists.
         uuid = self.nm_manager.existing_connection
         if uuid:
-            self.on_network_update_callback(
-                self.nm_manager.connection_state, needs_update
-            )
+            self.on_network_update_callback(self.nm_manager.connection_state, needs_update)
 
         @run_in_background_thread("on-network-update")
         def update(state):

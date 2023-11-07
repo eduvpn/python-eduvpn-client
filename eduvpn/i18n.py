@@ -30,8 +30,8 @@ def setup(app_variant: ApplicationVariant, prefix: str):
     directory = os.path.join(prefix, "share/locale")
 
     locale.setlocale(locale.LC_ALL, "")
-    locale.bindtextdomain(domain, directory)  # type: ignore
-    locale.textdomain(domain)  # type: ignore
+    locale.bindtextdomain(domain, directory)
+    locale.textdomain(domain)
     gettext.bindtextdomain(domain, directory)
     gettext.textdomain(domain)
 
