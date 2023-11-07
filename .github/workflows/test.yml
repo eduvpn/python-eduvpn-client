@@ -1,0 +1,32 @@
+name: Test
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+jobs:
+  Test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Python3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install ubuntu deps
+        run: make deb
+      - name: Install eduvpn-common
+        run: make install-eduvpn-common
+      - name: Install linter
+        run: make install-lint
+      - name: Run linter
+        run: make lint
+      - name: Install mypy
+        run: make install-mypy
+      - name: Run mypy
+        run: make mypy
+      - name: Install pytest
+        run: make install-test
+      - name: Run pytest
+        run: make test
