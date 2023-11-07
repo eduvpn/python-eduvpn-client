@@ -14,11 +14,9 @@ ifeq ("$(wildcard $(MYPY))","")
 	MYPY = $(shell echo "${PWD}/venv/bin/mypy")
 endif
 
-all: bdist_wheel
-
 $(VENV)/:
 	python3 -m venv venv
-	$(VENV)/bin/pip install --upgrade pip wheel
+	$(VENV)/bin/pip install --upgrade pip build
 
 # install all required binary packages on a debian based system
 deb:
@@ -65,7 +63,10 @@ ifeq ("$(wildcard $(RUFF))","")
 	@echo "ruff does not exist, install it with make install-lint (will use pip) or consult your distribution manual"
 	exit 1
 endif
-	$(RUFF) --line-length 120 eduvpn tests
+# check linting
+	$(RUFF) eduvpn tests
+# check formatting
+	$(RUFF) format --check eduvpn tests
 
 install-test: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
@@ -81,10 +82,5 @@ clean:
 	find  . -name *.pyc -delete
 	find  . -name __pycache__ -delete
 
-sdist: $(VENV)/
-	rm -f dist/*.tar.gz
-	$(VENV)/bin/python setup.py sdist
-
-bdist_wheel: $(VENV)/
-	rm -f dist/*.whl
-	$(VENV)/bin/python setup.py bdist_wheel
+build: $(VENV)/
+	$(VENV)/bin/python3 -m build --sdist --wheel .
