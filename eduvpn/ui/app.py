@@ -1,13 +1,12 @@
 import logging
 from gettext import gettext as _
+from typing import Optional
 
 import gi
-
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import GLib, Gio, Gtk
 from gi.repository.Gio import ApplicationCommandLine
-from typing import Optional
 
 from eduvpn import i18n, notify
 from eduvpn.app import Application
@@ -84,8 +83,9 @@ class EduVpnGtkApplication(Gtk.Application):
 
         # mypy bug?
         if "version" in options:  # type: ignore[operator]
-            from eduvpn import __version__
             from eduvpn_common import __version__ as commonver
+
+            from eduvpn import __version__
 
             print(f"{self.app.variant.name} GUI version: {__version__} with eduvpn-common version: {commonver}")
             return 0

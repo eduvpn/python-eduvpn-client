@@ -6,11 +6,11 @@ from functools import partial
 from typing import Callable
 
 import eduvpn_common.main as common
+from eduvpn_common import __version__ as commonver
 from eduvpn_common.server import InstituteServer, SecureInternetServer, Server
 from eduvpn_common.state import State, StateType
 
 import eduvpn.nm as nm
-from eduvpn_common import __version__ as commonver
 from eduvpn import __version__
 from eduvpn.app import Application
 from eduvpn.i18n import country, retrieve_country_name

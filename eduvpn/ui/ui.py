@@ -5,21 +5,19 @@
 
 import logging
 import os
+from datetime import datetime
+from functools import partial
 from gettext import gettext as _
 from typing import Callable, Optional, Type
 
-
-from datetime import datetime
-from functools import partial
-
+from eduvpn_common import __version__ as commonver
 from eduvpn_common.state import State, StateType
-from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
 from gi.overrides.Gdk import Event, EventButton  # type: ignore[import-untyped]
 from gi.overrides.Gtk import Box, Builder, Button, TreePath, TreeView, TreeViewColumn  # type: ignore[import-untyped]
+from gi.repository import GLib, GObject, Gdk, GdkPixbuf, Gtk
 from gi.repository.Gtk import EventBox, SearchEntry, Switch
 
 from eduvpn import __version__
-from eduvpn_common import __version__ as commonver
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX

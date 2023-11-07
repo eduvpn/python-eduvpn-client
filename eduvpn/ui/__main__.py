@@ -13,7 +13,6 @@ from eduvpn.i18n import country  # noqa: E402
 from eduvpn.ui.app import EduVpnGtkApplication  # noqa: E402
 from eduvpn.variants import EDUVPN, LETS_CONNECT  # noqa: E402
 
-
 logger = logging.getLogger(__name__)
 
 

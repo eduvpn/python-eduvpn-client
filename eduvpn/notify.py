@@ -1,9 +1,12 @@
-from eduvpn.variants import ApplicationVariant
 import gi
 
+from eduvpn.variants import ApplicationVariant
+
 gi.require_version("Notify", "0.7")  # noqa: E402
-from gi.repository import GdkPixbuf  # noqa: E402
-from gi.repository import Notify  # type: ignore[attr-defined] # noqa: E402
+from gi.repository import (  # noqa: E402
+    GdkPixbuf,  # noqa: E402
+    Notify,  # type: ignore[attr-defined] # noqa: E402
+)
 
 
 def initialize(app_variant: ApplicationVariant) -> None:
