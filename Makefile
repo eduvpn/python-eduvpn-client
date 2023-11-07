@@ -2,39 +2,28 @@
 #       install the client.
 #
 
-.PHONY: all dockers doc
+.PHONY: all
 
 VENV=./venv
+RUFF := $(shell command -v ruff 2> /dev/null)
+ifeq ("$(wildcard $(RUFF))","")
+	RUFF = $(shell echo "${PWD}/venv/bin/ruff")
+endif
+MYPY := $(shell command -v mypy 2> /dev/null)
+ifeq ("$(wildcard $(MYPY))","")
+	MYPY = $(shell echo "${PWD}/venv/bin/mypy")
+endif
 
-
-all: eduvpn-cli
+all: bdist_wheel
 
 $(VENV)/:
-	python3 -m venv venv --system-site-packages
-	$(VENV)/bin/pip install --upgrade pip wheel pytest
-
-$(VENV)/bin/eduvpn-cli: $(VENV)/
-	$(VENV)/bin/pip install -e ".[test]"
-
-$(VENV)/bin/eduvpn-gui: $(VENV)/
-	$(VENV)/bin/pip install -e ".[test,gui]"
-
-eduvpn-gui: $(VENV)/bin/eduvpn-gui
-	$(VENV)/bin/eduvpn-gui
-
-letsconnect-gui: $(VENV)/bin/eduvpn-gui
-	venv/bin/letsconnect-gui
-
-eduvpn-cli: $(VENV)/bin/eduvpn-cli
-	$(VENV)/bin/eduvpn-cli interactive
-
-dockers:
-	for i in `ls docker/*.docker`; do echo "*** $$i"; docker build --progress=plain . -f $$i; done
+	python3 -m venv venv
+	$(VENV)/bin/pip install --upgrade pip wheel
 
 # install all required binary packages on a debian based system
 deb:
-	apt update
-	apt install -y \
+	sudo apt update
+	sudo apt install -y \
 		gir1.2-nm-1.0 \
 		gir1.2-secret-1 \
 		gir1.2-gtk-3.0 \
@@ -58,46 +47,44 @@ dnf:
 		gobject-introspection-devel \
 		cairo-gobject-devel
 
-doc:  $(VENV)/
-	$(VENV)/bin/pip install -r doc/requirements.txt
-	$(VENV)/bin/python -msphinx doc doc/_build
+install-mypy: $(VENV)/
+	PYGOBJECT_STUB_CONFIG=Gtk3,Gdk3 $(VENV)/bin/pip install -e ".[mypy]" --no-cache-dir
 
-$(VENV)/bin/pycodestyle $(VENV)/bin/pytest: $(VENV)/
+mypy:
+ifeq ("$(wildcard $(MYPY))","")
+	@echo "mypy does not exist, install it with make install-mypy (will use pip) or consult your distribution manual. Note that you also need PyGObject-stubs and types-setuptools. If you don't have eduvpn-common yet you can also use make install-eduvpn-common from the test pypi"
+	exit 1
+endif
+	$(MYPY) eduvpn tests
+
+install-lint: $(VENV)/
+	$(VENV)/bin/pip install -e ".[lint]"
+
+lint:
+ifeq ("$(wildcard $(RUFF))","")
+	@echo "ruff does not exist, install it with make install-lint (will use pip) or consult your distribution manual"
+	exit 1
+endif
+	$(RUFF) --line-length 120 eduvpn tests
+
+install-test: $(VENV)/
 	$(VENV)/bin/pip install -e ".[test]"
-	touch $(VENV)/bin/pytest
-	touch $(VENV)/bin/pycodestyle
 
-$(VENV)/bin/mypy: $(VENV)/
-	$(VENV)/bin/pip install -e ".[mypy]"
-	touch $(VENV)/bin/mypy
+test: install-test
+	$(VENV)/bin/python3 -m pytest tests
 
-mypy: $(VENV)/bin/mypy
-	$(VENV)/bin/mypy --config-file setup.cfg eduvpn tests
-
-pycodestyle: $(VENV)/bin/pycodestyle
-	$(VENV)/bin/pycodestyle eduvpn tests
-
-test: $(VENV)/bin/pytest
-	$(VENV)/bin/pytest
-
-checks: test mypy pycodestyle
+install-eduvpn-common: $(VENV)/
+	$(VENV)/bin/pip install --index-url "https://test.pypi.org/simple/" eduvpn-common
 
 clean:
 	rm -rf $(VENV) dist .eggs eduvpn_client.egg-info .pytest_cache tests/__pycache__/
 	find  . -name *.pyc -delete
 	find  . -name __pycache__ -delete
 
-sdist: $(VENV)
+sdist: $(VENV)/
 	rm -f dist/*.tar.gz
 	$(VENV)/bin/python setup.py sdist
 
-bdist_wheel: $(VENV)
+bdist_wheel: $(VENV)/
 	rm -f dist/*.whl
 	$(VENV)/bin/python setup.py bdist_wheel
-
-$(VENV)/bin/twine: $(VENV)
-	$(VENV)/bin/pip install twine
-
-
-twine-upload: sdist bdist_wheel $(VENV)/bin/twine
-	$(VENV)/bin/twine upload dist/*.tar.gz dist/*.whl
