@@ -1,8 +1,1 @@
-include eduvpn/data/share/icons/hicolor/*/apps/*.png
-include eduvpn/data/share/applications/*
-include eduvpn/data/share/eduvpn/*
-include eduvpn/data/share/eduvpn/builder/*
-include eduvpn/data/share/eduvpn/images/*
-include eduvpn/data/share/eduvpn/letsconnect/*
-include eduvpn/data/share/eduvpn/images/flags/png/*
-
+include eduvpn/data/*
