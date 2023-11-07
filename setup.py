@@ -12,27 +12,27 @@ with open("README.md", "r", encoding="utf-8") as fh:
 install_requires = [
     'wheel',
     'eduvpn_common==1.1.99.0',
+    'pygobject',
 ]
 
 tests_require = [
     'pytest',
-    'pycodestyle',
 ]
 
 mypy_require = [
     'mypy',
-    'PyGObject-stubs',
+    'pygobject-stubs',
     'types-setuptools',
 ]
 
-gui_require = [
-    'pygobject',
+lint_require = [
+    'ruff',
 ]
 
 extras_require = {
-    'gui': gui_require,
-    'test': tests_require,
+    'lint': lint_require,
     'mypy': mypy_require,
+    'test': tests_require,
 }
 
 
@@ -85,10 +85,12 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: System :: Operating System Kernels :: Linux",
         "Topic :: System :: Networking",
         "Environment :: X11 Applications",
+        "Environment :: X11 Applications :: GTK",
     ],
     entry_points={
         'console_scripts': [
