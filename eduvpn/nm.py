@@ -28,7 +28,7 @@ try:
     import gi
 
     gi.require_version("NM", "1.0")
-    from gi.repository import (
+    from gi.repository import (  # type: ignore[attr-defined]
         NM,  # type: ignore[attr-defined]
         GLib,
     )
