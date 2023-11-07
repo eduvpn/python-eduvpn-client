@@ -60,6 +60,9 @@ letsconnect-cli = "eduvpn.cli:letsconnect"
 eduvpn-gui = "eduvpn.ui.__main__:eduvpn"
 letsconnect-gui = "eduvpn.ui.__main__:letsconnect"
 
+[tool.setuptools.packages.find]
+include = ["eduvpn*"]
+
 [tool.ruff]
 line-length = 120
 
