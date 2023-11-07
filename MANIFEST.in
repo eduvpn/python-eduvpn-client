@@ -1,12 +1,8 @@
-include LICENSE
-include README.md
-include share/icons/hicolor/*/apps/*.png
-include share/applications/*
-include share/eduvpn/*
-include share/eduvpn/builder/*
-include share/eduvpn/images/*
-include share/eduvpn/letsconnect/*
-include share/eduvpn/images/flags/png/*
-include doc/*
-include tests/*
+include eduvpn/data/share/icons/hicolor/*/apps/*.png
+include eduvpn/data/share/applications/*
+include eduvpn/data/share/eduvpn/*
+include eduvpn/data/share/eduvpn/builder/*
+include eduvpn/data/share/eduvpn/images/*
+include eduvpn/data/share/eduvpn/letsconnect/*
+include eduvpn/data/share/eduvpn/images/flags/png/*
 
