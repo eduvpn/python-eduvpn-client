@@ -12,11 +12,11 @@ packages for Fedora, and Deb packages for Debian and Ubuntu.
 > packages (we use a compiled dependency), if you want an ARM package for
 > a certain target you can also make an issue.
 
-
 ## Installation using a script
+
 > **Note**
-> This needs curl installed, `sudo apt update && sudo apt install curl` on Debian/Ubuntu systems.
-> Fedora systems automatically have curl installed
+> This needs Curl installed, `sudo apt update && sudo apt install curl` on Debian/Ubuntu systems.
+> Fedora systems automatically have Curl installed
 
 We provide a script to ease the installation. This script works on the platforms we have official packages for: Debian/Ubuntu/Fedora/CentOS
 
@@ -190,6 +190,10 @@ $ sudo dnf install \
 ```
 
 #### Pip commands
+
+> **Note**
+> If the Pip installation fails due to "error: externally-managed-environment",
+> we recommend you to try to install the package with [Pipx](https://github.com/pypa/pipx) instead
 
 You can then continue with installing via Pip:
 
