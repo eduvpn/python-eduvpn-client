@@ -1,1 +1,1 @@
-include eduvpn/data/*
+graft eduvpn/data
