@@ -58,9 +58,16 @@ endif
 install-lint: $(VENV)/
 	$(VENV)/bin/pip install ".[lint]"
 
+fmt:
+ifeq ("$(wildcard $(RUFF))","")
+	@echo "ruff does not exist for formatting, install it with make install-lint (will use pip) or consult your distribution manual"
+	exit 1
+endif
+	$(RUFF) format eduvpn tests
+
 lint:
 ifeq ("$(wildcard $(RUFF))","")
-	@echo "ruff does not exist, install it with make install-lint (will use pip) or consult your distribution manual"
+	@echo "ruff does not exist for linting, install it with make install-lint (will use pip) or consult your distribution manual"
 	exit 1
 endif
 # check linting
