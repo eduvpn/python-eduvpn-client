@@ -35,7 +35,7 @@
                     <property name="height-request">36</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="pixbuf">../images/edu-vpn-logo.png</property>
+                    <property name="pixbuf">../images/logo.png</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -83,7 +83,7 @@
                               <object class="GtkImage" id="settingsButton">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="pixbuf">../images/settings.png</property>
+                                <property name="pixbuf">../images/common/settings-icon.png</property>
                                 <property name="icon_size">3</property>
                               </object>
                             </child>
@@ -110,7 +110,7 @@
                           <object class="GtkImage" id="infoButton">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="pixbuf">../images/question-icon.png</property>
+                            <property name="pixbuf">../images/common/question-icon.png</property>
                             <property name="icon_size">3</property>
                           </object>
                         </child>
@@ -157,7 +157,7 @@
                           <object class="GtkImage" id="findServerImage">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="pixbuf">../images/institute.png</property>
+                            <property name="pixbuf">../images/search-icon.png</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -433,7 +433,7 @@
                                 <property name="margin-right">2</property>
                                 <property name="margin-start">2</property>
                                 <property name="margin-end">2</property>
-                                <property name="pixbuf">../images/server-icon.png</property>
+                                <property name="pixbuf">../images/common/server-icon.png</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -731,7 +731,7 @@
                       <object class="GtkImage" id="connectionStatusImage">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="pixbuf">../images/desktop-default.png</property>
+                        <property name="pixbuf">../images/common/desktop-default.png</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -1268,7 +1268,7 @@
                     <property name="height-request">36</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="pixbuf">../images/edu-vpn-logo.png</property>
+                    <property name="pixbuf">../images/logo-dark.png</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

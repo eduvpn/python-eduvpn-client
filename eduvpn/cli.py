@@ -15,13 +15,7 @@ from eduvpn import __version__
 from eduvpn.app import Application
 from eduvpn.i18n import country, retrieve_country_name
 from eduvpn.server import ServerDatabase
-from eduvpn.settings import (
-    CLIENT_ID,
-    CONFIG_DIR_MODE,
-    CONFIG_PREFIX,
-    LETSCONNECT_CLIENT_ID,
-    LETSCONNECT_CONFIG_PREFIX,
-)
+from eduvpn.settings import CONFIG_DIR_MODE
 from eduvpn.ui.search import ServerGroup, group_servers
 from eduvpn.ui.utils import get_validity_text, should_show_error
 from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread
@@ -70,7 +64,7 @@ def ask_locations(app, locations):
     # Create tuples of country name, location id
     location_tuples = []
     for loc in locations:
-        country_name = retrieve_country_name(loc)
+        country_name = retrieve_country_name(app.variant, loc)
         location_tuples.append((country_name, loc))
 
     # Sort them and then print
@@ -93,13 +87,12 @@ def ask_locations(app, locations):
 
 
 class CommandLine:
-    def __init__(self, name: str, variant: ApplicationVariant, common):
-        self.name = name
+    def __init__(self, variant: ApplicationVariant, common):
         self.variant = variant
         self.common = common
         self.app = Application(variant, common)
         self.nm_manager = self.app.nm_manager
-        self.server_db = ServerDatabase(common, variant.use_predefined_servers)
+        self.server_db = ServerDatabase(common, variant.uses_discovery)
         self.transitions = CommandLineTransitions(self.app)
         self.skip_yes = False
         self.common.register_class_callbacks(self.transitions)
@@ -221,7 +214,7 @@ class CommandLine:
         return self.server_db.disco
 
     def ask_server(self):
-        if not self.variant.use_predefined_servers:
+        if not self.variant.uses_discovery:
             return self.ask_server_custom()
 
         if self.server_db.configured:
@@ -275,7 +268,7 @@ class CommandLine:
         print(valid_for)
         print(f"Current profile: {str(current.profiles.current)}")
         if isinstance(current, SecureInternetServer):
-            print(f"Current location: {retrieve_country_name(current.country_code)}")
+            print(f"Current location: {retrieve_country_name(self.variant, current.country_code)}")
         print(f"VPN Protocol: {self.nm_manager.protocol}")
 
     def connect(self, variables={}):
@@ -398,9 +391,9 @@ class CommandLine:
             )
             return False
 
-        print("Current location:", retrieve_country_name(server.country_code))
+        print("Current location:", retrieve_country_name(self.variant, server.country_code))
 
-        ask_locations(self.app, server.locations)
+        ask_locations(self.variant, self.app, server.locations)
 
         @run_in_background_thread("change-location-reconnect")
         def reconnect(callback=None):
@@ -478,7 +471,7 @@ class CommandLine:
 
     def interactive(self, _):
         # Show a title and the help
-        print(f"Welcome to the {self.name} interactive commandline")
+        print(f"Welcome to the {self.variant.name} interactive commandline")
         # Execute the right command
         commands = {
             "change-profile": self.change_profile,
@@ -490,13 +483,13 @@ class CommandLine:
             "list": self.list,
             "quit": lambda: print("Exiting..."),
         }
-        if self.variant.use_predefined_servers:
+        if self.variant.uses_discovery:
             commands["change-location"] = self.change_location
         self.help_interactive(commands)
         command = ""
         while command != "quit":
             # Ask for the command to execute
-            command = input(f"[{self.name}]: ")
+            command = input(f"[{self.variant.name}]: ")
 
             # Update the state right before we execute
             self.update_state()
@@ -505,7 +498,7 @@ class CommandLine:
             func()
 
     def start(self):
-        parser = argparse.ArgumentParser(description=f"The {self.name} command line client")
+        parser = argparse.ArgumentParser(description=f"The {self.variant.name} command line client")
         parser.set_defaults(func=lambda _: parser.print_usage())
         parser.add_argument("-d", "--debug", action="store_true", help="enable debugging")
         parser.add_argument("-y", "--yes", action="store_true", help="answer yes for y/n prompts")
@@ -518,7 +511,7 @@ class CommandLine:
         renew_parser = subparsers.add_parser("renew", help="renew the validity for the currently connected server")
         renew_parser.set_defaults(func=self.renew)
 
-        if self.variant.use_predefined_servers:
+        if self.variant.uses_discovery:
             change_profile_parser = subparsers.add_parser(
                 "change-location",
                 help="change the location for the currently connected secure internet server",
@@ -542,7 +535,7 @@ class CommandLine:
             ),
         )
         connect_group = connect_parser.add_mutually_exclusive_group(required=True)
-        if self.variant.use_predefined_servers:
+        if self.variant.uses_discovery:
             connect_group.add_argument(
                 "-s",
                 "--search",
@@ -576,7 +569,7 @@ class CommandLine:
                 " currently configured servers with their number"
             ),
         )
-        if self.variant.use_predefined_servers:
+        if self.variant.uses_discovery:
             connect_group.add_argument(
                 "-a",
                 "--number-all",
@@ -592,7 +585,7 @@ class CommandLine:
         disconnect_parser.set_defaults(func=self.disconnect)
 
         list_parser = subparsers.add_parser("list", help="list all configured servers")
-        if self.variant.use_predefined_servers:
+        if self.variant.uses_discovery:
             list_parser.add_argument("--all", action="store_true", help="list all available servers")
         list_parser.set_defaults(func=lambda args: self.list(vars(args)))
 
@@ -654,17 +647,17 @@ class CommandLineTransitions:
 
 
 def eduvpn():
-    _common = common.EduVPN(CLIENT_ID, str(__version__), str(CONFIG_PREFIX), country())
-    cmd = CommandLine("eduVPN", EDUVPN, _common)
+    _common = common.EduVPN(EDUVPN.client_id, str(__version__), str(EDUVPN.config_prefix), country())
+    cmd = CommandLine(EDUVPN, _common)
     cmd.start()
 
 
 def letsconnect():
     _common = common.EduVPN(
-        LETSCONNECT_CLIENT_ID,
+        LETS_CONNECT.client_id,
         str(__version__),
-        str(LETSCONNECT_CONFIG_PREFIX),
+        str(LETS_CONNECT.config_prefix),
         country(),
     )
-    cmd = CommandLine("Let's Connect!", LETS_CONNECT, _common)
+    cmd = CommandLine(LETS_CONNECT, _common)
     cmd.start()

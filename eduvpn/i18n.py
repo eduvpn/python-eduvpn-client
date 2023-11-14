@@ -4,7 +4,7 @@ import locale
 import logging
 import os
 
-from eduvpn.settings import COUNTRY, COUNTRY_MAP, LANGUAGE
+from eduvpn.settings import COUNTRY, LANGUAGE
 from eduvpn.utils import get_prefix
 from eduvpn.variants import ApplicationVariant
 
@@ -58,8 +58,8 @@ def language() -> str:
         return LANGUAGE
 
 
-def retrieve_country_name(country_code: str) -> str:
-    country_map = _read_country_map()
+def retrieve_country_name(variant, country_code: str) -> str:
+    country_map = _read_country_map(variant)
     loc = locale.getlocale()
     if loc[0] is None:
         prefix = "en"
@@ -72,7 +72,7 @@ def retrieve_country_name(country_code: str) -> str:
     return country_code
 
 
-def _read_country_map() -> dict:
+def _read_country_map(variant) -> dict:
     """
     Read the storage from disk, returns an empty dict in case of failure.
     """
@@ -81,9 +81,9 @@ def _read_country_map() -> dict:
     if country_mapping is not None:
         return country_mapping
 
-    if COUNTRY_MAP.exists():
+    if variant.country_map.exists():
         try:
-            with open(COUNTRY_MAP, "r") as f:
+            with open(variant.country_map, "r") as f:
                 country_mapping = json.load(f)
                 return country_mapping
         except Exception as e:

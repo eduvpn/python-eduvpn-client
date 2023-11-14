@@ -43,10 +43,10 @@ def get_group_model(group: ServerGroup) -> ListStore:
     return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)
 
 
-def server_to_model_data(server) -> list:
+def server_to_model_data(variant, server) -> list:
     display_string = str(server)
     if isinstance(server, SecureInternetServer):
-        display_string = retrieve_country_name(server.country_code)
+        display_string = retrieve_country_name(variant, server.country_code)
     return [display_string, server]
 
 
@@ -158,7 +158,7 @@ def update_search_results_for_type(
     model.clear()
     # Add the new search results.
     for server in servers:
-        model_data = server_to_model_data(server)
+        model_data = server_to_model_data(window.app.variant, server)
         model.append(model_data)
     # Update the UI.
     model_has_results = len(model) > 0

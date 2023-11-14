@@ -5,7 +5,7 @@ from typing import Dict, Iterable, List, Union
 from eduvpn_common.discovery import DiscoOrganization, DiscoServer
 from eduvpn_common.server import Server
 
-from eduvpn.settings import IMAGE_PREFIX
+from eduvpn.settings import IMAGE_PREFIX_COMMON
 
 logger = logging.getLogger(__name__)
 TranslatedStr = Union[str, Dict[str, str]]
@@ -20,7 +20,7 @@ class StatusImage(enum.Enum):
 
     @property
     def path(self) -> str:
-        return IMAGE_PREFIX + self.value
+        return IMAGE_PREFIX_COMMON + self.value
 
 
 def get_search_text(server) -> List[str]:

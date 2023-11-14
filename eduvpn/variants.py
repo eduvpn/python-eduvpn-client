@@ -1,14 +1,9 @@
 from pathlib import Path
 from typing import Optional, Tuple
 
-from eduvpn import __version__, settings
+from eduvpn import __version__
 from eduvpn.config import Configuration
-from eduvpn.settings import (
-    CLIENT_ID,
-    CONFIG_PREFIX,
-    LETSCONNECT_CLIENT_ID,
-    LETSCONNECT_CONFIG_PREFIX,
-)
+from eduvpn.utils import get_config_dir, get_prefix
 
 
 class ApplicationVariant:
@@ -16,31 +11,42 @@ class ApplicationVariant:
         self,
         app_id: str,
         client_id: str,
-        config_prefix: Path,
+        config_name: str,
         name: str,
-        icon: str,
-        translation_domain: str,
         logo: Optional[str] = None,
         logo_dark: Optional[str] = None,
-        server_image: Optional[str] = None,
-        use_predefined_servers: bool = True,
-        use_configured_servers: bool = True,
+        uses_discovery: bool = True,
     ) -> None:
         self.app_id = app_id
         self.client_id = client_id
-        self.config_prefix = config_prefix
+        self.config_prefix = (Path(get_config_dir()).expanduser() / config_name).resolve()
+        self.config_name = config_name
         self.name = name
-        self.icon = icon
-        self.logo = logo
-        self.logo_dark = logo_dark
-        self.server_image = server_image
-        self.translation_domain = translation_domain
-        self.use_predefined_servers = use_predefined_servers
-        self.use_configured_servers = use_configured_servers
+        prefix = get_prefix()
+        self.icon = prefix + f"/share/icons/hicolor/128x128/apps/{app_id}.png"
+        self.image_prefix = prefix + f"/share/{config_name}/images/"
+        self.logo = self.image_prefix + "logo.png"
+        self.logo_dark = self.image_prefix + "logo-dark.png"
+
+        # fallback if dark logo does not exist
+        if not Path(self.logo_dark).is_file():
+            self.logo_dark = self.logo
+        self.search_image = self.image_prefix + "search-icon.png"
+        self.uses_discovery = uses_discovery
+        self.country_map = None
+        self.flag_prefix = None
+        if uses_discovery:
+            # TODO: do not hard code eduvpn here?
+            self.country_map = Path(prefix + "/share/eduvpn/country_codes.json")
+            self.flag_prefix = prefix + "/share/eduvpn/images/flags/png/"
 
     @property
     def settings(self) -> Tuple[str, str, str]:
         return self.client_id, str(__version__), str(self.config_prefix)
+
+    @property
+    def translation_domain(self) -> str:
+        return self.config_name
 
     @property
     def config(self) -> Configuration:
@@ -53,25 +59,15 @@ class ApplicationVariant:
 
 EDUVPN = ApplicationVariant(
     app_id="org.eduvpn.client",
-    client_id=CLIENT_ID,
-    config_prefix=CONFIG_PREFIX,
-    name=settings.EDUVPN_NAME,
-    icon=settings.EDUVPN_ICON,
-    logo=settings.EDUVPN_LOGO,
-    logo_dark=settings.EDUVPN_LOGO_DARK,
-    translation_domain="eduVPN",
+    client_id="org.eduvpn.app.linux",
+    config_name="eduvpn",
+    name="eduVPN",
 )
 
 LETS_CONNECT = ApplicationVariant(
     app_id="org.letsconnect-vpn.client",
-    client_id=LETSCONNECT_CLIENT_ID,
-    config_prefix=LETSCONNECT_CONFIG_PREFIX,
-    name=settings.LETS_CONNECT_NAME,
-    icon=settings.LETS_CONNECT_ICON,
-    logo=settings.LETS_CONNECT_LOGO,
-    logo_dark=settings.LETS_CONNECT_LOGO,
-    server_image=settings.SERVER_ILLUSTRATION,
-    translation_domain="LetsConnect",
-    use_predefined_servers=False,
-    use_configured_servers=False,
+    client_id="org.letsconnect-vpn.app.linux",
+    config_name="letsconnect",
+    name="Let's Connect!",
+    uses_discovery=False,
 )

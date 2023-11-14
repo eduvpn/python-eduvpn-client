@@ -20,7 +20,7 @@ from gi.repository.Gtk import EventBox, SearchEntry, Switch
 from eduvpn import __version__
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.server import StatusImage
-from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
+from eduvpn.settings import IMAGE_PREFIX_COMMON
 from eduvpn.ui import search
 from eduvpn.ui.stats import NetworkStats
 from eduvpn.ui.utils import (
@@ -50,8 +50,8 @@ UPDATE_EXPIRY_INTERVAL = 1.0  # seconds
 UPDATE_RENEW_INTERVAL = 60.0  # seconds
 
 
-def get_flag_path(country_code: str) -> Optional[str]:
-    path = f"{FLAG_PREFIX}{country_code}@1,5x.png"
+def get_flag_path(variant, country_code: str) -> Optional[str]:
+    path = f"{variant.flag_prefix}{country_code}.png"
     if os.path.exists(path):
         return path
     else:
@@ -62,8 +62,11 @@ def get_template_path(filename: str) -> str:
     return os.path.join(get_prefix(), "share/eduvpn/builder", filename)
 
 
-def get_images_path(filename: str) -> str:
-    return os.path.join(IMAGE_PREFIX, filename)
+def get_images_path(variant, filename: str, common=False) -> str:
+    prefix = variant.image_prefix
+    if common:
+        prefix = IMAGE_PREFIX_COMMON
+    return os.path.join(prefix, filename)
 
 
 # See:
@@ -126,17 +129,24 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)
         self.is_dark_theme = is_dark(bg_color)
 
-        dark_icons = {
-            "infoButton": "question-icon-dark.png",
-            "instituteIcon": "institute-icon-dark.png",
-            "earthIcon": "earth-icon-dark.png",
-            "serverIcon": "server-icon-dark.png",
-        }
-
         if self.is_dark_theme:
-            for _id, icon in dark_icons.items():
+            dark_icons = {
+                "infoButton": ("question-icon-dark.png", True),
+                "settingsButton": ("settings-icon-dark.png", True),
+                "serverIcon": ("server-icon-dark.png", True),
+            }
+            # only for eduVPN
+            if self.app.variant.name == "eduVPN":
+                dark_icons.update(
+                    {
+                        "instituteIcon": ("institute-icon-dark.png", False),
+                        "earthIcon": ("earth-icon-dark.png", False),
+                    }
+                )
+            for _id, icon_tuple in dark_icons.items():
+                icon, common = icon_tuple
                 obj = builder.get_object(_id)
-                obj.set_from_file(get_images_path(icon))
+                obj.set_from_file(get_images_path(self.app.variant, icon, common))
 
         # Whether or not the profile that is selected is the 'same' one as before
         # This is used so it doesn't fully trigger the callback
@@ -252,9 +262,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                 logo = self.app.variant.logo_dark
             self.app_logo.set_from_file(logo)
             self.app_logo_info.set_from_file(logo)
-        if self.app.variant.server_image:
-            self.find_server_image.set_from_file(self.app.variant.server_image)
-        if not self.app.variant.use_predefined_servers:
+        if self.app.variant.search_image:
+            self.find_server_image.set_from_file(self.app.variant.search_image)
+        if not self.app.variant.uses_discovery:
             self.find_server_label.set_text(_("Server address"))
             self.find_server_search_input.set_placeholder_text(_("Enter the server address"))
             self.info_support_box.hide()
@@ -540,9 +550,9 @@ For detailed information, see the log file located at:
 
         if hasattr(server_info, "country_code"):
             self.server_label.set_text(
-                f"{retrieve_country_name(server_info.country_code)}\n(via {server_info.display_name})"
+                f"{retrieve_country_name(self.app.variant, server_info.country_code)}\n(via {server_info.display_name})"
             )
-            flag_path = get_flag_path(server_info.country_code)
+            flag_path = get_flag_path(self.app.variant, server_info.country_code)
             if flag_path:
                 self.server_image.set_from_file(flag_path)
                 self.server_image.show()
@@ -676,7 +686,7 @@ For detailed information, see the log file located at:
         search.exit_server_search(self)
 
     def exit_ConfigureCustomServer(self, old_state, new_state):
-        if not self.app.variant.use_predefined_servers:
+        if not self.app.variant.uses_discovery:
             self.add_custom_server_button_container.hide()
 
     @ui_transition(State.NO_SERVER, StateType.ENTER)
@@ -813,13 +823,13 @@ For detailed information, see the log file located at:
 
         location_list_model.clear()
         for location in locations:
-            flag_path = get_flag_path(location)
+            flag_path = get_flag_path(self.app.variant, location)
             if flag_path is None:
                 logger.warning(f"No flag found for country code {location}")
                 flag = None
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(flag_path)
-            location_list_model.append([retrieve_country_name(location), flag, location])
+            location_list_model.append([retrieve_country_name(self.app.variant, location), flag, location])
 
     @ui_transition(State.ASK_LOCATION, StateType.LEAVE)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
@@ -1076,7 +1086,7 @@ For detailed information, see the log file located at:
 
     def on_search_changed(self, _: Optional[SearchEntry] = None) -> None:
         query = self.find_server_search_input.get_text()
-        if self.app.variant.use_predefined_servers and query.count(".") < 2:
+        if self.app.variant.uses_discovery and query.count(".") < 2:
             results = self.app.model.search_predefined(query)
             search.update_results(self, results)
         else:

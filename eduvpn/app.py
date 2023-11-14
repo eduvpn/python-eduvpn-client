@@ -35,7 +35,7 @@ class ApplicationModelTransitions:
     def __init__(self, common: EduVPN, variant: ApplicationVariant) -> None:
         self.common = common
         self.common.register_class_callbacks(self)
-        self.server_db = ServerDatabase(common, variant.use_predefined_servers)
+        self.server_db = ServerDatabase(common, variant.uses_discovery)
 
     @model_transition(State.NO_SERVER, StateType.ENTER)
     def get_previous_servers(self, old_state: State, servers):

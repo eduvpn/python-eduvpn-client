@@ -5,7 +5,7 @@ from os import PathLike
 from typing import Optional
 
 from eduvpn.ovpn import Ovpn
-from eduvpn.settings import CONFIG_DIR_MODE, CONFIG_PREFIX
+from eduvpn.settings import CONFIG_DIR_MODE
 from eduvpn.utils import get_logger
 
 logger = get_logger(__name__)
@@ -19,28 +19,28 @@ def get_setting(variant, what: str) -> Optional[str]:
         return None
 
 
-def is_config_dir_permissions_correct() -> bool:
-    return CONFIG_PREFIX.stat().st_mode & 0o777 == CONFIG_DIR_MODE
+def is_config_dir_permissions_correct(variant) -> bool:
+    return variant.config_prefix.stat().st_mode & 0o777 == CONFIG_DIR_MODE
 
 
-def check_config_dir_permissions():
-    if not is_config_dir_permissions_correct():
+def check_config_dir_permissions(variant):
+    if not is_config_dir_permissions_correct(variant):
         logger.warning(
-            f"The permissions for the config dir ({CONFIG_PREFIX}) are not as expected, it may be world readable!"
+            f"The permissions for the config dir ({variant.config_prefix}) are not as expected, it may be world readable!"
         )
 
 
-def ensure_config_dir_exists():
+def ensure_config_dir_exists(variant):
     """
     Ensure the config directory exists with the correct permissions.
     """
-    CONFIG_PREFIX.mkdir(parents=True, exist_ok=True, mode=CONFIG_DIR_MODE)
-    check_config_dir_permissions()
+    variant.config_prefix.mkdir(parents=True, exist_ok=True, mode=CONFIG_DIR_MODE)
+    check_config_dir_permissions(variant)
 
 
 def set_setting(variant, what: str, value: str):
     p = (variant.config_prefix / what).expanduser()
-    ensure_config_dir_exists()
+    ensure_config_dir_exists(variant)
     with open(p, "w") as f:
         f.write(value)
 
