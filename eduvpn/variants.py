@@ -46,7 +46,7 @@ class ApplicationVariant:
 
     @property
     def translation_domain(self) -> str:
-        return self.config_name
+        return "eduvpn"
 
     @property
     def config(self) -> Configuration:
