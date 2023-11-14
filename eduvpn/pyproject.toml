@@ -3,18 +3,17 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "eduvpn_base"
+name = "eduvpn_client"
 version = "4.1.99.0"
-description = "eduVPN base python package for Linux. Needed for GUI and CLI clients"
+description = "eduVPN for Linux"
 authors = [
     {name = "Jeroen Wijenbergh", email = "jeroen.wijenbergh@geant.org"},
 ]
 dependencies = [
-    "eduvpn_common==1.1.99.0",
-    "pygobject",
+    "eduvpn_base==4.1.99.0",
 ]
 requires-python = ">=3.6"
-readme = "README.md"
+readme = "../README.md"
 license = {text = "GPL3"}
 keywords = ["vpn openvpn networking security"]
 classifiers = [
@@ -37,30 +36,8 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/eduvpn/python-eduvpn-client"
 
-[project.optional-dependencies]
-lint = [
-    "ruff",
-]
-mypy = [
-    "mypy",
-    "pygobject-stubs",
-    "types-setuptools",
-]
-test = [
-    "pytest",
-]
+[project.scripts]
+eduvpn-cli = "eduvpn.__main__:cli"
 
-[tool.setuptools.packages.find]
-include = ["eduvpn-base*"]
-
-[tool.ruff]
-line-length = 120
-
-[tool.ruff.lint]
-extend-select = [
-    # isort
-    "I",
-]
-
-[tool.ruff.lint.isort]
-case-sensitive = true
+[project.gui-scripts]
+eduvpn-gui = "eduvpn.__main__:gui"

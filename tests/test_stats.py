@@ -5,9 +5,9 @@ from typing import TextIO
 from unittest import TestCase
 from unittest.mock import PropertyMock, patch
 
-from eduvpn.nm import NMManager
-from eduvpn.ui import stats
-from eduvpn.variants import EDUVPN
+from eduvpn_base.nm import NMManager
+from eduvpn_base.ui import stats
+from tests.variant import VARIANT
 
 MOCK_IFACE = "mock"
 
@@ -24,10 +24,10 @@ def try_open(path: Path):
     return open(path, "r")
 
 
-@patch("eduvpn.nm.NMManager.iface", new_callable=PropertyMock, return_value=MOCK_IFACE)
+@patch("eduvpn_base.nm.NMManager.iface", new_callable=PropertyMock, return_value=MOCK_IFACE)
 class TestStats(TestCase):
     def test_stat_bytes(self, _):
-        nm_manager = NMManager(EDUVPN)
+        nm_manager = NMManager(VARIANT)
         with TemporaryDirectory() as tempdir:
             # Create test data in the wanted files
             # Use the tempdir so it is cleaned up later
@@ -65,13 +65,13 @@ class TestStats(TestCase):
 
             # Mock the files and check the expected values
             with patch(
-                "eduvpn.ui.stats.NetworkStats.upload_file",
+                "eduvpn_base.ui.stats.NetworkStats.upload_file",
                 new_callable=PropertyMock,
                 return_value=upload_filehandler,
             ):
                 check_expected("upload", upload_filehandler)
             with patch(
-                "eduvpn.ui.stats.NetworkStats.download_file",
+                "eduvpn_base.ui.stats.NetworkStats.download_file",
                 new_callable=PropertyMock,
                 return_value=download_filehandler,
             ):

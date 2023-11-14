@@ -53,7 +53,7 @@ ifeq ("$(wildcard $(MYPY))","")
 	@echo "mypy does not exist, install it with make install-mypy (will use pip) or consult your distribution manual. Note that you also need PyGObject-stubs and types-setuptools. If you don't have eduvpn-common yet you can also use make install-eduvpn-common from the test pypi"
 	exit 1
 endif
-	$(MYPY) eduvpn tests
+	$(MYPY) eduvpn_base tests
 
 install-lint: $(VENV)/
 	$(VENV)/bin/pip install ".[lint]"
@@ -63,7 +63,7 @@ ifeq ("$(wildcard $(RUFF))","")
 	@echo "ruff does not exist for formatting, install it with make install-lint (will use pip) or consult your distribution manual"
 	exit 1
 endif
-	$(RUFF) format eduvpn tests
+	$(RUFF) format eduvpn_base eduvpn letsconnect tests
 
 lint:
 ifeq ("$(wildcard $(RUFF))","")
@@ -71,9 +71,9 @@ ifeq ("$(wildcard $(RUFF))","")
 	exit 1
 endif
 # check linting
-	$(RUFF) eduvpn tests
+	$(RUFF) eduvpn_base tests
 # check formatting
-	$(RUFF) format --check eduvpn tests
+	$(RUFF) format --check eduvpn_base eduvpn letsconnect tests
 
 install-test: $(VENV)/
 	$(VENV)/bin/pip install ".[test]"
