@@ -2,6 +2,14 @@
 
 set -e
 
+ARCH="$(uname -m)"
+
+if [ ! "$ARCH" = "x86_64" ] && [ ! "$ARCH" = "amd64" ]; then
+    printf "Your architecture: %s, is not supported.
+Your architecture might, however, be supported by the Pip package. You may try the following instructions: https://docs.eduvpn.org/client/linux/installation.html#pip-installation" "$ARCH"
+    exit 1
+fi
+
 . "/etc/os-release"
 
 install_deb() {
