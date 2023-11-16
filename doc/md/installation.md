@@ -8,9 +8,8 @@ packages for Fedora, and Deb packages for Debian and Ubuntu.
 > **Note**
 > If your target is not supported you can make an issue on the
 > [GitHub repository](https://github.com/eduvpn/python-eduvpn-client) and we will see
-> if we can provide it. Right now we only provide x86_64
-> packages (we use a compiled dependency), if you want an ARM package for
-> a certain target you can also make an issue.
+> if we can provide it. Right, for RPM and DEB, now we only provide x86_64 packages (we use a compiled dependency),
+> if you want to install the client on ARM64, use the [Pip installation](#pip-installation) method.
 
 ## Installation using a script
 
