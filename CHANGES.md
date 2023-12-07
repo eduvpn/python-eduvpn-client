@@ -1,3 +1,12 @@
+# 4.2.0 (2023-12-08)
+
+* Implement expiry notifications according to spec (Fixes: #534)
+* Connection info counts up/down before revealed (Fixes: #531)
+* Implement validity timer according to spec
+* Move protocol info to connection info details instead of connection info title
+* Bump eduvpn-common to 1.2.0
+* Log unhandled exceptions
+
 # 4.1.99.0 (2023-10-25)
 Pre-release for 4.2.0:
 
