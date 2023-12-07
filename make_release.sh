@@ -10,7 +10,7 @@ set -e
 
 # change these to your liking
 BRANCH=master
-IS_PRERELEASE=true
+IS_PRERELEASE=false
 REPO="eduvpn/python-eduvpn-client"
 
 # make a fresh clone

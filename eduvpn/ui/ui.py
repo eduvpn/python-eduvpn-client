@@ -217,7 +217,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_status_image = builder.get_object("connectionStatusImage")
         self.connection_status_label = builder.get_object("connectionStatusLabel")
         self.connection_session_label = builder.get_object("connectionSessionLabel")
-        self.connection_info_duration_text = builder.get_object("connectionInfoDurationText")
+        self.connection_info_duration_text = builder.get_object(
+            "connectionInfoDurationText"
+        )
         self.connection_switch = builder.get_object("connectionSwitch")
         self.connection_info_expander = builder.get_object("connectionInfoExpander")
         self.connection_info_downloaded = builder.get_object(
@@ -987,7 +989,9 @@ For detailed information, see the log file located at:
             "update-validity",
         )
         self.connection_renew_thread_cancel = run_periodically(
-            run_in_glib_thread(partial(self.update_connection_renew, server_info.expire_time)),
+            run_in_glib_thread(
+                partial(self.update_connection_renew, server_info.expire_time)
+            ),
             UPDATE_RENEW_INTERVAL,
             "update-renew",
         )
