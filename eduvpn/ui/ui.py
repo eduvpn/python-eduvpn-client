@@ -903,6 +903,7 @@ For detailed information, see the log file located at:
         self.update_connection_server(server_info)
         self.reconnect_tcp_button.hide()
         self.renew_session_button.hide()
+        self.connection_session_label.hide()
 
     @ui_transition(State.DISCONNECTED, StateType.LEAVE)
     def exit_ConnectionStatus(self, old_state, new_state):
