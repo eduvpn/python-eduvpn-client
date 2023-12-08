@@ -167,12 +167,10 @@ $ sudo apt install \
     gir1.2-gtk-3.0 \
     gir1.2-notify-0.7 \
     libgirepository1.0-dev \
-    libdbus-glib-1-dev \
     python3-gi \
     python3-setuptools \
     python3-pytest \
     python3-wheel \
-    python3-dbus \
     network-manager-openvpn-gnome
 ```
 
@@ -183,13 +181,11 @@ $ sudo dnf install \
     libnotify \
     libsecret \
     gtk3 \
-    python3-dbus \
     python3-gobject \
     python3-pytest \
     python3-cairo-devel \
     gobject-introspection-devel \
-    cairo-gobject-devel \
-    dbus-python-devel
+    cairo-gobject-devel
 ```
 
 #### Pip commands
