@@ -702,6 +702,7 @@ For detailed information, see the log file located at:
     @ui_transition(State.CONNECTING, StateType.ENTER)
     def enter_connecting(self, old_state: str, server_info):
         self.renew_session_button.hide()
+        self.connection_info_expander.hide()
         self.connection_status_label.set_text(_("Connecting..."))
         self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
         self.set_connection_switch_state(True)
@@ -1055,12 +1056,13 @@ For detailed information, see the log file located at:
         self.renew_session_button.hide()
         server_info, validity = server_data
         self.connection_info_expander.show()
-        self.show_page(self.connection_page)
+        self.connection_info_expander.set_expanded(False)
         self.show_back_button(False)
         self.start_connection_info()
         self.update_connection_status(True)
         self.update_connection_server(server_info)
         self.start_validity_countdown(validity)
+        self.show_page(self.connection_page)
 
         # Show the button after a certain time period
         self.connection_validity_timers.add_absolute(
