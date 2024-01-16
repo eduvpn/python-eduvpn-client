@@ -534,10 +534,12 @@ class NMManager:
 
         # we set some sensible default with an override using EDUVPN_WG_FWMARK
         fwmark = int(os.environ.get("EDUVPN_WG_FWMARK", 51860))
+        listen_port = int(os.environ.get("EDUVPN_WG_LISTEN_PORT", 0))
 
         s_ip4.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
         s_ip6.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
         w_con.set_property(NM.DEVICE_WIREGUARD_FWMARK, fwmark)
+        w_con.set_property(NM.DEVICE_WIREGUARD_LISTEN_PORT, listen_port)
 
         # The routing that is done by NM by default doesn't cut it
         # It automatically adds a suppress prefixlength rule such that LAN traffic is allowed
