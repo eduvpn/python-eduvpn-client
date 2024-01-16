@@ -211,6 +211,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.choose_profile_page = builder.get_object("chooseProfilePage")
         self.choose_location_page = builder.get_object("chooseLocationPage")
         self.change_location_combo = builder.get_object("changeLocationCombo")
+        self.disable_change_location = False
         location_renderer_flag = Gtk.CellRendererPixbuf()
         self.change_location_combo.pack_start(location_renderer_flag, False)
         self.change_location_combo.add_attribute(location_renderer_flag, "pixbuf", 0)
@@ -806,7 +807,9 @@ For detailed information, see the log file located at:
             locs_store.append([pixbuf, retrieve_country_name(loc), loc])
             index += 1
         self.change_location_combo.set_model(locs_store)
+        self.disable_change_location = True
         self.change_location_combo.set_active(active_loc)
+        self.disable_change_location = False
 
     @ui_transition(State.MAIN, StateType.ENTER)
     def enter_MainState(self, old_state: str, servers):
@@ -1236,6 +1239,8 @@ For detailed information, see the log file located at:
         self.call_model("cancel")
 
     def on_change_location(self, combo):
+        if self.disable_change_location:
+            return
         tree_iter = combo.get_active_iter()
 
         if tree_iter is None:

@@ -13,11 +13,6 @@ logger = logging.getLogger(__name__)
 TranslatedStr = Union[str, Dict[str, str]]
 
 
-def parse_locations(locations_json: str) -> List[str]:
-    locations = json.loads(locations_json)
-    return locations
-
-
 class Profile:
     """The class that represents a server profile.
     :param: identifier: str: The identifier (id) of the profile
@@ -207,9 +202,11 @@ def parse_profiles(profiles: dict) -> Profiles:
     return Profiles(returned, profiles["current"])
 
 
-def parse_required_transition(transition_json: str, get: Callable) -> Tuple[int, Any]:
+def parse_required_transition(transition_json: str, get: Optional[Callable] = None) -> Tuple[int, Any]:
     transition = json.loads(transition_json)
-    data_parsed = get(transition["data"])
+    data_parsed = transition["data"]
+    if get is not None:
+        data_parsed = get(data_parsed)
     cookie = transition["cookie"]
     return cookie, data_parsed
 

@@ -23,7 +23,6 @@ from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import (
     ServerDatabase,
     parse_current_server,
-    parse_locations,
     parse_profiles,
     parse_required_transition,
 )
@@ -81,23 +80,9 @@ class ApplicationModelTransitions:
 
     @model_transition(State.ASK_LOCATION, StateType.ENTER)
     def ask_location(self, old_state: State, data):
-        # If we get data we can thank eduvpn-common
-        if data:
-            cookie, locations = parse_required_transition(data, get=parse_locations)
-            set_location = lambda loc: self.common.cookie_reply(cookie, loc)
-            return (set_location, locations)
-
-        # If not we have a self transition
-        def choose_location(location: str):
-            try:
-                self.common.set_secure_location(location)
-            except Exception as e:
-                self.common.set_state(State.MAIN)
-                raise e
-            else:
-                self.common.set_state(State.MAIN)
-
-        return (choose_location, self.server_db.secure_internet.locations)
+        cookie, locations = parse_required_transition(data)
+        set_location = lambda loc: self.common.cookie_reply(cookie, loc)
+        return (set_location, locations)
 
     @model_transition(State.OAUTH_STARTED, StateType.ENTER)
     def start_oauth(self, old_state: State, url: str):
