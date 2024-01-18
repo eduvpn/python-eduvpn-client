@@ -1331,11 +1331,15 @@ For detailed information, see the log file located at:
             # Do nothing if we have no stats object
             if not self.connection_info_stats:
                 return
-            download = self.connection_info_stats.download
-            upload = self.connection_info_stats.upload
-            protocol = self.connection_info_stats.protocol
-            ipv4 = self.connection_info_stats.ipv4
-            ipv6 = self.connection_info_stats.ipv6
+            try:
+                download = self.connection_info_stats.download
+                upload = self.connection_info_stats.upload
+                protocol = self.connection_info_stats.protocol
+                ipv4 = self.connection_info_stats.ipv4
+                ipv6 = self.connection_info_stats.ipv6
+            except ValueError as e:
+                logger.warning(f"Got an error when trying to retrieve stats: {e}. The connection might be closed.")
+                return
 
             @run_in_glib_thread
             def update_ui():
