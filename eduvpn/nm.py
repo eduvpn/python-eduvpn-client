@@ -10,7 +10,7 @@ from configparser import ConfigParser
 from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
-from socket import AF_INET, AF_INET6
+from socket import AF_INET, AF_INET6, IPPROTO_TCP
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, TextIO, Tuple
 
@@ -87,6 +87,7 @@ class ConnectionState(enum.Enum):
 class NMManager:
     def __init__(self, variant: ApplicationVariant):
         self.variant = variant
+        self.proxy = None
         try:
             self._client = NM.Client.new(None)
             self.wg_gateway_ip: Optional[ipaddress.IPv4Address] = None
@@ -217,6 +218,8 @@ class NMManager:
         if type == "vpn":
             return "OpenVPN"
         elif type == "wireguard":
+            if self.proxy:
+                return "WireGuard (Proxy)"
             return "WireGuard"
         return None
 
@@ -299,14 +302,17 @@ class NMManager:
             # if OpenVPN return the gateway from the ip config
             ipv4_config = self.ipv4_config
             if not ipv4_config:
+                _logger.debug("no ipv4_config found in OpenVPN failover endpoint")
                 return None
             return ipv4_config.get_gateway()
         elif protocol == "WireGuard":
             # if WireGuard return the cached IP
             if not self.wg_gateway_ip:
+                _logger.debug("no wg gateway ip found in failover endpoint")
                 return None
             return str(self.wg_gateway_ip)
         else:
+            _logger.debug(f"Unknown protocol: {protocol}")
             return None
 
     @property
@@ -428,16 +434,30 @@ class NMManager:
 
         self.set_connection(new_con, callback)  # type: ignore
 
+    def get_priorities(self, has_proxy: bool, has_lan: bool):
+        # rule, proxy, lan
+        if has_proxy:
+            if has_lan:
+                return [3, 2, 1]
+            else:
+                return [2, 1, -1]
+        else:
+            if has_lan:
+                return [2, -1, 1]
+            else:
+                return [1, -1, -1]
+
     def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
         default_gateway,
         *,
         allow_wg_lan=False,
+        proxy=None,
+        proxy_peer_ips=None,
         callback=None,
     ) -> None:
         _logger.debug("writing wireguard configuration to Network Manager")
-
         ipv4s = []
         ipv6s = []
         self.wg_gateway_ip = None
@@ -546,26 +566,42 @@ class NMManager:
         # We want to make this configurable
         # Additionally, the overlap case with split tunnel doesn't work: https://github.com/eduvpn/python-eduvpn-client/issues/551
 
-        rules = [(socket.AF_INET, s_ip4), (socket.AF_INET6, s_ip6)]
+        rules = [(4, AF_INET, s_ip4), (6, AF_INET6, s_ip6)]
         # priority 1 not fwmark fwmarknum table fwmarknum
-        for family, setting in rules:
+
+        prios = self.get_priorities(proxy is not None, allow_wg_lan)
+        dport_proxy = proxy.peer_port
+        for ipver, family, setting in rules:
             rule = NM.IPRoutingRule.new(family)
-            rule.set_priority(1)
+            rule.set_priority(prios[0])
             rule.set_invert(True)
             # fwmask 0xffffffff is the default
             rule.set_fwmark(fwmark, 0xFFFFFFFF)
             rule.set_table(fwmark)
+            setting.add_routing_rule(rule)
+
+            if proxy:
+                for proxy_peer_ip in proxy_peer_ips:
+                    address = ip_address(proxy_peer_ip)
+                    if address.version != ipver:
+                        continue
+                    proxy_rule = NM.IPRoutingRule.new(family)
+                    proxy_rule.set_priority(prios[1])
+                    sport = int(proxy.source_port)
+                    proxy_rule.set_source_port(sport, sport)
+                    proxy_rule.set_to(proxy_peer_ip, 32)
+                    proxy_rule.set_destination_port(dport_proxy, dport_proxy)
+                    proxy_rule.set_ipproto(IPPROTO_TCP)
+                    setting.add_routing_rule(proxy_rule)
 
             # when LAN should be allowed, we have to add a higher priority suppress prefixlength rule
             if allow_wg_lan:
                 lan_rule = NM.IPRoutingRule.new(family)
                 # Downgrade the default wireguard rule priority
                 # And set the lan rule to a higher priority
-                rule.set_priority(2)
-                lan_rule.set_priority(1)
+                lan_rule.set_priority(prios[2])
                 lan_rule.set_suppress_prefixlength(0)
                 setting.add_routing_rule(lan_rule)
-            setting.add_routing_rule(rule)
 
         w_con.append_peer(peer)
         private_key = config["Interface"]["PrivateKey"]
@@ -583,6 +619,8 @@ class NMManager:
         profile.add_setting(s_ip6)
         profile.add_setting(s_con)
         profile.add_setting(w_con)
+
+        self.proxy = proxy
 
         self.set_connection(profile, callback)  # type: ignore
 

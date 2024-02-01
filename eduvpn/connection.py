@@ -3,6 +3,7 @@ from configparser import ConfigParser
 from datetime import datetime, timedelta
 from enum import IntEnum
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 from eduvpn.ovpn import Ovpn
 
@@ -34,6 +35,38 @@ class Protocol(IntEnum):
     UNKNOWN = 0
     OPENVPN = 1
     WIREGUARD = 2
+    WIREGUARDTCP = 3
+
+
+class Proxy:
+    """The class that represents a proxyguard instance
+    :param: peer: str: The remote peer string
+    :param: listen: str: The listen proxy string
+    """
+
+    def __init__(
+        self,
+        peer: str,
+        source_port: int,
+        listen: str,
+    ):
+        self.peer = peer
+        self.source_port = source_port
+        self.listen = listen
+
+    @property
+    def peer_scheme(self) -> str:
+        try:
+            parsed = urlparse(self.peer)
+            return parsed.scheme
+        except Exception:
+            return ""
+
+    @property
+    def peer_port(self):
+        if self.peer_scheme == "http":
+            return 80
+        return 443
 
 
 class Config:
@@ -49,11 +82,15 @@ class Config:
         protocol: Protocol,
         default_gateway: bool,
         dns_search_domains: List[str],
+        proxy: Proxy,
+        should_failover: bool,
     ):
         self.config = config
         self.protocol = protocol
         self.default_gateway = default_gateway
         self.dns_search_domains = dns_search_domains
+        self.proxy = proxy
+        self.should_failover = should_failover
 
     def __str__(self):
         return self.config
@@ -61,16 +98,21 @@ class Config:
 
 def parse_tokens(tokens_json: str) -> Token:
     jsonT = json.loads(tokens_json)
-    return Token(jsonT["access_token"], jsonT["refresh_token"], jsonT["expires"])
+    return Token(jsonT["access_token"], jsonT["refresh_token"], jsonT["expires_at"])
 
 
 def parse_config(config_json: str) -> Config:
     d = json.loads(config_json)
+    proxy = d.get("proxy", None)
+    if proxy:
+        proxy = Proxy(proxy["peer"], proxy["source_port"], proxy["listen"])
     cfg = Config(
         d["config"],
         Protocol(d["protocol"]),
         d["default_gateway"],
         d.get("dns_search_domains", []),
+        proxy,
+        d["should_failover"],
     )
     return cfg
 
@@ -128,7 +170,10 @@ class Connection:
 
     @classmethod
     def parse(cls, config: Config) -> "Connection":
-        if config.protocol == Protocol.WIREGUARD:
+        if (
+            config.protocol == Protocol.WIREGUARD
+            or config.protocol == Protocol.WIREGUARDTCP
+        ):
             connection_type = WireGuardConnection
         else:
             connection_type = OpenVPNConnection  # type: ignore
@@ -154,7 +199,14 @@ class OpenVPNConnection(Connection):
         return cls(ovpn=ovpn)
 
     def connect(
-        self, manager, default_gateway, allow_lan, dns_search_domains, callback
+        self,
+        manager,
+        default_gateway,
+        allow_lan,
+        dns_search_domains,
+        proxy,
+        proxy_peer_ips,
+        callback,
     ):
         manager.start_openvpn_connection(
             self.ovpn,
@@ -176,11 +228,20 @@ class WireGuardConnection(Connection):
         return cls(config=config)
 
     def connect(
-        self, manager, default_gateway, allow_lan, dns_search_domains, callback
+        self,
+        manager,
+        default_gateway,
+        allow_lan,
+        dns_search_domains,
+        proxy,
+        proxy_peer_ips,
+        callback,
     ):
         manager.start_wireguard_connection(
             self.config,
             default_gateway,
             allow_wg_lan=allow_lan,
             callback=callback,
+            proxy_peer_ips=proxy_peer_ips,
+            proxy=proxy,
         )

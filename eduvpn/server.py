@@ -202,7 +202,9 @@ def parse_profiles(profiles: dict) -> Profiles:
     return Profiles(returned, profiles["current"])
 
 
-def parse_required_transition(transition_json: str, get: Optional[Callable] = None) -> Tuple[int, Any]:
+def parse_required_transition(
+    transition_json: str, get: Optional[Callable] = None
+) -> Tuple[int, Any]:
     transition = json.loads(transition_json)
     data_parsed = transition["data"]
     if get is not None:

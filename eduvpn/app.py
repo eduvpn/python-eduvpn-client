@@ -7,7 +7,7 @@ from typing import Any, Callable, Iterator, Optional, TextIO
 
 from eduvpn_common.main import EduVPN, ServerType, WrappedError
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import ReadRxBytes
+from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes
 
 from eduvpn import nm
 from eduvpn.config import Configuration
@@ -26,7 +26,12 @@ from eduvpn.server import (
     parse_profiles,
     parse_required_transition,
 )
-from eduvpn.utils import model_transition, run_in_background_thread
+from eduvpn.utils import (
+    handle_exception,
+    model_transition,
+    run_in_background_thread,
+    run_in_glib_thread,
+)
 from eduvpn.variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
@@ -137,7 +142,9 @@ class ApplicationModel:
         self.transitions = ApplicationModelTransitions(common, variant)
         self.variant = variant
         self.nm_manager = nm_manager
-        self.was_tcp = False
+        self._was_tcp = False
+        self._should_failover = False
+        self._peer_ips_proxy = None
 
     def register(self, debug: bool):
         self.common.register(debug=debug)
@@ -165,15 +172,14 @@ class ApplicationModel:
         return rx_bytes
 
     def should_failover(self):
-        current_vpn_protocol = self.nm_manager.protocol
-        if current_vpn_protocol == "WireGuard":
-            logger.debug("Current protocol is WireGuard, failover should continue")
-            return True
+        if self._should_failover:
+            logger.debug("eduvpn-common reports we should failover")
 
-        if not self.was_tcp:
-            logger.debug(
-                "Protocol is not WireGuard and TCP was not previously triggered, failover should continue"
-            )
+            if self._was_tcp:
+                logger.debug(
+                    "Protocol is not WireGuard and TCP was not previously triggered, failover should not continue"
+                )
+                return False
             return True
 
         logger.debug("Failover should not continue")
@@ -281,10 +287,16 @@ class ApplicationModel:
                 logger.debug("No tokens available")
                 return None
             tokens = json.loads(tokens_json)
+            expires = tokens.get("expires_at", None)
+            if expires is None:
+                expires = tokens.get("expires", None)
+            if expires is None:
+                logger.warning("failed to parse expires")
+                return None
             d = {
                 "access_token": tokens["access"],
                 "refresh_token": tokens["refresh"],
-                "expires": int(tokens["expires"]),
+                "expires_at": int(expires),
             }
             return json.dumps(d)
         except Exception as e:
@@ -302,7 +314,7 @@ class ApplicationModel:
         tokens_dict = {}
         tokens_dict["access"] = tokens_parsed.access
         tokens_dict["refresh"] = tokens_parsed.refresh
-        tokens_dict["expires"] = str(tokens_parsed.expires)
+        tokens_dict["expires_at"] = str(tokens_parsed.expires)
         attributes = {"server": server_id, "category": str(ServerType(server_type))}
         label = f"{server_id} - OAuth Tokens"
         try:
@@ -310,6 +322,30 @@ class ApplicationModel:
         except Exception as e:
             logger.error("Failed saving tokens with exception:")
             logger.error(e, exc_info=True)
+
+    def show_error(self, error: str):
+        self.common.event_handler.run(
+            get_ui_state(ERROR_STATE),
+            get_ui_state(ERROR_STATE),
+            error,
+        )
+
+    def on_proxy_setup(self, fd, peer_ips):
+        logger.debug(f"got proxy fd: {fd}, peer_ips: {peer_ips}")
+        self._peer_ips_proxy = json.loads(peer_ips)
+
+    @run_in_background_thread("start-proxy")
+    def start_proxy(self, proxy, callback):
+        try:
+            self.common.start_proxyguard(
+                proxy.listen,
+                proxy.source_port,
+                proxy.peer,
+                ProxySetup(self.on_proxy_setup),
+                ProxyReady(lambda: callback()),
+            )
+        except Exception as e:
+            handle_exception(self.common, e)
 
     def connect(
         self,
@@ -322,6 +358,9 @@ class ApplicationModel:
         if os.environ.get("EDUVPN_PREFER_TCP", "0") == "1":
             prefer_tcp = True
         config = self.connect_get_config(server, prefer_tcp=prefer_tcp)
+        self._was_tcp = prefer_tcp
+        self._should_failover = config.should_failover
+
         # TODO: dns search domains
         dns_search_domains = []
         if not config:
@@ -348,18 +387,25 @@ class ApplicationModel:
                 if callback:
                     callback(False)
 
+        @run_in_glib_thread
         def connect(config):
+            self.common.set_state(State.CONNECTING)
             connection = Connection.parse(config)
             connection.connect(
                 self.nm_manager,
                 config.default_gateway,
                 self.config.allow_wg_lan,
                 config.dns_search_domains,
+                config.proxy,
+                self._peer_ips_proxy,
                 on_connect,
             )
+            self._peer_ips_proxy = None
 
-        self.common.set_state(State.CONNECTING)
-        connect(config)
+        if config.proxy:
+            self.start_proxy(config.proxy, lambda: connect(config))
+        else:
+            connect(config)
 
     def reconnect(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
         def on_disconnected(success: bool):

@@ -27,6 +27,7 @@ def handle_exceptions(exc_type, exc_value, exc_traceback):
 
     logger.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
 
+
 def get_ui_state(state: State) -> int:
     # The UI state will have as identifier the last state id + offset of the state
     # So for example the UI DEREGISTERED state will come directly after the last normal state
@@ -34,6 +35,13 @@ def get_ui_state(state: State) -> int:
 
 
 ERROR_STATE = 2 * len(State) + 1
+
+
+def handle_exception(common, exception):
+    log_exception(exception)
+    common.event_handler.run(
+        get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), exception
+    )
 
 
 def model_transition(state: State, state_type: StateType) -> Callable:
@@ -44,13 +52,7 @@ def model_transition(state: State, state_type: StateType) -> Callable:
             try:
                 model_converted = func(self, other_state, data)
             except Exception as e:
-                log_exception(e)
-                # Run the error state event
-                self.common.event_handler.run(
-                    get_ui_state(ERROR_STATE),
-                    get_ui_state(ERROR_STATE),
-                    str(e),
-                )
+                handle_exception(self.common, e)
                 return
 
             other_ui_state = get_ui_state(other_state)
@@ -120,9 +122,11 @@ def init_logger(debug: bool, logfile, mode):
 
 
 def log_exception(exception: Exception):
-    # Other exceptions are already logged by Go
-    if not isinstance(exception, WrappedError):
-        logger.error(f"Non-Go exception occurred: {str(exception)}")
+    if isinstance(exception, WrappedError) and exception.misc:
+        logger.debug(f"eduvpn-common misc error returned: {str(exception)}")
+    else:
+        # Other exceptions are already logged by Go
+        logger.error(f"exception occurred: {str(exception)}")
         traceback.print_exc()
 
 

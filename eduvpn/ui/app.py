@@ -123,6 +123,14 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
+    def enter_ProxyDisconnected(self):
+        self.connection_notification.show(
+            title=_("Disconnected"),
+            message=_(
+                f"Your VPN was disconnected because a process was active (TCP proxy) and the client was closed"
+            ),
+        )
+
     def enter_SessionPendingExpiryState(self, h: int):
         hours_text = ngettext("{0} hour.", "{0} hours.", h).format(h)
         self.connection_notification.show(

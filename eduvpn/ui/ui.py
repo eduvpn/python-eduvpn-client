@@ -1338,7 +1338,9 @@ For detailed information, see the log file located at:
                 ipv4 = self.connection_info_stats.ipv4
                 ipv6 = self.connection_info_stats.ipv6
             except ValueError as e:
-                logger.warning(f"Got an error when trying to retrieve stats: {e}. The connection might be closed.")
+                logger.warning(
+                    f"Got an error when trying to retrieve stats: {e}. The connection might be closed."
+                )
                 return
 
             @run_in_glib_thread
@@ -1480,9 +1482,23 @@ For detailed information, see the log file located at:
     def on_close_window(self, window: "EduVpnGtkWindow", event: Event) -> bool:
         logger.debug("clicked on close window")
         self.hide()  # type: ignore
-        application = self.get_application()  # type: ignore
-        if application:
-            application.on_window_closed()  # type: ignore
+
+        def close():
+            application = self.get_application()  # type: ignore
+            if application:
+                application.on_window_closed()  # type: ignore
+
+        def on_switch_off(success):
+            if success:
+                self.eduvpn_app.enter_ProxyDisconnected()
+
+            close()
+
+        if self.app.nm_manager.proxy:
+            self.call_model("deactivate_connection", on_switch_off)
+        else:
+            close()
+
         return True
 
     def on_reopen_window(self):
