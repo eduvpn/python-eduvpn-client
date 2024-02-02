@@ -84,6 +84,7 @@ class WireGuardConnection(Connection):
     ):
         manager.start_wireguard_connection(
             self.config,
+            default_gateway,
             allow_wg_lan=allow_lan,
             callback=callback,
         )
