@@ -11,7 +11,7 @@ from pathlib import Path
 from shutil import rmtree
 from socket import AF_INET, AF_INET6
 from tempfile import mkdtemp
-from typing import Any, Callable, List, Optional, TextIO, Tuple
+from typing import Any, Callable, Optional, TextIO, Tuple
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
@@ -394,12 +394,7 @@ class NMManager:
         self,
         new_connection: "NM.SimpleConnection",
         callback: Callable,
-        default_gateway: Optional[bool],
-        dns_search_domains: List[str] = [],
     ):
-        new_connection = self.set_setting_ip_config(
-            new_connection, default_gateway, dns_search_domains
-        )
         new_connection = self.set_setting_ensure_permissions(new_connection)
         if self.uuid:
             old_con = self.client.get_connection_by_uuid(self.uuid)
@@ -407,28 +402,6 @@ class NMManager:
                 self.update_connection(old_con, new_connection, callback)
                 return
         self.add_connection(new_connection, callback)
-
-    def set_setting_ip_config(
-        self,
-        con: "NM.SimpleConnection",
-        default_gateway: Optional[bool],
-        dns_search_domains: List[str] = [],
-    ) -> "NM.SimpleConnection":
-        "Set IP config settings like default gateway and search domains."
-        _logger.debug(
-            f"setting ip config, default gateway: {default_gateway}, dns_search_domains: {dns_search_domains}"
-        )
-        ipv4_setting = con.get_setting_ip4_config()
-        ipv6_setting = con.get_setting_ip6_config()
-        if default_gateway is not None:
-            ipv4_setting.set_property("never-default", not default_gateway)
-            ipv6_setting.set_property("never-default", not default_gateway)
-        if dns_search_domains:
-            ipv4_setting.set_property("dns-search", dns_search_domains)
-            ipv6_setting.set_property("dns-search", dns_search_domains)
-        con.add_setting(ipv4_setting)
-        con.add_setting(ipv6_setting)
-        return con
 
     def set_setting_ensure_permissions(
         self, con: "NM.SimpleConnection"
@@ -443,11 +416,31 @@ class NMManager:
     ) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
-        self.set_connection(new_con, callback, default_gateway, dns_search_domains)  # type: ignore
+        s_ip4 = new_con.get_setting_ip4_config()
+        s_ip6 = new_con.get_setting_ip6_config()
+
+        # avoid DNS leaks in default gateway
+        # see man nm-settings for dns-priority
+        # and https://systemd.io/RESOLVED-VPNS/
+        if default_gateway:
+            s_ip4.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip6.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip4.add_dns_search("~.")
+            s_ip6.add_dns_search("~.")
+        for i in dns_search_domains:
+            s_ip4.add_dns_search(i)
+            s_ip6.add_dns_search(i)
+        s_ip4.set_property("never-default", not default_gateway)
+        s_ip6.set_property("never-default", not default_gateway)
+        new_con.add_setting(s_ip4)
+        new_con.add_setting(s_ip6)
+
+        self.set_connection(new_con, callback)  # type: ignore
 
     def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
+        default_gateway,
         *,
         allow_wg_lan=False,
         callback=None,
@@ -517,9 +510,21 @@ class NMManager:
             s_ip4.add_dns(i)
         for i in dns6:
             s_ip6.add_dns(i)
+
+        # avoid DNS leaks in default gateway
+        # see man nm-settings for dns-priority
+        # and https://systemd.io/RESOLVED-VPNS/
+        if default_gateway:
+            s_ip4.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip6.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip4.add_dns_search("~.")
+            s_ip6.add_dns_search("~.")
         for i in dns_hostnames:
             s_ip4.add_dns_search(i)
             s_ip6.add_dns_search(i)
+
+        s_ip4.set_property("never-default", not default_gateway)
+        s_ip6.set_property("never-default", not default_gateway)
 
         s_ip4.set_property(NM.SETTING_IP_CONFIG_METHOD, "manual")
         s_ip6.set_property(NM.SETTING_IP_CONFIG_METHOD, "manual")
@@ -586,7 +591,7 @@ class NMManager:
         profile.add_setting(s_con)
         profile.add_setting(w_con)
 
-        self.set_connection(profile, callback, None)  # type: ignore
+        self.set_connection(profile, callback)  # type: ignore
 
     @run_in_glib_thread
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
