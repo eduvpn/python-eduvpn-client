@@ -1,3 +1,7 @@
+# 4.2.1 (2023-02-02)
+
+* Make the OpenVPN/WireGuard DNS the maximum priority to avoid DNS from resolving through other interfaces
+
 # 4.2.0 (2023-12-08)
 
 * Implement expiry notifications according to spec (Fixes: #534)
