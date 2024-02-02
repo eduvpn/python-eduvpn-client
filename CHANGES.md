@@ -1,4 +1,4 @@
-# 4.2.1 (2023-02-02)
+# 4.2.1 (2024-02-02)
 
 * Make the OpenVPN/WireGuard DNS the maximum priority to avoid DNS from resolving through other interfaces
 
