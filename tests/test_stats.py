@@ -1,15 +1,13 @@
 import os
-
-from unittest import TestCase
-from unittest.mock import patch, PropertyMock
-from eduvpn.nm import NMManager
-from eduvpn.variants import EDUVPN
-
-from eduvpn.ui import stats
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TextIO
+from unittest import TestCase
+from unittest.mock import PropertyMock, patch
 
+from eduvpn.nm import NMManager
+from eduvpn.ui import stats
+from eduvpn.variants import EDUVPN
 
 MOCK_IFACE = "mock"
 
