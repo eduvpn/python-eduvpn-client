@@ -55,7 +55,7 @@ $ sudo apt autoremove
 
 Then install via Pip, see [Pip Installation](./installation.md#pip-installation)
 
-### Fedora (37 & 38, x86_64)
+### Fedora (37, 38 & 39, x86_64)
 
 First we must remove the old files, repository and associated signing
 keys:

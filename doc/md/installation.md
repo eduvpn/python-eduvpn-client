@@ -8,15 +8,14 @@ packages for Fedora, and Deb packages for Debian and Ubuntu.
 > **Note**
 > If your target is not supported you can make an issue on the
 > [GitHub repository](https://github.com/eduvpn/python-eduvpn-client) and we will see
-> if we can provide it. Right now we only provide x86_64
-> packages (we use a compiled dependency), if you want an ARM package for
-> a certain target you can also make an issue.
-
+> if we can provide it. Right now, for RPM and DEB, we only provide x86_64 packages (we use a compiled dependency).
+> If you want to install the client on ARM64, use the [Pip installation](#pip-installation) method.
 
 ## Installation using a script
+
 > **Note**
-> This needs curl installed, `sudo apt update && sudo apt install curl` on Debian/Ubuntu systems.
-> Fedora systems automatically have curl installed
+> This needs Curl installed, `sudo apt update && sudo apt install curl` on Debian/Ubuntu systems.
+> Fedora systems automatically have Curl installed
 
 We provide a script to ease the installation. This script works on the platforms we have official packages for: Debian/Ubuntu/Fedora/CentOS
 
@@ -82,6 +81,17 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
+### Ubuntu 23.10
+
+``` console
+$ sudo apt update
+$ sudo apt install apt-transport-https wget
+$ wget -O- https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4.gpg >/dev/null
+$ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4.gpg] https://app.eduvpn.org/linux/v4/deb/ mantic main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4.list
+$ sudo apt update
+$ sudo apt install eduvpn-client
+```
+
 ### Linux Mint 20.x
 
 ``` console
@@ -104,7 +114,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-### Fedora (37 & 38)
+### Fedora (38 & 39)
 
 ``` console
 $ curl -O https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
@@ -179,6 +189,10 @@ $ sudo dnf install \
 ```
 
 #### Pip commands
+
+> **Note**
+> If the Pip installation fails due to "error: externally-managed-environment",
+> we recommend you to try to install the package with [Pipx](https://github.com/pypa/pipx) instead
 
 You can then continue with installing via Pip:
 

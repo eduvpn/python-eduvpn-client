@@ -1,5 +1,6 @@
 import logging
 from gettext import gettext as _
+from gettext import ngettext
 
 import gi
 
@@ -121,12 +122,13 @@ class EduVpnGtkApplication(Gtk.Application):
             ),
         )
 
-    def enter_SessionPendingExpiryState(self):
+    def enter_SessionPendingExpiryState(self, h: int):
+        hours_text = ngettext("{0} hour.", "{0} hours.", h).format(h)
         self.connection_notification.show(
             title=_("Connected"),
             message=_(
-                "Your session is about to expire. "
-                "Renew the session to remain connected."
+                f"Your session will expire in {hours_text} "
+                "Renew the session to extend the validity."
             ),
         )
 

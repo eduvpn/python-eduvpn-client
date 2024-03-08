@@ -55,6 +55,7 @@ def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # ty
     Set the visibility of essential server list related components.
     """
     window.show_page(window.find_server_page)
+    window.current_shown_page = window.find_server_page
     show_ui_component(window.institute_list, show)
     show_ui_component(window.secure_internet_list, show)
     show_ui_component(window.other_server_list, show)

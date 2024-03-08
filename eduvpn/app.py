@@ -397,8 +397,12 @@ class ApplicationModel:
         server = self.current_server
 
         default_gateway = True
+        dns_search_domains: List[str] = []
         if server.profiles is not None and server.profiles.current is not None:
             default_gateway = server.profiles.current.default_gateway
+            dns_search_domains = getattr(
+                server.profiles.current, "dns_search_domains", []
+            )
 
         def on_connected():
             self.common.set_connected()
@@ -410,7 +414,13 @@ class ApplicationModel:
 
         def connect(config, config_type):
             connection = Connection.parse(str(config), config.config_type)
-            connection.connect(self.nm_manager, default_gateway, on_connect)
+            connection.connect(
+                self.nm_manager,
+                default_gateway,
+                self.config.allow_wg_lan,
+                dns_search_domains,
+                on_connect,
+            )
 
         self.common.set_connecting()
         connect(config, config_type)

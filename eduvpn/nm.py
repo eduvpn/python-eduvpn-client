@@ -1,6 +1,8 @@
 import enum
 import ipaddress
 import logging
+import os
+import socket
 import time
 import uuid
 from configparser import ConfigParser
@@ -391,11 +393,7 @@ class NMManager:
         self,
         new_connection: "NM.SimpleConnection",
         callback: Callable,
-        default_gateway: bool,
     ):
-        new_connection = self.set_setting_default_gateway(
-            new_connection, default_gateway
-        )
         new_connection = self.set_setting_ensure_permissions(new_connection)
         if self.uuid:
             old_con = self.client.get_connection_by_uuid(self.uuid)
@@ -403,19 +401,6 @@ class NMManager:
                 self.update_connection(old_con, new_connection, callback)
                 return
         self.add_connection(new_connection, callback)
-
-    def set_setting_default_gateway(
-        self, con: "NM.SimpleConnection", enable: bool
-    ) -> "NM.SimpleConnection":
-        "If True, make the VPN connection the default gateway."
-        _logger.debug(f"setting default gateway: {enable}")
-        ipv4_setting = con.get_setting_ip4_config()
-        ipv6_setting = con.get_setting_ip6_config()
-        ipv4_setting.set_property("never-default", not enable)
-        ipv6_setting.set_property("never-default", not enable)
-        con.add_setting(ipv4_setting)
-        con.add_setting(ipv6_setting)
-        return con
 
     def set_setting_ensure_permissions(
         self, con: "NM.SimpleConnection"
@@ -425,31 +410,38 @@ class NMManager:
         con.add_setting(s_con)
         return con
 
-    def save_connection(
-        self,
-        ovpn: Ovpn,
-        private_key,
-        certificate,
-        callback,
-        default_gateway,
-        system_wide,
-    ):
-        _logger.debug("writing configuration to Network Manager")
-        new_con = self.import_ovpn_with_certificate(ovpn, private_key, certificate)
-        self.set_connection(new_con, callback, default_gateway)
-
     def start_openvpn_connection(
-        self, ovpn: Ovpn, default_gateway, *, callback=None
+        self, ovpn: Ovpn, default_gateway, dns_search_domains, *, callback=None
     ) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
-        self.set_connection(new_con, callback, default_gateway)  # type: ignore
+        s_ip4 = new_con.get_setting_ip4_config()
+        s_ip6 = new_con.get_setting_ip6_config()
+
+        # avoid DNS leaks in default gateway
+        # see man nm-settings for dns-priority
+        # and https://systemd.io/RESOLVED-VPNS/
+        if default_gateway:
+            s_ip4.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip6.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip4.add_dns_search("~.")
+            s_ip6.add_dns_search("~.")
+        for i in dns_search_domains:
+            s_ip4.add_dns_search(i)
+            s_ip6.add_dns_search(i)
+        s_ip4.set_property("never-default", not default_gateway)
+        s_ip6.set_property("never-default", not default_gateway)
+        new_con.add_setting(s_ip4)
+        new_con.add_setting(s_ip6)
+
+        self.set_connection(new_con, callback)  # type: ignore
 
     def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
         default_gateway,
         *,
+        allow_wg_lan=False,
         callback=None,
     ) -> None:
         _logger.debug("writing wireguard configuration to Network Manager")
@@ -517,9 +509,21 @@ class NMManager:
             s_ip4.add_dns(i)
         for i in dns6:
             s_ip6.add_dns(i)
+
+        # avoid DNS leaks in default gateway
+        # see man nm-settings for dns-priority
+        # and https://systemd.io/RESOLVED-VPNS/
+        if default_gateway:
+            s_ip4.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip6.set_property(NM.SETTING_IP_CONFIG_DNS_PRIORITY, -2147483648)
+            s_ip4.add_dns_search("~.")
+            s_ip6.add_dns_search("~.")
         for i in dns_hostnames:
             s_ip4.add_dns_search(i)
             s_ip6.add_dns_search(i)
+
+        s_ip4.set_property("never-default", not default_gateway)
+        s_ip6.set_property("never-default", not default_gateway)
 
         s_ip4.set_property(NM.SETTING_IP_CONFIG_METHOD, "manual")
         s_ip6.set_property(NM.SETTING_IP_CONFIG_METHOD, "manual")
@@ -531,6 +535,44 @@ class NMManager:
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/SettingWireGuard.html
         w_con = NM.SettingWireGuard.new()
+
+        # manual routing
+        w_con.set_property(NM.SETTING_WIREGUARD_IP4_AUTO_DEFAULT_ROUTE, 0)
+        w_con.set_property(NM.SETTING_WIREGUARD_IP6_AUTO_DEFAULT_ROUTE, 0)
+
+        # we set some sensible default with an override using EDUVPN_WG_FWMARK
+        fwmark = int(os.environ.get("EDUVPN_WG_FWMARK", 51860))
+
+        s_ip4.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
+        s_ip6.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
+        w_con.set_property(NM.DEVICE_WIREGUARD_FWMARK, fwmark)
+
+        # The routing that is done by NM by default doesn't cut it
+        # It automatically adds a suppress prefixlength rule such that LAN traffic is allowed
+        # We want to make this configurable
+        # Additionally, the overlap case with split tunnel doesn't work: https://github.com/eduvpn/python-eduvpn-client/issues/551
+
+        rules = [(socket.AF_INET, s_ip4), (socket.AF_INET6, s_ip6)]
+        # priority 1 not fwmark fwmarknum table fwmarknum
+        for family, setting in rules:
+            rule = NM.IPRoutingRule.new(family)
+            rule.set_priority(1)
+            rule.set_invert(True)
+            # fwmask 0xffffffff is the default
+            rule.set_fwmark(fwmark, 0xFFFFFFFF)
+            rule.set_table(fwmark)
+
+            # when LAN should be allowed, we have to add a higher priority suppress prefixlength rule
+            if allow_wg_lan:
+                lan_rule = NM.IPRoutingRule.new(family)
+                # Downgrade the default wireguard rule priority
+                # And set the lan rule to a higher priority
+                rule.set_priority(2)
+                lan_rule.set_priority(1)
+                lan_rule.set_suppress_prefixlength(0)
+                setting.add_routing_rule(lan_rule)
+            setting.add_routing_rule(rule)
+
         w_con.append_peer(peer)
         private_key = config["Interface"]["PrivateKey"]
         w_con.set_property(NM.SETTING_WIREGUARD_PRIVATE_KEY, private_key)
@@ -548,7 +590,7 @@ class NMManager:
         profile.add_setting(s_con)
         profile.add_setting(w_con)
 
-        self.set_connection(profile, callback, default_gateway)  # type: ignore
+        self.set_connection(profile, callback)  # type: ignore
 
     @run_in_glib_thread
     def activate_connection(self, callback: Optional[Callable] = None) -> None:

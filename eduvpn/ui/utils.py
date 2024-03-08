@@ -37,21 +37,21 @@ def should_show_error(error: Exception):
     return True
 
 
-def get_validity_text(validity: Validity) -> Tuple[bool, str]:
+def get_validity_text(validity: Validity) -> Tuple[bool, str, str]:
     if validity is None:
-        return (False, _("Valid for: <b>unknown</b>"))
+        return (False, _("N/A"), _("Valid for: <b>unknown</b>"))
     if validity.is_expired:
-        return (True, _("This session has expired"))
+        return (True, _("expired"), _("This session has expired"))
     delta = validity.remaining
     days = delta.days
-    hours = delta.seconds // 3600
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
     if days == 0:
         if hours == 0:
-            minutes = delta.seconds // 60
             if minutes == 0:
-                seconds = delta.seconds
                 return (
                     False,
+                    f"{seconds}s",
                     ngettext(
                         "Valid for: <b>{0} second</b>",
                         "Valid for: <b>{0} seconds</b>",
@@ -59,29 +59,43 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str]:
                     ).format(seconds),
                 )
             else:
+                # Round up minutes
+                round_up_minutes = minutes
+                label_text = "Valid for"
+                if seconds > 30:
+                    round_up_minutes += 1
+                    label_text = "Valid for less than"
+                if seconds < 30:
+                    label_text = "Valid for more than"
                 return (
                     False,
+                    f"{minutes}m {seconds}s",
                     ngettext(
-                        "Valid for: <b>{0} minute</b>",
-                        "Valid for: <b>{0} minutes</b>",
-                        minutes,
-                    ).format(minutes),
+                        label_text + ": <b>{0} minute</b>",
+                        label_text + ": <b>{0} minutes</b>",
+                        round_up_minutes,
+                    ).format(round_up_minutes),
                 )
         else:
+            # Round up hours
+            round_up_hours = hours
+            label_text = "Valid for"
+            if minutes > 30:
+                round_up_hours += 1
+                label_text = "Valid for less than"
+            if minutes < 30:
+                label_text = "Valid for more than"
             return (
                 False,
+                f"{hours}h {minutes}m {seconds}s",
                 ngettext(
-                    "Valid for: <b>{0} hour</b>", "Valid for: <b>{0} hours</b>", hours
-                ).format(hours),
+                    label_text + ": <b>{0} hour</b>",
+                    label_text + ": <b>{0} hours</b>",
+                    round_up_hours,
+                ).format(round_up_hours),
             )
     else:
-        dstr = ngettext(
-            "Valid for: <b>{0} day</b>", "Valid for: <b>{0} days</b>", days
-        ).format(days)
-        hstr = ngettext(" and <b>{0} hour</b>", " and <b>{0} hours</b>", hours).format(
-            hours
-        )
-        return (False, (dstr + hstr))
+        return (False, f"{days}d {hours}h {minutes}m {seconds}s", "")
 
 
 @run_in_glib_thread

@@ -11,7 +11,7 @@ from typing import Callable, Optional, Type
 import gi
 
 gi.require_version("Gtk", "3.0")  # noqa: E402
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 
 from eduvpn_common.state import State, StateType
@@ -23,6 +23,7 @@ from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
 from eduvpn import __version__
 from eduvpn_common import __version__ as commonver
+from eduvpn.connection import Validity
 from eduvpn.i18n import retrieve_country_name
 from eduvpn.server import StatusImage
 from eduvpn.settings import FLAG_PREFIX, IMAGE_PREFIX
@@ -101,6 +102,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.common = self.eduvpn_app.common
         handlers = {
             "on_info_delete": self.on_info_delete,
+            "on_settings_press_event": self.on_settings_button,
             "on_info_press_event": self.on_info_button,
             "on_go_back": self.on_go_back,
             "on_add_other_server": self.on_add_other_server,
@@ -110,6 +112,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             "on_server_row_activated": self.on_server_row_activated,
             "on_server_row_pressed": self.on_server_row_pressed,
             "on_search_changed": self.on_search_changed,
+            "on_allow_wg_lan_state_set": self.on_allow_wg_lan_state_set,
             "on_search_activate": self.on_search_activate,
             "on_switch_connection_state": self.on_switch_connection_state,
             "on_toggle_connection_info": self.on_toggle_connection_info,
@@ -191,6 +194,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.main_overlay = builder.get_object("mainOverlay")
 
+        self.previous_page_settings = None
+        self.previous_back_button = False
+        self.settings_page = builder.get_object("settingsPage")
+        self.settings_button = builder.get_object("settingsButton")
+        self.allow_wg_lan_switch = builder.get_object("allowWgLanSwitch")
+
         # Create a revealer
         self.clipboard = None
         self.initialize_clipboard()
@@ -207,6 +216,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_status_image = builder.get_object("connectionStatusImage")
         self.connection_status_label = builder.get_object("connectionStatusLabel")
         self.connection_session_label = builder.get_object("connectionSessionLabel")
+        self.connection_info_duration_text = builder.get_object(
+            "connectionInfoDurationText"
+        )
         self.connection_switch = builder.get_object("connectionSwitch")
         self.connection_info_expander = builder.get_object("connectionInfoExpander")
         self.connection_info_downloaded = builder.get_object(
@@ -224,6 +236,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_validity_thread_cancel: Optional[Callable] = None
         self.connection_renew_thread_cancel: Optional[Callable] = None
         self.connection_info_stats = None
+        self.current_shown_page = None
 
         self.info_dialog = builder.get_object("infoDialog")
 
@@ -429,6 +442,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # Add the frame to the revealer and show it
         self.error_revealer.add(error_revealer_frame)
         self.error_revealer.show()
+        self.shown_notification_times = set()
 
         # add the error revealer to the main overlay
         self.main_overlay.add_overlay(self.error_revealer)
@@ -470,12 +484,13 @@ For detailed information, see the log file located at:
         self.find_server_search_input.set_text(text)
 
     def show_loading_page(self, title: str, message: str) -> None:
+        self.loading_page.show()
         self.show_page(self.loading_page)
         self.loading_title.set_text(title)
         self.loading_message.set_text(message)
 
     def hide_loading_page(self) -> None:
-        self.hide_page(self.loading_page)
+        self.loading_page.hide()
 
     def set_connection_switch_state(self, state: bool) -> None:
         self.connection_switch_state = state
@@ -572,11 +587,15 @@ For detailed information, see the log file located at:
 
     # every second
     def update_connection_validity(self, expire_time: datetime) -> None:
-        is_expired, expiry_text = get_validity_text(
-            self.app.model.get_expiry(expire_time)
-        )
-        self.connection_session_label.show()
+        validity = self.app.model.get_expiry(expire_time)
+        is_expired, detailed_text, expiry_text = get_validity_text(validity)
         self.connection_session_label.set_markup(expiry_text)
+        if expiry_text:
+            self.connection_session_label.show()
+        else:
+            self.connection_session_label.hide()
+        self.connection_info_duration_text.show()
+        self.connection_info_duration_text.set_markup(detailed_text)
 
         # The connection is expired, show a notification
         if is_expired:
@@ -589,20 +608,28 @@ For detailed information, see the log file located at:
 
             self.eduvpn_app.enter_SessionExpiredState()
 
-    # Show renew button or not
-    def update_connection_renew(self) -> None:
-        if self.app.model.should_renew_button():
-            # Stop polling for updates as we're done toggling the button
-            if self.connection_renew_thread_cancel:
-                self.connection_renew_thread_cancel()
+    # Shows notifications according to https://docs.eduvpn.org/server/v3/client-implementation-notes.html#expiry
+    # The 0th case is handled with a separate notification inside of the expiry text handler
+    def ensure_expiry_notification_text(self, validity: Validity) -> None:
+        hours = [4, 2, 1]
+        for h in hours:
+            if h in self.shown_notification_times:
+                continue
+            delta = validity.remaining - timedelta(hours=h)
+            total_secs = delta.total_seconds()
+            if total_secs <= 0 and total_secs >= -120:
+                self.eduvpn_app.enter_SessionPendingExpiryState(h)
+                self.shown_notification_times.add(h)
+                break
 
-            # This is the first time that the renew session button will be visible
-            # Show a notification that it is pending expiry
-            if not self.renew_session_button.is_visible():
-                self.eduvpn_app.enter_SessionPendingExpiryState()
+    # Show renew button or not
+    def update_connection_renew(self, expire_time) -> None:
+        if self.app.model.should_renew_button():
+            # Show renew button
             self.renew_session_button.show()
-        else:
-            self.renew_session_button.hide()
+
+            validity = self.app.model.get_expiry(expire_time)
+            self.ensure_expiry_notification_text(validity)
 
     def update_connection_status(self, connected: bool) -> None:
         if connected:
@@ -688,7 +715,6 @@ For detailed information, see the log file located at:
         search.show_search_components(self, False)
         search.exit_server_search(self)
 
-    # TODO: Implement with Go callback
     def exit_ConfigureCustomServer(self, old_state, new_state):
         if not self.app.variant.use_predefined_servers:
             self.add_custom_server_button_container.hide()
@@ -878,6 +904,7 @@ For detailed information, see the log file located at:
         self.update_connection_server(server_info)
         self.reconnect_tcp_button.hide()
         self.renew_session_button.hide()
+        self.connection_session_label.hide()
 
     @ui_transition(State.DISCONNECTED, StateType.LEAVE)
     def exit_ConnectionStatus(self, old_state, new_state):
@@ -930,15 +957,15 @@ For detailed information, see the log file located at:
         self.failover_text.hide()
         self.connection_info_expander.hide()
         self.renew_session_button.hide()
+        self.shown_notification_times.clear()
 
     @ui_transition(State.CONNECTED, StateType.ENTER)
     def enter_ConnectedState(self, old_state, server_info):
+        self.shown_notification_times.clear()
         self.renew_session_button.hide()
         self.show_page(self.connection_page)
         self.show_back_button(False)
-        is_expanded = self.connection_info_expander.get_expanded()
-        if is_expanded:
-            self.start_connection_info()
+        self.start_connection_info()
         self.update_connection_status(True)
         self.update_connection_server(server_info)
         self.start_validity_renew(server_info)
@@ -961,7 +988,9 @@ For detailed information, see the log file located at:
             "update-validity",
         )
         self.connection_renew_thread_cancel = run_periodically(
-            run_in_glib_thread(self.update_connection_renew),
+            run_in_glib_thread(
+                partial(self.update_connection_renew, server_info.expire_time)
+            ),
             UPDATE_RENEW_INTERVAL,
             "update-renew",
         )
@@ -986,9 +1015,31 @@ For detailed information, see the log file located at:
         self.info_dialog.run()
         self.info_dialog.hide()
 
+    def on_settings_button(self, widget: EventBox, event: EventButton) -> None:
+        logger.debug("clicked settings button")
+        if self.current_shown_page is None:
+            return
+        self.settings_button.hide()
+        self.show_back_button(True)
+        self.previous_page_settings = self.current_shown_page
+        self.previous_back_button = self.back_button_container.props.visible
+        self.settings_page.show()
+        self.allow_wg_lan_switch.set_state(self.app.config.allow_wg_lan)
+        self.show_page(self.settings_page)
+
     def on_go_back(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked on go back")
-        self.call_model("go_back")
+        # We are in the settings if we have stored the previous settings page
+        # if so show the settings page and reset the previous page settings
+        if self.previous_page_settings is not None:
+            self.settings_button.show()
+            self.show_back_button(self.previous_back_button)
+            self.show_page(self.previous_page_settings)
+            self.settings_page.hide()
+            self.previous_page_settings = None
+            self.previous_back_button = False
+        else:
+            self.call_model("go_back")
 
     def on_add_other_server(self, button: Button) -> None:
         logger.debug("clicked on add other server")
@@ -1092,9 +1143,11 @@ For detailed information, see the log file located at:
             results = self.app.model.search_custom(query)
             search.update_results(self, results)
 
+    def on_allow_wg_lan_state_set(self, switch, state) -> None:
+        self.app.config.allow_wg_lan = state
+
     def on_search_activate(self, _=None):
         logger.debug("activated server search")
-        # TODO
 
     def on_switch_connection_state(self, _switch: Switch, state: bool) -> bool:
         logger.debug("clicked on switch connection state")
@@ -1144,7 +1197,7 @@ For detailed information, see the log file located at:
             def update_ui():
                 self.connection_info_downloaded.set_text(download)
                 self.connection_info_protocol.set_text(
-                    f"Protocol: <b>{GLib.markup_escape_text(protocol)}</b>"
+                    f"{GLib.markup_escape_text(protocol)}"
                 )
                 self.connection_info_protocol.set_use_markup(True)
                 self.connection_info_uploaded.set_text(upload)
@@ -1164,12 +1217,6 @@ For detailed information, see the log file located at:
 
     def on_toggle_connection_info(self, _):
         logger.debug("clicked on connection info")
-        was_expanded = self.connection_info_expander.get_expanded()
-
-        if not was_expanded:
-            self.start_connection_info()
-        else:
-            self.pause_connection_info()
 
     def on_profile_row_activated(
         self, widget: TreeView, row: TreePath, _col: TreeViewColumn
@@ -1249,7 +1296,6 @@ For detailed information, see the log file located at:
 
     def on_acknowledge_error(self, event):
         logger.debug("clicked on acknowledge error")
-        # TODO: Handle this case
 
     def on_renew_session_clicked(self, event):
         logger.debug("clicked on renew session")
