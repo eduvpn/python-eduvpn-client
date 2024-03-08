@@ -18,6 +18,7 @@ from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.utils import run_in_glib_thread
 from eduvpn.variants import ApplicationVariant
 
+from gi.repository import GLib  # type: ignore
 from gi.repository.Gio import Task  # type: ignore
 
 _logger = logging.getLogger(__name__)
@@ -25,10 +26,8 @@ _logger = logging.getLogger(__name__)
 LINUX_NET_FOLDER = Path("/sys/class/net")
 
 try:
-    import gi
-
     gi.require_version("NM", "1.0")
-    from gi.repository import NM, GLib  # type: ignore
+    from gi.repository import NM  # type: ignore
 except (ImportError, ValueError):
     _logger.warning("Network Manager not available")
     NM = None
