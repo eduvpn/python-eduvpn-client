@@ -13,13 +13,12 @@ from tempfile import mkdtemp
 from typing import Any, Callable, Optional, TextIO, Tuple
 
 from eduvpn_common.main import Jar
+from gi.repository.Gio import Cancellable, Task  # type: ignore
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.utils import run_in_glib_thread
 from eduvpn.variants import ApplicationVariant
-
-from gi.repository.Gio import Cancellable, Task  # type: ignore
 
 _logger = logging.getLogger(__name__)
 

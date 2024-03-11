@@ -11,25 +11,13 @@ from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes
 
 from eduvpn import nm
 from eduvpn.config import Configuration
-from eduvpn.connection import (
-    Config,
-    Connection,
-    parse_config,
-    parse_expiry,
-    parse_tokens,
-)
+from eduvpn.connection import (Config, Connection, parse_config, parse_expiry,
+                               parse_tokens)
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
-from eduvpn.server import (
-    ServerDatabase,
-    parse_profiles,
-    parse_required_transition,
-)
-from eduvpn.utils import (
-    handle_exception,
-    model_transition,
-    run_in_background_thread,
-    run_in_glib_thread,
-)
+from eduvpn.server import (ServerDatabase, parse_profiles,
+                           parse_required_transition)
+from eduvpn.utils import (handle_exception, model_transition,
+                          run_in_background_thread, run_in_glib_thread)
 from eduvpn.variants import ApplicationVariant
 
 logger = logging.getLogger(__name__)
