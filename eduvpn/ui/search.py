@@ -1,13 +1,13 @@
 import enum
-from functools import lru_cache
 from typing import Dict, List
 
-from eduvpn_common.discovery import DiscoOrganization, DiscoServer
-from eduvpn_common.server import InstituteServer, SecureInternetServer, Server
 from gi.overrides.Gtk import ListStore  # type: ignore
 
+from eduvpn.discovery import DiscoOrganization, DiscoServer
 from eduvpn.i18n import retrieve_country_name
+from eduvpn.server import InstituteServer, SecureInternetServer, Server
 from eduvpn.ui.utils import show_ui_component
+from eduvpn.utils import run_in_background_thread, run_in_glib_thread
 
 
 class ServerGroup(enum.Enum):
@@ -35,9 +35,7 @@ group_header_component = {
 }
 
 
-@lru_cache()
-def get_group_model(group: ServerGroup) -> ListStore:
-    # Model: (name: str, server: ServerType)
+def new_group_model() -> ListStore:
     from gi.repository import GObject, Gtk
 
     return Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
@@ -107,6 +105,10 @@ def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -
     """
     Set the visibility of the tree of result for a server type.
     """
+    # Hide secure internet list if a server is already available
+    if group == ServerGroup.SECURE_INTERNET and window.can_disable_secure_internet:
+        show = False
+
     scroll_component_name = group_scroll_component[group]
     scroll_component = getattr(window, scroll_component_name)
     show_ui_component(scroll_component, show)
@@ -133,12 +135,9 @@ def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # no
             # Only add this column once.
             column = Gtk.TreeViewColumn("", text_cell, text=0)  # type: ignore
             tree_view.append_column(column)
-        model = get_group_model(group)
-        sorted_model = Gtk.TreeModelSort(model=model)  # type: ignore
-        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)  # type: ignore
-        tree_view.set_model(sorted_model)
 
 
+@run_in_background_thread("search-exit")
 def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # noqa: E0602
     "Hide the search page components."
     for group in group_scroll_component:
@@ -153,16 +152,28 @@ def update_search_results_for_type(
     Update the UI with the search results
     for a single type of server.
     """
-    model = get_group_model(group)  # type: ignore
-    # Remove the old search results.
-    model.clear()  # type: ignore
-    # Add the new search results.
-    for server in servers:
-        model_data = server_to_model_data(server)
-        model.append(model_data)  # type: ignore
-    # Update the UI.
-    model_has_results = len(model) > 0  # type: ignore
-    show_group_tree(window, group, show=model_has_results)
+    from gi.repository import Gtk
+
+    @run_in_background_thread("search-convert-model")
+    def convert(servers, callback):
+        model = new_group_model()  # type: ignore
+        # Remove the old search results.
+        for server in servers:
+            model.append(server_to_model_data(server))
+
+        sorted_model = Gtk.TreeModelSort(model=model)  # type: ignore
+        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)  # type: ignore
+        callback(sorted_model)
+
+    @run_in_glib_thread
+    def callback(model):
+        model_has_results = len(model) > 0  # type: ignore
+        component_name = group_tree_component[group]
+        tree_view = getattr(window, component_name)
+        tree_view.set_model(model)
+        show_group_tree(window, group, show=model_has_results)
+
+    convert(servers, callback)
 
 
 def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore  # noqa: E0602
