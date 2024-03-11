@@ -1,3 +1,11 @@
+# 4.2.99.0 (2024-03-11)
+
+* Update eduvpn-common to 1.99.1
+* Implement WireGuard over TCP using Proxyguard
+* Have the ability to cancel any NetworkManager operation in the UI, e.g. if it takes a long time for OpenVPN/WireGuard to connect, you can simply click the connection slider to cancel
+* Convert the secure internet location button to a combobox
+* Disable the search for a secure internet server if one is already configured
+
 # 4.2.1 (2024-02-02)
 
 * Make the OpenVPN/WireGuard DNS the maximum priority to avoid DNS from resolving through other interfaces
