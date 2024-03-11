@@ -9,7 +9,6 @@ gi.require_version("Gtk", "3.0")  # noqa: E402
 import eduvpn_common.main as common
 from gi.repository import Gtk
 
-from eduvpn.i18n import country
 from eduvpn.ui.app import EduVpnGtkApplication
 from eduvpn.variants import EDUVPN, LETS_CONNECT
 
@@ -26,7 +25,7 @@ def main_loop(args=None, app_variant=EDUVPN):
 
     try:
         variant_settings = app_variant.settings
-        _common = common.EduVPN(*variant_settings, language=country())
+        _common = common.EduVPN(*variant_settings)
         app = EduVpnGtkApplication(app_variant=app_variant, common=_common)
         app.run(args)
     except Exception as e:
