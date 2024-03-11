@@ -236,7 +236,9 @@ class CommandLine:
 
         nm.action_with_mainloop(connect)
         if self.nm_manager.proxy is not None and self.common.in_state(State.CONNECTED):
-            input("you are connected but we are proxying your connection over TCP, exiting the CLI will close the VPN. Press a key to exit... ")
+            input(
+                "you are connected but we are proxying your connection over TCP, exiting the CLI will close the VPN. Press a key to exit... "
+            )
             print("disconnecting and exiting...")
             self.disconnect()
 
@@ -307,9 +309,7 @@ class CommandLine:
         print(f'Connected to: "{str(current)}" ({current.category})')
         validity = parse_expiry(self.common.get_expiry_times())
         valid_for = (
-            get_validity_text(validity)[1]
-            .replace("<b>", "")
-            .replace("</b>", "")
+            get_validity_text(validity)[1].replace("<b>", "").replace("</b>", "")
         )
         print(f"Valid for: {valid_for}")
         print(f"Current profile: {str(current.profiles.current)}")

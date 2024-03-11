@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 from eduvpn_common.main import ServerType
 
-from eduvpn.discovery import parse_disco_organizations, parse_disco_servers
+from eduvpn.discovery import DiscoOrganization, DiscoServer, parse_disco_organizations, parse_disco_servers
 from eduvpn.i18n import extract_translation
 from eduvpn.settings import IMAGE_PREFIX
 
@@ -217,7 +217,7 @@ def parse_servers(server_json: str) -> List[Server]:
     d = json.loads(server_json)
 
     institutes = d.get("institute_access_servers", [])
-    servers = []
+    servers: List[Server] = []
     for i in institutes:
         # TODO: delisted
         profiles = parse_profiles(i["profiles"])
@@ -273,7 +273,7 @@ class ServerDatabase:
     def __init__(self, wrapper, enable_discovery=True) -> None:
         self.wrapper = wrapper
         self.enable_discovery = enable_discovery
-        self.cached = []
+        self.cached: List[Union[DiscoServer, DiscoOrganization]] = []
 
     @property
     def disco(self):
@@ -334,4 +334,4 @@ class ServerDatabase:
             yield from self.all()
 
     def search_custom(self, query: str) -> Iterable[Server]:
-        yield Server(query, query)
+        yield Server(query, query)  # type: ignore[arg-type]

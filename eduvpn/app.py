@@ -17,12 +17,10 @@ from eduvpn.connection import (
     parse_config,
     parse_expiry,
     parse_tokens,
-    Validity,
 )
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import (
     ServerDatabase,
-    parse_current_server,
     parse_profiles,
     parse_required_transition,
 )
@@ -57,7 +55,7 @@ class ApplicationModelTransitions:
         return data
 
     @model_transition(State.ADDING_SERVER, StateType.ENTER)
-    def loading_server(self, old_state: State, data: str):
+    def adding_server(self, old_state: State, data: str):
         logger.debug(f"Transition: ADDING_SERVER, old state: {old_state}")
         return data
 
@@ -67,7 +65,7 @@ class ApplicationModelTransitions:
         return data
 
     @model_transition(State.DISCONNECTED, StateType.ENTER)
-    def loading_server(self, old_state: State, data: str):
+    def disconnected_server(self, old_state: State, data: str):
         logger.debug(f"Transition: DISCONNECTED, old state: {old_state}")
         return self.server_db.current
 
@@ -323,13 +321,6 @@ class ApplicationModel:
             logger.error("Failed saving tokens with exception:")
             logger.error(e, exc_info=True)
 
-    def show_error(self, error: str):
-        self.common.event_handler.run(
-            get_ui_state(ERROR_STATE),
-            get_ui_state(ERROR_STATE),
-            error,
-        )
-
     def on_proxy_setup(self, fd, peer_ips):
         logger.debug(f"got proxy fd: {fd}, peer_ips: {peer_ips}")
         self._peer_ips_proxy = json.loads(peer_ips)
@@ -361,10 +352,8 @@ class ApplicationModel:
         self._was_tcp = prefer_tcp
         self._should_failover = config.should_failover
 
-        # TODO: dns search domains
-        dns_search_domains = []
         if not config:
-            logger.Warning("no configuration available")
+            logger.warning("no configuration available")
             if callback:
                 callback(False)
             return
@@ -496,12 +485,12 @@ class ApplicationModel:
                 # We can try again
                 if i < retries - 1:
                     logger.debug(
-                        f"Got an error while cleaning up, try number: {i+1}. This could mean the connection was not fully disconnected yet. Trying again..."
+                        f"Got an error: {str(e)} while cleaning up, try number: {i+1}. This could mean the connection was not fully disconnected yet. Trying again..."
                     )
                 else:
                     # All retries are done
                     logger.debug(
-                        f"Got an error while cleaning up, after full retries: {i+1}."
+                        f"Got an error: {str(e)} while cleaning up, after full retries: {i+1}."
                     )
             else:
                 break

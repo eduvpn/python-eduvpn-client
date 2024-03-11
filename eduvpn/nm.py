@@ -2,8 +2,6 @@ import enum
 import ipaddress
 import logging
 import os
-import socket
-import sys
 import time
 import uuid
 from configparser import ConfigParser
@@ -14,7 +12,6 @@ from socket import AF_INET, AF_INET6, IPPROTO_TCP
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, TextIO, Tuple
 
-import gi
 from eduvpn_common.main import Jar
 
 from eduvpn.ovpn import Ovpn
@@ -781,8 +778,7 @@ class NMManager:
         # We run the disconnected callback early if a delete fail happens
         if self.uuid is None:
             _logger.debug("No uuid found for deleting the connection")
-            if callback:
-                callback(False)
+            callback(False)
             return
 
         con = self.client.get_connection_by_uuid(self.uuid)

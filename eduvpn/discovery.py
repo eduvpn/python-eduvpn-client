@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import Dict, List
 
 from eduvpn_common.main import ServerType
 
@@ -8,18 +8,18 @@ from eduvpn.i18n import extract_translation
 
 class DiscoOrganization:
     """The class that represents an organization from discovery
-    :param: display_name: str: The display name of the organizations
+    :param: display_name: Dict[str, str]: The display name of the organizations
     :param: org_id: str: The organization ID
     :param: secure_internet_home: str: Indicating which server is the secure internet home server
-    :param: keywords: The dictionary of strings that the users gets to search on to find the server
+    :param: keywords: Dict[str, str]: The dictionary of strings that the users gets to search on to find the server
     """
 
     def __init__(
         self,
-        display_name: dict[str, str],
+        display_name: Dict[str, str],
         org_id: str,
         secure_internet_home: str,
-        keywords: dict[str, str],
+        keywords: Dict[str, str],
     ):
         self.display_name = display_name
         self.org_id = org_id
@@ -43,8 +43,8 @@ class DiscoServer:
     :param: authentication_url_template: str: The OAuth template to use to skip WAYF
     :param: base_url: str: The base URL of the server
     :param: country_code: str: The country code of the server
-    :param: display_name: str: The display name of the server
-    :param: keywords: dict[str]: The dictionary of keywords that the user can use to find the server
+    :param: display_name: Dict[str, str]: The display name of the server
+    :param: keywords: Dict[str, str]: The dictionary of keywords that the user can use to find the server
     :param: public_keys: List[str]: The list of public keys
     :param: server_type: str: The server type as a string
     :param: support_contacts: List[str]: The list of support contacts
@@ -54,8 +54,8 @@ class DiscoServer:
         self,
         base_url: str,
         country_code: str,
-        display_name: dict[str, str],
-        keywords: dict[str, str],
+        display_name: Dict[str, str],
+        keywords: Dict[str, str],
         server_type: str,
         support_contacts: List[str],
     ):
