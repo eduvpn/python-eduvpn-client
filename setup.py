@@ -3,7 +3,7 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-__version__ = "4.2.1"
+__version__ = "4.2.99.0"
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
