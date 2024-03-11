@@ -188,6 +188,21 @@ $ sudo dnf install \
     cairo-gobject-devel
 ```
 
+For openSUSE Tumbleweed:
+```console
+$ zypper install \
+    libnotify \
+    libsecret \
+    gtk3 \
+    python3-gobject \
+    python3-pytest \
+    python3-cairo-devel \
+    gobject-introspection-devel \
+	typelib-1_0-Notify-0_7 \
+    typelib-1_0-Secret-1 \
+    typelib-1_0-Gtk-3_0
+```
+
 #### Pip commands
 
 > **Note**
