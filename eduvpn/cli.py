@@ -1,20 +1,27 @@
 # readline is used! It is for going up and down in interactive mode
 import argparse
+import json
 import readline  # noqa: W0611
 import sys
 from functools import partial
-from typing import Callable
+from typing import Callable, Optional
 
 import eduvpn_common.main as common
-from eduvpn_common.server import InstituteServer, SecureInternetServer, Server
+from eduvpn_common import __version__ as commonver
 from eduvpn_common.state import State, StateType
 
 import eduvpn.nm as nm
-from eduvpn_common import __version__ as commonver
 from eduvpn import __version__
 from eduvpn.app import Application
-from eduvpn.i18n import country, retrieve_country_name
-from eduvpn.server import ServerDatabase
+from eduvpn.connection import parse_expiry
+from eduvpn.i18n import retrieve_country_name
+from eduvpn.server import (
+    InstituteServer,
+    Profile,
+    SecureInternetServer,
+    Server,
+    ServerDatabase,
+)
 from eduvpn.settings import (
     CLIENT_ID,
     CONFIG_DIR_MODE,
@@ -39,17 +46,24 @@ def get_grouped_index(servers, index):
     return servers_added[index]
 
 
-def ask_profiles(app, profiles):
+def ask_profiles(app, data, current: Optional[Profile] = None) -> bool:
     # There is only a single profile
+    setter, profiles = data
     if len(profiles.profiles) == 1:
-        print("There is only a single profile for this server:", profiles.profiles[0])
-        app.model.set_profile(profiles.profiles[0])
+        _id, name = list(profiles.profiles.items())[0]
+        print("There is only a single profile for this server:", name)
+        setter(_id)
         return False
 
     # Multiple profiles, print the index
-    sorted_profiles = sorted(profiles.profiles, key=lambda p: str(p))
-    for index, profile in enumerate(sorted_profiles):
+    sorted_profiles = sorted(profiles.profiles.items(), key=lambda pair: str(pair[1]))
+    # Multiple profiles, print the index
+    index = 0
+    choices = []
+    for _id, profile in sorted_profiles:
         print(f"[{index+1}]: {str(profile)}")
+        choices.append(_id)
+        index += 1
 
     # And ask for the 1 based index
     while True:
@@ -57,11 +71,15 @@ def ask_profiles(app, profiles):
         try:
             profile_index = int(profile_nr)
 
-            if profile_index < 1 or profile_index > len(sorted_profiles):
+            if profile_index < 1 or profile_index > len(choices):
                 print(f"Invalid profile choice: {profile_index}")
                 continue
-            app.model.set_profile(sorted_profiles[profile_index - 1])
-            return True
+            chosen = choices[profile_index - 1]
+            if current is None or chosen != current.identifier:
+                setter(choices[profile_index - 1])
+                return True
+            print("Selected profile is the same as the current profile")
+            return False
         except ValueError:
             print(f"Input is not a number: {profile_nr}")
 
@@ -167,7 +185,7 @@ class CommandLine:
 
     def start_failover(self, callback: Callable):
         if not self.app.model.should_failover():
-            callback()
+            callback(False)
             return
 
         def on_reconnected(dropped):
@@ -179,22 +197,29 @@ class CommandLine:
                 print(
                     "Done testing, you are connected. If you experience any connectivity issues, you can disconnect and try again with the --tcp flag"
                 )
-            callback()
+            callback(dropped)
 
         print("Connected, but we are testing your VPN if it can reach the internet...")
         self.app.model.start_failover(on_reconnected)
 
     def connect_server(self, server, prefer_tcp: bool):
         def connect(callback=None):
+            def connect_cb(success: bool = False):
+                if success:
+                    self.start_failover(callback)
+                else:
+                    callback()
+
             @run_in_background_thread("connect")
-            def connect_background():
+            def connect_background(server):
                 try:
                     # Connect to the server and ensure it exists
-                    should_add = not self.server_db.has(server)
+                    not_exists = self.server_db.has(server) is None
+                    if not_exists:
+                        self.app.model.add(server)
                     self.app.model.connect(
                         server,
-                        lambda: self.start_failover(callback),
-                        ensure_exists=should_add,
+                        connect_cb,
                         prefer_tcp=prefer_tcp,
                     )
                 except Exception as e:
@@ -203,7 +228,7 @@ class CommandLine:
                     if callback:
                         callback()
 
-            connect_background()
+            connect_background(server)
 
         if not server:
             print("No server found to connect to, exiting...")
@@ -270,15 +295,15 @@ class CommandLine:
         return server
 
     def status(self, _args={}):
-        if not self.app.model.is_connected():
+        if not self.common.in_state(State.CONNECTED):
             print("You are currently not connected to a server", file=sys.stderr)
             return False
 
         current = self.app.model.current_server
         print(f'Connected to: "{str(current)}" ({current.category})')
-        expiry = self.app.model.current_server.expire_time
+        validity = parse_expiry(self.common.get_expiry_times())
         valid_for = (
-            get_validity_text(self.app.model.get_expiry(expiry))[1]
+            get_validity_text(validity, detailed=True)[1]
             .replace("<b>", "")
             .replace("</b>", "")
         )
@@ -289,7 +314,7 @@ class CommandLine:
         print(f"VPN Protocol: {self.nm_manager.protocol}")
 
     def connect(self, variables={}):
-        if self.app.model.is_connected():
+        if self.common.in_state(State.CONNECTED):
             print(
                 "You are already connected to a server, please disconnect first",
                 file=sys.stderr,
@@ -306,7 +331,7 @@ class CommandLine:
         return self.connect_server(server, prefer_tcp)
 
     def disconnect(self, _arg={}):
-        if not self.app.model.is_connected():
+        if not self.common.in_state(State.CONNECTED):
             print("You are not connected to a server", file=sys.stderr)
             return False
 
@@ -364,7 +389,7 @@ class CommandLine:
         self.app.model.remove(server)
 
     def change_profile(self, args={}):
-        if not self.app.model.is_connected():
+        if not self.common.in_state(State.CONNECTED):
             print(
                 "Please connect to a server first before changing profiles",
                 file=sys.stderr,
@@ -373,9 +398,12 @@ class CommandLine:
 
         server = self.app.model.current_server
 
+        setter = self.app.model.set_profile
         print("Current profile:", server.profiles.current)
 
-        if not ask_profiles(self.app, server.profiles):
+        # Return if profiles stayed the same
+        data = (setter, server.profiles)
+        if not ask_profiles(self.app, data, server.profiles.current):
             return
 
         @run_in_background_thread("change-profile-reconnect")
@@ -395,7 +423,7 @@ class CommandLine:
         nm.action_with_mainloop(reconnect)
 
     def change_location(self, args={}):
-        if not self.app.model.is_connected():
+        if not self.common.in_state(State.CONNECTED):
             print(
                 "Please connect to a Secure Internet server first before changing locations",
                 file=sys.stderr,
@@ -412,7 +440,8 @@ class CommandLine:
 
         print("Current location:", retrieve_country_name(server.country_code))
 
-        ask_locations(self.app, server.locations)
+        locations = json.loads(self.common.get_secure_locations())
+        ask_locations(self.app, locations)
 
         @run_in_background_thread("change-location-reconnect")
         def reconnect(callback=None):
@@ -431,15 +460,18 @@ class CommandLine:
         nm.action_with_mainloop(reconnect)
 
     def renew(self, args={}):
-        if not self.app.model.is_connected():
+        if not self.common.in_state(State.CONNECTED):
             print("Please connect to a server first before renewing", file=sys.stderr)
             return False
 
         def renew(callback):
+            def renew_cb(success: bool = False):
+                callback()
+
             @run_in_background_thread("renew")
             def renew_background():
                 try:
-                    self.app.model.renew_session(callback)
+                    self.app.model.renew_session(renew_cb)
                 except Exception as e:
                     if should_show_error(e):
                         print("An error occurred while trying to renew")
@@ -453,7 +485,7 @@ class CommandLine:
         nm.action_with_mainloop(renew)
 
     def remove(self, args={}):
-        if self.app.model.is_connected():
+        if self.common.in_state(State.CONNECTED):
             print(
                 "Please disconnect from your server before doing any changes",
                 file=sys.stderr,
@@ -648,8 +680,7 @@ class CommandLine:
         self.skip_yes = parsed.yes
 
         # Register the common library
-        self.common.register(parsed.debug)
-        self.common.set_token_updater(self.app.model.save_tokens)
+        self.app.model.register(parsed.debug)
 
         # Update the state by asking NetworkManager
         self.update_state(True)
@@ -683,17 +714,14 @@ class CommandLineTransitions:
 
 
 def eduvpn():
-    _common = common.EduVPN(CLIENT_ID, str(__version__), str(CONFIG_PREFIX), country())
+    _common = common.EduVPN(CLIENT_ID, __version__, str(CONFIG_PREFIX))
     cmd = CommandLine("eduVPN", EDUVPN, _common)
     cmd.start()
 
 
 def letsconnect():
     _common = common.EduVPN(
-        LETSCONNECT_CLIENT_ID,
-        str(__version__),
-        str(LETSCONNECT_CONFIG_PREFIX),
-        country(),
+        LETSCONNECT_CLIENT_ID, __version__, str(LETSCONNECT_CONFIG_PREFIX)
     )
     cmd = CommandLine("Let's Connect!", LETS_CONNECT, _common)
     cmd.start()
