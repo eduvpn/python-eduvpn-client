@@ -5,6 +5,7 @@
 * Have the ability to cancel any NetworkManager operation in the UI, e.g. if it takes a long time for OpenVPN/WireGuard to connect, you can simply click the connection slider to cancel
 * Convert the secure internet location button to a combobox
 * Disable the search for a secure internet server if one is already configured
+* Implement back button on choose profile page #453
 
 # 4.2.1 (2024-02-02)
 
