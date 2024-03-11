@@ -276,6 +276,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.disable_loading_page = False
 
+        self.proxy_active_dialog = builder.get_object("proxyActiveDialog")
+        self.proxy_active_dialog_remember = builder.get_object("proxyActiveRemember")
+
         self.info_dialog = builder.get_object("infoDialog")
 
         self.keyring_dialog = builder.get_object("keyringDialog")
@@ -1481,23 +1484,36 @@ For detailed information, see the log file located at:
 
     def on_close_window(self, window: "EduVpnGtkWindow", event: Event) -> bool:
         logger.debug("clicked on close window")
-        self.hide()  # type: ignore
 
         def close():
+            self.hide()  # type: ignore
             application = self.get_application()  # type: ignore
             if application:
                 application.on_window_closed()  # type: ignore
 
-        def on_switch_off(success):
-            if success:
-                self.eduvpn_app.enter_ProxyDisconnected()
+        if not self.common.in_state(State.CONNECTED) or not self.app.nm_manager.proxy:
+            close()
+            return True
 
+        quit_proxy = self.app.config.proxy_active_warning
+        # We can also have None
+        if quit_proxy is False:
+            logger.warning("not closing client as you have remembered to not close the client when a proxy is active")
+        if quit_proxy is None:
+            self.proxy_active_dialog.show()
+            _id = self.proxy_active_dialog.run()
+            quit_proxy = _id == QUIT_ID
+            self.proxy_active_dialog.hide()
+            if self.proxy_active_dialog_remember.get_active():
+                self.app.config.proxy_active_warning = quit_proxy
+
+        def deactivate_proxy_con(success):
+            if not success:
+                logger.debug("failed to deactivate proxy connection on quit")
             close()
 
-        if self.app.nm_manager.proxy:
-            self.call_model("deactivate_connection", on_switch_off)
-        else:
-            close()
+        if quit_proxy:
+           self.call_model("deactivate_connection", deactivate_proxy_con)
 
         return True
 

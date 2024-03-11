@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, Generic, Type, TypeVar
+from typing import Any, Dict, Generic, Optional, Type, TypeVar
 
 T = TypeVar("T")
 
@@ -11,6 +11,7 @@ CONFIG_FILE_NAME = "config.json"
 DEFAULT_SETTINGS = dict(
     ignore_keyring_warning=False,
     allow_wg_lan=True,
+    proxy_active_warning=None,
 )
 
 
@@ -66,3 +67,4 @@ class Configuration:
 
     ignore_keyring_warning = SettingDescriptor[bool]()
     allow_wg_lan = SettingDescriptor[bool]()
+    proxy_active_warning = SettingDescriptor[Optional[bool]]()
