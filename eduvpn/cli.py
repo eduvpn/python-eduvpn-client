@@ -303,11 +303,11 @@ class CommandLine:
         print(f'Connected to: "{str(current)}" ({current.category})')
         validity = parse_expiry(self.common.get_expiry_times())
         valid_for = (
-            get_validity_text(validity, detailed=True)[1]
+            get_validity_text(validity)[1]
             .replace("<b>", "")
             .replace("</b>", "")
         )
-        print(valid_for)
+        print(f"Valid for: {valid_for}")
         print(f"Current profile: {str(current.profiles.current)}")
         if isinstance(current, SecureInternetServer):
             print(f"Current location: {retrieve_country_name(current.country_code)}")
