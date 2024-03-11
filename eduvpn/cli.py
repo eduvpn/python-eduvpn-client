@@ -235,6 +235,10 @@ class CommandLine:
             return
 
         nm.action_with_mainloop(connect)
+        if self.nm_manager.proxy is not None and self.common.in_state(State.CONNECTED):
+            input("you are connected but we are proxying your connection over TCP, exiting the CLI will close the VPN. Press a key to exit... ")
+            print("disconnecting and exiting...")
+            self.disconnect()
 
     def ask_server_custom(self):
         custom = input("Enter a URL to connect to: ")
