@@ -125,3 +125,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /.idea/
+
+# ignore release dir
+/release/
+
+# ignore direnv
+/.direnv/
+/.envrc
+
+# ignore nix shell
+/shell.nix
