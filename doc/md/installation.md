@@ -218,7 +218,7 @@ $ sudo dnf install \
 
 For openSUSE Tumbleweed:
 ```console
-$ zypper install \
+$ sudo zypper install \
     libnotify \
     libsecret \
     gtk3 \
