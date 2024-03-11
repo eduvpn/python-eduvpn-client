@@ -1,7 +1,7 @@
 import os
 from glob import glob
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 __version__ = "4.2.1"
 
@@ -10,55 +10,59 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 
 install_requires = [
-    'wheel',
-    'eduvpn_common==1.2.0',
+    "wheel",
+    "eduvpn_common==1.2.0",
 ]
 
 tests_require = [
-    'pytest',
-    'pycodestyle',
+    "pytest",
+    "pycodestyle",
 ]
 
 mypy_require = [
-    'mypy',
-    'PyGObject-stubs',
-    'types-setuptools',
+    "mypy",
+    "PyGObject-stubs",
+    "types-setuptools",
 ]
 
 gui_require = [
-    'pygobject',
+    "pygobject",
 ]
 
 extras_require = {
-    'gui': gui_require,
-    'test': tests_require,
-    'mypy': mypy_require,
+    "gui": gui_require,
+    "test": tests_require,
+    "mypy": mypy_require,
 }
 
 
 def extra_files_line(dir_: str):
-    return dir_, [os.path.join(dir_, i) for i in os.listdir(dir_) if os.path.isfile(os.path.join(dir_, i))]
+    return dir_, [
+        os.path.join(dir_, i)
+        for i in os.listdir(dir_)
+        if os.path.isfile(os.path.join(dir_, i))
+    ]
 
 
 data_files = [
-    extra_files_line('share/applications'),
-    extra_files_line('share/eduvpn'),
-    extra_files_line('share/eduvpn/builder'),
-    extra_files_line('share/eduvpn/images'),
-    extra_files_line('share/eduvpn/images/flags/png'),
-    extra_files_line('share/letsconnect/images'),
-    extra_files_line('share/icons/hicolor/48x48/apps'),
-    extra_files_line('share/icons/hicolor/128x128/apps'),
-    extra_files_line('share/icons/hicolor/256x256/apps'),
-    extra_files_line('share/icons/hicolor/512x512/apps'),
+    extra_files_line("share/applications"),
+    extra_files_line("share/eduvpn"),
+    extra_files_line("share/eduvpn/builder"),
+    extra_files_line("share/eduvpn/images"),
+    extra_files_line("share/eduvpn/images/flags/png"),
+    extra_files_line("share/letsconnect/images"),
+    extra_files_line("share/icons/hicolor/48x48/apps"),
+    extra_files_line("share/icons/hicolor/128x128/apps"),
+    extra_files_line("share/icons/hicolor/256x256/apps"),
+    extra_files_line("share/icons/hicolor/512x512/apps"),
 ]
-for dir in glob('share/locale/*/LC_MESSAGES'):
-    data_files.append([dir, glob(os.path.join(dir,'*.mo'))])
+for dir in glob("share/locale/*/LC_MESSAGES"):
+    data_files.append([dir, glob(os.path.join(dir, "*.mo"))])
 
 setup(
     name="eduvpn_client",
     version=__version__,
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=["tests"]),
     data_files=data_files,
     install_requires=install_requires,
     extras_require=extras_require,
@@ -73,7 +77,7 @@ setup(
     test_suite="tests",
     keywords="vpn openvpn networking security",
     url="https://github.com/eduvpn/python-eduvpn-client",
-    python_requires='>=3.6',
+    python_requires=">=3.6",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -91,13 +95,13 @@ setup(
         "Environment :: X11 Applications",
     ],
     entry_points={
-        'console_scripts': [
-            'eduvpn-cli = eduvpn.cli:eduvpn',
-            'letsconnect-cli = eduvpn.cli:letsconnect',
+        "console_scripts": [
+            "eduvpn-cli = eduvpn.cli:eduvpn",
+            "letsconnect-cli = eduvpn.cli:letsconnect",
         ],
-        'gui_scripts': [
-            'eduvpn-gui = eduvpn.ui.__main__:eduvpn',
-            'letsconnect-gui = eduvpn.ui.__main__:letsconnect',
-        ]
-    }
+        "gui_scripts": [
+            "eduvpn-gui = eduvpn.ui.__main__:eduvpn",
+            "letsconnect-gui = eduvpn.ui.__main__:letsconnect",
+        ],
+    },
 )
