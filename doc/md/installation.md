@@ -142,10 +142,47 @@ EOF
 $ sudo dnf install eduvpn-client
 ```
 
+### NixOS
+
+The Linux client currently is in the NixOS unstable channel. If you are running the stable channel you need to wait for NixOS 24.05 to release or import it from the unstable channel in your configuration.
+
+The package name is `eduvpn-client` so you can just do:
+
+```
+nix-env -iA nixpkgs.eduvpn-client
+```
+
+or using the new Nix command (if you have it enabled with flakes)
+```
+nix run nixpkgs#eduvpn-client
+```
+
+The client needs NetworkManager, so make sure `networking.networkmanager.enable = true;` is set in your `configuration.nix`.
+
+Of course, you can also just add the `eduvpn-client` package to your `configuration.nix` or `home.nix` (in case you're using [home-manager](https://github.com/nix-community/home-manager)).
+
+Note that on NixOS the firewall can be pretty strict, see [The NixOS Wiki](https://nixos.wiki/wiki/WireGuard#Setting_up_WireGuard_with_NetworkManager) on how to allow WireGuard connections. OpenVPN should work out of the box.
+
 ### Arch (Unofficial)
 
 There is an unofficial package in the [Arch User Repository
-(AUR)](https://aur.archlinux.org/packages/python-eduvpn-client/).
+(AUR)](https://aur.archlinux.org/packages/python-eduvpn-client/). Make sure to first import the gpg signing key:
+
+```console
+$ curl https://app.eduvpn.org/linux/v4/deb/app+linux@eduvpn.org.asc | gpg --import -
+```
+
+Then build and install using your preferred AUR helper, e.g. `pamac`:
+
+```console
+$ pamac build python-eduvpn-client
+```
+
+or `yay`:
+
+```console
+$ yay -S python-eduvpn-client
+```
 
 ### Pip installation
 
