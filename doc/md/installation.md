@@ -10,6 +10,8 @@ packages for Fedora, and Deb packages for Debian and Ubuntu.
 > [GitHub repository](https://github.com/eduvpn/python-eduvpn-client) and we will see
 > if we can provide it. Right now, for RPM and DEB, we only provide x86_64 packages (we use a compiled dependency).
 > If you want to install the client on ARM64, use the [Pip installation](#pip-installation) method.
+>
+> For pre-release instructions see [Pre-releases](./prerelease.md)
 
 ## Installation using a script
 
@@ -250,10 +252,4 @@ You can then continue with installing via Pip:
 
 ``` console
 $ pip install "eduvpn-client[gui]"
-```
-
-Or, if you want to try out the bleeding edge development version:
-
-``` console
-$ pip install git+https://github.com/eduvpn/python-eduvpn-client.git
 ```
