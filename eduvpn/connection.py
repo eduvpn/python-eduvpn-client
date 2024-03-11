@@ -194,7 +194,7 @@ class OpenVPNConnection(Connection):
         super().__init__()
 
     @classmethod
-    def parse(cls, config_str: str) -> "OpenVPNConnection":
+    def parse(cls, config_str: str) -> "OpenVPNConnection":  # type: ignore
         ovpn = Ovpn.parse(config_str)
         return cls(ovpn=ovpn)
 
@@ -222,7 +222,7 @@ class WireGuardConnection(Connection):
         super().__init__()
 
     @classmethod
-    def parse(cls, config_str: str) -> "WireGuardConnection":
+    def parse(cls, config_str: str) -> "WireGuardConnection":  # type: ignore
         config = ConfigParser()
         config.read_string(config_str)
         return cls(config=config)

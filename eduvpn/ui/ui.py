@@ -7,7 +7,6 @@ import logging
 import os
 import sys
 import threading
-from functools import partial
 from gettext import gettext as _
 from typing import Callable, Optional, Tuple, Type
 
@@ -17,7 +16,6 @@ gi.require_version("Gtk", "3.0")  # noqa: E402
 gi.require_version("NM", "1.0")  # noqa: E402
 from datetime import datetime, timedelta
 from functools import partial
-from datetime import datetime
 
 from eduvpn_common import __version__ as commonver
 from eduvpn_common.state import State, StateType
@@ -878,14 +876,14 @@ For detailed information, see the log file located at:
         self.hide_loading_page()
 
     @ui_transition(State.GETTING_CONFIG, StateType.ENTER)
-    def enter_chosenServerInformation(self, new_state, data):
+    def enter_GettingConfig(self, new_state, data):
         self.show_loading_page(
             _("Getting a VPN configuration"),
             _("Loading server information..."),
         )
 
     @ui_transition(State.GETTING_CONFIG, StateType.LEAVE)
-    def exit_chosenServerInformation(self, old_state, data):
+    def exit_GettingConfig(self, old_state, data):
         self.hide_loading_page()
 
     @ui_transition(State.ASK_PROFILE, StateType.ENTER)
@@ -1469,7 +1467,7 @@ For detailed information, see the log file located at:
             if success:
                 return
             self.update_connection_status(False)
-            self.show_error_revealer(f"failed to renew session")
+            self.show_error_revealer("failed to renew session")
 
         self.call_model("renew_session", on_renew)
 
@@ -1498,7 +1496,9 @@ For detailed information, see the log file located at:
         quit_proxy = self.app.config.proxy_active_warning
         # We can also have None
         if quit_proxy is False:
-            logger.warning("not closing client as you have remembered to not close the client when a proxy is active")
+            logger.warning(
+                "not closing client as you have remembered to not close the client when a proxy is active"
+            )
         if quit_proxy is None:
             self.proxy_active_dialog.show()
             _id = self.proxy_active_dialog.run()
@@ -1513,7 +1513,7 @@ For detailed information, see the log file located at:
             close()
 
         if quit_proxy:
-           self.call_model("deactivate_connection", deactivate_proxy_con)
+            self.call_model("deactivate_connection", deactivate_proxy_con)
 
         return True
 
