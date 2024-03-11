@@ -91,7 +91,7 @@ $ sudo apt upgrade
 ### Fedora (38 & 39)
 
 ``` console
-$ curl -O https://app.eduvpn.org/linux/v4-dev/rpm/app+linux@eduvpn.org.asc
+$ curl -O https://app.eduvpn.org/linux/v4-dev/rpm/app+linux+dev@eduvpn.org.asc
 $ sudo rpm --import app+linux+dev@eduvpn.org.asc
 $ cat << 'EOF' | sudo tee /etc/yum.repos.d/python-eduvpn-client_v4-dev.repo
 [python-eduvpn-client_v4-dev]
@@ -106,7 +106,7 @@ $ sudo dnf upgrade
 ### CentOS (Stream 9)
 
 ``` console
-$ curl -O https://app.eduvpn.org/linux/v4-dev/rpm/app+linux@eduvpn.org.asc
+$ curl -O https://app.eduvpn.org/linux/v4-dev/rpm/app+linux+dev@eduvpn.org.asc
 $ sudo rpm --import app+linux+dev@eduvpn.org.asc
 $ cat << 'EOF' | sudo tee /etc/yum.repos.d/python-eduvpn-client_v4-dev.repo
 [python-eduvpn-client_v4-dev]
