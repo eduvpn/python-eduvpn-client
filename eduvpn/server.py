@@ -5,8 +5,12 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 from eduvpn_common.main import ServerType
 
-from eduvpn.discovery import (DiscoOrganization, DiscoServer,
-                              parse_disco_organizations, parse_disco_servers)
+from eduvpn.discovery import (
+    DiscoOrganization,
+    DiscoServer,
+    parse_disco_organizations,
+    parse_disco_servers,
+)
 from eduvpn.i18n import extract_translation
 from eduvpn.settings import IMAGE_PREFIX
 

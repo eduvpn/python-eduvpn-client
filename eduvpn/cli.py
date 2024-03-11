@@ -15,10 +15,20 @@ from eduvpn import __version__
 from eduvpn.app import Application
 from eduvpn.connection import parse_expiry
 from eduvpn.i18n import retrieve_country_name
-from eduvpn.server import (InstituteServer, Profile, SecureInternetServer,
-                           Server, ServerDatabase)
-from eduvpn.settings import (CLIENT_ID, CONFIG_DIR_MODE, CONFIG_PREFIX,
-                             LETSCONNECT_CLIENT_ID, LETSCONNECT_CONFIG_PREFIX)
+from eduvpn.server import (
+    InstituteServer,
+    Profile,
+    SecureInternetServer,
+    Server,
+    ServerDatabase,
+)
+from eduvpn.settings import (
+    CLIENT_ID,
+    CONFIG_DIR_MODE,
+    CONFIG_PREFIX,
+    LETSCONNECT_CLIENT_ID,
+    LETSCONNECT_CONFIG_PREFIX,
+)
 from eduvpn.ui.search import ServerGroup, group_servers
 from eduvpn.ui.utils import get_validity_text, should_show_error
 from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread
