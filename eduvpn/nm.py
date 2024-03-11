@@ -432,6 +432,7 @@ class NMManager:
         new_con.add_setting(s_ip4)
         new_con.add_setting(s_ip6)
 
+        self.proxy = None
         self.set_connection(new_con, callback)  # type: ignore
 
     def get_priorities(self, has_proxy: bool, has_lan: bool):
