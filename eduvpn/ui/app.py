@@ -84,8 +84,9 @@ class EduVpnGtkApplication(Gtk.Application):
         options = options.end().unpack()
 
         if "version" in options:  # type: ignore
-            from eduvpn import __version__
             from eduvpn_common import __version__ as commonver
+
+            from eduvpn import __version__
 
             print(
                 f"{self.app.variant.name} GUI version: {__version__} with eduvpn-common version: {commonver}"
@@ -101,13 +102,13 @@ class EduVpnGtkApplication(Gtk.Application):
 
     def on_quit(self, action: None = None, _param: None = None) -> None:
         logger.debug("quit")
-        # Deregister the common library to save settings
         try:
+            self.app.model.cancel()
+            # Deregister the common library to save settings
             self.common.deregister()
-        # Deregister is best effort
+        # Cleaning up is best effort
         except Exception as e:
-            logger.debug("failed deregistering library", e)
-        self.quit()  # type: ignore
+            logger.debug("failed cleaning up library", e)
 
     def on_window_closed(self) -> None:
         logger.debug("window closed")
@@ -119,6 +120,14 @@ class EduVpnGtkApplication(Gtk.Application):
             message=_(
                 "The error message has been copied to your clipboard. "
                 "Report it at https://github.com/eduvpn/python-eduvpn-client if you think it is an issue."
+            ),
+        )
+
+    def enter_ProxyDisconnected(self):
+        self.connection_notification.show(
+            title=_("Disconnected"),
+            message=_(
+                f"Your VPN was disconnected because a process was active (TCP proxy) and the client was closed"
             ),
         )
 
@@ -146,7 +155,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
         expired_deactivate()
 
-    @ui_transition(State.DISCONNECTED, StateType.ENTER)
+    @ui_transition(State.GOT_CONFIG, StateType.ENTER)
     def enter_NoActiveConnection(self, old_state, new_state):
         if not self.window.is_visible():
             # Quit the app if no window is open when the connection is deactivated.
