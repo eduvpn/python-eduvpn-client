@@ -3,7 +3,7 @@ from gettext import ngettext
 from typing import Tuple
 
 import gi
-from eduvpn_common.error import WrappedError
+from eduvpn_common.main import WrappedError
 
 from eduvpn.connection import Validity
 from eduvpn.utils import run_in_glib_thread
@@ -32,8 +32,7 @@ def style_widget(widget, class_name: str, style: str):
 
 def should_show_error(error: Exception):
     if isinstance(error, WrappedError):
-        if "cancelled OAuth" in str(error):
-            return False
+        return not error.misc
     return True
 
 
@@ -53,8 +52,8 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str, str]:
                     False,
                     f"{seconds}s",
                     ngettext(
-                        "Valid for: <b>{0} second</b>",
-                        "Valid for: <b>{0} seconds</b>",
+                        "Valid for <b>{0} second</b>",
+                        "Valid for <b>{0} seconds</b>",
                         seconds,
                     ).format(seconds),
                 )
@@ -95,7 +94,22 @@ def get_validity_text(validity: Validity) -> Tuple[bool, str, str]:
                 ).format(round_up_hours),
             )
     else:
-        return (False, f"{days}d {hours}h {minutes}m {seconds}s", "")
+        round_up_days = days
+        label_text = "Valid for"
+        if hours > 12:
+            round_up_days += 1
+            label_text = "Valid for less than"
+        if minutes < 12:
+            label_text = "Valid for more than"
+        return (
+            False,
+            f"{days}d {hours}h {minutes}m {seconds}s",
+            ngettext(
+                label_text + ": <b>{0} day</b>",
+                label_text + ": <b>{0} days</b>",
+                round_up_days,
+            ).format(round_up_days),
+        )
 
 
 @run_in_glib_thread
