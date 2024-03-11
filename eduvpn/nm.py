@@ -3,22 +3,26 @@ import ipaddress
 import logging
 import os
 import socket
+import sys
 import time
 import uuid
 from configparser import ConfigParser
 from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
-from socket import AF_INET, AF_INET6
+from socket import AF_INET, AF_INET6, IPPROTO_TCP
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, TextIO, Tuple
+
+import gi
+from eduvpn_common.main import Jar
 
 from eduvpn.ovpn import Ovpn
 from eduvpn.storage import get_uuid, set_uuid, write_ovpn
 from eduvpn.utils import run_in_glib_thread
 from eduvpn.variants import ApplicationVariant
 
-from gi.repository.Gio import Task  # type: ignore
+from gi.repository.Gio import Cancellable, Task  # type: ignore
 
 _logger = logging.getLogger(__name__)
 
@@ -83,19 +87,23 @@ class ConnectionState(enum.Enum):
 class NMManager:
     def __init__(self, variant: ApplicationVariant):
         self.variant = variant
+        self.proxy = None
         try:
-            self.client = NM.Client.new(None)
+            self._client = NM.Client.new(None)
             self.wg_gateway_ip: Optional[ipaddress.IPv4Address] = None
         except Exception:
-            self.client = None
+            self._client = None
+        self.cancel_jar = Jar(lambda x: x.cancel())
+
+    @property
+    def client(self) -> "NM.Client":
+        if self._client is None:
+            raise Exception("no client available")
+        return self._client
 
     @property
     def available(self) -> bool:
-        if NM is None:
-            return False
-        if self.client is None:
-            return False
-        return True
+        return self._client is not None
 
     # TODO: Move this somewhere else?
     def open_stats_file(self, filename: str) -> Optional[TextIO]:
@@ -210,6 +218,8 @@ class NMManager:
         if type == "vpn":
             return "OpenVPN"
         elif type == "wireguard":
+            if self.proxy:
+                return "WireGuard (Proxyguard)"
             return "WireGuard"
         return None
 
@@ -292,14 +302,17 @@ class NMManager:
             # if OpenVPN return the gateway from the ip config
             ipv4_config = self.ipv4_config
             if not ipv4_config:
+                _logger.debug("no ipv4_config found in OpenVPN failover endpoint")
                 return None
             return ipv4_config.get_gateway()
         elif protocol == "WireGuard":
             # if WireGuard return the cached IP
             if not self.wg_gateway_ip:
+                _logger.debug("no wg gateway ip found in failover endpoint")
                 return None
             return str(self.wg_gateway_ip)
         else:
+            _logger.debug(f"Unknown protocol: {protocol}")
             return None
 
     @property
@@ -360,34 +373,13 @@ class NMManager:
         callback: Optional[Callable] = None,
     ) -> None:
         _logger.debug("Adding new connection")
+        c = self.new_cancellable()
         self.client.add_connection_async(
             connection=connection,
             save_to_disk=True,
             callback=add_connection_callback,
-            user_data=(self, callback),
-        )
-
-    @run_in_glib_thread
-    def update_connection(
-        self, old_con: "NM.Connection", new_con: "NM.Connection", callback=None
-    ):
-        """
-        Update an existing Network Manager connection with the settings from another Network Manager connection
-        """
-        _logger.debug("Updating existing connection with new configuration")
-
-        # Don't attempt to overwrite the uuid,
-        # but reuse the one from the previous connection.
-        # Refer to issue #269.
-        for setting in new_con.get_settings():
-            if setting.get_name() == "connection":
-                setting.props.uuid = old_con.get_uuid()
-        old_con.replace_settings_from_connection(new_con)
-        old_con.commit_changes_async(
-            save_to_disk=True,
-            cancellable=None,
-            callback=update_connection_callback,
-            user_data=(self, callback),
+            cancellable=c,
+            user_data=(self, c, callback),
         )
 
     def set_connection(
@@ -396,12 +388,17 @@ class NMManager:
         callback: Callable,
     ):
         new_connection = self.set_setting_ensure_permissions(new_connection)
-        if self.uuid:
-            old_con = self.client.get_connection_by_uuid(self.uuid)
-            if old_con:
-                self.update_connection(old_con, new_connection, callback)
-                return
-        self.add_connection(new_connection, callback)
+        if self.existing_connection:
+
+            def deleted(success: bool):
+                if success:
+                    self.add_connection(new_connection, callback)
+                else:
+                    callback(False)
+
+            self.delete_connection(deleted)
+        else:
+            self.add_connection(new_connection, callback)
 
     def set_setting_ensure_permissions(
         self, con: "NM.SimpleConnection"
@@ -437,16 +434,30 @@ class NMManager:
 
         self.set_connection(new_con, callback)  # type: ignore
 
+    def get_priorities(self, has_proxy: bool, has_lan: bool):
+        # rule, proxy, lan
+        if has_proxy:
+            if has_lan:
+                return [3, 2, 1]
+            else:
+                return [2, 1, -1]
+        else:
+            if has_lan:
+                return [2, -1, 1]
+            else:
+                return [1, -1, -1]
+
     def start_wireguard_connection(  # noqa: C901
         self,
         config: ConfigParser,
         default_gateway,
         *,
         allow_wg_lan=False,
+        proxy=None,
+        proxy_peer_ips=None,
         callback=None,
     ) -> None:
         _logger.debug("writing wireguard configuration to Network Manager")
-
         ipv4s = []
         ipv6s = []
         self.wg_gateway_ip = None
@@ -543,36 +554,54 @@ class NMManager:
 
         # we set some sensible default with an override using EDUVPN_WG_FWMARK
         fwmark = int(os.environ.get("EDUVPN_WG_FWMARK", 51860))
+        listen_port = int(os.environ.get("EDUVPN_WG_LISTEN_PORT", 0))
 
         s_ip4.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
         s_ip6.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
         w_con.set_property(NM.DEVICE_WIREGUARD_FWMARK, fwmark)
+        w_con.set_property(NM.DEVICE_WIREGUARD_LISTEN_PORT, listen_port)
 
         # The routing that is done by NM by default doesn't cut it
         # It automatically adds a suppress prefixlength rule such that LAN traffic is allowed
         # We want to make this configurable
         # Additionally, the overlap case with split tunnel doesn't work: https://github.com/eduvpn/python-eduvpn-client/issues/551
 
-        rules = [(socket.AF_INET, s_ip4), (socket.AF_INET6, s_ip6)]
+        rules = [(4, AF_INET, s_ip4), (6, AF_INET6, s_ip6)]
         # priority 1 not fwmark fwmarknum table fwmarknum
-        for family, setting in rules:
+
+        prios = self.get_priorities(proxy is not None, allow_wg_lan)
+        for ipver, family, setting in rules:
             rule = NM.IPRoutingRule.new(family)
-            rule.set_priority(1)
+            rule.set_priority(prios[0])
             rule.set_invert(True)
             # fwmask 0xffffffff is the default
             rule.set_fwmark(fwmark, 0xFFFFFFFF)
             rule.set_table(fwmark)
+            setting.add_routing_rule(rule)
+
+            if proxy:
+                dport_proxy = proxy.peer_port
+                for proxy_peer_ip in proxy_peer_ips:
+                    address = ip_address(proxy_peer_ip)
+                    if address.version != ipver:
+                        continue
+                    proxy_rule = NM.IPRoutingRule.new(family)
+                    proxy_rule.set_priority(prios[1])
+                    sport = int(proxy.source_port)
+                    proxy_rule.set_source_port(sport, sport)
+                    proxy_rule.set_to(proxy_peer_ip, 32)
+                    proxy_rule.set_destination_port(dport_proxy, dport_proxy)
+                    proxy_rule.set_ipproto(IPPROTO_TCP)
+                    setting.add_routing_rule(proxy_rule)
 
             # when LAN should be allowed, we have to add a higher priority suppress prefixlength rule
             if allow_wg_lan:
                 lan_rule = NM.IPRoutingRule.new(family)
                 # Downgrade the default wireguard rule priority
                 # And set the lan rule to a higher priority
-                rule.set_priority(2)
-                lan_rule.set_priority(1)
+                lan_rule.set_priority(prios[2])
                 lan_rule.set_suppress_prefixlength(0)
                 setting.add_routing_rule(lan_rule)
-            setting.add_routing_rule(rule)
 
         w_con.append_peer(peer)
         private_key = config["Interface"]["PrivateKey"]
@@ -591,7 +620,36 @@ class NMManager:
         profile.add_setting(s_con)
         profile.add_setting(w_con)
 
+        self.proxy = proxy
+
         self.set_connection(profile, callback)  # type: ignore
+
+    def new_cancellable(self):
+        c = Cancellable.new()
+        self.cancel_jar.add(c)
+        c.connect(lambda: self.delete_cancellable(c))
+        return c
+
+    def new_connect_cancellable(self):
+        c = Cancellable.new()
+        c.connect(lambda: self.delete_connection_cancellable(c))
+        self.cancel_jar.add(c)
+        return c
+
+    def delete_connection_cancellable(self, c):
+        self.delete_cancellable(c)
+        self.deactivate_connection()
+
+    def cancel(self) -> bool:
+        needed_cancel = len(self.cancel_jar.cookies) > 0
+        self.cancel_jar.cancel()
+        return needed_cancel
+
+    def delete_cancellable(self, c):
+        try:
+            self.cancel_jar.delete(c)
+        except ValueError:
+            pass
 
     @run_in_glib_thread
     def activate_connection(self, callback: Optional[Callable] = None) -> None:
@@ -605,16 +663,22 @@ class NMManager:
             GLib.idle_add(lambda: self.activate_connection(callback))
             return
 
-        def activate_connection_callback(a_client, res, callback=None):
+        def activate_connection_callback(a_client, res, user_data=None):
+            callback = None
+            c = None
+            # Add the ability to cancel the connecting...
+            if user_data is not None:
+                c, callback = user_data
             try:
                 result = a_client.activate_connection_finish(res)
             except Exception as e:
                 _logger.error(e)
+                if c:
+                    self.delete_cancellable(c)
+                if callback:
+                    callback(False)
             else:
                 _logger.debug(f"activate_connection_async result: {result}")
-            finally:
-                if not callback:
-                    return
                 signal = None
 
                 def changed_state(
@@ -625,20 +689,41 @@ class NMManager:
                         ConnectionState.from_active_state(state)
                         == ConnectionState.CONNECTED
                     ):
+                        if c:
+                            self.delete_cancellable(c)
                         if signal:
                             active.disconnect(signal)
-                        callback()
+                        if callback:
+                            callback(result is not None)
+
+                    # This happens if the connection cancellable is called
+                    if (
+                        ConnectionState.from_active_state(state)
+                        == ConnectionState.DISCONNECTED
+                    ):
+                        if c:
+                            self.delete_cancellable(c)
+                        if signal:
+                            active.disconnect(signal)
+                        if callback:
+                            callback(False)
 
                 signal = self.active_connection.connect("state-changed", changed_state)
 
+        c = self.new_connect_cancellable()
         self.client.activate_connection_async(
-            connection=con, callback=activate_connection_callback, user_data=callback
+            connection=con,
+            callback=activate_connection_callback,
+            cancellable=c,
+            user_data=(c, callback),
         )
 
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
         connection = self.active_connection
         if connection is None:
             _logger.warning(f"no connection to deactivate of uuid {uuid}")
+            if callback:
+                callback(False)
             return
         type = connection.get_connection_type()
         if type == "vpn":
@@ -647,6 +732,8 @@ class NMManager:
             self.deactivate_connection_wg(callback)
         else:
             _logger.warning(f"unexpected connection type {type}")
+            if callback:
+                callback(False)
 
     @run_in_glib_thread
     def deactivate_connection_vpn(self, callback: Optional[Callable] = None) -> None:
@@ -654,18 +741,36 @@ class NMManager:
         _logger.debug(f"deactivate_connection uuid: {uuid} connection: {con}")
         if con:
 
-            def on_deactivate_connection(a_client: "NM.Client", res, callback=None):
+            def on_deactivate_connection(a_client: "NM.Client", res, user_data=None):
+                callback = None
+                c = None
+                if user_data is not None:
+                    c, callback = user_data
                 try:
                     result = a_client.deactivate_connection_finish(res)
                 except Exception as e:
-                    _logger.error(e)
+                    _logger.error(f"deactive_connection_async exception: {e}")
+                    if callback:
+                        callback(False)
                 else:
                     _logger.debug(f"deactivate_connection_async result: {result}")
                 finally:
-                    self.delete_connection(callback)
 
+                    def on_deleted(success: bool):
+                        if c:
+                            self.delete_cancellable(c)
+                        if callback:
+                            # Whether or not deletion was a success, we return true
+                            callback(success)
+
+                    self.delete_connection(on_deleted)
+
+            c = self.new_cancellable()
             self.client.deactivate_connection_async(
-                active=con, callback=on_deactivate_connection, user_data=callback
+                active=con,
+                callback=on_deactivate_connection,
+                cancellable=c,
+                user_data=(c, callback),
             )
         else:
             _logger.debug("No active connection to deactivate")
@@ -674,29 +779,39 @@ class NMManager:
     def delete_connection(self, callback: Callable) -> None:
         # We run the disconnected callback early if a delete fail happens
         if self.uuid is None:
-            _logger.warning("No uuid found for deleting the connection")
-            callback()
+            _logger.debug("No uuid found for deleting the connection")
+            if callback:
+                callback(False)
             return
 
         con = self.client.get_connection_by_uuid(self.uuid)
         if con is None:
-            _logger.warning(f"No uuid connection found to delete with uuid {uuid}")
-            callback()
+            _logger.debug(f"No uuid connection found to delete with uuid {uuid}")
+            callback(False)
             return
 
         # Delete the connection and after that do the callback
-        def on_deleted(a_con: "NM.RemoteConnection", res, callback=None):
+        def on_deleted(a_con: "NM.RemoteConnection", res, user_data=None):
+            callback = None
+            c = None
+            if user_data is not None:
+                c, callback = user_data
             try:
                 result = a_con.delete_finish(res)
             except Exception as e:
-                _logger.error(e)
+                _logger.error(f"delete_connection_async exception: {e}")
+                if callback:
+                    callback(False)
             else:
                 _logger.debug(f"delete_async result: {result}")
             finally:
+                if c:
+                    self.delete_cancellable(c)
                 if callback:
-                    callback()
+                    callback(result)
 
-        con.delete_async(callback=on_deleted, user_data=callback)
+        c = self.new_cancellable()
+        con.delete_async(callback=on_deleted, cancellable=c, user_data=(c, callback))
 
     @property
     def wireguard_device(self) -> Optional["NM.DeviceWireGuard"]:
@@ -714,22 +829,38 @@ class NMManager:
 
     @run_in_glib_thread
     def deactivate_connection_wg(self, callback: Optional[Callable] = None) -> None:
-        def on_disconnect(a_device: "NM.DeviceWireGuard", res, callback=None):
+        def on_disconnect(a_device: "NM.DeviceWireGuard", res, user_data=None):
+            callback = None
+            c = None
+            if user_data is not None:
+                c, callback = user_data
             try:
                 result = a_device.disconnect_finish(res)
             except Exception as e:
                 _logger.error(e)
+                if callback:
+                    callback(False)
             else:
                 _logger.debug(f"disconnect_async result: {result}")
             finally:
-                self.delete_connection(callback)
+
+                def on_deleted(success: bool):
+                    if c:
+                        self.delete_cancellable(c)
+                    if callback:
+                        callback(success)
+
+                self.delete_connection(on_deleted)
 
         _logger.debug(f"disconnect uuid: {uuid}")
         device = self.wireguard_device
         if device is None:
             _logger.warning("Cannot disconnect, no WireGuard device")
             return
-        device.disconnect_async(callback=on_disconnect, user_data=callback)
+        c = self.new_cancellable()
+        device.disconnect_async(
+            callback=on_disconnect, cancellable=c, user_data=(c, callback)
+        )
 
     def subscribe_to_status_changes(
         self,
@@ -751,6 +882,7 @@ class NMManager:
                 return
 
             state = NM.ActiveConnectionState(state_code)
+
             callback(ConnectionState.from_active_state(state))
 
         # Connect the state changed signal for an active connection
@@ -802,27 +934,21 @@ def action_with_mainloop(action: Callable):
     main_loop.run()
 
 
-def add_connection_callback(
-    client: "NM.Client", result: Task, user_data: Tuple[NMManager, Optional[Callable]]
-) -> None:
-    object, callback = user_data
-    new_con = client.add_connection_finish(result)
-    object.uuid = new_con.get_uuid()
-    _logger.debug(f"Connection added for uuid: {object.uuid}")
-    if callback is not None:
-        callback(new_con is not None)
-
-
-def update_connection_callback(
-    remote_connection, result, user_data: Tuple[NMManager, Optional[Callable]]
-):
-    object, callback = user_data
-    res = remote_connection.commit_changes_finish(result)
-    _logger.debug(
-        f"Connection updated for uuid: {object.uuid}, result: {res}, remote_con: {remote_connection}"
-    )
-    if callback is not None:
-        callback(result)
+def add_connection_callback(client: NM.Client, result: Task, user_data) -> None:
+    object, c, callback = user_data
+    try:
+        new_con = client.add_connection_finish(result)
+    except Exception as e:
+        object.delete_cancellable(c)
+        _logger.error(f"add connection error: {e}")
+        if callback is not None:
+            callback(False)
+    else:
+        object.delete_cancellable(c)
+        object.uuid = new_con.get_uuid()
+        _logger.debug(f"Connection added for uuid: {object.uuid}")
+        if callback is not None:
+            callback(new_con is not None)
 
 
 def is_wireguard_supported() -> bool:
