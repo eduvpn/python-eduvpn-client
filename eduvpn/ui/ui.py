@@ -838,6 +838,7 @@ For detailed information, see the log file located at:
                 old_state == get_ui_state(State.DEREGISTERED),
             ]
         ):
+            self.keyring_dialog.set_title(f"{self.app.variant.name} - Keyring Warning")
             self.keyring_dialog.show()
             _id = self.keyring_dialog.run()
             if _id == QUIT_ID:
@@ -1119,7 +1120,7 @@ For detailed information, see the log file located at:
 
     def on_info_button(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked info button")
-        self.info_dialog.set_title(f"{self.app.variant.name} Info")
+        self.info_dialog.set_title(f"{self.app.variant.name} - Info")
         self.info_dialog.show()
         self.info_dialog.run()
         self.info_dialog.hide()
@@ -1501,6 +1502,7 @@ For detailed information, see the log file located at:
                 "not closing client as you have remembered to not close the client when a proxy is active"
             )
         if quit_proxy is None:
+            self.proxy_active_dialog.set_title(f"{self.app.variant.name} - Proxy Warning")
             self.proxy_active_dialog.show()
             _id = self.proxy_active_dialog.run()
             quit_proxy = _id == QUIT_ID
