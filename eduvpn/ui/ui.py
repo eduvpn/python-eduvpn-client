@@ -1171,6 +1171,7 @@ For detailed information, see the log file located at:
             logger.debug(f"Server added, {str(server)}")
 
         if self.is_searching_server:
+            self.is_searching_server = False
             self.call_model("add", server, on_added)
             self.exit_search()
         else:
