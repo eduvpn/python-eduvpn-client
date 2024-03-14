@@ -345,14 +345,14 @@ class ApplicationModel:
         if os.environ.get("EDUVPN_PREFER_TCP", "0") == "1":
             prefer_tcp = True
         config = self.connect_get_config(server, prefer_tcp=prefer_tcp)
-        self._was_tcp = prefer_tcp
-        self._should_failover = config.should_failover
-
         if not config:
             logger.warning("no configuration available")
             if callback:
                 callback(False)
             return
+
+        self._was_tcp = prefer_tcp
+        self._should_failover = config.should_failover
 
         def on_connected(success: bool):
             if success:
