@@ -368,11 +368,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             try:
                 func(*(args))
                 if callback:
-                    callback()
+                    callback(True)
             except Exception as e:
                 if should_show_error(e):
                     self.show_error_revealer(str(e))
                 log_exception(e)
+                if callback:
+                    callback(False, str(e))
         else:
             raise Exception(f"No such function: {func_name}")
 
@@ -1281,31 +1283,41 @@ For detailed information, see the log file located at:
             self.connection_switch_state = state
 
             @run_in_glib_thread
-            def on_switch_on(success: bool):
+            def on_switch_on(success: bool, error: str = ""):
                 if success:
                     self.update_connection_status(True)
                     return
                 self.update_connection_status(False)
-                self.show_error_revealer("failed to activate connection")
+                # error not known, show a generic error
+                if not error:
+                    self.show_error_revealer("failed to activate connection")
 
             @run_in_glib_thread
-            def on_switch_off(success: bool):
+            def on_switch_off(success: bool, error: str = ""):
                 if success:
                     self.update_connection_status(False)
                     return
                 self.update_connection_status(True)
-                self.show_error_revealer("failed to deactivate connection")
+                # error not known, show a generic error
+                if not error:
+                    self.show_error_revealer("failed to deactivate connection")
 
             # Cancel everything if something was in progress
             # We return if something from NM was canceled
-            def on_canceled():
+            def on_canceled(success: bool, error: str = ""):
                 # The user has toggled the connection switch,
                 # as opposed to the ui itself setting it.
+                if not success:
+                    if not error:
+                        self.show_error_revealer("failed to activate connection as previous operations could not be canceled")
+                    return
                 if state:
-                    self.call_model("activate_connection", on_switch_on)
+                    # the second callback here is used if any exceptions happen
+                    self.call_model("activate_connection", on_switch_on, callback=on_switch_on)
                 else:
                     self.stop_connection_info()
-                    self.call_model("deactivate_connection", on_switch_off)
+                    # the second callback here is used if any exceptions happen
+                    self.call_model("deactivate_connection", on_switch_off, callback=on_switch_off)
 
             self.call_model("cancel", callback=on_canceled)
         return True
