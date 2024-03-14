@@ -945,7 +945,3 @@ def add_connection_callback(client: NM.Client, result: Task, user_data) -> None:
         _logger.debug(f"Connection added for uuid: {object.uuid}")
         if callback is not None:
             callback(new_con is not None)
-
-
-def is_wireguard_supported() -> bool:
-    return hasattr(NM, "WireGuardPeer")
