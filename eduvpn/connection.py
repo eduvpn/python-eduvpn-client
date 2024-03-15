@@ -170,10 +170,7 @@ class Connection:
 
     @classmethod
     def parse(cls, config: Config) -> "Connection":
-        if (
-            config.protocol == Protocol.WIREGUARD
-            or config.protocol == Protocol.WIREGUARDTCP
-        ):
+        if config.protocol == Protocol.WIREGUARD or config.protocol == Protocol.WIREGUARDTCP:
             connection_type = WireGuardConnection
         else:
             connection_type = OpenVPNConnection  # type: ignore

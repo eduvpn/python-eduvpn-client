@@ -135,9 +135,7 @@ def link_markup(link: str) -> str:
 
 
 @run_in_glib_thread
-def show_error_dialog(
-    parent, name: str, title: str, message: str, only_quit: bool = False
-):
+def show_error_dialog(parent, name: str, title: str, message: str, only_quit: bool = False):
     assert GtkAvailable
     dialog = Gtk.MessageDialog(  # type: ignore
         parent=parent,

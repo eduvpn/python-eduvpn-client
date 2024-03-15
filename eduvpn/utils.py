@@ -39,9 +39,7 @@ ERROR_STATE = 2 * len(State) + 1
 
 def handle_exception(common, exception):
     log_exception(exception)
-    common.event_handler.run(
-        get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), exception
-    )
+    common.event_handler.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), exception)
 
 
 def model_transition(state: State, state_type: StateType) -> Callable:
@@ -96,10 +94,7 @@ def cmd_transition(state: State, state_type: StateType):
 
 
 def init_logger(debug: bool, logfile, mode):
-    log_format = (
-        "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
-        " - %(filename)s:%(lineno)d - %(message)s"
-    )
+    log_format = "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s" " - %(filename)s:%(lineno)d - %(message)s"
     os.makedirs(
         os.path.dirname(logfile),
         mode=mode,

@@ -7,7 +7,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import GLib, Gio, Gtk
 from gi.repository.Gio import ApplicationCommandLine
 
 from eduvpn import i18n, notify
@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class EduVpnGtkApplication(Gtk.Application):
-    def __init__(
-        self, *args, app_variant: ApplicationVariant, common: EduVPN, **kwargs
-    ) -> None:
+    def __init__(self, *args, app_variant: ApplicationVariant, common: EduVPN, **kwargs) -> None:
         super().__init__(  # type: ignore
             *args,
             application_id=app_variant.app_id,
@@ -88,9 +86,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
             from eduvpn import __version__
 
-            print(
-                f"{self.app.variant.name} GUI version: {__version__} with eduvpn-common version: {commonver}"
-            )
+            print(f"{self.app.variant.name} GUI version: {__version__} with eduvpn-common version: {commonver}")
             return 0
 
         self.debug = "debug" in options  # type: ignore
@@ -127,18 +123,13 @@ class EduVpnGtkApplication(Gtk.Application):
         hours_text = ngettext("{0} hour.", "{0} hours.", h).format(h)
         self.connection_notification.show(
             title=_("Connected"),
-            message=_(
-                f"Your session will expire in {hours_text} "
-                "Renew the session to extend the validity."
-            ),
+            message=_(f"Your session will expire in {hours_text} " "Renew the session to extend the validity."),
         )
 
     def enter_SessionExpiredState(self):
         self.connection_notification.show(
             title=_("Session expired"),
-            message=_(
-                "Your session has expired. You have been disconnected from the VPN."
-            ),
+            message=_("Your session has expired. You have been disconnected from the VPN."),
         )
 
         @run_in_background_thread("expired-deactivate")
