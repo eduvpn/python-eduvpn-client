@@ -12,17 +12,23 @@ from typing import Callable, Optional, Tuple, Type
 
 import gi
 
-gi.require_version("Gtk", "3.0")  # noqa: E402
-gi.require_version("NM", "1.0")  # noqa: E402
+gi.require_version("Gtk", "3.0")
+gi.require_version("NM", "1.0")
 from datetime import datetime, timedelta
 from functools import partial
 
 from eduvpn_common import __version__ as commonver
 from eduvpn_common.state import State, StateType
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
-from gi.overrides.Gtk import TreePath  # type: ignore
-from gi.overrides.Gtk import Box, Builder, Button, TreeView, TreeViewColumn
-from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
+from gi.overrides.Gtk import (  # type: ignore[import-untyped]
+    Box,
+    Builder,
+    Button,
+    TreePath,  # type: ignore
+    TreeView,
+    TreeViewColumn,
+)
+from gi.repository import GLib, GObject, Gdk, GdkPixbuf, Gtk
 from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
 from eduvpn import __version__
@@ -112,8 +118,8 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
 
     def __new__(
-        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]  # type: ignore  # noqa: E0602
-    ) -> "EduVpnGtkWindow":
+        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]  # type: ignore  # noqa: F821
+    ) -> "EduVpnGtkWindow":  # noqa: F821
         builder = Gtk.Builder()
         builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
         window = builder.get_object("eduvpn")  # type: ignore
@@ -121,7 +127,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         window.set_application(application)  # type: ignore
         return window  # type: ignore
 
-    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore  # noqa: E0602
+    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore  # noqa: F821
         self.eduvpn_app = application
         self.app = self.eduvpn_app.app  # type: ignore
         self.common = self.eduvpn_app.common
