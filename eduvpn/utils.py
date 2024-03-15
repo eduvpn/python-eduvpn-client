@@ -139,7 +139,7 @@ def get_prefix() -> str:
         path to Python installation prefix
     """
     target = "share/eduvpn/builder/mainwindow.ui"
-    local = path.dirname(path.dirname(path.abspath(__file__)))
+    local = f"{path.dirname(path.abspath(path.abspath(__file__)))}/data"
     options = [local, path.expanduser("~/.local"), "/usr/local", prefix]
     for option in options:
         logger.debug(f"looking for '{target}' in '{option}'")
