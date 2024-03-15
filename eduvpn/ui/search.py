@@ -90,9 +90,7 @@ def group_servers(servers):
             isinstance(server, DiscoServer) and server.server_type == "institute_access"
         ):
             groups[ServerGroup.INSTITUTE_ACCESS].append(server)
-        elif isinstance(server, SecureInternetServer) or isinstance(
-            server, DiscoOrganization
-        ):
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
             groups[ServerGroup.SECURE_INTERNET].append(server)
         elif isinstance(server, Server):
             groups[ServerGroup.OTHER].append(server)

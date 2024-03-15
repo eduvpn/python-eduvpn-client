@@ -71,15 +71,19 @@ class ApplicationModelTransitions:
     def ask_profile(self, old_state: State, data: str):
         logger.debug(f"Transition: ASK_PROFILE, old state: {old_state}")
         cookie, profiles = parse_required_transition(data, get=parse_profiles)
+
         def set_profile(prof):
             self.common.cookie_reply(cookie, prof)
+
         return (set_profile, profiles)
 
     @model_transition(State.ASK_LOCATION, StateType.ENTER)
     def ask_location(self, old_state: State, data):
         cookie, locations = parse_required_transition(data)
+
         def set_location(loc):
             self.common.cookie_reply(cookie, loc)
+
         return (set_location, locations)
 
     @model_transition(State.OAUTH_STARTED, StateType.ENTER)
@@ -188,9 +192,7 @@ class ApplicationModel:
         try:
             rx_bytes_file = self.nm_manager.open_stats_file("rx_bytes")
             if rx_bytes_file is None:
-                logger.debug(
-                    "Failed to initialize failover, failed to open rx bytes file"
-                )
+                logger.debug("Failed to initialize failover, failed to open rx bytes file")
                 callback(False)
                 return
             endpoint = self.nm_manager.failover_endpoint_ip
@@ -254,9 +256,7 @@ class ApplicationModel:
     def connect_get_config(self, server, prefer_tcp: bool = False) -> Config:
         # We prefer TCP if the user has set it or UDP is determined to be blocked
         # TODO: handle discovery and tokens
-        config = self.common.get_config(
-            server.category_id, server.identifier, prefer_tcp
-        )
+        config = self.common.get_config(server.category_id, server.identifier, prefer_tcp)
         return parse_config(config)
 
     def clear_tokens(self, server_type: int, server_id: str):
@@ -299,9 +299,7 @@ class ApplicationModel:
 
     def save_tokens(self, server_id: str, server_type: int, tokens: str):
         tokens_parsed = parse_tokens(tokens)
-        if tokens is None or (
-            tokens_parsed.access == "" and tokens_parsed.refresh == ""
-        ):
+        if tokens is None or (tokens_parsed.access == "" and tokens_parsed.refresh == ""):
             logger.warning("Got empty tokens, not saving them to the keyring")
             return
         tokens_dict = {}
@@ -445,12 +443,8 @@ class ApplicationModel:
         else:
             do_profile()
 
-    def activate_connection(
-        self, callback: Optional[Callable] = None, prefer_tcp: bool = False
-    ):
-        if not self.common.in_state(State.DISCONNECTED) and not self.common.in_state(
-            State.MAIN
-        ):
+    def activate_connection(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
+        if not self.common.in_state(State.DISCONNECTED) and not self.common.in_state(State.MAIN):
             if callback:
                 logger.error("invalid state to activate connection")
                 callback(False)
@@ -484,9 +478,7 @@ class ApplicationModel:
                     )
                 else:
                     # All retries are done
-                    logger.debug(
-                        f"Got an error: {str(e)} while cleaning up, after full retries: {i+1}."
-                    )
+                    logger.debug(f"Got an error: {str(e)} while cleaning up, after full retries: {i+1}.")
             else:
                 break
 
@@ -556,9 +548,7 @@ class Application:
         # Check if a previous network configuration exists.
         uuid = self.nm_manager.existing_connection
         if uuid:
-            self.on_network_update_callback(
-                self.nm_manager.connection_state, needs_update
-            )
+            self.on_network_update_callback(self.nm_manager.connection_state, needs_update)
 
         @run_in_background_thread("on-network-update")
         def update(state):

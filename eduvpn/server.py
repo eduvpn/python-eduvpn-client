@@ -25,9 +25,7 @@ class Profile:
     :param: default_gateway: str: Whether or not this profile should have the default gateway set
     """
 
-    def __init__(
-        self, identifier: str, display_name: Dict[str, str], default_gateway: bool
-    ):
+    def __init__(self, identifier: str, display_name: Dict[str, str], default_gateway: bool):
         self.identifier = identifier
         self.display_name = display_name
         self.default_gateway = default_gateway
@@ -186,9 +184,7 @@ def parse_current_server(server_json: str) -> Optional[Server]:
     if t == ServerType.INSTITUTE_ACCESS:
         i = d["institute_access_server"]
         profiles = parse_profiles(i["profiles"])
-        return InstituteServer(
-            i["identifier"], i["display_name"], i["support_contacts"], profiles
-        )
+        return InstituteServer(i["identifier"], i["display_name"], i["support_contacts"], profiles)
     if t == ServerType.SECURE_INTERNET:
         si = d["secure_internet_server"]
         return parse_secure_internet(si)
@@ -207,9 +203,7 @@ def parse_profiles(profiles: dict) -> Profiles:
     return Profiles(returned, profiles["current"])
 
 
-def parse_required_transition(
-    transition_json: str, get: Optional[Callable] = None
-) -> Tuple[int, Any]:
+def parse_required_transition(transition_json: str, get: Optional[Callable] = None) -> Tuple[int, Any]:
     transition = json.loads(transition_json)
     data_parsed = transition["data"]
     if get is not None:
@@ -291,9 +285,7 @@ class ServerDatabase:
             return
         disco_orgs = []
         if self.secure_internet is None:
-            disco_orgs = parse_disco_organizations(
-                self.wrapper.get_disco_organizations()
-            )
+            disco_orgs = parse_disco_organizations(self.wrapper.get_disco_organizations())
         disco_servers = parse_disco_servers(self.wrapper.get_disco_servers())
         all_servers = disco_orgs
         all_servers.extend(disco_servers)
