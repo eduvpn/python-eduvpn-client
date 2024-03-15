@@ -93,4 +93,5 @@ clean:
 build: $(VENV)/
 	rm -rf build
 	rm -rf dist
+	$(VENV)/bin/pip install build
 	$(VENV)/bin/python3 -m build --sdist --wheel .
