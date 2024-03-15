@@ -10,7 +10,7 @@ from eduvpn.utils import run_in_glib_thread
 
 GtkAvailable = True
 try:
-    gi.require_version("Gtk", "3.0")  # noqa: E402
+    gi.require_version("Gtk", "3.0")
     from gi.repository import Gtk  # type: ignore
 except ValueError:
     GtkAvailable = False

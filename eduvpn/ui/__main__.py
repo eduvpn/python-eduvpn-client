@@ -4,7 +4,7 @@ import sys
 
 import gi
 
-gi.require_version("Gtk", "3.0")  # noqa: E402
+gi.require_version("Gtk", "3.0")
 
 import eduvpn_common.main as common
 from gi.repository import Gtk

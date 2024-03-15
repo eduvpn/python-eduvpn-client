@@ -226,18 +226,6 @@ def run_periodically(
     return event.set
 
 
-if sys.version_info < (3, 9):
-    # Backported from Python 3.10
-    # https://github.com/python/cpython/blob/3.10/Lib/functools.py#L651
-    def cache(func):
-        from functools import lru_cache
-
-        return lru_cache(maxsize=None)(func)
-
-else:
-    from functools import cache  # noqa: W0611
-
-
 def get_human_readable_bytes(total_bytes: int) -> str:
     """
     Helper function to calculate the human readable bytes.

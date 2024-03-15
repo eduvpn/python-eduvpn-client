@@ -1,7 +1,7 @@
-# readline is used! It is for going up and down in interactive mode
 import argparse
 import json
-import readline  # noqa: W0611
+# readline is used! It is for going up and down in interactive mode
+import readline  # noqa: F401
 import sys
 from functools import partial
 from typing import Callable, Optional

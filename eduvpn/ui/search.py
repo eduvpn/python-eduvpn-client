@@ -48,7 +48,7 @@ def server_to_model_data(server) -> list:
     return [display_string, server]
 
 
-def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: F821
     """
     Set the visibility of essential server list related components.
     """
@@ -59,7 +59,7 @@ def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # ty
     show_ui_component(window.other_server_list, show)
 
 
-def show_search_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_search_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: F821
     """
     Set the visibility of essential search related components.
     """
@@ -69,7 +69,7 @@ def show_search_components(window: "EduVpnGtkWindow", show: bool) -> None:  # ty
     show_ui_component(window.find_server_search_input, show)
 
 
-def show_search_results(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_search_results(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: F821
     """
     Set the visibility of the tree of the search result component in the UI.
     """
@@ -101,7 +101,7 @@ def group_servers(servers):
     return groups
 
 
-def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -> None:  # type: ignore  # noqa: E0602
+def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -> None:  # type: ignore  # noqa: F821
     """
     Set the visibility of the tree of result for a server type.
     """
@@ -120,7 +120,7 @@ def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -
     show_ui_component(header_component, show)
 
 
-def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # noqa: E0602
+def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # noqa: F821
     "Initialize the search page components."
     from gi.repository import Gtk, Pango
 
@@ -138,7 +138,7 @@ def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # no
 
 
 @run_in_background_thread("search-exit")
-def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # noqa: E0602
+def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # noqa: F821
     "Hide the search page components."
     for group in group_scroll_component:
         show_group_tree(window, group, False)
@@ -146,7 +146,9 @@ def exit_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # no
 
 
 def update_search_results_for_type(
-    window: "EduVpnGtkWindow", group: ServerGroup, servers  # type: ignore  # noqa: E0602
+    window: "EduVpnGtkWindow",  # type: ignore[name-defined] # noqa: F821
+    group: ServerGroup,
+    servers,  # type: ignore  # noqa: F821
 ) -> None:
     """
     Update the UI with the search results
@@ -176,7 +178,7 @@ def update_search_results_for_type(
     convert(servers, callback)
 
 
-def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore  # noqa: E0602
+def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore  # noqa: F821
     """
     Update the UI with the search results.
     """

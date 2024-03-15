@@ -4,7 +4,7 @@ from gettext import ngettext
 
 import gi
 
-gi.require_version("Gtk", "3.0")  # noqa: E402
+gi.require_version("Gtk", "3.0")
 from eduvpn_common.main import EduVPN
 from eduvpn_common.state import State, StateType
 from gi.repository import Gio, GLib, Gtk

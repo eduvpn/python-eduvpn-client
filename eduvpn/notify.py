@@ -1,7 +1,7 @@
 import gi
 
-gi.require_version("Notify", "0.7")  # noqa: E402
-from gi.repository import GdkPixbuf, Notify  # type: ignore
+gi.require_version("Notify", "0.7")
+from gi.repository import GdkPixbuf, Notify  # type: ignore[attr-defined]
 
 from eduvpn.variants import ApplicationVariant
 

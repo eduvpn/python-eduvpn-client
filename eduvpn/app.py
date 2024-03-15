@@ -71,13 +71,15 @@ class ApplicationModelTransitions:
     def ask_profile(self, old_state: State, data: str):
         logger.debug(f"Transition: ASK_PROFILE, old state: {old_state}")
         cookie, profiles = parse_required_transition(data, get=parse_profiles)
-        set_profile = lambda prof: self.common.cookie_reply(cookie, prof)
+        def set_profile(prof):
+            self.common.cookie_reply(cookie, prof)
         return (set_profile, profiles)
 
     @model_transition(State.ASK_LOCATION, StateType.ENTER)
     def ask_location(self, old_state: State, data):
         cookie, locations = parse_required_transition(data)
-        set_location = lambda loc: self.common.cookie_reply(cookie, loc)
+        def set_location(loc):
+            self.common.cookie_reply(cookie, loc)
         return (set_location, locations)
 
     @model_transition(State.OAUTH_STARTED, StateType.ENTER)
