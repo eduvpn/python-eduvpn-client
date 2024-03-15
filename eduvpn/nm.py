@@ -176,9 +176,7 @@ class NMManager:
     @property
     def connection_state(self) -> ConnectionState:
         connections = [
-            connection
-            for connection in self.client.get_active_connections()
-            if connection.get_uuid() == self.uuid
+            connection for connection in self.client.get_active_connections() if connection.get_uuid() == self.uuid
         ]
         if len(connections) == 1:
             connection = connections[0]
@@ -325,9 +323,7 @@ class NMManager:
         """
         Use the Network Manager VPN config importer to import an OpenVPN configuration file.
         """
-        vpn_infos = [
-            i for i in NM.VpnPluginInfo.list_load() if i.get_name() == "openvpn"
-        ]
+        vpn_infos = [i for i in NM.VpnPluginInfo.list_load() if i.get_name() == "openvpn"]
 
         if len(vpn_infos) != 1:
             raise Exception(f"Expected one openvpn VPN plugins, got: {len(vpn_infos)}")
@@ -336,9 +332,7 @@ class NMManager:
         conn.normalize()
         return conn
 
-    def import_ovpn_with_certificate(
-        self, ovpn: Ovpn, private_key: str, certificate: str
-    ) -> "NM.SimpleConnection":
+    def import_ovpn_with_certificate(self, ovpn: Ovpn, private_key: str, certificate: str) -> "NM.SimpleConnection":
         """
         Import the OVPN string into Network Manager.
         """
@@ -396,17 +390,13 @@ class NMManager:
         else:
             self.add_connection(new_connection, callback)
 
-    def set_setting_ensure_permissions(
-        self, con: "NM.SimpleConnection"
-    ) -> "NM.SimpleConnection":
+    def set_setting_ensure_permissions(self, con: "NM.SimpleConnection") -> "NM.SimpleConnection":
         s_con = con.get_setting_connection()
         s_con.add_permission("user", GLib.get_user_name(), None)
         con.add_setting(s_con)
         return con
 
-    def start_openvpn_connection(
-        self, ovpn: Ovpn, default_gateway, dns_search_domains, *, callback=None
-    ) -> None:
+    def start_openvpn_connection(self, ovpn: Ovpn, default_gateway, dns_search_domains, *, callback=None) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
         s_ip4 = new_con.get_setting_ip4_config()
@@ -463,13 +453,9 @@ class NMManager:
             if addr.version == 4:
                 if not self.wg_gateway_ip:
                     self.wg_gateway_ip = addr.network[1]
-                ipv4s.append(
-                    NM.IPAddress(AF_INET, str(addr.ip), addr.network.prefixlen)
-                )
+                ipv4s.append(NM.IPAddress(AF_INET, str(addr.ip), addr.network.prefixlen))
             elif addr.version == 6:
-                ipv6s.append(
-                    NM.IPAddress(AF_INET6, str(addr.ip), addr.network.prefixlen)
-                )
+                ipv6s.append(NM.IPAddress(AF_INET6, str(addr.ip), addr.network.prefixlen))
 
         dns4 = []
         dns6 = []
@@ -498,9 +484,7 @@ class NMManager:
         s_con.set_property(NM.SETTING_CONNECTION_ID, self.variant.name)
         s_con.set_property(NM.SETTING_CONNECTION_TYPE, "wireguard")
         s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
-        s_con.set_property(
-            NM.SETTING_CONNECTION_INTERFACE_NAME, self.variant.translation_domain
-        )
+        s_con.set_property(NM.SETTING_CONNECTION_INTERFACE_NAME, self.variant.translation_domain)
 
         # https://lazka.github.io/pgi-docs/NM-1.0/classes/WireGuardPeer.html#NM.WireGuardPeer
         peer = NM.WireGuardPeer.new()
@@ -678,14 +662,9 @@ class NMManager:
                 _logger.debug(f"activate_connection_async result: {result}")
                 signal = None
 
-                def changed_state(
-                    active: "NM.ActiveConnection", state_code: int, _reason_code: int
-                ):
+                def changed_state(active: "NM.ActiveConnection", state_code: int, _reason_code: int):
                     state = NM.ActiveConnectionState(state_code)
-                    if (
-                        ConnectionState.from_active_state(state)
-                        == ConnectionState.CONNECTED
-                    ):
+                    if ConnectionState.from_active_state(state) == ConnectionState.CONNECTED:
                         if c:
                             self.delete_cancellable(c)
                         if signal:
@@ -694,10 +673,7 @@ class NMManager:
                             callback(result is not None)
 
                     # This happens if the connection cancellable is called
-                    if (
-                        ConnectionState.from_active_state(state)
-                        == ConnectionState.DISCONNECTED
-                    ):
+                    if ConnectionState.from_active_state(state) == ConnectionState.DISCONNECTED:
                         if c:
                             self.delete_cancellable(c)
                         if signal:
@@ -815,8 +791,7 @@ class NMManager:
             device
             for device in self.client.get_all_devices()
             if device.get_type_description() == "wireguard"
-            and self.uuid
-            in {conn.get_uuid() for conn in device.get_available_connections()}
+            and self.uuid in {conn.get_uuid() for conn in device.get_available_connections()}
         ]
         if not devices:
             return None
@@ -854,9 +829,7 @@ class NMManager:
             _logger.warning("Cannot disconnect, no WireGuard device")
             return
         c = self.new_cancellable()
-        device.disconnect_async(
-            callback=on_disconnect, cancellable=c, user_data=(c, callback)
-        )
+        device.disconnect_async(callback=on_disconnect, cancellable=c, user_data=(c, callback))
 
     def subscribe_to_status_changes(
         self,
@@ -871,9 +844,7 @@ class NMManager:
 
         # The callback to monitor state changes
         # Let the state machine know for state updates
-        def wrapped_callback(
-            active: "NM.ActiveConnection", state_code: int, _reason_code: int
-        ):
+        def wrapped_callback(active: "NM.ActiveConnection", state_code: int, _reason_code: int):
             if active.get_uuid() != self.uuid:
                 return
 
@@ -887,9 +858,7 @@ class NMManager:
 
         # The callback when a connection gets added
         # Connect the signals
-        def wrapped_connection_added(
-            client: "NM.Client", active_con: "NM.ActiveConnection"
-        ):
+        def wrapped_connection_added(client: "NM.Client", active_con: "NM.ActiveConnection"):
             if active_con.get_uuid() != self.uuid:
                 return
             connect(active_con)
