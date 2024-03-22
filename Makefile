@@ -14,7 +14,7 @@ ifeq ("$(wildcard $(MYPY))","")
 	MYPY = $(shell echo "${PWD}/venv/bin/mypy")
 endif
 
-$(VENV)/:
+venv:
 	python3 -m venv venv
 	$(VENV)/bin/pip install --upgrade pip build
 
@@ -46,7 +46,7 @@ dnf:
 		gobject-introspection-devel \
 		cairo-gobject-devel
 
-install-mypy: $(VENV)/
+install-mypy: venv
 	PYGOBJECT_STUB_CONFIG=Gtk3,Gdk3 $(VENV)/bin/pip install ".[mypy]" --no-cache-dir
 
 mypy:
@@ -56,7 +56,7 @@ ifeq ("$(wildcard $(MYPY))","")
 endif
 	$(MYPY) eduvpn tests
 
-install-lint: $(VENV)/
+install-lint: venv
 	$(VENV)/bin/pip install ".[lint]"
 
 fmt:
@@ -76,13 +76,13 @@ endif
 # check formatting
 	$(RUFF) format --check eduvpn tests
 
-install-test: $(VENV)/
+install-test: venv
 	$(VENV)/bin/pip install ".[test]"
 
 test: install-test
 	$(VENV)/bin/python3 -m pytest tests
 
-install-eduvpn-common: $(VENV)/
+install-eduvpn-common: venv
 	$(VENV)/bin/pip install --index-url "https://test.pypi.org/simple/" eduvpn-common
 
 clean:
@@ -90,7 +90,7 @@ clean:
 	find  . -name *.pyc -delete
 	find  . -name __pycache__ -delete
 
-build: $(VENV)/
+build: venv
 	rm -rf build
 	rm -rf dist
 	$(VENV)/bin/pip install build
