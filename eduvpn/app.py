@@ -25,6 +25,7 @@ from eduvpn.utils import (
     model_transition,
     run_in_background_thread,
     run_in_glib_thread,
+    set_online_detecting,
 )
 from eduvpn.variants import ApplicationVariant
 
@@ -173,9 +174,7 @@ class ApplicationModel:
             logger.debug("eduvpn-common reports we should failover")
 
             if self._was_tcp:
-                logger.debug(
-                    "Protocol is not WireGuard and TCP was not previously triggered, failover should not continue"
-                )
+                logger.debug("TCP was not previously triggered, failover should not continue")
                 return False
             return True
 
@@ -188,16 +187,17 @@ class ApplicationModel:
 
         self.reconnect(on_reconnected, prefer_tcp=True)
 
+    @run_in_background_thread("start-failover")
     def start_failover(self, callback: Callable):
         try:
             rx_bytes_file = self.nm_manager.open_stats_file("rx_bytes")
             if rx_bytes_file is None:
-                logger.debug("Failed to initialize failover, failed to open rx bytes file")
+                logger.error("Failed to initialize failover, failed to open rx bytes file")
                 callback(False)
                 return
             endpoint = self.nm_manager.failover_endpoint_ip
             if endpoint is None:
-                logger.debug("Failed to initialize failover, failed to get endpoint")
+                logger.error("Failed to initialize failover, failed to get endpoint")
                 callback(False)
                 return
             mtu = self.nm_manager.mtu
@@ -215,20 +215,13 @@ class ApplicationModel:
 
             if dropped:
                 logger.debug("Failover exited, connection is dropped")
-                if self.common.in_state(State.CONNECTED):
-                    self.reconnect_tcp(callback)
-                    return
-                # Dropped but not relevant anymore
-                callback(False)
-                return
+                callback(True)
             else:
                 logger.debug("Failover exited, connection is NOT dropped")
                 callback(False)
-                return
         except WrappedError as e:
             logger.debug(f"Failed failover, error: {e}")
             callback(False)
-            return
 
     def change_secure_location(self, country_code: str):
         server = self.server_db.secure_internet
@@ -351,27 +344,64 @@ class ApplicationModel:
         self._was_tcp = prefer_tcp
         self._should_failover = config.should_failover
 
-        def on_connected(success: bool):
-            if success:
-                self.common.set_state(State.CONNECTED)
-            else:
+        def on_fail():
+            if self.common.in_state(State.CONNECTED):
                 self.common.set_state(State.DISCONNECTING)
                 self.common.set_state(State.DISCONNECTED)
             if callback:
-                callback(success)
+                callback(False)
+
+        def on_success():
+            # failed to disconnected
+            if self.common.in_state(State.CONNECTING):
+                self.common.set_state(State.CONNECTED)
+            if callback:
+                callback(True)
+
+        def final_connected(dropped: bool, error: str = ""):
+            # failover reports not dropped, return to connected if we are still in connecting
+            if not dropped:
+                if callback:
+                    callback(self.common.in_state(State.CONNECTING))
+                return
+
+            # Connection is dropped!
+            def on_disconnected(success: bool):
+                if success:
+
+                    def on_cleaned():
+                        self.connect(server, callback, True)
+
+                    # Cleanup and try again with TCP
+                    self.cleanup(on_cleaned)
+                else:
+                    # failed to set disconnect on the VPN, just set the state to connected
+                    on_success()
+
+            self.disconnect(on_disconnected)
+
+        def on_connected(success: bool):
+            if success:
+                # failover should not continue
+                if not self.should_failover():
+                    on_success()
+                else:
+                    set_online_detecting(self.common)
+                    # failover should start
+                    self.start_failover(final_connected)
+            else:
+                on_fail()
 
         def on_connect(success: bool):
             if success:
                 self.nm_manager.activate_connection(on_connected)
             else:
-                self.common.set_state(State.DISCONNECTING)
-                self.common.set_state(State.DISCONNECTED)
-                if callback:
-                    callback(False)
+                on_fail()
 
         @run_in_glib_thread
         def connect(config):
-            self.common.set_state(State.CONNECTING)
+            if not self.common.in_state(State.CONNECTING):
+                self.common.set_state(State.CONNECTING)
             connection = Connection.parse(config)
             connection.connect(
                 self.nm_manager,
@@ -485,18 +515,28 @@ class ApplicationModel:
         callback()
 
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
-        if not self.common.in_state(State.CONNECTED):
+        curr = None
+        if self.common.in_state(State.CONNECTED):
+            curr = State.CONNECTED
+
+        if self.common.in_state(State.CONNECTING):
+            curr = State.CONNECTING
+
+        if not curr:
             return
         self.common.set_state(State.DISCONNECTING)
 
         def on_disconnected(success: bool):
             if success:
-                self.cleanup()
-                self.common.set_state(State.DISCONNECTED)
-                if callback:
-                    callback(True)
+
+                def on_cleaned():
+                    self.common.set_state(State.DISCONNECTED)
+                    if callback:
+                        callback(True)
+
+                self.cleanup(on_cleaned)
             else:
-                self.common.set_state(State.CONNECTED)
+                self.common.set_state(curr)
                 if callback:
                     callback(False)
 
@@ -536,10 +576,11 @@ class Application:
             elif state == nm.ConnectionState.CONNECTING:
                 self.common.set_state(State.CONNECTING)
             elif state == nm.ConnectionState.DISCONNECTED:
-                if not self.common.in_state(State.CONNECTED):
+                if not self.common.in_state(State.CONNECTED) and not self.common.in_state(State.CONNECTING):
                     return
                 self.common.set_state(State.DISCONNECTING)
                 self.common.set_state(State.DISCONNECTED)
+                self.model.cancel()
         except Exception:
             return
 

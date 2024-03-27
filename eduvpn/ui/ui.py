@@ -49,6 +49,7 @@ from eduvpn.ui.utils import (
 )
 from eduvpn.utils import (
     ERROR_STATE,
+    ONLINEDETECT_STATE,
     get_prefix,
     get_ui_state,
     log_exception,
@@ -184,11 +185,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.app_logo_info = builder.get_object("appLogoInfo")
         self.info_support_box = builder.get_object("infoSupportBox")
 
-        self.failover_text = builder.get_object("failoverText")
-        self.failover_text_timeout_shown = False
-        self.failover_text_cancel = None
-        self.failover_label = builder.get_object("failoverLabel")
-
         self.page_stack = builder.get_object("pageStack")
         self.back_button_container = builder.get_object("backButtonEventBox")
 
@@ -285,6 +281,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.renew_session_button = builder.get_object("renewSessionButton")
         self.reconnect_tcp_button = builder.get_object("reconnectTCPButton")
+        self.reconnect_tcp_text = builder.get_object("reconnectTCPText")
         self.select_profile_combo = builder.get_object("selectProfileCombo")
         self.select_profile_text = builder.get_object("selectProfileText")
 
@@ -394,6 +391,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_error_state(self, old_state: str, error: Exception):
         if should_show_error(error):
             self.show_error_revealer(str(error))
+
+    @ui_transition(ONLINEDETECT_STATE, StateType.ENTER)  # type: ignore
+    def enter_online_detect_state(self, old_state: str, data: str):
+        self.connection_status_label.set_text(_("Connected, testing connection..."))
+        self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
+        self.set_connection_switch_state(True)
 
     @run_in_glib_thread
     def initialize_clipboard(self):
@@ -960,6 +963,7 @@ For detailed information, see the log file located at:
         self.update_connection_status(False)
         self.update_connection_server(server_info)
         self.reconnect_tcp_button.hide()
+        self.reconnect_tcp_text.hide()
         self.renew_session_button.hide()
         self.connection_session_label.hide()
 
@@ -972,48 +976,11 @@ For detailed information, see the log file located at:
         self.show_back_button(False)
         self.hide_page(self.connection_page)
 
-    @run_in_glib_thread
-    def update_failover_text(self, dropped):
-        if self.failover_text_cancel is not None:
-            GLib.source_remove(self.failover_text_cancel)
-        self.failover_text_cancel = None
-
-        if not dropped:
-            if self.failover_text_timeout_shown:
-                # not dropped but it took a while
-                self.reconnect_tcp_button.show()
-                self.failover_label.set_text(
-                    "There might be a problem with the VPN connection. If you observe any issues, press 'Reconnect with TCP'."
-                )
-                self.failover_text.show()
-        else:
-            # Show the failover text for 10 seconds
-            self.failover_text_cancel = GLib.timeout_add(10_000, self.hide_failover_text_timeout)
-            self.failover_label.set_text(
-                "The VPN had issues with connectivity. We have switched to a different protocol"
-            )
-            self.failover_text.show()
-
-    def hide_failover_text_timeout(self):
-        self.failover_text_cancel = None
-        self.failover_text.hide()
-        return False
-
-    def show_failover_text_timeout(self):
-        self.failover_text_cancel = None
-        self.failover_text_timeout_shown = True
-        self.failover_text.show()
-        return False
-
     @ui_transition(State.CONNECTED, StateType.LEAVE)
     def leave_ConnectedState(self, old_state, server_info):
         logger.debug("leave connected state")
-        if self.failover_text_cancel is not None:
-            GLib.source_remove(self.failover_text_cancel)
-        self.failover_text_timeout_shown = False
         self.reconnect_tcp_button.hide()
-        self.failover_text_cancel = None
-        self.failover_text.hide()
+        self.reconnect_tcp_text.hide()
         self.connection_info_expander.hide()
 
         # In this screen we want no loading pages
@@ -1045,10 +1012,8 @@ For detailed information, see the log file located at:
             self.connection_validity_timers.add_absolute(partial(self.start_validity_expiry_notification, validity), t)
 
         if self.app.model.should_failover():
-            self.failover_text_cancel = GLib.timeout_add(2500, self.show_failover_text_timeout)
-            self.failover_label.set_text("Checking the VPN for connectivity issues...")
-            self.call_model("start_failover", self.update_failover_text)
-            return
+            self.reconnect_tcp_button.show()
+            self.reconnect_tcp_text.show()
 
     def start_validity_countdown(self, validity) -> None:
         logger.debug("start validity countdown")
@@ -1238,49 +1203,50 @@ For detailed information, see the log file located at:
     def on_switch_connection_state(self, _switch: Switch, state: bool) -> bool:
         logger.debug("clicked on switch connection state")
 
-        if state is not self.connection_switch_state:
-            self.connection_switch_state = state
+        if state is self.connection_switch_state:
+            return True
+        self.connection_switch_state = state
 
-            @run_in_glib_thread
-            def on_switch_on(success: bool, error: str = ""):
-                if success:
-                    self.update_connection_status(True)
-                    return
-                self.update_connection_status(False)
-                # error not known, show a generic error
-                if not error:
-                    self.show_error_revealer("failed to activate connection")
-
-            @run_in_glib_thread
-            def on_switch_off(success: bool, error: str = ""):
-                if success:
-                    self.update_connection_status(False)
-                    return
+        @run_in_glib_thread
+        def on_switch_on(success: bool, error: str = ""):
+            if success:
                 self.update_connection_status(True)
-                # error not known, show a generic error
+                return
+            self.update_connection_status(False)
+            # error not known, show a generic error
+            if not error:
+                self.show_error_revealer("failed to activate connection")
+
+        @run_in_glib_thread
+        def on_switch_off(success: bool, error: str = ""):
+            if success:
+                self.update_connection_status(False)
+                return
+            self.update_connection_status(True)
+            # error not known, show a generic error
+            if not error:
+                self.show_error_revealer("failed to deactivate connection")
+
+        # Cancel everything if something was in progress
+        # We return if something from NM was canceled
+        def on_canceled(success: bool, error: str = ""):
+            # The user has toggled the connection switch,
+            # as opposed to the ui itself setting it.
+            if not success:
                 if not error:
-                    self.show_error_revealer("failed to deactivate connection")
+                    self.show_error_revealer(
+                        "failed to activate connection as previous operations could not be canceled"
+                    )
+                return
+            if state:
+                # the second callback here is used if any exceptions happen
+                self.call_model("activate_connection", on_switch_on)
+            else:
+                self.stop_connection_info()
+                # the second callback here is used if any exceptions happen
+                self.call_model("deactivate_connection", on_switch_off)
 
-            # Cancel everything if something was in progress
-            # We return if something from NM was canceled
-            def on_canceled(success: bool, error: str = ""):
-                # The user has toggled the connection switch,
-                # as opposed to the ui itself setting it.
-                if not success:
-                    if not error:
-                        self.show_error_revealer(
-                            "failed to activate connection as previous operations could not be canceled"
-                        )
-                    return
-                if state:
-                    # the second callback here is used if any exceptions happen
-                    self.call_model("activate_connection", on_switch_on, callback=on_switch_on)
-                else:
-                    self.stop_connection_info()
-                    # the second callback here is used if any exceptions happen
-                    self.call_model("deactivate_connection", on_switch_off, callback=on_switch_off)
-
-            self.call_model("cancel", callback=on_canceled)
+        self.call_model("cancel", callback=on_canceled)
         return True
 
     def pause_connection_info(self) -> None:
@@ -1442,6 +1408,7 @@ For detailed information, see the log file located at:
         def on_reconnected(_: bool):
             logger.debug("done reconnecting with tcp")
             self.reconnect_tcp_button.hide()
+            self.reconnect_tcp_text.hide()
 
         self.call_model("reconnect_tcp", on_reconnected)
 

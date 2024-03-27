@@ -35,11 +35,16 @@ def get_ui_state(state: State) -> int:
 
 
 ERROR_STATE = 2 * len(State) + 1
+ONLINEDETECT_STATE = ERROR_STATE + 1
 
 
 def handle_exception(common, exception):
     log_exception(exception)
     common.event_handler.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), exception)
+
+
+def set_online_detecting(common):
+    common.event_handler.run(get_ui_state(ONLINEDETECT_STATE), get_ui_state(ONLINEDETECT_STATE), "")
 
 
 def model_transition(state: State, state_type: StateType) -> Callable:
