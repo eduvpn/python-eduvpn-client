@@ -87,9 +87,7 @@ def parse_disco_server(s: dict) -> DiscoServer:
     # Mandatory
     server_type = s["server_type"]
     support_contacts = s.get("support_contact", None)
-    return DiscoServer(
-        b_url, country_code, display_name, keywords, server_type, support_contacts
-    )
+    return DiscoServer(b_url, country_code, display_name, keywords, server_type, support_contacts)
 
 
 def parse_disco_organization(o: dict) -> DiscoOrganization:

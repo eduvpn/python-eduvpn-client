@@ -35,13 +35,16 @@ def get_ui_state(state: State) -> int:
 
 
 ERROR_STATE = 2 * len(State) + 1
+ONLINEDETECT_STATE = ERROR_STATE + 1
 
 
 def handle_exception(common, exception):
     log_exception(exception)
-    common.event_handler.run(
-        get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), exception
-    )
+    common.event_handler.run(get_ui_state(ERROR_STATE), get_ui_state(ERROR_STATE), exception)
+
+
+def set_online_detecting(common):
+    common.event_handler.run(get_ui_state(ONLINEDETECT_STATE), get_ui_state(ONLINEDETECT_STATE), "")
 
 
 def model_transition(state: State, state_type: StateType) -> Callable:
@@ -96,10 +99,7 @@ def cmd_transition(state: State, state_type: StateType):
 
 
 def init_logger(debug: bool, logfile, mode):
-    log_format = (
-        "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s"
-        " - %(filename)s:%(lineno)d - %(message)s"
-    )
+    log_format = "%(asctime)s - %(threadName)s - %(levelname)s - %(name)s" " - %(filename)s:%(lineno)d - %(message)s"
     os.makedirs(
         os.path.dirname(logfile),
         mode=mode,
@@ -139,7 +139,7 @@ def get_prefix() -> str:
         path to Python installation prefix
     """
     target = "share/eduvpn/builder/mainwindow.ui"
-    local = path.dirname(path.dirname(path.abspath(__file__)))
+    local = f"{path.dirname(path.abspath(path.abspath(__file__)))}/data"
     options = [local, path.expanduser("~/.local"), "/usr/local", prefix]
     for option in options:
         logger.debug(f"looking for '{target}' in '{option}'")
@@ -224,18 +224,6 @@ def run_periodically(
 
     run_periodic_thread()
     return event.set
-
-
-if sys.version_info < (3, 9):
-    # Backported from Python 3.10
-    # https://github.com/python/cpython/blob/3.10/Lib/functools.py#L651
-    def cache(func):
-        from functools import lru_cache
-
-        return lru_cache(maxsize=None)(func)
-
-else:
-    from functools import cache  # noqa: W0611
 
 
 def get_human_readable_bytes(total_bytes: int) -> str:

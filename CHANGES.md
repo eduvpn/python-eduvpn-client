@@ -1,3 +1,7 @@
+# 4.2.99.1
+* Make dialog titles more consistent across the GUI
+* Handle errors better in the GUI when one happens during connecting
+
 # 4.2.99.0 (2024-03-11)
 
 * Update eduvpn-common to 1.99.1

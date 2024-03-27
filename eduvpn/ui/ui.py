@@ -12,17 +12,23 @@ from typing import Callable, Optional, Tuple, Type
 
 import gi
 
-gi.require_version("Gtk", "3.0")  # noqa: E402
-gi.require_version("NM", "1.0")  # noqa: E402
+gi.require_version("Gtk", "3.0")
+gi.require_version("NM", "1.0")
 from datetime import datetime, timedelta
 from functools import partial
 
 from eduvpn_common import __version__ as commonver
 from eduvpn_common.state import State, StateType
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
-from gi.overrides.Gtk import TreePath  # type: ignore
-from gi.overrides.Gtk import Box, Builder, Button, TreeView, TreeViewColumn
-from gi.repository import Gdk, GdkPixbuf, GLib, GObject, Gtk
+from gi.overrides.Gtk import (  # type: ignore[import-untyped]
+    Box,
+    Builder,
+    Button,
+    TreePath,  # type: ignore
+    TreeView,
+    TreeViewColumn,
+)
+from gi.repository import GLib, GObject, Gdk, GdkPixbuf, Gtk
 from gi.repository.Gtk import EventBox, SearchEntry, Switch  # type: ignore
 
 from eduvpn import __version__
@@ -43,6 +49,7 @@ from eduvpn.ui.utils import (
 )
 from eduvpn.utils import (
     ERROR_STATE,
+    ONLINEDETECT_STATE,
     get_prefix,
     get_ui_state,
     log_exception,
@@ -112,8 +119,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     __gtype_name__ = "EduVpnGtkWindow"
 
     def __new__(
-        cls: Type["EduVpnGtkWindow"], application: Type["EduVpnGtkApplication"]  # type: ignore  # noqa: E0602
-    ) -> "EduVpnGtkWindow":
+        cls: Type["EduVpnGtkWindow"],
+        application: Type["EduVpnGtkApplication"],  # type: ignore  # noqa: F821
+    ) -> "EduVpnGtkWindow":  # noqa: F821
         builder = Gtk.Builder()
         builder.add_from_file(get_template_path("mainwindow.ui"))  # type: ignore
         window = builder.get_object("eduvpn")  # type: ignore
@@ -121,7 +129,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         window.set_application(application)  # type: ignore
         return window  # type: ignore
 
-    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore  # noqa: E0602
+    def setup(self, builder: Builder, application: Type["EduVpnGtkApplication"]) -> None:  # type: ignore  # noqa: F821
         self.eduvpn_app = application
         self.app = self.eduvpn_app.app  # type: ignore
         self.common = self.eduvpn_app.common
@@ -176,11 +184,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.app_logo = builder.get_object("appLogo")
         self.app_logo_info = builder.get_object("appLogoInfo")
         self.info_support_box = builder.get_object("infoSupportBox")
-
-        self.failover_text = builder.get_object("failoverText")
-        self.failover_text_timeout_shown = False
-        self.failover_text_cancel = None
-        self.failover_label = builder.get_object("failoverLabel")
 
         self.page_stack = builder.get_object("pageStack")
         self.back_button_container = builder.get_object("backButtonEventBox")
@@ -241,31 +244,21 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer_label = None
         self.create_error_revealer()
 
-        self.add_custom_server_button_container = builder.get_object(
-            "addCustomServerRow"
-        )
+        self.add_custom_server_button_container = builder.get_object("addCustomServerRow")
         self.add_other_server_button_container = builder.get_object("addOtherServerRow")
 
         self.connection_page = builder.get_object("connectionPage")
         self.connection_status_image = builder.get_object("connectionStatusImage")
         self.connection_status_label = builder.get_object("connectionStatusLabel")
         self.connection_session_label = builder.get_object("connectionSessionLabel")
-        self.connection_info_duration_text = builder.get_object(
-            "connectionInfoDurationText"
-        )
+        self.connection_info_duration_text = builder.get_object("connectionInfoDurationText")
         self.connection_switch = builder.get_object("connectionSwitch")
         self.connection_info_expander = builder.get_object("connectionInfoExpander")
-        self.connection_info_downloaded = builder.get_object(
-            "connectionInfoDownloadedText"
-        )
+        self.connection_info_downloaded = builder.get_object("connectionInfoDownloadedText")
         self.connection_info_protocol = builder.get_object("connectionInfoProtocolText")
         self.connection_info_uploaded = builder.get_object("connectionInfoUploadedText")
-        self.connection_info_ipv4address = builder.get_object(
-            "connectionInfoIpv4AddressText"
-        )
-        self.connection_info_ipv6address = builder.get_object(
-            "connectionInfoIpv6AddressText"
-        )
+        self.connection_info_ipv4address = builder.get_object("connectionInfoIpv4AddressText")
+        self.connection_info_ipv6address = builder.get_object("connectionInfoIpv6AddressText")
         self.connection_info_thread_cancel = None
         self.connection_validity_timers = ValidityTimers()
         self.connection_validity_thread_cancel: Optional[Callable] = None
@@ -288,6 +281,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
         self.renew_session_button = builder.get_object("renewSessionButton")
         self.reconnect_tcp_button = builder.get_object("reconnectTCPButton")
+        self.reconnect_tcp_text = builder.get_object("reconnectTCPText")
         self.select_profile_combo = builder.get_object("selectProfileCombo")
         self.select_profile_text = builder.get_object("selectProfileText")
 
@@ -310,9 +304,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             self.find_server_image.set_from_file(self.app.variant.server_image)
         if not self.app.variant.use_predefined_servers:
             self.find_server_label.set_text(_("Server address"))
-            self.find_server_search_input.set_placeholder_text(
-                _("Enter the server address")
-            )
+            self.find_server_search_input.set_placeholder_text(_("Enter the server address"))
             self.info_support_box.hide()
 
         # We track the switch state so we can distinguish
@@ -368,11 +360,13 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
             try:
                 func(*(args))
                 if callback:
-                    callback()
+                    callback(True)
             except Exception as e:
                 if should_show_error(e):
                     self.show_error_revealer(str(e))
                 log_exception(e)
+                if callback:
+                    callback(False, str(e))
         else:
             raise Exception(f"No such function: {func_name}")
 
@@ -398,6 +392,12 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         if should_show_error(error):
             self.show_error_revealer(str(error))
 
+    @ui_transition(ONLINEDETECT_STATE, StateType.ENTER)  # type: ignore
+    def enter_online_detect_state(self, old_state: str, data: str):
+        self.connection_status_label.set_text(_("Connected, testing connection..."))
+        self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
+        self.set_connection_switch_state(True)
+
     @run_in_glib_thread
     def initialize_clipboard(self):
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
@@ -411,9 +411,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer.set_transition_duration(200)
 
         # Create a close button
-        error_revealer_close_image = Gtk.Image.new_from_icon_name(
-            "window-close", Gtk.IconSize.BUTTON
-        )
+        error_revealer_close_image = Gtk.Image.new_from_icon_name("window-close", Gtk.IconSize.BUTTON)
         error_revealer_close_button = Gtk.Button.new()
         error_revealer_close_button.set_halign(Gtk.Align.END)
         error_revealer_close_button.set_valign(Gtk.Align.START)
@@ -429,9 +427,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         )
 
         # Create a clipboard button
-        error_revealer_clipboard_image = Gtk.Image.new_from_icon_name(
-            "edit-copy", Gtk.IconSize.BUTTON
-        )
+        error_revealer_clipboard_image = Gtk.Image.new_from_icon_name("edit-copy", Gtk.IconSize.BUTTON)
         error_revealer_clipboard_button = Gtk.Button.new()
         error_revealer_clipboard_button.set_halign(Gtk.Align.END)
         error_revealer_clipboard_button.set_valign(Gtk.Align.START)
@@ -447,9 +443,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         )
 
         # Create the label
-        self.error_revealer_label = Gtk.Label.new(
-            "<b>Error occurred</b>: Example error"
-        )
+        self.error_revealer_label = Gtk.Label.new("<b>Error occurred</b>: Example error")
         self.error_revealer_label.set_use_markup(True)
         self.error_revealer_label.set_margin_bottom(20)
         self.error_revealer_label.set_margin_left(20)
@@ -565,9 +559,7 @@ For detailed information, see the log file located at:
     def get_profile_combo_sorted(self, server_info) -> Tuple[int, Gtk.ListStore]:
         profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
         active_profile = 0
-        sorted_profiles = sorted(
-            server_info.profiles.profiles.items(), key=lambda v: str(v[1])
-        )
+        sorted_profiles = sorted(server_info.profiles.profiles.items(), key=lambda v: str(v[1]))
         index = 0
         for _id, profile in sorted_profiles:
             if _id == server_info.profiles.current_id:
@@ -593,9 +585,7 @@ For detailed information, see the log file located at:
         combo.connect("changed", self.on_profile_combo_changed)
 
         # Get the position of the current combobox in the connection page
-        position = self.connection_page.child_get_property(
-            self.select_profile_combo, "position"
-        )
+        position = self.connection_page.child_get_property(self.select_profile_combo, "position")
 
         # Destroy the combobox and add the new one
         self.select_profile_combo.destroy()
@@ -619,9 +609,7 @@ For detailed information, see the log file located at:
             self.select_profile_text.set_text("Select Profile: ")
 
         if hasattr(server_info, "country_code"):
-            self.server_label.set_text(
-                f"{retrieve_country_name(server_info.country_code)}\n(via {str(server_info)})"
-            )
+            self.server_label.set_text(f"{retrieve_country_name(server_info.country_code)}\n(via {str(server_info)})")
             flag_path = get_flag_path(server_info.country_code)
             if flag_path:
                 self.server_image.set_from_file(flag_path)
@@ -633,11 +621,7 @@ For detailed information, see the log file located at:
             self.server_image.hide()
 
         if hasattr(server_info, "support_contact") and server_info.support_contact:
-            support_text = (
-                _("Support:")
-                + "\n"
-                + "\n".join(map(link_markup, server_info.support_contact))
-            )
+            support_text = _("Support:") + "\n" + "\n".join(map(link_markup, server_info.support_contact))
             self.server_support_label.set_markup(support_text)
             self.server_support_label.show()
         else:
@@ -793,9 +777,7 @@ For detailed information, see the log file located at:
             self.add_custom_server_button_container.hide()
 
     def fill_secure_location_combo(self, curr, locs):
-        locs_store = Gtk.ListStore(
-            GdkPixbuf.Pixbuf, GObject.TYPE_STRING, GObject.TYPE_STRING
-        )
+        locs_store = Gtk.ListStore(GdkPixbuf.Pixbuf, GObject.TYPE_STRING, GObject.TYPE_STRING)
         active_loc = 0
         sorted_locs = sorted(locs, key=lambda x: retrieve_country_name(x))
         index = 0
@@ -838,14 +820,13 @@ For detailed information, see the log file located at:
                 old_state == get_ui_state(State.DEREGISTERED),
             ]
         ):
+            self.keyring_dialog.set_title(f"{self.app.variant.name} - Keyring Warning")
             self.keyring_dialog.show()
             _id = self.keyring_dialog.run()
             if _id == QUIT_ID:
                 self.close()  # type: ignore
             self.keyring_dialog.destroy()
-            self.app.config.ignore_keyring_warning = (
-                self.keyring_do_not_show.get_active()
-            )
+            self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
 
     @ui_transition(State.MAIN, StateType.LEAVE)
     def exit_MainState(self, old_state, new_state):
@@ -928,9 +909,7 @@ For detailed information, see the log file located at:
         setter, locations = data
 
         location_tree_view = self.location_list
-        location_list_model = Gtk.ListStore(
-            GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT
-        )
+        location_list_model = Gtk.ListStore(GObject.TYPE_STRING, GdkPixbuf.Pixbuf, GObject.TYPE_PYOBJECT)
 
         if len(location_tree_view.get_columns()) == 0:
             # Only initialize this tree view once.
@@ -957,9 +936,7 @@ For detailed information, see the log file located at:
                 flag = None
             else:
                 flag = GdkPixbuf.Pixbuf.new_from_file(flag_path)
-            location_list_model.append(
-                [retrieve_country_name(location), flag, (setter, location)]
-            )
+            location_list_model.append([retrieve_country_name(location), flag, (setter, location)])
 
     @ui_transition(State.ASK_LOCATION, StateType.LEAVE)
     def exit_ChooseSecureInternetLocation(self, old_state, new_state):
@@ -986,6 +963,7 @@ For detailed information, see the log file located at:
         self.update_connection_status(False)
         self.update_connection_server(server_info)
         self.reconnect_tcp_button.hide()
+        self.reconnect_tcp_text.hide()
         self.renew_session_button.hide()
         self.connection_session_label.hide()
 
@@ -998,50 +976,11 @@ For detailed information, see the log file located at:
         self.show_back_button(False)
         self.hide_page(self.connection_page)
 
-    @run_in_glib_thread
-    def update_failover_text(self, dropped):
-        if self.failover_text_cancel is not None:
-            GLib.source_remove(self.failover_text_cancel)
-        self.failover_text_cancel = None
-
-        if not dropped:
-            if self.failover_text_timeout_shown:
-                # not dropped but it took a while
-                self.reconnect_tcp_button.show()
-                self.failover_label.set_text(
-                    "There might be a problem with the VPN connection. If you observe any issues, press 'Reconnect with TCP'."
-                )
-                self.failover_text.show()
-        else:
-            # Show the failover text for 10 seconds
-            self.failover_text_cancel = GLib.timeout_add(
-                10_000, self.hide_failover_text_timeout
-            )
-            self.failover_label.set_text(
-                "The VPN had issues with connectivity. We have switched to a different protocol"
-            )
-            self.failover_text.show()
-
-    def hide_failover_text_timeout(self):
-        self.failover_text_cancel = None
-        self.failover_text.hide()
-        return False
-
-    def show_failover_text_timeout(self):
-        self.failover_text_cancel = None
-        self.failover_text_timeout_shown = True
-        self.failover_text.show()
-        return False
-
     @ui_transition(State.CONNECTED, StateType.LEAVE)
     def leave_ConnectedState(self, old_state, server_info):
         logger.debug("leave connected state")
-        if self.failover_text_cancel is not None:
-            GLib.source_remove(self.failover_text_cancel)
-        self.failover_text_timeout_shown = False
         self.reconnect_tcp_button.hide()
-        self.failover_text_cancel = None
-        self.failover_text.hide()
+        self.reconnect_tcp_text.hide()
         self.connection_info_expander.hide()
 
         # In this screen we want no loading pages
@@ -1066,23 +1005,15 @@ For detailed information, see the log file located at:
         self.show_page(self.connection_page)
 
         # Show the button after a certain time period
-        self.connection_validity_timers.add_absolute(
-            self.renew_session_button.show, validity.button
-        )
+        self.connection_validity_timers.add_absolute(self.renew_session_button.show, validity.button)
 
         # Show the notifications
         for t in validity.notifications:
-            self.connection_validity_timers.add_absolute(
-                partial(self.start_validity_expiry_notification, validity), t
-            )
+            self.connection_validity_timers.add_absolute(partial(self.start_validity_expiry_notification, validity), t)
 
         if self.app.model.should_failover():
-            self.failover_text_cancel = GLib.timeout_add(
-                2500, self.show_failover_text_timeout
-            )
-            self.failover_label.set_text("Checking the VPN for connectivity issues...")
-            self.call_model("start_failover", self.update_failover_text)
-            return
+            self.reconnect_tcp_button.show()
+            self.reconnect_tcp_text.show()
 
     def start_validity_countdown(self, validity) -> None:
         logger.debug("start validity countdown")
@@ -1119,7 +1050,7 @@ For detailed information, see the log file located at:
 
     def on_info_button(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked info button")
-        self.info_dialog.set_title(f"{self.app.variant.name} Info")
+        self.info_dialog.set_title(f"{self.app.variant.name} - Info")
         self.info_dialog.show()
         self.info_dialog.run()
         self.info_dialog.hide()
@@ -1160,9 +1091,7 @@ For detailed information, see the log file located at:
         logger.debug("clicked on add custom server")
         self.enter_search(False)
 
-    def on_server_row_activated(
-        self, widget: TreeView, row: TreePath, _col: TreeViewColumn
-    ) -> None:
+    def on_server_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
         model = widget.get_model()
         server = model[row][1]
         logger.debug(f"activated server: {server!r}")
@@ -1171,6 +1100,7 @@ For detailed information, see the log file located at:
             logger.debug(f"Server added, {str(server)}")
 
         if self.is_searching_server:
+            self.is_searching_server = False
             self.call_model("add", server, on_added)
             self.exit_search()
         else:
@@ -1185,9 +1115,7 @@ For detailed information, see the log file located at:
             title=_("Server"),
             message_format=_("Removing server"),
         )
-        dialog.add_buttons(
-            _("Remove server"), gtk_remove_id, _("Do nothing"), gtk_nop_id
-        )
+        dialog.add_buttons(_("Remove server"), gtk_remove_id, _("Do nothing"), gtk_nop_id)
         dialog.format_secondary_text(_(f"Are you sure you want to remove server {str(server)}?"))  # type: ignore
         dialog.show()  # type: ignore
         response = dialog.run()  # type: ignore
@@ -1275,37 +1203,50 @@ For detailed information, see the log file located at:
     def on_switch_connection_state(self, _switch: Switch, state: bool) -> bool:
         logger.debug("clicked on switch connection state")
 
-        if state is not self.connection_switch_state:
-            self.connection_switch_state = state
+        if state is self.connection_switch_state:
+            return True
+        self.connection_switch_state = state
 
-            @run_in_glib_thread
-            def on_switch_on(success: bool):
-                if success:
-                    self.update_connection_status(True)
-                    return
-                self.update_connection_status(False)
+        @run_in_glib_thread
+        def on_switch_on(success: bool, error: str = ""):
+            if success:
+                self.update_connection_status(True)
+                return
+            self.update_connection_status(False)
+            # error not known, show a generic error
+            if not error:
                 self.show_error_revealer("failed to activate connection")
 
-            @run_in_glib_thread
-            def on_switch_off(success: bool):
-                if success:
-                    self.update_connection_status(False)
-                    return
-                self.update_connection_status(True)
+        @run_in_glib_thread
+        def on_switch_off(success: bool, error: str = ""):
+            if success:
+                self.update_connection_status(False)
+                return
+            self.update_connection_status(True)
+            # error not known, show a generic error
+            if not error:
                 self.show_error_revealer("failed to deactivate connection")
 
-            # Cancel everything if something was in progress
-            # We return if something from NM was canceled
-            def on_canceled():
-                # The user has toggled the connection switch,
-                # as opposed to the ui itself setting it.
-                if state:
-                    self.call_model("activate_connection", on_switch_on)
-                else:
-                    self.stop_connection_info()
-                    self.call_model("deactivate_connection", on_switch_off)
+        # Cancel everything if something was in progress
+        # We return if something from NM was canceled
+        def on_canceled(success: bool, error: str = ""):
+            # The user has toggled the connection switch,
+            # as opposed to the ui itself setting it.
+            if not success:
+                if not error:
+                    self.show_error_revealer(
+                        "failed to activate connection as previous operations could not be canceled"
+                    )
+                return
+            if state:
+                # the second callback here is used if any exceptions happen
+                self.call_model("activate_connection", on_switch_on)
+            else:
+                self.stop_connection_info()
+                # the second callback here is used if any exceptions happen
+                self.call_model("deactivate_connection", on_switch_off)
 
-            self.call_model("cancel", callback=on_canceled)
+        self.call_model("cancel", callback=on_canceled)
         return True
 
     def pause_connection_info(self) -> None:
@@ -1339,17 +1280,13 @@ For detailed information, see the log file located at:
                 ipv4 = self.connection_info_stats.ipv4
                 ipv6 = self.connection_info_stats.ipv6
             except ValueError as e:
-                logger.warning(
-                    f"Got an error when trying to retrieve stats: {e}. The connection might be closed."
-                )
+                logger.warning(f"Got an error when trying to retrieve stats: {e}. The connection might be closed.")
                 return
 
             @run_in_glib_thread
             def update_ui():
                 self.connection_info_downloaded.set_text(download)
-                self.connection_info_protocol.set_text(
-                    f"{GLib.markup_escape_text(protocol)}"
-                )
+                self.connection_info_protocol.set_text(f"{GLib.markup_escape_text(protocol)}")
                 self.connection_info_protocol.set_use_markup(True)
                 self.connection_info_uploaded.set_text(upload)
                 self.connection_info_ipv4address.set_text(ipv4)
@@ -1362,16 +1299,12 @@ For detailed information, see the log file located at:
 
         if not self.connection_info_thread_cancel:
             # Run every second in the background
-            self.connection_info_thread_cancel = run_periodically(
-                update_connection_info_callback, 1
-            )
+            self.connection_info_thread_cancel = run_periodically(update_connection_info_callback, 1)
 
     def on_toggle_connection_info(self, _):
         logger.debug("clicked on connection info")
 
-    def on_profile_row_activated(
-        self, widget: TreeView, row: TreePath, _col: TreeViewColumn
-    ) -> None:
+    def on_profile_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
         model = widget.get_model()
         setter, profile = model[row][1]
         logger.debug(f"activated profile: {profile!r}")
@@ -1430,9 +1363,7 @@ For detailed information, see the log file located at:
             # Restore the previous profile
             if not self.profile_ask_reconnect():
                 self.set_same_profile = True
-                active_index, model = self.get_profile_combo_sorted(
-                    self.app.model.current_server
-                )
+                active_index, model = self.get_profile_combo_sorted(self.app.model.current_server)
                 combo.set_model(model)
                 combo.set_active(active_index)
                 return
@@ -1477,6 +1408,7 @@ For detailed information, see the log file located at:
         def on_reconnected(_: bool):
             logger.debug("done reconnecting with tcp")
             self.reconnect_tcp_button.hide()
+            self.reconnect_tcp_text.hide()
 
         self.call_model("reconnect_tcp", on_reconnected)
 
@@ -1496,10 +1428,9 @@ For detailed information, see the log file located at:
         quit_proxy = self.app.config.proxy_active_warning
         # We can also have None
         if quit_proxy is False:
-            logger.warning(
-                "not closing client as you have remembered to not close the client when a proxy is active"
-            )
+            logger.warning("not closing client as you have remembered to not close the client when a proxy is active")
         if quit_proxy is None:
+            self.proxy_active_dialog.set_title(f"{self.app.variant.name} - Proxy Warning")
             self.proxy_active_dialog.show()
             _id = self.proxy_active_dialog.run()
             quit_proxy = _id == QUIT_ID
