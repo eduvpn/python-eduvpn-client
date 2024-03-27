@@ -461,7 +461,8 @@ class ApplicationModel:
 
         self.connect(self.current_server, on_connected, prefer_tcp=prefer_tcp)
 
-    def cleanup(self):
+    @run_in_background_thread("cleanup")
+    def cleanup(self, callback: Callable):
         # We retry this cleanup 2 times
         retries = 2
 
@@ -481,6 +482,7 @@ class ApplicationModel:
                     logger.debug(f"Got an error: {str(e)} while cleaning up, after full retries: {i+1}.")
             else:
                 break
+        callback()
 
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
         if not self.common.in_state(State.CONNECTED):
