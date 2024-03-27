@@ -780,7 +780,7 @@ class NMManager:
                 if c:
                     self.delete_cancellable(c)
                 if callback:
-                    callback(result)
+                    callback(True)
 
         c = self.new_cancellable()
         con.delete_async(callback=on_deleted, cancellable=c, user_data=(c, callback))
