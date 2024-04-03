@@ -1016,6 +1016,9 @@ For detailed information, see the log file located at:
         if self.app.model.should_failover():
             self.reconnect_tcp_button.show()
             self.reconnect_tcp_text.show()
+        else:
+            self.reconnect_tcp_button.hide()
+            self.reconnect_tcp_text.hide()
 
     def start_validity_countdown(self, validity) -> None:
         logger.debug("start validity countdown")
