@@ -361,24 +361,20 @@ class ApplicationModel:
         def final_connected(dropped: bool, error: str = ""):
             # failover reports not dropped, return to connected if we are still in connecting
             if not dropped:
-                if callback:
-                    callback(self.common.in_state(State.CONNECTING))
+                if self.common.in_state(State.CONNECTING):
+                    on_success()
+                else:
+                    on_fail()
                 return
 
             # Connection is dropped!
-            def on_disconnected(success: bool):
-                if success:
-
-                    def on_cleaned():
-                        self.connect(server, callback, True)
-
-                    # Cleanup and try again with TCP
-                    self.cleanup(on_cleaned)
-                else:
-                    # failed to set disconnect on the VPN, just set the state to connected
+            def on_reconnected(success: bool):
+                # failed to set disconnect on the VPN, just set the state to connected
+                if not success:
                     on_success()
 
-            self.disconnect(on_disconnected)
+            # reconnect with TCP
+            self.reconnect_tcp(on_reconnected)
 
         def on_connected(success: bool):
             if success:
@@ -492,7 +488,7 @@ class ApplicationModel:
         self.connect(self.current_server, on_connected, prefer_tcp=prefer_tcp)
 
     @run_in_background_thread("cleanup")
-    def cleanup(self, callback: Callable):
+    def cleanup(self, callback: Optional[Callable] = None):
         # We retry this cleanup 2 times
         retries = 2
 
@@ -512,7 +508,10 @@ class ApplicationModel:
                     logger.debug(f"Got an error: {str(e)} while cleaning up, after full retries: {i+1}.")
             else:
                 break
-        callback()
+        if self.common.in_state(State.DISCONNECTING):
+            self.common.set_state(State.DISCONNECTED)
+        if callback:
+            callback()
 
     def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
         curr = None
@@ -530,7 +529,6 @@ class ApplicationModel:
             if success:
 
                 def on_cleaned():
-                    self.common.set_state(State.DISCONNECTED)
                     if callback:
                         callback(True)
 
@@ -579,9 +577,10 @@ class Application:
                 if not self.common.in_state(State.CONNECTED) and not self.common.in_state(State.CONNECTING):
                     return
                 self.common.set_state(State.DISCONNECTING)
-                self.common.set_state(State.DISCONNECTED)
                 self.model.cancel()
-        except Exception:
+                self.model.cleanup()
+        except Exception as e:
+            logger.debug(f"error occurred: {str(e)}")
             return
 
     def initialize_network(self, needs_update=True) -> None:
