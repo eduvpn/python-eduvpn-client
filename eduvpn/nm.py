@@ -213,7 +213,7 @@ class NMManager:
             return "OpenVPN"
         elif type == "wireguard":
             if self.proxy:
-                return "WireGuard (Proxyguard)"
+                return "WireGuard (ProxyGuard)"
             return "WireGuard"
         return None
 
