@@ -948,15 +948,12 @@ For detailed information, see the log file located at:
         self.location_list.hide()
 
     @ui_transition(State.GOT_CONFIG, StateType.ENTER)
-    def enter_GotConfig(self, old_state: str, data) -> None:
-        self.show_loading_page(
-            _("Configuring"),
-            _("Your connection is being configured."),
-        )
+    def enter_GotConfig(self, old_state: str, server_info) -> None:
+        self.enter_ConnectionStatus(old_state, server_info)
 
     @ui_transition(State.GOT_CONFIG, StateType.LEAVE)
-    def exit_GotConfig(self, old_state: str, data) -> None:
-        self.hide_loading_page()
+    def exit_GotConfig(self, old_state: str, new_state: str) -> None:
+        self.exit_ConnectionStatus(old_state, new_state)
 
     @ui_transition(State.DISCONNECTED, StateType.ENTER)
     def enter_ConnectionStatus(self, old_state: str, server_info):

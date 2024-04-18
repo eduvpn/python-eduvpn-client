@@ -96,7 +96,7 @@ class ApplicationModelTransitions:
     @model_transition(State.GOT_CONFIG, StateType.ENTER)
     def parse_config(self, old_state: State, data):
         logger.debug(f"Transition: GOT_CONFIG, old state: {old_state}")
-        return data
+        return self.server_db.current
 
     @run_in_background_thread("open-browser")
     def open_browser(self, url):
@@ -470,7 +470,11 @@ class ApplicationModel:
             do_profile()
 
     def activate_connection(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
-        if not self.common.in_state(State.DISCONNECTED) and not self.common.in_state(State.MAIN):
+        if (
+            not self.common.in_state(State.GOT_CONFIG)
+            and not self.common.in_state(State.DISCONNECTED)
+            and not self.common.in_state(State.MAIN)
+        ):
             if callback:
                 logger.error("invalid state to activate connection")
                 callback(False)
@@ -513,7 +517,7 @@ class ApplicationModel:
         if callback:
             callback()
 
-    def deactivate_connection(self, callback: Optional[Callable] = None) -> None:
+    def deactivate_connection(self, callback: Optional[Callable] = None, cleanup=True) -> None:
         curr = None
         if self.common.in_state(State.CONNECTED):
             curr = State.CONNECTED
@@ -529,10 +533,16 @@ class ApplicationModel:
             if success:
 
                 def on_cleaned():
+                    self.common.cancel()
                     if callback:
                         callback(True)
 
-                self.cleanup(on_cleaned)
+                if cleanup:
+                    self.cleanup(on_cleaned)
+                else:
+                    if self.common.in_state(State.DISCONNECTING):
+                        self.common.set_state(State.DISCONNECTED)
+                    on_cleaned()
             else:
                 self.common.set_state(curr)
                 if callback:
