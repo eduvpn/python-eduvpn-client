@@ -701,7 +701,6 @@ For detailed information, see the log file located at:
     def exit_connecting(self, old_state: str, data):
         # Re-enable the profile combo box and switch
         self.select_profile_combo.set_sensitive(True)
-        self.connection_session_label.show()
 
     @ui_transition(State.DISCONNECTING, StateType.ENTER)
     def enter_disconnecting(self, old_state: str, data):
@@ -949,11 +948,11 @@ For detailed information, see the log file located at:
 
     @ui_transition(State.GOT_CONFIG, StateType.ENTER)
     def enter_GotConfig(self, old_state: str, server_info) -> None:
-        self.enter_ConnectionStatus(old_state, server_info)
+        self.enter_connecting(old_state, server_info)
 
     @ui_transition(State.GOT_CONFIG, StateType.LEAVE)
     def exit_GotConfig(self, old_state: str, new_state: str) -> None:
-        self.exit_ConnectionStatus(old_state, new_state)
+        self.exit_connecting(old_state, new_state)
 
     @ui_transition(State.DISCONNECTED, StateType.ENTER)
     def enter_ConnectionStatus(self, old_state: str, server_info):
