@@ -134,7 +134,7 @@ class EduVpnGtkApplication(Gtk.Application):
 
         @run_in_background_thread("expired-deactivate")
         def expired_deactivate():
-            self.app.model.deactivate_connection()
+            self.app.model.deactivate_connection(cleanup=False)
 
         expired_deactivate()
 
