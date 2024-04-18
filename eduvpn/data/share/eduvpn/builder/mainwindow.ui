@@ -210,7 +210,7 @@
                         <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkButton" id="addOtherServerButton">
-                            <property name="label" translatable="yes">Add Other Server</property>
+                            <property name="label" translatable="yes">Add Server</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>

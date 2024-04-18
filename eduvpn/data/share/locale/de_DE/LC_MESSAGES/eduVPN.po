@@ -25,8 +25,8 @@ msgstr[0] " und <b>{0} Stunde</b>"
 msgstr[1] " und <b>{0} Stunden</b>"
 
 #: ../eduvpn/builder/mainwindow.ui:253
-msgid "Add Other Server"
-msgstr "Anderen Server hinzufügen"
+msgid "Add Server"
+msgstr "Server hinzufügen"
 
 #: ../eduvpn/builder/mainwindow.ui:678
 msgid "Authorization required"
