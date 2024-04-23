@@ -1,6 +1,8 @@
-# 4.2.99.1
+# 4.2.99.1 (2024-04-23)
 * Make dialog titles more consistent across the GUI
 * Handle errors better in the GUI when one happens during connecting
+* Improve failover UI but hanging in the connecting state until online detection returns, fixes #543
+* Update common to 1.99.2
 
 # 4.2.99.0 (2024-03-11)
 
