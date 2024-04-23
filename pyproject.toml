@@ -10,7 +10,7 @@ authors = [
     {name = "Jeroen Wijenbergh", email = "jeroen.wijenbergh@geant.org"},
 ]
 dependencies = [
-    "eduvpn_common==1.99.1",
+    "eduvpn_common==1.99.2",
     "pygobject",
 ]
 requires-python = ">=3.6"
