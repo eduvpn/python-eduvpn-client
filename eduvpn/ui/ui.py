@@ -396,6 +396,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_online_detect_state(self, old_state: str, data: str):
         self.connection_status_label.set_text(_("Connected, testing connection..."))
         self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
+        self.connection_info_expander.hide()
         self.set_connection_switch_state(True)
 
     @run_in_glib_thread
