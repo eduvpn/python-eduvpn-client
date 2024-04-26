@@ -3,6 +3,7 @@ import json
 
 # readline is used! It is for going up and down in interactive mode
 import readline  # noqa: F401
+import signal
 import sys
 from functools import partial
 from typing import Callable, Optional
