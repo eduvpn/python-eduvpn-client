@@ -223,7 +223,7 @@ class CommandLine:
                 sys.exit(0)
             signal.signal(signal.SIGINT, quit_sigint)
             input(
-                "you are connected but we are proxying your connection over TCP, exiting the CLI will close the VPN. Press a key to exit... "
+                "\nYou are connected but we are proxying your connection over TCP, exiting the CLI will close the VPN. Press a key to exit...\n\n"
             )
             print("disconnecting and exiting...")
             self.disconnect()
