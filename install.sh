@@ -59,7 +59,7 @@ EOF
 
 case $VERSION_CODENAME in
     # ubuntu versions
-    "focal" | "jammy" | "lunar" | "mantic" | "bullseye" | "bookworm")
+    "focal" | "jammy" | "mantic" | "noble" | "bullseye" | "bookworm")
 	install_deb "$VERSION_CODENAME"
 	;;
     # For linux mint we need to do some redirections to ubuntu codenames
