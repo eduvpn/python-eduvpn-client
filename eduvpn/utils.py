@@ -36,6 +36,7 @@ def get_ui_state(state: State) -> int:
 
 ERROR_STATE = 2 * len(State) + 1
 ONLINEDETECT_STATE = ERROR_STATE + 1
+FAILOVERED_STATE = ERROR_STATE + 2
 
 
 def handle_exception(common, exception):
@@ -45,6 +46,10 @@ def handle_exception(common, exception):
 
 def set_online_detecting(common):
     common.event_handler.run(get_ui_state(ONLINEDETECT_STATE), get_ui_state(ONLINEDETECT_STATE), "")
+
+
+def set_failovered(common):
+    common.event_handler.run(get_ui_state(FAILOVERED_STATE), get_ui_state(FAILOVERED_STATE), "")
 
 
 def model_transition(state: State, state_type: StateType) -> Callable:
