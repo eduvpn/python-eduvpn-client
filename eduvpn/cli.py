@@ -6,7 +6,7 @@ import readline  # noqa: F401
 import signal
 import sys
 from functools import partial
-from typing import Callable, Optional
+from typing import Optional
 
 import eduvpn_common.main as common
 from eduvpn_common import __version__ as commonver
@@ -17,23 +17,11 @@ from eduvpn import __version__
 from eduvpn.app import Application
 from eduvpn.connection import parse_expiry
 from eduvpn.i18n import retrieve_country_name
-from eduvpn.server import (
-    InstituteServer,
-    Profile,
-    SecureInternetServer,
-    Server,
-    ServerDatabase,
-)
-from eduvpn.settings import (
-    CLIENT_ID,
-    CONFIG_DIR_MODE,
-    CONFIG_PREFIX,
-    LETSCONNECT_CLIENT_ID,
-    LETSCONNECT_CONFIG_PREFIX,
-)
+from eduvpn.server import InstituteServer, Profile, SecureInternetServer, Server, ServerDatabase
+from eduvpn.settings import CLIENT_ID, CONFIG_DIR_MODE, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID, LETSCONNECT_CONFIG_PREFIX
 from eduvpn.ui.search import ServerGroup, group_servers
 from eduvpn.ui.utils import get_validity_text, should_show_error
-from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread, FAILOVERED_STATE, ONLINEDETECT_STATE
+from eduvpn.utils import FAILOVERED_STATE, ONLINEDETECT_STATE, cmd_transition, init_logger, run_in_background_thread
 from eduvpn.variants import EDUVPN, LETS_CONNECT, ApplicationVariant
 
 
@@ -215,12 +203,12 @@ class CommandLine:
 
         nm.action_with_mainloop(connect)
         if self.nm_manager.proxy is not None and self.common.in_state(State.CONNECTED):
-
             # make sure ctrl+c disconnects and then calls our original sighandler
             def quit_sigint(signal, frame):
                 self.disconnect()
                 self.app.cleanup_sigint(signal, frame)
                 sys.exit(0)
+
             signal.signal(signal.SIGINT, quit_sigint)
             input(
                 "\nYou are connected but we are proxying your connection over TCP, exiting the CLI will close the VPN. Press a key to exit...\n\n"

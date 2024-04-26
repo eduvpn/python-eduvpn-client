@@ -20,9 +20,9 @@ from functools import partial
 from eduvpn_common import __version__ as commonver
 from eduvpn_common.state import State, StateType
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
-from gi.overrides.Gtk import (  # type: ignore[import-untyped]
+from gi.overrides.Gtk import (
     Box,
-    Builder,
+    Builder,  # type: ignore[import-untyped]
     Button,
     TreePath,  # type: ignore
     TreeView,
@@ -403,7 +403,9 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
 
     @ui_transition(FAILOVERED_STATE, StateType.ENTER)  # type: ignore
     def enter_failovered_state(self, old_state: str, data: str):
-        self.failover_label.set_text("We have switched to a new VPN protocol as the previous protocol was blocked by the network")
+        self.failover_label.set_text(
+            "We have switched to a new VPN protocol as the previous protocol was blocked by the network"
+        )
         self.failover_text.show()
         # After 20 seconds hide the text
         self.failover_text_hide_cancel = GLib.timeout_add(20_000, self.hide_failover_text)
