@@ -236,7 +236,6 @@ class ApplicationModel:
         self.common.set_state(State.MAIN)
 
     def add(self, server, callback=None):
-        # TODO: handle discovery types
         self.common.add_server(server.category_id, server.identifier)
         if callback:
             callback(server)
@@ -249,7 +248,6 @@ class ApplicationModel:
 
     def connect_get_config(self, server, prefer_tcp: bool = False) -> Config:
         # We prefer TCP if the user has set it or UDP is determined to be blocked
-        # TODO: handle discovery and tokens
         config = self.common.get_config(server.category_id, server.identifier, prefer_tcp)
         return parse_config(config)
 
