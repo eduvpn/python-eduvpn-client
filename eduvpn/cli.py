@@ -32,7 +32,7 @@ from eduvpn.settings import (
 )
 from eduvpn.ui.search import ServerGroup, group_servers
 from eduvpn.ui.utils import get_validity_text, should_show_error
-from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread
+from eduvpn.utils import cmd_transition, init_logger, run_in_background_thread, FAILOVERED_STATE, ONLINEDETECT_STATE
 from eduvpn.variants import EDUVPN, LETS_CONNECT, ApplicationVariant
 
 
@@ -119,7 +119,7 @@ class CommandLine:
         self.app = Application(variant, common)
         self.nm_manager = self.app.nm_manager
         self.server_db = ServerDatabase(common, variant.use_predefined_servers)
-        self.transitions = CommandLineTransitions(self.app)
+        self.transitions = CommandLineTransitions(self.app, self.nm_manager)
         self.skip_yes = False
         self.common.register_class_callbacks(self.transitions)
 
@@ -182,30 +182,10 @@ class CommandLine:
 
         return self.ask_server_input(servers)
 
-    def start_failover(self, callback: Callable):
-        if not self.app.model.should_failover():
-            callback(False)
-            return
-
-        def on_reconnected(dropped):
-            if dropped:
-                print("We have switched to a new protocol as the previous protocol was blocked")
-            else:
-                print(
-                    "Done testing, you are connected. If you experience any connectivity issues, you can disconnect and try again with the --tcp flag"
-                )
-            callback(dropped)
-
-        print("Connected, but we are testing your VPN if it can reach the internet...")
-        self.app.model.start_failover(on_reconnected)
-
     def connect_server(self, server, prefer_tcp: bool):
         def connect(callback=None):
             def connect_cb(success: bool = False):
-                if success:
-                    self.start_failover(callback)
-                else:
-                    callback()
+                callback()
 
             @run_in_background_thread("connect")
             def connect_background(server):
@@ -662,8 +642,9 @@ class CommandLine:
 
 
 class CommandLineTransitions:
-    def __init__(self, app):
+    def __init__(self, app, nm_manager):
         self.app = app
+        self.nm_manager = nm_manager
 
     @cmd_transition(State.ASK_LOCATION, StateType.ENTER)
     def on_ask_location(self, old_state: State, locations):
@@ -678,6 +659,16 @@ class CommandLineTransitions:
     @cmd_transition(State.OAUTH_STARTED, StateType.ENTER)
     def on_oauth_started(self, old_state: State, url: str):
         print(f"Authorization needed. Your browser has been opened with url: {url}")
+
+    @cmd_transition(ONLINEDETECT_STATE, StateType.ENTER)
+    def on_online_detection(self, old_state: State, new_state: State):
+        print("Connected, but we are testing your VPN connection...")
+
+    @cmd_transition(FAILOVERED_STATE, StateType.ENTER)
+    def on_failovered(self, old_state: State, new_state: State):
+        print("The connection has switched to a new VPN protocol...")
+        if self.nm_manager.proxy:
+            print("We are proxying your connection, the cli needs to keep being in the foreground")
 
 
 def eduvpn():

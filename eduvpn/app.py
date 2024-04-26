@@ -25,6 +25,7 @@ from eduvpn.utils import (
     model_transition,
     run_in_background_thread,
     run_in_glib_thread,
+    set_failovered,
     set_online_detecting,
 )
 from eduvpn.variants import ApplicationVariant
@@ -369,9 +370,13 @@ class ApplicationModel:
 
             # Connection is dropped!
             def on_reconnected(success: bool):
-                # failed to set disconnect on the VPN, just set the state to connected
                 if not success:
+                    handle_exception(self.common, Exception("failed to reconnect with TCP"))
+                    # failed to set disconnect on the vpn, just set the state to connected
+                    # TODO: differentiate between disconnect and connect errors
                     on_success()
+                if success:
+                    set_failovered(self.common)
 
             # reconnect with TCP
             self.reconnect_tcp(on_reconnected)

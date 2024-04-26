@@ -49,6 +49,7 @@ from eduvpn.ui.utils import (
 )
 from eduvpn.utils import (
     ERROR_STATE,
+    FAILOVERED_STATE,
     ONLINEDETECT_STATE,
     get_prefix,
     get_ui_state,
@@ -184,6 +185,10 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.app_logo = builder.get_object("appLogo")
         self.app_logo_info = builder.get_object("appLogoInfo")
         self.info_support_box = builder.get_object("infoSupportBox")
+
+        self.failover_text = builder.get_object("failoverText")
+        self.failover_text_hide_cancel = None
+        self.failover_label = builder.get_object("failoverLabel")
 
         self.page_stack = builder.get_object("pageStack")
         self.back_button_container = builder.get_object("backButtonEventBox")
@@ -391,6 +396,17 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
     def enter_error_state(self, old_state: str, error: Exception):
         if should_show_error(error):
             self.show_error_revealer(str(error))
+
+    def hide_failover_text(self):
+        self.failover_text.hide()
+        self.failover_text_hide_cancel = None
+
+    @ui_transition(FAILOVERED_STATE, StateType.ENTER)  # type: ignore
+    def enter_failovered_state(self, old_state: str, data: str):
+        self.failover_label.set_text("We have switched to a new VPN protocol as the previous protocol was blocked by the network")
+        self.failover_text.show()
+        # After 20 seconds hide the text
+        self.failover_text_hide_cancel = GLib.timeout_add(20_000, self.hide_failover_text)
 
     @ui_transition(ONLINEDETECT_STATE, StateType.ENTER)  # type: ignore
     def enter_online_detect_state(self, old_state: str, data: str):
@@ -713,6 +729,10 @@ For detailed information, see the log file located at:
         self.select_profile_combo.set_sensitive(False)
         self.connection_switch.set_sensitive(False)
         self.connection_session_label.hide()
+        if self.failover_text_hide_cancel is not None:
+            GLib.source_remove(self.failover_text_hide_cancel)
+        self.failover_text_hide_cancel = None
+        self.failover_text.hide()
 
     @ui_transition(State.DISCONNECTING, StateType.LEAVE)
     def exit_disconnecting(self, old_state: str, data):
