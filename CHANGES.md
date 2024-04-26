@@ -1,8 +1,17 @@
-# 4.2.99.1 (2024-04-23)
+# 4.2.99.1 (2024-04-26)
 * Make dialog titles more consistent across the GUI
 * Handle errors better in the GUI when one happens during connecting
 * Improve failover UI but hanging in the connecting state until online detection returns, fixes #543
+* Sort CLI server list views
 * Update common to 1.99.2
+* Move to pyproject.toml
+* Move share data to eduvpn/data
+* Use ruff for linting and formatting
+* Rewrite the makefile
+* Show a reconnect with TCP if not on TCP yet in connection info
+* Rename "Add Other Server" to "Add Server" in the UI
+* Make WireGuard support mandatory
+* Add a small delay to start the failover procedure, default 1 second. Tweak this with `EDUVPN_FAILOVER_DELAY` env variable
 
 # 4.2.99.0 (2024-03-11)
 
