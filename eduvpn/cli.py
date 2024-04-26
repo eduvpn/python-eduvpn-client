@@ -676,8 +676,6 @@ class CommandLineTransitions:
     @cmd_transition(FAILOVERED_STATE, StateType.ENTER)
     def on_failovered(self, old_state: State, new_state: State):
         print("The connection has switched to a new VPN protocol...")
-        if self.nm_manager.proxy:
-            print("We are proxying your connection, the cli needs to keep being in the foreground")
 
 
 def eduvpn():
