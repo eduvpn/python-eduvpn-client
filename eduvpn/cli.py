@@ -657,12 +657,12 @@ class CommandLineTransitions:
     def on_oauth_started(self, old_state: State, url: str):
         print(f"Authorization needed. Your browser has been opened with url: {url}")
 
-    @cmd_transition(ONLINEDETECT_STATE, StateType.ENTER)
-    def on_online_detection(self, old_state: State, new_state: State):
+    @cmd_transition(ONLINEDETECT_STATE, StateType.ENTER)  # type: ignore[arg-type]
+    def on_online_detection(self, old_state: State, data: str):
         print("Connected, but we are testing your VPN connection...")
 
-    @cmd_transition(FAILOVERED_STATE, StateType.ENTER)
-    def on_failovered(self, old_state: State, new_state: State):
+    @cmd_transition(FAILOVERED_STATE, StateType.ENTER)  # type: ignore[arg-type]
+    def on_failovered(self, old_state: State, data: str):
         print("The connection has switched to a new VPN protocol...")
 
 
