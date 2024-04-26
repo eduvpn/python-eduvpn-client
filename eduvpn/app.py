@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import signal
+import time
 import webbrowser
 from typing import Any, Callable, Iterator, Optional, TextIO
 
@@ -208,6 +209,9 @@ class ApplicationModel:
             logger.debug(
                 f"starting failover with gateway {endpoint} and MTU {mtu} for protocol {self.nm_manager.protocol}"
             )
+            failover_delay = float(os.getenv("EDUVPN_FAILOVER_DELAY", 1))
+            logger.debug(f"Sleeping for {failover_delay}s to begin failover")
+            time.sleep(failover_delay)
             dropped = self.common.start_failover(
                 endpoint,
                 mtu,
@@ -370,11 +374,12 @@ class ApplicationModel:
             def on_reconnected(success: bool):
                 if not success:
                     handle_exception(self.common, Exception("failed to reconnect with TCP"))
-                    # failed to set disconnect on the vpn, just set the state to connected
-                    # TODO: differentiate between disconnect and connect errors
-                    on_success()
                 if success:
                     set_failovered(self.common)
+                # When an error happens we always set success now as the previous
+                # protocol might be connected to
+                # TODO: differentiate between disconnect and new connect errors
+                on_success()
 
             # reconnect with TCP
             self.reconnect_tcp(on_reconnected)
