@@ -20,7 +20,7 @@ from functools import partial
 from eduvpn_common import __version__ as commonver
 from eduvpn_common.state import State, StateType
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
-from gi.overrides.Gtk import (
+from gi.overrides.Gtk import (  # type: ignore[import-untyped]
     Box,
     Builder,  # type: ignore[import-untyped]
     Button,
@@ -187,7 +187,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.info_support_box = builder.get_object("infoSupportBox")
 
         self.failover_text = builder.get_object("failoverText")
-        self.failover_text_hide_cancel = None
+        self.failover_text_hide_cancel: Optional[int] = None
         self.failover_label = builder.get_object("failoverLabel")
 
         self.page_stack = builder.get_object("pageStack")
