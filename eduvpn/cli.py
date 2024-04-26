@@ -213,6 +213,13 @@ class CommandLine:
 
         nm.action_with_mainloop(connect)
         if self.nm_manager.proxy is not None and self.common.in_state(State.CONNECTED):
+
+            # make sure ctrl+c disconnects and then calls our original sighandler
+            def quit_sigint(signal, frame):
+                self.disconnect()
+                self.app.cleanup_sigint(signal, frame)
+                sys.exit(0)
+            signal.signal(signal.SIGINT, quit_sigint)
             input(
                 "you are connected but we are proxying your connection over TCP, exiting the CLI will close the VPN. Press a key to exit... "
             )

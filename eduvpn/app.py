@@ -569,11 +569,11 @@ class Application:
         self.config = Configuration.load(directory)
         self.model = ApplicationModel(common, self.config, variant, self.nm_manager)
 
-        def signal_handler(_signal, _frame):
-            self.model.cancel()
-            self.common.deregister()
+        signal.signal(signal.SIGINT, lambda s, f: self.cleanup_sigint(s, f))
 
-        signal.signal(signal.SIGINT, signal_handler)
+    def cleanup_sigint(self, _signal, _frame):
+        self.model.cancel()
+        self.common.deregister()
 
     def on_network_update_callback(self, state, initial=False):
         try:
