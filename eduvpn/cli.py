@@ -185,7 +185,8 @@ class CommandLine:
     def connect_server(self, server, prefer_tcp: bool):
         def connect(callback=None):
             def connect_cb(success: bool = False):
-                callback()
+                if callback:
+                    callback()
 
             @run_in_background_thread("connect")
             def connect_background(server):
