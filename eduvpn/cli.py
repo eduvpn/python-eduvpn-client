@@ -42,9 +42,9 @@ def get_grouped_index(servers, index):
         return None
 
     grouped_servers = group_servers(servers)
-    servers_added = grouped_servers[ServerGroup.INSTITUTE_ACCESS]
-    servers_added += grouped_servers[ServerGroup.SECURE_INTERNET]
-    servers_added += grouped_servers[ServerGroup.OTHER]
+    servers_added = sorted(grouped_servers[ServerGroup.INSTITUTE_ACCESS], key=lambda x: str(x))
+    servers_added += sorted(grouped_servers[ServerGroup.SECURE_INTERNET], key=lambda x: str(x))
+    servers_added += sorted(grouped_servers[ServerGroup.OTHER], key=lambda x: str(x))
     return servers_added[index]
 
 
@@ -337,7 +337,7 @@ class CommandLine:
             print("============================")
             print("Institute Access Servers")
             print("============================")
-        for institute in grouped_servers[ServerGroup.INSTITUTE_ACCESS]:
+        for institute in sorted(grouped_servers[ServerGroup.INSTITUTE_ACCESS], key=lambda x: str(x)):
             print(f"[{total_servers}]: {str(institute)}")
             total_servers += 1
 
@@ -345,7 +345,7 @@ class CommandLine:
             print("============================")
             print("Secure Internet Server")
             print("============================")
-        for secure in grouped_servers[ServerGroup.SECURE_INTERNET]:
+        for secure in sorted(grouped_servers[ServerGroup.SECURE_INTERNET], key=lambda x: str(x)):
             print(f"[{total_servers}]: {str(secure)}")
             total_servers += 1
 
@@ -353,7 +353,7 @@ class CommandLine:
             print("============================")
             print("Custom Servers")
             print("============================")
-        for custom in grouped_servers[ServerGroup.OTHER]:
+        for custom in sorted(grouped_servers[ServerGroup.OTHER], key=lambda x: str(x)):
             print(f"[{total_servers}]: {str(custom)}")
             total_servers += 1
         if total_servers > 1:
