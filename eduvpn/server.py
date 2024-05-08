@@ -250,19 +250,6 @@ class StatusImage(enum.Enum):
         return IMAGE_PREFIX + self.value
 
 
-def get_search_text(server) -> List[str]:
-    search_texts = [str(server)]
-    if hasattr(server, "keywords"):
-        keys = extract_translation(server.keywords)
-        search_texts.extend(keys.split(" "))
-    return search_texts
-
-
-def is_search_match(server, query: str) -> bool:
-    search_texts = get_search_text(server)
-    return any(query.lower() in search_text.lower() for search_text in search_texts)
-
-
 class ServerDatabase:
     def __init__(self, wrapper, enable_discovery=True) -> None:
         self.wrapper = wrapper
@@ -275,16 +262,18 @@ class ServerDatabase:
             return []
         return self.cached
 
-    def disco_update(self):
+    def disco_update(self, search=""):
         if not self.enable_discovery:
             return
         disco_orgs = []
         if self.secure_internet is None:
-            disco_orgs = parse_disco_organizations(self.wrapper.get_disco_organizations())
-        disco_servers = parse_disco_servers(self.wrapper.get_disco_servers())
-        all_servers = disco_orgs
-        all_servers.extend(disco_servers)
-        self.cached = all_servers
+            disco_orgs = parse_disco_organizations(self.wrapper.get_disco_organizations(search))
+        disco_servers = parse_disco_servers(self.wrapper.get_disco_servers(search))
+        ret_servers = disco_orgs
+        ret_servers.extend(disco_servers)
+        if search == "":
+            self.cached = ret_servers
+        return ret_servers 
 
     def has(self, server) -> Optional[Server]:
         # The url attribute is always used as an identifier
@@ -318,12 +307,7 @@ class ServerDatabase:
 
     def search_predefined(self, query: str):
         "Return all servers that match the search query."
-        if query:
-            for server in self.all():
-                if is_search_match(server, query):
-                    yield server
-        else:
-            yield from self.all()
+        return self.disco_update(query)
 
     def search_custom(self, query: str) -> Iterable[Server]:
         yield Server(query, query)  # type: ignore[arg-type]
