@@ -249,6 +249,16 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer_label = None
         self.create_error_revealer()
 
+        # exit window on ctrl+q keyboard shortcut
+        accel = Gtk.AccelGroup()
+        accel.connect(
+            Gdk.keyval_from_name("q"),
+            Gdk.ModifierType.CONTROL_MASK,
+            Gtk.AccelFlags.VISIBLE,
+            self.on_close_window_shortcut,
+        )
+        self.add_accel_group(accel)
+
         self.add_custom_server_button_container = builder.get_object("addCustomServerRow")
         self.add_other_server_button_container = builder.get_object("addOtherServerRow")
 
@@ -1475,6 +1485,9 @@ For detailed information, see the log file located at:
             self.call_model("deactivate_connection", deactivate_proxy_con)
 
         return True
+
+    def on_close_window_shortcut(self, accel_group, window, key, modifiers):
+        self.on_close_window(window, None)
 
     def on_reopen_window(self):
         logger.debug("on reopen window")
