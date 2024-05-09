@@ -163,7 +163,7 @@ The client needs NetworkManager, so make sure `networking.networkmanager.enable 
 
 Of course, you can also just add the `eduvpn-client` package to your `configuration.nix` or `home.nix` (in case you're using [home-manager](https://github.com/nix-community/home-manager)).
 
-Note that on NixOS the firewall can be pretty strict, see [The NixOS Wiki](https://nixos.wiki/wiki/WireGuard#Setting_up_WireGuard_with_NetworkManager) on how to allow WireGuard connections. OpenVPN should work out of the box.
+Note that on NixOS the firewall can be pretty strict, see [The NixOS Wiki](https://wiki.nixos.org/wiki/WireGuard#Setting_up_WireGuard_with_NetworkManager) on how to allow WireGuard connections. OpenVPN should work out of the box.
 
 ### Arch (Unofficial)
 
