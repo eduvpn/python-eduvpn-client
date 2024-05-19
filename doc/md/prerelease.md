@@ -64,6 +64,18 @@ $ sudo apt install eduvpn-client
 $ sudo apt upgrade
 ```
 
+### Ubuntu 24.04
+
+``` console
+$ sudo apt update
+$ sudo apt install apt-transport-https wget
+$ wget -O- https://app.eduvpn.org/linux/v4-dev/deb/app+linux+dev@eduvpn.org.asc | gpg --dearmor | sudo tee /usr/share/keyrings/eduvpn-v4-dev.gpg >/dev/null
+$ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/eduvpn-v4-dev.gpg] https://app.eduvpn.org/linux/v4-dev/deb/ noble main" | sudo tee /etc/apt/sources.list.d/eduvpn-v4-dev.list
+$ sudo apt update
+$ sudo apt install eduvpn-client
+$ sudo apt upgrade
+```
+
 ### Linux Mint 20.x
 
 ``` console
@@ -88,7 +100,7 @@ $ sudo apt install eduvpn-client
 $ sudo apt upgrade
 ```
 
-### Fedora (38 & 39)
+### Fedora (39 & 40)
 
 ``` console
 $ curl -O https://app.eduvpn.org/linux/v4-dev/rpm/app+linux+dev@eduvpn.org.asc
