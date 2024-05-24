@@ -147,6 +147,7 @@ def update_search_results_for_type(
     window: "EduVpnGtkWindow",  # type: ignore[name-defined] # noqa: F821
     group: ServerGroup,
     servers,  # type: ignore  # noqa: F821
+    enable_sorting: bool,
 ) -> None:
     """
     Update the UI with the search results
@@ -160,10 +161,12 @@ def update_search_results_for_type(
         # Remove the old search results.
         for server in servers:
             model.append(server_to_model_data(server))
-
-        sorted_model = Gtk.TreeModelSort(model=model)  # type: ignore
-        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)  # type: ignore
-        callback(sorted_model)
+        if enable_sorting:
+            sorted_model = Gtk.TreeModelSort(model=model)  # type: ignore
+            sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)  # type: ignore
+            callback(sorted_model)
+        else:
+            callback(model)
 
     @run_in_glib_thread
     def callback(model):
@@ -176,7 +179,7 @@ def update_search_results_for_type(
     convert(servers, callback)
 
 
-def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore  # noqa: F821
+def update_results(window: "EduVpnGtkWindow", servers, search: str = "") -> None:  # type: ignore  # noqa: F821
     """
     Update the UI with the search results.
     """
@@ -189,5 +192,6 @@ def update_results(window: "EduVpnGtkWindow", servers) -> None:  # type: ignore 
             window,
             group,
             server_map.get(group, []),
+            search == "",
         )
     show_search_results(window, True)
