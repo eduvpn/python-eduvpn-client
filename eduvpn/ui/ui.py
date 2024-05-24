@@ -1211,7 +1211,7 @@ For detailed information, see the log file located at:
         query = self.find_server_search_input.get_text()
         if self.app.variant.use_predefined_servers and query.count(".") < 2:
             results = self.app.model.search_predefined(query)
-            search.update_results(self, results)
+            search.update_results(self, results, query)
         else:
             # Anything with two periods is interpreted
             # as a custom server address.
