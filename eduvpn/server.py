@@ -273,7 +273,7 @@ class ServerDatabase:
         ret_servers.extend(disco_servers)
         if search == "":
             self.cached = ret_servers
-        return ret_servers 
+        return ret_servers
 
     def has(self, server) -> Optional[Server]:
         # The url attribute is always used as an identifier
