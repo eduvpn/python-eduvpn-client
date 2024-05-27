@@ -22,9 +22,9 @@ from eduvpn_common.state import State, StateType
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
 from gi.overrides.Gtk import (  # type: ignore[import-untyped]
     Box,
-    Builder,  # type: ignore[import-untyped]
+    Builder,
     Button,
-    TreePath,  # type: ignore
+    TreePath,
     TreeView,
     TreeViewColumn,
 )
