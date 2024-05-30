@@ -837,20 +837,24 @@ For detailed information, see the log file located at:
         if not servers:
             self.enter_search(True)
 
-        if all(
-            [
-                not self.app.model.keyring.secure,
-                not self.app.config.ignore_keyring_warning,
-                old_state == get_ui_state(State.DEREGISTERED),
-            ]
-        ):
-            self.keyring_dialog.set_title(f"{self.app.variant.name} - Keyring Warning")
-            self.keyring_dialog.show()
-            _id = self.keyring_dialog.run()
-            if _id == QUIT_ID:
-                self.close()  # type: ignore
-            self.keyring_dialog.destroy()
-            self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
+        # show keyring dialog if it's not secure
+
+        if self.app.model.keyring.secure:
+            return
+
+        if self.app.config.ignore_keyring_warning:
+            return
+
+        if old_state not in [get_ui_state(State.DEREGISTERED), get_ui_state(State.MAIN)]:
+            return
+
+        self.keyring_dialog.set_title(f"{self.app.variant.name} - Keyring Warning")
+        self.keyring_dialog.show()
+        _id = self.keyring_dialog.run()
+        if _id == QUIT_ID:
+            self.close()  # type: ignore
+        self.keyring_dialog.destroy()
+        self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
 
     @ui_transition(State.MAIN, StateType.LEAVE)
     def exit_MainState(self, old_state, new_state):
