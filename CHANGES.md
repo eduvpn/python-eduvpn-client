@@ -1,3 +1,13 @@
+# 4.3.0
+* UI: Add a ctrl+q shortcut (#580)
+* Keyring: Make run detection less often in the CLI such that it does not prompt you for a password when you e.g. pass `--help` (#587)
+* Search: Implement discovery searching and sorting using eduvpn-common, should be better than the previous algorithm
+* Desktop files: Add StartupWMClass to fix missing icon in certain launchers, thanks @phavekes (#588)
+* Building: Add `setup.cfg` & `setup.py` to allow building for older Python versions and distros. Minimize `pyproject.toml`
+* WireGuard: Set allow LAN traffic to `False` by default to mitigate attacks like Tunnelvision & Tunnelcrack
+* App: Make sure networkmanager state updates that are triggered outside of the app are handled better
+* Bump eduvpn-common to 2.0.0
+
 # 4.2.99.1 (2024-04-26)
 * Make dialog titles more consistent across the GUI
 * Handle errors better in the GUI when one happens during connecting
