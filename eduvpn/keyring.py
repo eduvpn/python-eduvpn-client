@@ -57,7 +57,7 @@ class DBusKeyring(TokenKeyring):
     def available(self):
         # If import was not successful, this is definitely not available
         if not secureKeyring:
-            logger.warning("keyring not available due to import not available")
+            logger.warning("keyring not available due to libsecret import not available")
             return False
 
         # Libs available, do a test run

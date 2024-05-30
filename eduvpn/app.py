@@ -130,15 +130,24 @@ class ApplicationModel:
     ) -> None:
         self.common = common
         self.config = config
-        self.keyring: TokenKeyring = DBusKeyring(variant)
-        if not self.keyring.available:
-            self.keyring = InsecureFileKeyring(variant)
+        self._keyring: TokenKeyring | None = None
         self.transitions = ApplicationModelTransitions(common, variant)
         self.variant = variant
         self.nm_manager = nm_manager
         self._was_tcp = False
         self._should_failover = False
         self._peer_ips_proxy = None
+
+    @property
+    def keyring(self):
+        if self._keyring is not None:
+            return self._keyring
+        keyring = DBusKeyring(self.variant)
+        if not keyring.available:
+            logger.warning("Secure keyring not available, reverting to insecure file keyring!")
+            keyring = InsecureFileKeyring(self.variant)
+        self._keyring = keyring
+        return self._keyring
 
     def register(self, debug: bool):
         self.common.register(debug=debug)
