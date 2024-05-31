@@ -20,7 +20,7 @@ from eduvpn.i18n import retrieve_country_name
 from eduvpn.server import InstituteServer, Profile, SecureInternetServer, Server, ServerDatabase
 from eduvpn.settings import CLIENT_ID, CONFIG_DIR_MODE, CONFIG_PREFIX, LETSCONNECT_CLIENT_ID, LETSCONNECT_CONFIG_PREFIX
 from eduvpn.ui.search import ServerGroup, group_servers
-from eduvpn.ui.utils import get_validity_text, should_show_error
+from eduvpn.ui.utils import get_validity_text, should_show_error, translated_error
 from eduvpn.utils import FAILOVERED_STATE, ONLINEDETECT_STATE, cmd_transition, init_logger, run_in_background_thread
 from eduvpn.variants import EDUVPN, LETS_CONNECT, ApplicationVariant
 
@@ -191,7 +191,7 @@ class CommandLine:
                     )
                 except Exception as e:
                     if should_show_error(e):
-                        print("Error connecting:", e, file=sys.stderr)
+                        print("Error connecting:", translated_error(e), file=sys.stderr)
                     if callback:
                         callback()
 
@@ -313,7 +313,7 @@ class CommandLine:
             except Exception as e:
                 if should_show_error(e):
                     print("An error occurred while trying to disconnect")
-                    print("Error disconnecting:", e, file=sys.stderr)
+                    print("Error disconnecting:", translated_error(e), file=sys.stderr)
                 if callback:
                     callback()
 
@@ -385,7 +385,7 @@ class CommandLine:
             except Exception as e:
                 if should_show_error(e):
                     print("An error occurred while trying to reconnect for profile change")
-                    print("Error reconnecting:", e, file=sys.stderr)
+                    print("Error reconnecting:", translated_error(e), file=sys.stderr)
                 if callback:
                     callback()
 
@@ -420,7 +420,7 @@ class CommandLine:
             except Exception as e:
                 if should_show_error(e):
                     print("An error occurred while trying to reconnect for location change")
-                    print("Error reconnecting:", e, file=sys.stderr)
+                    print("Error reconnecting:", translated_error(e), file=sys.stderr)
                 if callback:
                     callback()
 
@@ -443,7 +443,7 @@ class CommandLine:
                 except Exception as e:
                     if should_show_error(e):
                         print("An error occurred while trying to renew")
-                        print("Error renewing:", e, file=sys.stderr)
+                        print("Error renewing:", translated_error(e), file=sys.stderr)
                     if callback:
                         callback()
 
