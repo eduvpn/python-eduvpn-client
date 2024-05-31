@@ -6,6 +6,7 @@ import gi
 from eduvpn_common.main import WrappedError
 
 from eduvpn.connection import Validity
+from eduvpn.i18n import extract_translation
 from eduvpn.utils import run_in_glib_thread
 
 GtkAvailable = True
@@ -29,6 +30,12 @@ def style_widget(widget, class_name: str, style: str):
     style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
     style_context.add_class(class_name.split(":")[0])
 
+
+def translated_error(error: Exception) -> str:
+    translated = str(error)
+    if isinstance(error, WrappedError):
+        translated = extract_translation(error.translations)
+    return translated
 
 def should_show_error(error: Exception):
     if isinstance(error, WrappedError):

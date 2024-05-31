@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from functools import partial
 
 from eduvpn_common import __version__ as commonver
+from eduvpn_common.main import WrappedError
 from eduvpn_common.state import State, StateType
 from gi.overrides.Gdk import Event, EventButton  # type: ignore
 from gi.overrides.Gtk import (  # type: ignore[import-untyped]
@@ -46,6 +47,7 @@ from eduvpn.ui.utils import (
     show_error_dialog,
     show_ui_component,
     style_widget,
+    translated_error,
 )
 from eduvpn.utils import (
     ERROR_STATE,
@@ -362,7 +364,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                     self,
                     _("Fatal Error"),
                     _("Fatal error while starting the client"),
-                    str(e),
+                    translated_error(e),
                     True,
                 )
 
@@ -378,7 +380,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
                     callback(True)
             except Exception as e:
                 if should_show_error(e):
-                    self.show_error_revealer(str(e))
+                    self.show_error_revealer(translated_error(e))
                 log_exception(e)
                 if callback:
                     callback(False, str(e))
@@ -523,7 +525,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.error_revealer.set_reveal_child(True)
         self.error_revealer_label.set_text(
             f"""
-The following error was reported: <i>{GLib.markup_escape_text(error)}</i>.
+The following error was reported: <i>{GLib.markup_escape_text(error)}</i>
 
 For detailed information, see the log file located at:
  - {GLib.markup_escape_text(str(self.app.variant.logfile))}"""
