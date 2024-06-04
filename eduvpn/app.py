@@ -603,6 +603,7 @@ class Application:
                 self.common.set_state(State.DISCONNECTING)
                 self.model.cancel()
                 self.model.cleanup()
+                self.model.disconnect()
         except Exception as e:
             logger.debug(f"error occurred: {str(e)}")
             return
