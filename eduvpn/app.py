@@ -12,7 +12,7 @@ from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes
 
 from eduvpn import nm
 from eduvpn.config import Configuration
-from eduvpn.connection import Config, Connection, parse_config, parse_expiry, parse_tokens
+from eduvpn.connection import Config, Connection, Protocol, parse_config, parse_expiry, parse_tokens
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import ServerDatabase, parse_profiles, parse_required_transition
 from eduvpn.utils import (
@@ -347,7 +347,7 @@ class ApplicationModel:
                 callback(False)
             return
 
-        self._was_tcp = prefer_tcp
+        self._was_tcp = prefer_tcp or config.protocol == Protocol.WIREGUARDTCP
         self._should_failover = config.should_failover
 
         def on_fail():
