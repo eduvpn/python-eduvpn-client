@@ -1,5 +1,4 @@
 import argparse
-import json
 
 # readline is used! It is for going up and down in interactive mode
 import readline  # noqa: F401
