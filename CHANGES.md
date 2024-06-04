@@ -1,4 +1,4 @@
-# 4.3.0
+# 4.3.0 (2024-06-04)
 * UI: Add a ctrl+q shortcut (#580)
 * Keyring: Make run detection less often in the CLI such that it does not prompt you for a password when you e.g. pass `--help` (#587)
 * Search: Implement discovery searching and sorting using eduvpn-common, should be better than the previous algorithm
