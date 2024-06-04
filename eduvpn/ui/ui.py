@@ -428,6 +428,7 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
         self.connection_info_expander.hide()
         self.set_connection_switch_state(True)
+        self.select_profile_combo.set_sensitive(False)
 
     @run_in_glib_thread
     def initialize_clipboard(self):
@@ -723,15 +724,10 @@ For detailed information, see the log file located at:
         self.connection_status_image.set_from_file(StatusImage.CONNECTING.path)
         self.set_connection_switch_state(True)
         # Disable the profile combo box and switch
-        self.select_profile_combo.set_sensitive(False)
         self.connection_session_label.hide()
         self.update_connection_server(server_info)
         self.show_page(self.connection_page)
-
-    @ui_transition(State.CONNECTING, StateType.LEAVE)
-    def exit_connecting(self, old_state: str, data):
-        # Re-enable the profile combo box and switch
-        self.select_profile_combo.set_sensitive(True)
+        self.select_profile_combo.set_sensitive(False)
 
     @ui_transition(State.DISCONNECTING, StateType.ENTER)
     def enter_disconnecting(self, old_state: str, data):
@@ -747,6 +743,7 @@ For detailed information, see the log file located at:
             GLib.source_remove(self.failover_text_hide_cancel)
         self.failover_text_hide_cancel = None
         self.failover_text.hide()
+        self.select_profile_combo.set_sensitive(False)
 
     @ui_transition(State.DISCONNECTING, StateType.LEAVE)
     def exit_disconnecting(self, old_state: str, data):
@@ -989,10 +986,6 @@ For detailed information, see the log file located at:
     def enter_GotConfig(self, old_state: str, server_info) -> None:
         self.enter_connecting(old_state, server_info)
 
-    @ui_transition(State.GOT_CONFIG, StateType.LEAVE)
-    def exit_GotConfig(self, old_state: str, new_state: str) -> None:
-        self.exit_connecting(old_state, new_state)
-
     @ui_transition(State.DISCONNECTED, StateType.ENTER)
     def enter_ConnectionStatus(self, old_state: str, server_info):
         self.show_back_button(True)
@@ -1040,6 +1033,7 @@ For detailed information, see the log file located at:
         self.update_connection_server(server_info)
         self.start_validity_countdown(validity)
         self.show_page(self.connection_page)
+        self.select_profile_combo.set_sensitive(True)
 
         # Show the button after a certain time period
         self.connection_validity_timers.add_absolute(self.renew_session_button.show, validity.button)
