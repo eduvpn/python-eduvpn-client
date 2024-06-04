@@ -37,6 +37,7 @@ def translated_error(error: Exception) -> str:
         translated = extract_translation(error.translations)
     return translated
 
+
 def should_show_error(error: Exception):
     if isinstance(error, WrappedError):
         return not error.misc

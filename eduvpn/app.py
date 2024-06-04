@@ -589,7 +589,11 @@ class Application:
     def on_network_update_callback(self, state, initial=False):
         try:
             if state == nm.ConnectionState.CONNECTED:
-                if not self.common.in_state(State.DISCONNECTED) and not self.common.in_state(State.GOT_CONFIG) and not initial:
+                if (
+                    not self.common.in_state(State.DISCONNECTED)
+                    and not self.common.in_state(State.GOT_CONFIG)
+                    and not initial
+                ):
                     return
                 if not initial:
                     self.common.set_state(State.CONNECTING)
