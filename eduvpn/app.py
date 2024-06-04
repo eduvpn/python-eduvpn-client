@@ -555,7 +555,10 @@ class ApplicationModel:
                         self.common.set_state(State.DISCONNECTED)
                     on_cleaned()
             else:
-                self.common.set_state(curr)
+                try:
+                    self.common.set_state(curr)
+                except WrappedError as e:
+                    logger.debug(f"set_state error in deactivate connection: {str(e)}")
                 if callback:
                     callback(False)
 
