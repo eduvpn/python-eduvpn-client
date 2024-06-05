@@ -1,3 +1,6 @@
+# 4.3.1 (2024-06-05)
+* Setup.cfg: Small fixes to ensure the UI package and the data files are added correctly
+
 # 4.3.0 (2024-06-04)
 * UI: Add a ctrl+q shortcut (#580)
 * Keyring: Make run detection less often in the CLI such that it does not prompt you for a password when you e.g. pass `--help` (#587)
