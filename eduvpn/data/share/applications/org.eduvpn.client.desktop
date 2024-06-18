@@ -7,4 +7,4 @@ Exec=eduvpn-gui
 Icon=org.eduvpn.client
 Terminal=false
 StartupWMClass=org.eduvpn.client
-
+Categories=Network;Dialup
