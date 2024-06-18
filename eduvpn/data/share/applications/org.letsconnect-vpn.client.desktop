@@ -7,4 +7,4 @@ Exec=letsconnect-gui
 Icon=org.letsconnect-vpn.client
 Terminal=false
 StartupWMClass=org.letsconnect-vpn.client
-
+Categories=Network;Dialup
