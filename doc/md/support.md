@@ -27,12 +27,12 @@ See the section below for any known issues.
 
 ## Known issues
 
-### WireGuard IPv6 blocked with firewalld
+### Connecting to WireGuard VPN over IPv6 blocked by firewalld
 
 Firewalld is a firewall that is used by default on e.g. Fedora.
-There is an issue with IPv6 traffic and WireGuard, see: https://github.com/firewalld/firewalld/issues/1203 and https://bugzilla.redhat.com/show_bug.cgi?id=2293925
+There is an issue with IPv6 traffic and WireGuard, see: the upstream [GitHub issue](https://github.com/firewalld/firewalld/issues/1203) and the [Red Hat Bugzilla](https://bugzilla.redhat.com/show_bug.cgi?id=2293925).
 
-The workaround is to set `IPv6_rpfilter=no` in `/etc/firewalld/firewalld.conf` and restarting firewalld.service or rebooting
+The workaround is to set `IPv6_rpfilter=no` in `/etc/firewalld/firewalld.conf` and restarting `firewalld.service` (`systemctl restart firewalld`) or rebooting.
 
 ### OpenVPN <= 2.5.7 and OpenSSL 3
 
