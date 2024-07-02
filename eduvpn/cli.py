@@ -193,6 +193,9 @@ class CommandLine:
         return self.ask_server_input(servers, query=search_query)
 
     def connect_server(self, server, prefer_tcp: bool):
+        if getattr(server, "delisted", False):
+            print(f"Server is not longer available: {str(server)}. Please contact your IT department", file=sys.stderr)
+            return
         self.common.set_state(State.MAIN)
 
         def connect(callback=None):
@@ -360,7 +363,10 @@ class CommandLine:
         if sort:
             ias = sorted(ias, key=lambda x: str(x))
         for institute in ias:
-            print(f"[{total_servers}]: {str(institute)}")
+            prefix = ""
+            if getattr(institute, "delisted", False):
+                prefix += "No longer available: "
+            print(f"[{total_servers}]: {prefix}{str(institute)}")
             total_servers += 1
 
         sis = grouped_servers[ServerGroup.SECURE_INTERNET]
@@ -371,7 +377,10 @@ class CommandLine:
             print("Secure Internet Server")
             print("============================")
         for secure in sis:
-            print(f"[{total_servers}]: {str(secure)}")
+            prefix = ""
+            if getattr(secure, "delisted", False):
+                prefix += "No longer available: "
+            print(f"[{total_servers}]: {prefix}{str(secure)}")
             total_servers += 1
 
         custs = grouped_servers[ServerGroup.OTHER]

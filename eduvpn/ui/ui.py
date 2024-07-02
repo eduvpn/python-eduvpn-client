@@ -1146,6 +1146,9 @@ For detailed information, see the log file located at:
             self.call_model("add", server, on_added)
             self.exit_search()
         else:
+            if getattr(server, "delisted", False):
+                self.show_error_revealer(f"Server is no longer available: {str(server)}. Please contact your IT department")
+                return
             self.call_model("connect", server)
 
     def server_ask_remove(self, server):
