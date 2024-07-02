@@ -495,6 +495,10 @@ class NMManager:
         for ip in config["Peer"]["AllowedIPs"].split(","):
             peer.append_allowed_ip(ip.strip(), accept_invalid=False)
 
+        keepalive = int(config["Peer"].get("PersistentKeepalive", 0))
+        if keepalive:
+            peer.set_persistent_keepalive(keepalive)
+
         s_ip4 = NM.SettingIP4Config.new()
         s_ip6 = NM.SettingIP6Config.new()
 
