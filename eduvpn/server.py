@@ -62,13 +62,18 @@ class Server:
         url: str,
         display_name: Dict[str, str],
         profiles: Optional[Profiles] = None,
+        delisted: bool = False,
     ):
         self.url = url
         self.display_name = display_name
         self.profiles = profiles
+        self.delisted = delisted
 
     def __str__(self) -> str:
-        return extract_translation(self.display_name)
+        translated = extract_translation(self.display_name)
+        if self.delisted:
+            return f"⚠️ No longer available: {translated}"
+        return translated
 
     @property
     def identifier(self) -> str:
@@ -101,8 +106,9 @@ class InstituteServer(Server):
         display_name: Dict[str, str],
         support_contact: List[str],
         profiles: Profiles,
+        delisted: bool = False,
     ):
-        super().__init__(url, display_name, profiles)
+        super().__init__(url, display_name, profiles, delisted)
         self.support_contact = support_contact
 
     @property
@@ -137,8 +143,9 @@ class SecureInternetServer(Server):
         profiles: Profiles,
         country_code: str,
         locations: List[str],
+        delisted: bool = False,
     ):
-        super().__init__(org_id, display_name, profiles)
+        super().__init__(org_id, display_name, profiles, delisted)
         self.org_id = org_id
         self.support_contact = support_contact
         self.country_code = country_code
@@ -160,7 +167,6 @@ class SecureInternetServer(Server):
 def parse_secure_internet(si: dict) -> Optional[SecureInternetServer]:
     profiles = parse_profiles(si["profiles"])
     locations = si.get("locations", [])
-    # TODO: delisted
     return SecureInternetServer(
         si["identifier"],
         si["display_name"],
@@ -168,6 +174,7 @@ def parse_secure_internet(si: dict) -> Optional[SecureInternetServer]:
         profiles,
         si["country_code"],
         locations,
+        si["delisted"],
     )
 
 
@@ -213,7 +220,6 @@ def parse_servers(server_json: str) -> List[Server]:
     institutes = d.get("institute_access_servers", [])
     servers: List[Server] = []
     for i in institutes:
-        # TODO: delisted
         profiles = parse_profiles(i["profiles"])
         servers.append(
             InstituteServer(
@@ -221,6 +227,7 @@ def parse_servers(server_json: str) -> List[Server]:
                 i["display_name"],
                 i.get("support_contacts", []),
                 profiles,
+                i["delisted"],
             )
         )
 

@@ -1,6 +1,7 @@
 import enum
 from typing import Dict, List
 
+from gi.repository import GLib
 from gi.overrides.Gtk import ListStore  # type: ignore
 
 from eduvpn.discovery import DiscoOrganization, DiscoServer
@@ -45,7 +46,11 @@ def server_to_model_data(server) -> list:
     display_string = str(server)
     if isinstance(server, SecureInternetServer):
         display_string = retrieve_country_name(server.country_code)
-    return [display_string, server]
+
+    display_markup = GLib.markup_escape_text(display_string)
+    if getattr(server, "delisted", False):
+        display_markup = f'<span fgalpha="50%">{GLib.markup_escape_text(display_string)}</span>'
+    return [display_markup, server]
 
 
 def show_result_components(window: "EduVpnGtkWindow", show: bool) -> None:  # type: ignore  # noqa: F821
@@ -131,7 +136,7 @@ def init_server_search(window: "EduVpnGtkWindow") -> None:  # type: ignore  # no
         tree_view = getattr(window, component_name)
         if len(tree_view.get_columns()) == 0:
             # Only add this column once.
-            column = Gtk.TreeViewColumn("", text_cell, text=0)  # type: ignore
+            column = Gtk.TreeViewColumn("", text_cell, markup=0)  # type: ignore
             tree_view.append_column(column)
 
 
