@@ -2,7 +2,7 @@
 #       install the client.
 #
 
-.PHONY: build
+.PHONY: venv deb dnf mypy fmt lint clean build sloc
 
 VENV=./venv
 RUFF := $(shell command -v ruff 2> /dev/null)
@@ -95,3 +95,6 @@ build: venv
 	rm -rf dist
 	$(VENV)/bin/pip install build
 	$(VENV)/bin/python3 -m build --sdist --wheel .
+
+sloc:
+	tokei -t=Python eduvpn || cloc --include-ext=py eduvpn
