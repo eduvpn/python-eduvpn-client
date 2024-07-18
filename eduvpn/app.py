@@ -164,7 +164,7 @@ class ApplicationModel:
     def register(self, debug: bool):
         self.common.register(debug=debug)
         if self.variant.use_predefined_servers:
-            self.common.discovery_startup(self._refresh_list_handler)
+            self.common.discovery_startup(self._refresh_list_handler)  # type: ignore[attr-defined]
         self.common.set_token_handler(self.load_tokens, self.save_tokens)
 
     def cancel(self):

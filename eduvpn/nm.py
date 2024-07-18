@@ -496,7 +496,7 @@ class NMManager:
             peer.append_allowed_ip(ip.strip(), accept_invalid=False)
 
         try:
-            keepalivestr = config["Peer"].get("PersistentKeepalive", 0)
+            keepalivestr = config["Peer"].get("PersistentKeepalive", "0")
             keepalive = int(keepalivestr)
             if keepalive > 0:
                 _logger.debug(f"setting persistent keepalive: {keepalive}")
