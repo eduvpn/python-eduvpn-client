@@ -8,7 +8,7 @@ from typing import Any, Callable, Iterator, Optional, TextIO
 
 from eduvpn_common.main import EduVPN, ServerType, WrappedError
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes, RefreshList
+from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes, RefreshList  # type: ignore[attr-defined]
 
 from eduvpn import nm
 from eduvpn.config import Configuration
