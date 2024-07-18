@@ -52,6 +52,7 @@ from eduvpn.utils import (
     ERROR_STATE,
     FAILOVERED_STATE,
     ONLINEDETECT_STATE,
+    SERVER_LIST_REFRESH_STATE,
     get_prefix,
     get_ui_state,
     log_exception,
@@ -1087,6 +1088,14 @@ For detailed information, see the log file located at:
         self.info_dialog.show()
         self.info_dialog.run()
         self.info_dialog.hide()
+
+    @ui_transition(SERVER_LIST_REFRESH_STATE, StateType.ENTER)  # type: ignore
+    def enter_server_list_refresh(self, old_state, servers) -> None:
+        logger.debug("server list refresh")
+        if self.is_searching_server:
+            return
+
+        search.update_results(self, servers)
 
     def on_settings_button(self, widget: EventBox, event: EventButton) -> None:
         logger.debug("clicked settings button")

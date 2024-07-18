@@ -8,7 +8,7 @@ from typing import Any, Callable, Iterator, Optional, TextIO
 
 from eduvpn_common.main import EduVPN, ServerType, WrappedError
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes
+from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes, RefreshList
 
 from eduvpn import nm
 from eduvpn.config import Configuration
@@ -22,6 +22,7 @@ from eduvpn.utils import (
     run_in_glib_thread,
     set_failovered,
     set_online_detecting,
+    set_server_list_refresh,
 )
 from eduvpn.variants import ApplicationVariant
 
@@ -137,6 +138,7 @@ class ApplicationModel:
         self._was_tcp = False
         self._should_failover = False
         self._peer_ips_proxy = None
+        self._refresh_list_handler = RefreshList(self.refresh_list)
 
     @property
     def keyring(self):
@@ -149,8 +151,13 @@ class ApplicationModel:
         self._keyring = keyring
         return self._keyring
 
+    def refresh_list(self):
+        set_server_list_refresh(self.common, self.server_db.configured)
+
     def register(self, debug: bool):
         self.common.register(debug=debug)
+        if self.variant.use_predefined_servers:
+            self.common.discovery_startup(self._refresh_list_handler)
         self.common.set_token_handler(self.load_tokens, self.save_tokens)
 
     def cancel(self):
