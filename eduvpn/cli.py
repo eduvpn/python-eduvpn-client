@@ -194,7 +194,10 @@ class CommandLine:
 
     def connect_server(self, server, prefer_tcp: bool):
         if getattr(server, "delisted", False):
-            print(f"Server is not longer available: {str(server)}. Please contact your IT department", file=sys.stderr)
+            print(
+                f"Server is not longer available: {str(server)}. Please contact your IT department",
+                file=sys.stderr,
+            )
             return
         self.common.set_state(State.MAIN)
 

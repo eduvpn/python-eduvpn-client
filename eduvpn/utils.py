@@ -54,7 +54,11 @@ def set_failovered(common):
 
 
 def set_server_list_refresh(common, servers):
-    common.event_handler.run(get_ui_state(SERVER_LIST_REFRESH_STATE), get_ui_state(SERVER_LIST_REFRESH_STATE), servers)
+    common.event_handler.run(
+        get_ui_state(SERVER_LIST_REFRESH_STATE),
+        get_ui_state(SERVER_LIST_REFRESH_STATE),
+        servers,
+    )
 
 
 def model_transition(state: State, state_type: StateType) -> Callable:

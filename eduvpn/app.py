@@ -12,7 +12,14 @@ from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes, RefreshList
 
 from eduvpn import nm
 from eduvpn.config import Configuration
-from eduvpn.connection import Config, Connection, Protocol, parse_config, parse_expiry, parse_tokens
+from eduvpn.connection import (
+    Config,
+    Connection,
+    Protocol,
+    parse_config,
+    parse_expiry,
+    parse_tokens,
+)
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
 from eduvpn.server import ServerDatabase, parse_profiles, parse_required_transition
 from eduvpn.utils import (

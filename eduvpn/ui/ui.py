@@ -854,7 +854,10 @@ For detailed information, see the log file located at:
         if self.app.config.ignore_keyring_warning:
             return
 
-        if old_state not in [get_ui_state(State.DEREGISTERED), get_ui_state(State.MAIN)]:
+        if old_state not in [
+            get_ui_state(State.DEREGISTERED),
+            get_ui_state(State.MAIN),
+        ]:
             return
 
         self.keyring_dialog.set_title(f"{self.app.variant.name} - Keyring Warning")
@@ -1147,7 +1150,9 @@ For detailed information, see the log file located at:
             self.exit_search()
         else:
             if getattr(server, "delisted", False):
-                self.show_error_revealer(f"Server is no longer available: {str(server)}. Please contact your IT department")
+                self.show_error_revealer(
+                    f"Server is no longer available: {str(server)}. Please contact your IT department"
+                )
                 return
             self.call_model("connect", server)
 
