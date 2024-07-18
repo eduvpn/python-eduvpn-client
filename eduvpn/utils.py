@@ -37,6 +37,7 @@ def get_ui_state(state: State) -> int:
 ERROR_STATE = 2 * len(State) + 1
 ONLINEDETECT_STATE = ERROR_STATE + 1
 FAILOVERED_STATE = ERROR_STATE + 2
+SERVER_LIST_REFRESH_STATE = ERROR_STATE + 3
 
 
 def handle_exception(common, exception):
@@ -50,6 +51,10 @@ def set_online_detecting(common):
 
 def set_failovered(common):
     common.event_handler.run(get_ui_state(FAILOVERED_STATE), get_ui_state(FAILOVERED_STATE), "")
+
+
+def set_server_list_refresh(common, servers):
+    common.event_handler.run(get_ui_state(SERVER_LIST_REFRESH_STATE), get_ui_state(SERVER_LIST_REFRESH_STATE), servers)
 
 
 def model_transition(state: State, state_type: StateType) -> Callable:
