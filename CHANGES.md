@@ -1,3 +1,16 @@
+# 4.4.0 (2024-07-25)
+* Server list:
+  - Implement a "delisted" UI when a server is removed
+  - Implement discovery fetching @ startup and refreshing the list
+* Makefile:
+  - Add sloc target
+* Desktop files:
+  - Add "Category" to desktop files, by @hamarituc
+* WireGuard:
+  - Support PersistentKeepalive option
+* Docs:
+  - Document firewalld ipv6 issue
+
 # 4.3.1 (2024-06-05)
 * Setup.cfg: Small fixes to ensure the UI package and the data files are added correctly
 
