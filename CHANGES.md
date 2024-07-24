@@ -10,6 +10,7 @@
   - Support PersistentKeepalive option
 * Docs:
   - Document firewalld ipv6 issue
+* eduvpn-common >= 2.1.x && < 3.0.0 is now required
 
 # 4.3.1 (2024-06-05)
 * Setup.cfg: Small fixes to ensure the UI package and the data files are added correctly
