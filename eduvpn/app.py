@@ -588,7 +588,7 @@ class ApplicationModel:
 class Application:
     def __init__(self, variant: ApplicationVariant, common: EduVPN) -> None:
         self.variant = variant
-        self.nm_manager = nm.NMManager(variant)
+        self.nm_manager = nm.NMManager(variant, common)
         self.common = common
         directory = variant.config_prefix
         self.config = Configuration.load(directory)

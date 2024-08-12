@@ -1,5 +1,4 @@
 import enum
-import ipaddress
 import logging
 import os
 import time
@@ -12,7 +11,7 @@ from socket import AF_INET, AF_INET6, IPPROTO_TCP
 from tempfile import mkdtemp
 from typing import Any, Callable, Optional, TextIO, Tuple
 
-from eduvpn_common.main import Jar
+from eduvpn_common.main import EduVPN, Jar
 from gi.repository.Gio import Cancellable, Task  # type: ignore
 
 from eduvpn.ovpn import Ovpn
@@ -81,15 +80,16 @@ class ConnectionState(enum.Enum):
 
 # A manager for a manager :-)
 class NMManager:
-    def __init__(self, variant: ApplicationVariant):
+    def __init__(self, variant: ApplicationVariant, common_lib: EduVPN):
         self.variant = variant
         self.proxy = None
         try:
             self._client = NM.Client.new(None)
-            self.wg_gateway_ip: Optional[ipaddress.IPv4Address] = None
+            self.wg_gateway_ip: Optional[str] = None
         except Exception:
             self._client = None
         self.cancel_jar = Jar(lambda x: x.cancel())
+        self.common_lib = common_lib
 
     @property
     def client(self) -> "NM.Client":
@@ -304,7 +304,7 @@ class NMManager:
             if not self.wg_gateway_ip:
                 _logger.debug("no wg gateway ip found in failover endpoint")
                 return None
-            return str(self.wg_gateway_ip)
+            return self.wg_gateway_ip
         else:
             _logger.debug(f"Unknown protocol: {protocol}")
             return None
@@ -452,7 +452,8 @@ class NMManager:
             addr = ip_interface(ip.strip())
             if addr.version == 4:
                 if not self.wg_gateway_ip:
-                    self.wg_gateway_ip = addr.network[1]
+                    net_str = str(addr.network)
+                    self.wg_gateway_ip = self.common_lib.calculate_gateway(net_str)
                 ipv4s.append(NM.IPAddress(AF_INET, str(addr.ip), addr.network.prefixlen))
             elif addr.version == 6:
                 ipv6s.append(NM.IPAddress(AF_INET6, str(addr.ip), addr.network.prefixlen))
