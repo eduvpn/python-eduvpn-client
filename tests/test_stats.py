@@ -27,7 +27,7 @@ def try_open(path: Path):
 @patch("eduvpn.nm.NMManager.iface", new_callable=PropertyMock, return_value=MOCK_IFACE)
 class TestStats(TestCase):
     def test_stat_bytes(self, _):
-        nm_manager = NMManager(EDUVPN)
+        nm_manager = NMManager(EDUVPN, None)
         with TemporaryDirectory() as tempdir:
             # Create test data in the wanted files
             # Use the tempdir so it is cleaned up later
