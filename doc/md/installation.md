@@ -227,6 +227,24 @@ $ sudo dnf install \
     cairo-gobject-devel
 ```
 
+For openSUSE stable (Leap 15.5):
+```console
+$ sudo zypper install \
+    python311-pipx \
+    libnotify \
+    libsecret \
+    gtk3 \
+    python311-gobject \
+    python311-pytest \
+    python311-cairo-devel \
+    gobject-introspection-devel \
+    typelib-1_0-Notify-0_7 \
+    typelib-1_0-Secret-1 \
+    typelib-1_0-Gtk-3_0 \
+    cairo-devel \
+    gcc
+```
+
 For openSUSE Tumbleweed:
 ```console
 $ sudo zypper install \
