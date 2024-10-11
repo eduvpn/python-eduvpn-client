@@ -422,17 +422,17 @@ class NMManager:
         self.set_connection(new_con, callback)  # type: ignore
 
     def get_priorities(self, has_proxy: bool, has_lan: bool):
-        # rule, proxy, lan
+        # rule, proxy, lan, exclude
         if has_proxy:
             if has_lan:
-                return [3, 2, 1]
+                return [4, 3, 2, 1]
             else:
-                return [2, 1, -1]
+                return [2, 1, -1, -1]
         else:
             if has_lan:
-                return [2, -1, 1]
+                return [3, -1, 2, 1]
             else:
-                return [1, -1, -1]
+                return [1, -1, -1, -1]
 
     def start_wireguard_connection(  # noqa: C901
         self,
@@ -556,11 +556,18 @@ class NMManager:
         # We want to make this configurable
         # Additionally, the overlap case with split tunnel doesn't work: https://github.com/eduvpn/python-eduvpn-client/issues/551
 
-        rules = [(4, AF_INET, s_ip4, 32), (6, AF_INET6, s_ip6, 128)]
+        # set LANs to whitelist
+        # we cannot just add a ip rule that takes everything from main table except the default route
+        # as we have Tunnelcrack/Tunnelvision attacks to worry about
+        # from RFC1918: https://datatracker.ietf.org/doc/html/rfc1918#section-3
+        lan_4 =  [("10.0.0.0", 8), ("172.16.0.0", 12), ("192.168.0.0", 16)]
+        # from RFC4193 https://datatracker.ietf.org/doc/html/rfc4193#section-3.1
+        lan_6 = [("fc00::", 7)]
+        rules = [(4, AF_INET, s_ip4, 32, lan_4), (6, AF_INET6, s_ip6, 128, lan_6)]
         # priority 1 not fwmark fwmarknum table fwmarknum
 
         prios = self.get_priorities(proxy is not None, allow_wg_lan)
-        for ipver, family, setting, subnet in rules:
+        for ipver, family, setting, subnet, lans in rules:
             rule = NM.IPRoutingRule.new(family)
             rule.set_priority(prios[0])
             rule.set_invert(True)
@@ -586,12 +593,21 @@ class NMManager:
 
             # when LAN should be allowed, we have to add a higher priority suppress prefixlength rule
             if allow_wg_lan:
-                lan_rule = NM.IPRoutingRule.new(family)
-                # Downgrade the default wireguard rule priority
-                # And set the lan rule to a higher priority
-                lan_rule.set_priority(prios[2])
-                lan_rule.set_suppress_prefixlength(0)
-                setting.add_routing_rule(lan_rule)
+                exclude_rule = NM.IPRoutingRule.new(family)
+                exclude_rule.set_priority(prios[3])
+                exclude_rule.set_invert(True)
+                # fwmask 0xffffffff is the default
+                exclude_rule.set_fwmark(fwmark, 0xFFFFFFFF)
+                exclude_rule.set_table(fwmark)
+                exclude_rule.set_suppress_prefixlength(0)
+                setting.add_routing_rule(exclude_rule)
+                for ipr in lans:
+                    lan_rule = NM.IPRoutingRule.new(family)
+                    lan_rule.set_to(ipr[0], ipr[1])
+                    lan_rule.set_priority(prios[2])
+                    lan_rule.set_suppress_prefixlength(0)
+                    setting.add_routing_rule(lan_rule)
+
 
         w_con.append_peer(peer)
         private_key = config["Interface"]["PrivateKey"]
