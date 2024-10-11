@@ -10,7 +10,7 @@ CONFIG_FILE_NAME = "config.json"
 
 DEFAULT_SETTINGS = dict(
     ignore_keyring_warning=False,
-    allow_wg_lan=False,
+    allow_wg_lan=True,
     proxy_active_warning=None,
 )
 
