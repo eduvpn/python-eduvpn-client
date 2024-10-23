@@ -8,7 +8,7 @@ from typing import Any, Callable, Iterator, Optional, TextIO
 
 from eduvpn_common.main import EduVPN, ServerType, WrappedError
 from eduvpn_common.state import State, StateType
-from eduvpn_common.types import ProxyReady, ProxySetup, ReadRxBytes, RefreshList  # type: ignore[attr-defined]
+from eduvpn_common.types import ProxySetup, ReadRxBytes, RefreshList  # type: ignore[attr-defined]
 
 from eduvpn import nm
 from eduvpn.config import Configuration
@@ -21,6 +21,7 @@ from eduvpn.connection import (
     parse_tokens,
 )
 from eduvpn.keyring import DBusKeyring, InsecureFileKeyring, TokenKeyring
+from eduvpn.proxy import Proxy
 from eduvpn.server import ServerDatabase, parse_profiles, parse_required_transition
 from eduvpn.utils import (
     handle_exception,
@@ -144,8 +145,8 @@ class ApplicationModel:
         self.nm_manager = nm_manager
         self._was_tcp = False
         self._should_failover = False
-        self._peer_ips_proxy = None
         self._refresh_list_handler = RefreshList(self.refresh_list)
+        self._proxy_setup_handler = ProxySetup(self.on_proxy_setup)
 
     @property
     def keyring(self):
@@ -327,22 +328,8 @@ class ApplicationModel:
             logger.error("Failed saving tokens with exception:")
             logger.error(e, exc_info=True)
 
-    def on_proxy_setup(self, fd, peer_ips):
-        logger.debug(f"got proxy fd: {fd}, peer_ips: {peer_ips}")
-        self._peer_ips_proxy = json.loads(peer_ips)
-
-    @run_in_background_thread("start-proxy")
-    def start_proxy(self, proxy, callback):
-        try:
-            self.common.start_proxyguard(
-                proxy.listen,
-                proxy.source_port,
-                proxy.peer,
-                ProxySetup(self.on_proxy_setup),
-                ProxyReady(lambda: callback()),
-            )
-        except Exception as e:
-            handle_exception(self.common, e)
+    def on_proxy_setup(self, fd):
+        logger.debug(f"got proxy fd: {fd}")
 
     def connect(
         self,
@@ -424,21 +411,22 @@ class ApplicationModel:
             if not self.common.in_state(State.CONNECTING):
                 self.common.set_state(State.CONNECTING)
             connection = Connection.parse(config)
+            proxy = None
+            if config.proxy is not None:
+                wrapper_proxy = self.common.new_proxyguard(
+                    config.proxy.listen_port, config.proxy.source_port, config.proxy.peer, self._proxy_setup_handler
+                )
+                proxy = Proxy(self.common, config.proxy, wrapper_proxy)
             connection.connect(
                 self.nm_manager,
                 config.default_gateway,
                 self.config.allow_wg_lan,
                 config.dns_search_domains,
-                config.proxy,
-                self._peer_ips_proxy,
+                proxy,
                 on_connect,
             )
-            self._peer_ips_proxy = None
 
-        if config.proxy:
-            self.start_proxy(config.proxy, lambda: connect(config))
-        else:
-            connect(config)
+        connect(config)
 
     def reconnect(self, callback: Optional[Callable] = None, prefer_tcp: bool = False):
         def on_disconnected(success: bool):

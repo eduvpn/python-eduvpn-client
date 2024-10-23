@@ -3,7 +3,6 @@ from configparser import ConfigParser
 from datetime import datetime, timedelta
 from enum import IntEnum
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse
 
 from eduvpn.ovpn import Ovpn
 
@@ -38,35 +37,22 @@ class Protocol(IntEnum):
     WIREGUARDTCP = 3
 
 
-class Proxy:
+class ProxyConfig:
     """The class that represents a proxyguard instance
     :param: peer: str: The remote peer string
-    :param: listen: str: The listen proxy string
+    :param source_port: int: The source port for the TCP connection
+    :param: listen_port: str: The listen port for the proxy
     """
 
     def __init__(
         self,
         peer: str,
         source_port: int,
-        listen: str,
+        listen_port: int,
     ):
         self.peer = peer
         self.source_port = source_port
-        self.listen = listen
-
-    @property
-    def peer_scheme(self) -> str:
-        try:
-            parsed = urlparse(self.peer)
-            return parsed.scheme
-        except Exception:
-            return ""
-
-    @property
-    def peer_port(self):
-        if self.peer_scheme == "http":
-            return 80
-        return 443
+        self.listen_port = listen_port
 
 
 class Config:
@@ -82,7 +68,7 @@ class Config:
         protocol: Protocol,
         default_gateway: bool,
         dns_search_domains: List[str],
-        proxy: Proxy,
+        proxy: ProxyConfig,
         should_failover: bool,
     ):
         self.config = config
@@ -105,7 +91,7 @@ def parse_config(config_json: str) -> Config:
     d = json.loads(config_json)
     proxy = d.get("proxy", None)
     if proxy:
-        proxy = Proxy(proxy["peer"], proxy["source_port"], proxy["listen"])
+        proxy = ProxyConfig(proxy["peer"], proxy["source_port"], proxy["listen_port"])
     cfg = Config(
         d["config"],
         Protocol(d["protocol"]),
@@ -202,7 +188,6 @@ class OpenVPNConnection(Connection):
         allow_lan,
         dns_search_domains,
         proxy,
-        proxy_peer_ips,
         callback,
     ):
         manager.start_openvpn_connection(
@@ -231,7 +216,6 @@ class WireGuardConnection(Connection):
         allow_lan,
         dns_search_domains,
         proxy,
-        proxy_peer_ips,
         callback,
     ):
         manager.start_wireguard_connection(
@@ -239,6 +223,5 @@ class WireGuardConnection(Connection):
             default_gateway,
             allow_wg_lan=allow_lan,
             callback=callback,
-            proxy_peer_ips=proxy_peer_ips,
             proxy=proxy,
         )
