@@ -28,6 +28,10 @@ $ bash ./install.sh
 
 ## Manual installation
 
+For manual installation without using the script, pick the right section for
+the Linux distribution that you are using. Note that these instructions assume
+you are using Bash as your shell.
+
 ### Debian 11
 
 ``` console
