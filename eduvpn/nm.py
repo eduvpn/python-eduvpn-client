@@ -10,7 +10,7 @@ from pathlib import Path
 from shutil import rmtree
 from socket import AF_INET, AF_INET6, IPPROTO_TCP, SOCK_DGRAM, socket
 from tempfile import mkdtemp
-from typing import Any, Callable, Optional, TextIO, Tuple
+from typing import Any, Callable, Optional, TextIO
 
 from eduvpn_common.main import EduVPN, Jar
 from gi.repository.Gio import Cancellable, Task  # type: ignore
@@ -347,17 +347,6 @@ class NMManager:
         conn = vpn_infos[0].load_editor_plugin().import_(str(target))
         conn.normalize()
         return conn
-
-    def import_ovpn_with_certificate(self, ovpn: Ovpn, private_key: str, certificate: str) -> "NM.SimpleConnection":
-        """
-        Import the OVPN string into Network Manager.
-        """
-        target_parent = Path(mkdtemp())
-        target = target_parent / f"{self.variant.name}.ovpn"
-        write_ovpn(ovpn, private_key, certificate, target)
-        connection = self.ovpn_import(target)
-        rmtree(target_parent)
-        return connection
 
     def import_ovpn(self, ovpn: Ovpn) -> "NM.SimpleConnection":
         """
@@ -910,16 +899,6 @@ class NMManager:
         # Connect the active connection added signal
         self.client.connect("active-connection-added", wrapped_connection_added)
         return True
-
-    def connection_status(
-        self,
-    ) -> Tuple[Optional[str], Optional["NM.ActiveConnectionState"]]:
-        con = self.client.get_primary_connection()
-        if not isinstance(con, NM.VpnConnection):
-            return None, None
-        uuid = con.get_uuid()
-        status = con.get_state()
-        return uuid, status
 
 
 def action_with_mainloop(action: Callable):

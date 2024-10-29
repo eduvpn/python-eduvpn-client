@@ -15,7 +15,6 @@ from eduvpn.i18n import extract_translation
 from eduvpn.settings import IMAGE_PREFIX
 
 logger = logging.getLogger(__name__)
-TranslatedStr = Union[str, Dict[str, str]]
 
 
 class Profile:
@@ -85,14 +84,6 @@ class Server:
     def category_id(self) -> ServerType:
         return ServerType.CUSTOM
 
-    @property
-    def category(self) -> str:
-        """Return the category of the server as a string
-        :return: The category string
-        :rtype: str
-        """
-        return str(self.category_id)
-
 
 class InstituteServer(Server):
     """The class that represents an Institute Access Server
@@ -116,14 +107,6 @@ class InstituteServer(Server):
     @property
     def category_id(self) -> ServerType:
         return ServerType.INSTITUTE_ACCESS
-
-    @property
-    def category(self) -> str:
-        """Return the category of the server as a string
-        :return: The category string
-        :rtype: str
-        """
-        return str(self.category_id)
 
 
 class SecureInternetServer(Server):
@@ -156,14 +139,6 @@ class SecureInternetServer(Server):
     @property
     def category_id(self) -> ServerType:
         return ServerType.SECURE_INTERNET
-
-    @property
-    def category(self) -> str:
-        """Return the category of the server as a string
-        :return: The category string
-        :rtype: str
-        """
-        return str(self.category_id)
 
 
 def parse_secure_internet(si: dict) -> Optional[SecureInternetServer]:

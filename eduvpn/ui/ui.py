@@ -98,7 +98,6 @@ def is_dark(rgb):
 class ValidityTimers:
     def __init__(self):
         self.cancel_timers = []
-        self.num = 0
 
     def add_absolute(self, call: Callable, abstime: datetime):
         delta = abstime - datetime.now()
@@ -182,7 +181,6 @@ class EduVpnGtkWindow(Gtk.ApplicationWindow):
         # Whether or not the profile that is selected is the 'same' one as before
         # This is used so it doesn't fully trigger the callback
         self.set_same_profile = False
-        self.is_selected = False
 
         self.app_logo = builder.get_object("appLogo")
         self.app_logo_info = builder.get_object("appLogoInfo")
@@ -681,29 +679,6 @@ For detailed information, see the log file located at:
 
             self.eduvpn_app.enter_SessionExpiredState()
 
-    # Shows notifications according to https://docs.eduvpn.org/server/v3/client-implementation-notes.html#expiry
-    # The 0th case is handled with a separate notification inside of the expiry text handler
-    def ensure_expiry_notification_text(self, validity: Validity) -> None:
-        hours = [4, 2, 1]
-        for h in hours:
-            if h in self.shown_notification_times:
-                continue
-            delta = validity.remaining - timedelta(hours=h)
-            total_secs = delta.total_seconds()
-            if total_secs <= 0 and total_secs >= -120:
-                self.eduvpn_app.enter_SessionPendingExpiryState(h)
-                self.shown_notification_times.add(h)
-                break
-
-    # Show renew button or not
-    def update_connection_renew(self, expire_time) -> None:
-        if self.app.model.should_renew_button():
-            # Show renew button
-            self.renew_session_button.show()
-
-            validity = self.app.model.get_expiry(expire_time)
-            self.ensure_expiry_notification_text(validity)
-
     def update_connection_status(self, connected: bool) -> None:
         if connected:
             self.connection_status_label.set_text(_("Connected"))
@@ -805,10 +780,6 @@ For detailed information, see the log file located at:
         search.show_search_components(self, False)
         search.exit_server_search(self)
 
-    def exit_ConfigureCustomServer(self, old_state, new_state):
-        if not self.app.variant.use_predefined_servers:
-            self.add_custom_server_button_container.hide()
-
     def fill_secure_location_combo(self, curr, locs):
         locs_store = Gtk.ListStore(GdkPixbuf.Pixbuf, GObject.TYPE_STRING, GObject.TYPE_STRING)
         active_loc = 0
@@ -869,46 +840,46 @@ For detailed information, see the log file located at:
         self.app.config.ignore_keyring_warning = self.keyring_do_not_show.get_active()
 
     @ui_transition(State.MAIN, StateType.LEAVE)
-    def exit_MainState(self, old_state, new_state):
+    def exit_MainState(self, _old_state, _data):
         search.show_result_components(self, False)
         self.add_other_server_button_container.hide()
         search.exit_server_search(self)
         self.change_location_combo.hide()
 
     @ui_transition(State.OAUTH_STARTED, StateType.ENTER)
-    def enter_oauth_setup(self, old_state, url):
+    def enter_oauth_setup(self, _old_state, data):
         self.show_page(self.oauth_page)
         self.oauth_cancel_button.show()
 
     @ui_transition(State.OAUTH_STARTED, StateType.LEAVE)
-    def exit_oauth_setup(self, old_state, data):
+    def exit_oauth_setup(self, _old_state, _data):
         self.hide_page(self.oauth_page)
         self.oauth_cancel_button.hide()
 
     @ui_transition(State.ADDING_SERVER, StateType.ENTER)
-    def enter_chosenServerInformation(self, new_state, data):
+    def enter_chosenServerInformation(self, _old_state, _data):
         self.show_loading_page(
             _("Adding server"),
             _("Loading server information..."),
         )
 
     @ui_transition(State.ADDING_SERVER, StateType.LEAVE)
-    def exit_chosenServerInformation(self, old_state, data):
+    def exit_chosenServerInformation(self, _old_state, _data):
         self.hide_loading_page()
 
     @ui_transition(State.GETTING_CONFIG, StateType.ENTER)
-    def enter_GettingConfig(self, new_state, data):
+    def enter_GettingConfig(self, _old_state, _data):
         self.show_loading_page(
             _("Getting a VPN configuration"),
             _("Loading server information..."),
         )
 
     @ui_transition(State.GETTING_CONFIG, StateType.LEAVE)
-    def exit_GettingConfig(self, old_state, data):
+    def exit_GettingConfig(self, _old_state, _data):
         self.hide_loading_page()
 
     @ui_transition(State.ASK_PROFILE, StateType.ENTER)
-    def enter_ChooseProfile(self, new_state, data):
+    def enter_ChooseProfile(self, _old_state, data):
         self.show_back_button(True)
         self.show_page(self.choose_profile_page)
         self.profile_list.show()
@@ -935,13 +906,13 @@ For detailed information, see the log file located at:
             profiles_list_model.append([str(profile), (setter, profile_id)])
 
     @ui_transition(State.ASK_PROFILE, StateType.LEAVE)
-    def exit_ChooseProfile(self, old_state, data):
+    def exit_ChooseProfile(self, old_state, _data):
         self.show_back_button(False)
         self.hide_page(self.choose_profile_page)
         self.profile_list.hide()
 
     @ui_transition(State.ASK_LOCATION, StateType.ENTER)
-    def enter_ChooseSecureInternetLocation(self, old_state, data):
+    def enter_ChooseSecureInternetLocation(self, _old_state, data):
         self.show_back_button(True)
         self.show_page(self.choose_location_page)
         self.location_list.show()
@@ -979,7 +950,7 @@ For detailed information, see the log file located at:
             location_list_model.append([retrieve_country_name(location), flag, (setter, location)])
 
     @ui_transition(State.ASK_LOCATION, StateType.LEAVE)
-    def exit_ChooseSecureInternetLocation(self, old_state, new_state):
+    def exit_ChooseSecureInternetLocation(self, _old_state, _data):
         self.show_back_button(False)
         self.hide_loading_page()
         self.hide_page(self.choose_location_page)
@@ -990,7 +961,7 @@ For detailed information, see the log file located at:
         self.enter_connecting(old_state, server_info)
 
     @ui_transition(State.DISCONNECTED, StateType.ENTER)
-    def enter_ConnectionStatus(self, old_state: str, server_info):
+    def enter_ConnectionStatus(self, _old_state: str, server_info):
         self.show_back_button(True)
         self.show_page(self.connection_page)
         self.update_connection_status(False)
@@ -1005,12 +976,12 @@ For detailed information, see the log file located at:
         self.renew_session_button.hide()
 
     @ui_transition(State.DISCONNECTED, StateType.LEAVE)
-    def exit_ConnectionStatus(self, old_state, new_state):
+    def exit_ConnectionStatus(self, _old_state, _data):
         self.show_back_button(False)
         self.hide_page(self.connection_page)
 
     @ui_transition(State.CONNECTED, StateType.LEAVE)
-    def leave_ConnectedState(self, old_state, server_info):
+    def leave_ConnectedState(self, _old_state, _server_info):
         logger.debug("leave connected state")
         self.reconnect_tcp_button.hide()
         self.reconnect_tcp_text.hide()
@@ -1025,7 +996,7 @@ For detailed information, see the log file located at:
         self.stop_connection_info()
 
     @ui_transition(State.CONNECTED, StateType.ENTER)
-    def enter_ConnectedState(self, old_state, server_data):
+    def enter_ConnectedState(self, _old_state, server_data):
         self.renew_session_button.hide()
         server_info, validity = server_data
         self.connection_info_expander.show()
@@ -1081,11 +1052,11 @@ For detailed information, see the log file located at:
             self.connection_validity_thread_cancel = None
         self.connection_validity_timers.clean()
 
-    def on_info_delete(self, widget, event):
+    def on_info_delete(self, widget, _):
         logger.debug("info dialog delete event")
         return widget.hide_on_delete()
 
-    def on_info_button(self, widget: EventBox, event: EventButton) -> None:
+    def on_info_button(self, _box: EventBox, _button: EventButton) -> None:
         logger.debug("clicked info button")
         self.info_dialog.set_title(f"{self.app.variant.name} - Info")
         self.info_dialog.show()
@@ -1093,7 +1064,7 @@ For detailed information, see the log file located at:
         self.info_dialog.hide()
 
     @ui_transition(SERVER_LIST_REFRESH_STATE, StateType.ENTER)  # type: ignore
-    def enter_server_list_refresh(self, old_state, servers) -> None:
+    def enter_server_list_refresh(self, _old_state, servers) -> None:
         logger.debug("server list refresh")
         if self.is_searching_server:
             return
@@ -1233,7 +1204,7 @@ For detailed information, see the log file located at:
         # Set profile and connect
         self.call_model("change_secure_location", location)
 
-    def on_search_changed(self, _: Optional[SearchEntry] = None) -> None:
+    def on_search_changed(self, _searchentry: Optional[SearchEntry] = None) -> None:
         query = self.find_server_search_input.get_text()
         if self.app.variant.use_predefined_servers and query.count(".") < 2:
             results = self.app.model.search_predefined(query)
@@ -1455,7 +1426,7 @@ For detailed information, see the log file located at:
     def on_reconnect_tcp_clicked(self, event):
         logger.debug("clicked on reconnect TCP")
 
-        def on_reconnected(_: bool):
+        def on_reconnected(_success: bool):
             logger.debug("done reconnecting with tcp")
             self.reconnect_tcp_button.hide()
             self.reconnect_tcp_text.hide()

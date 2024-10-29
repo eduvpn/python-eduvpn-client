@@ -2,7 +2,6 @@
 This module contains code to maintain a simple metadata storage in ~/.config/eduvpn/
 """
 
-from os import PathLike
 from typing import Optional
 
 from eduvpn.ovpn import Ovpn
