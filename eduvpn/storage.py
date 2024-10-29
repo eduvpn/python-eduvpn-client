@@ -4,7 +4,6 @@ This module contains code to maintain a simple metadata storage in ~/.config/edu
 
 from typing import Optional
 
-from eduvpn.ovpn import Ovpn
 from eduvpn.settings import CONFIG_DIR_MODE, CONFIG_PREFIX
 from eduvpn.utils import get_logger
 
@@ -43,17 +42,6 @@ def set_setting(variant, what: str, value: str):
     ensure_config_dir_exists()
     with open(p, "w") as f:
         f.write(value)
-
-
-def write_ovpn(ovpn: Ovpn, private_key: str, certificate: str, target: PathLike):
-    """
-    Write the OVPN configuration file to target.
-    """
-    logger.info(f"Writing configuration to {target}")
-    with open(target, mode="w+t") as f:
-        ovpn.write(f)
-        f.writelines(f"\n<key>\n{private_key}\n</key>\n")
-        f.writelines(f"\n<cert>\n{certificate}\n</cert>\n")
 
 
 def get_uuid(variant) -> Optional[str]:

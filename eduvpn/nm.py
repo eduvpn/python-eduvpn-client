@@ -15,8 +15,7 @@ from typing import Any, Callable, Optional, TextIO
 from eduvpn_common.main import EduVPN, Jar
 from gi.repository.Gio import Cancellable, Task  # type: ignore
 
-from eduvpn.ovpn import Ovpn
-from eduvpn.storage import get_uuid, set_uuid, write_ovpn
+from eduvpn.storage import get_uuid, set_uuid
 from eduvpn.utils import run_in_background_thread, run_in_glib_thread
 from eduvpn.variants import ApplicationVariant
 
@@ -348,7 +347,7 @@ class NMManager:
         conn.normalize()
         return conn
 
-    def import_ovpn(self, ovpn: Ovpn) -> "NM.SimpleConnection":
+    def import_ovpn(self, ovpn: str) -> "NM.SimpleConnection":
         """
         Import the OVPN string into Network Manager.
         """
@@ -356,7 +355,7 @@ class NMManager:
         target = target_parent / f"{self.variant.name}.ovpn"
         _logger.debug(f"Writing configuration to {target}")
         with open(target, mode="w+t") as f:
-            ovpn.write(f)
+            f.write(ovpn)
         connection = self.ovpn_import(target)
         rmtree(target_parent)
         return connection
@@ -401,7 +400,7 @@ class NMManager:
         con.add_setting(s_con)
         return con
 
-    def start_openvpn_connection(self, ovpn: Ovpn, default_gateway, dns_search_domains, *, callback=None) -> None:
+    def start_openvpn_connection(self, ovpn: str, default_gateway, dns_search_domains, *, callback=None) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
         s_ip4 = new_con.get_setting_ip4_config()

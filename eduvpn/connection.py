@@ -4,8 +4,6 @@ from datetime import datetime, timedelta
 from enum import IntEnum
 from typing import Any, Dict, List, Optional
 
-from eduvpn.ovpn import Ovpn
-
 
 class Token:
     """The class that represents oauth Tokens
@@ -172,14 +170,13 @@ class Connection:
 
 
 class OpenVPNConnection(Connection):
-    def __init__(self, ovpn: Ovpn):
-        self.ovpn = ovpn
+    def __init__(self, config_str):
+        self.config_str = config_str
         super().__init__()
 
     @classmethod
     def parse(cls, config_str: str) -> "OpenVPNConnection":  # type: ignore
-        ovpn = Ovpn.parse(config_str)
-        return cls(ovpn=ovpn)
+        return cls(config_str=config_str)
 
     def connect(
         self,
@@ -191,7 +188,7 @@ class OpenVPNConnection(Connection):
         callback,
     ):
         manager.start_openvpn_connection(
-            self.ovpn,
+            self.config_str,
             default_gateway,
             dns_search_domains,
             callback=callback,
