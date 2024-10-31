@@ -120,7 +120,7 @@ $ sudo apt update
 $ sudo apt install eduvpn-client
 ```
 
-### Fedora (39 & 40)
+### Fedora (39, 40 & 41)
 
 ``` console
 $ curl -O https://app.eduvpn.org/linux/v4/rpm/app+linux@eduvpn.org.asc
