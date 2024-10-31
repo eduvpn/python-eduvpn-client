@@ -150,7 +150,7 @@ $ sudo dnf install eduvpn-client
 
 ### NixOS
 
-The Linux client currently is in the NixOS unstable channel. If you are running the stable channel you need to wait for NixOS 24.05 to release or import it from the unstable channel in your configuration.
+The Linux client currently is in the NixOS channels.
 
 The package name is `eduvpn-client` so you can just do:
 
