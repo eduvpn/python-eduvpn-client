@@ -161,7 +161,7 @@ $ sudo dnf install eduvpn-client
 
 ### NixOS
 
-The Linux client currently is in the NixOS channels.
+The Linux client is in the NixOS channels.
 
 The package name is `eduvpn-client` so you can just do:
 
