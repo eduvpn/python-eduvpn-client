@@ -220,7 +220,9 @@ $ sudo apt install \
     gir1.2-secret-1 \
     gir1.2-gtk-3.0 \
     gir1.2-notify-0.7 \
+    libcairo2-dev \
     libgirepository1.0-dev \
+    python3-dev \
     python3-gi \
     python3-setuptools \
     python3-pytest \
@@ -268,3 +270,5 @@ You can then continue with installing via Pip:
 ``` console
 $ pip install "eduvpn-client[gui]"
 ```
+
+Make sure to reboot after installing

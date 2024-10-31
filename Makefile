@@ -22,12 +22,14 @@ venv:
 # install all required binary packages on a debian based system
 deb:
 	sudo apt update
-	sudo apt install -y \
+	sudo apt install \
 		gir1.2-nm-1.0 \
 		gir1.2-secret-1 \
 		gir1.2-gtk-3.0 \
 		gir1.2-notify-0.7 \
+		libcairo2-dev \
 		libgirepository1.0-dev \
+		python3-dev \
 		python3-gi \
 		python3-setuptools \
 		python3-pytest \
@@ -36,7 +38,7 @@ deb:
 
 # install all required binary packages on a rpm based system
 dnf:
-	sudo dnf install -y \
+	sudo dnf install \
 		libnotify \
 		libsecret \
 		gtk3 \
