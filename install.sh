@@ -59,7 +59,7 @@ EOF
 
 case $VERSION_CODENAME in
     # ubuntu versions
-    "focal" | "jammy" | "mantic" | "noble" | "bullseye" | "bookworm")
+    "focal" | "jammy" | "noble" | "oracular" | "bullseye" | "bookworm")
 	install_deb "$VERSION_CODENAME"
 	;;
     # For linux mint we need to do some redirections to ubuntu codenames
@@ -71,6 +71,10 @@ case $VERSION_CODENAME in
     # redirect linux mint 21.x codenames to jammy
     "vanessa" | "vera" | "victoria")
 	install_deb "jammy"
+	;;
+    # redirect linux mint 22.x codenames to noble
+    "wilma")
+	install_deb "noble"
 	;;
 esac
 
