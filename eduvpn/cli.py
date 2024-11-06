@@ -22,6 +22,8 @@ from eduvpn.server import (
     SecureInternetServer,
     Server,
     ServerDatabase,
+    ServerGroup,
+    group_servers,
 )
 from eduvpn.settings import (
     CLIENT_ID,
@@ -30,7 +32,6 @@ from eduvpn.settings import (
     LETSCONNECT_CLIENT_ID,
     LETSCONNECT_CONFIG_PREFIX,
 )
-from eduvpn.ui.search import ServerGroup, group_servers
 from eduvpn.ui.utils import get_validity_text, should_show_error, translated_error
 from eduvpn.utils import (
     FAILOVERED_STATE,
