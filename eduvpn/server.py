@@ -320,3 +320,32 @@ class ServerDatabase:
 
     def search_custom(self, query: str) -> Iterable[Server]:
         yield Server(query, query)  # type: ignore[arg-type]
+
+
+class ServerGroup(enum.Enum):
+    INSTITUTE_ACCESS = enum.auto()
+    SECURE_INTERNET = enum.auto()
+    OTHER = enum.auto()
+
+
+def group_servers(servers):
+    """
+    Separate the servers into three groups.
+    """
+    groups: Dict[ServerGroup, List[Server]] = {  # type: ignore
+        ServerGroup.INSTITUTE_ACCESS: [],
+        ServerGroup.SECURE_INTERNET: [],
+        ServerGroup.OTHER: [],
+    }
+    for server in servers:
+        if isinstance(server, InstituteServer) or (
+            isinstance(server, DiscoServer) and server.server_type == "institute_access"
+        ):
+            groups[ServerGroup.INSTITUTE_ACCESS].append(server)
+        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
+            groups[ServerGroup.SECURE_INTERNET].append(server)
+        elif isinstance(server, Server):
+            groups[ServerGroup.OTHER].append(server)
+        else:
+            continue
+    return groups

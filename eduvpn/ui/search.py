@@ -1,21 +1,10 @@
-import enum
-from typing import Dict, List
-
 from gi.overrides.Gtk import ListStore  # type: ignore
 from gi.repository import GLib
 
-from eduvpn.discovery import DiscoOrganization, DiscoServer
 from eduvpn.i18n import retrieve_country_name
-from eduvpn.server import InstituteServer, SecureInternetServer, Server
+from eduvpn.server import SecureInternetServer, ServerGroup, group_servers
 from eduvpn.ui.utils import show_ui_component
 from eduvpn.utils import run_in_background_thread, run_in_glib_thread
-
-
-class ServerGroup(enum.Enum):
-    INSTITUTE_ACCESS = enum.auto()
-    SECURE_INTERNET = enum.auto()
-    OTHER = enum.auto()
-
 
 group_scroll_component = {
     ServerGroup.INSTITUTE_ACCESS: "institute_list",
@@ -80,29 +69,6 @@ def show_search_results(window: "EduVpnGtkWindow", show: bool) -> None:  # type:
     Set the visibility of the tree of the search result component in the UI.
     """
     show_ui_component(window.server_list_container, show)
-
-
-def group_servers(servers):
-    """
-    Separate the servers into three groups.
-    """
-    groups: Dict[ServerGroup, List[Server]] = {  # type: ignore
-        ServerGroup.INSTITUTE_ACCESS: [],
-        ServerGroup.SECURE_INTERNET: [],
-        ServerGroup.OTHER: [],
-    }
-    for server in servers:
-        if isinstance(server, InstituteServer) or (
-            isinstance(server, DiscoServer) and server.server_type == "institute_access"
-        ):
-            groups[ServerGroup.INSTITUTE_ACCESS].append(server)
-        elif isinstance(server, SecureInternetServer) or isinstance(server, DiscoOrganization):
-            groups[ServerGroup.SECURE_INTERNET].append(server)
-        elif isinstance(server, Server):
-            groups[ServerGroup.OTHER].append(server)
-        else:
-            continue
-    return groups
 
 
 def show_group_tree(window: "EduVpnGtkWindow", group: ServerGroup, show: bool) -> None:  # type: ignore  # noqa: F821
