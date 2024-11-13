@@ -415,8 +415,11 @@ class NMManager:
             s_ip6.add_dns_search(i)
         s_ip4.set_property("never-default", not default_gateway)
         s_ip6.set_property("never-default", not default_gateway)
+        s_vpn = new_con.get_setting_vpn()
+        s_vpn.set_property(NM.SETTING_VPN_PERSISTENT, "yes")
         new_con.add_setting(s_ip4)
         new_con.add_setting(s_ip6)
+        new_con.add_setting(s_vpn)
 
         self.proxy = None
         self.set_connection(new_con, callback)  # type: ignore
