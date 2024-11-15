@@ -857,6 +857,23 @@ class NMManager:
         c = self.new_cancellable()
         device.disconnect_async(callback=on_disconnect, cancellable=c, user_data=(c, callback))
 
+    @run_in_background_thread('restart-proxy')
+    def restart_proxy(self, conn):
+        if self.proxy is None:
+            return
+        signal = None
+        def changed_state(active: "NM.ActiveConnection", state_code: int, _reason_code: int):
+            state = NM.ActiveConnectionState(state_code)
+            if ConnectionState.from_active_state(state) != ConnectionState.CONNECTED:
+                return
+            time.sleep(1)
+            if self.proxy is not None:
+                self.proxy.restart()
+            if signal is not None:
+                active.disconnect(signal)
+
+        signal = conn.connect("state-changed", changed_state)
+
     def subscribe_to_status_changes(
         self,
         callback: Callable[[ConnectionState], Any],
@@ -876,6 +893,9 @@ class NMManager:
 
             state = NM.ActiveConnectionState(state_code)
 
+            if ConnectionState.from_active_state(state) == ConnectionState.DISCONNECTED:
+                self.proxy = None
+
             callback(ConnectionState.from_active_state(state))
 
         # Connect the state changed signal for an active connection
@@ -886,6 +906,7 @@ class NMManager:
         # Connect the signals
         def wrapped_connection_added(client: "NM.Client", active_con: "NM.ActiveConnection"):
             if active_con.get_uuid() != self.uuid:
+                self.restart_proxy(active_con)
                 return
             connect(active_con)
 

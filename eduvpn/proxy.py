@@ -27,6 +27,9 @@ class Proxy:
     def tunnel(self, wgport):
         self.wrapper.tunnel(wgport)
 
+    def restart(self):
+        self.wrapper.restart()
+
     @property
     def peer(self) -> str:
         return self.config.peer
