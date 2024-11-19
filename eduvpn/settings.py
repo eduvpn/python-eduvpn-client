@@ -10,8 +10,8 @@ CONFIG_DIR_MODE = 0o700  # Same as the Go library
 
 CLIENT_ID = "org.eduvpn.app.linux"
 LETSCONNECT_CLIENT_ID = "org.letsconnect-vpn.app.linux"
-LANGUAGE = "nl"
-COUNTRY = "nl-NL"
+LANGUAGE = "en"
+COUNTRY = "en-EN"
 
 COUNTRY_MAP = Path(prefix + "/share/eduvpn/country_codes.json")
 FLAG_PREFIX = prefix + "/share/eduvpn/images/flags/png/"
