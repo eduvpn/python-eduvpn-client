@@ -1,0 +1,234 @@
+# Czech translations for python-eduvpn-client package.
+# Copyright (C) 2024, The Commons Conservancy eduVPN Programme
+# This file is distributed under the same license as the python-eduvpn-client package.
+# Jaroslav Svoboda <multi.flexi@seznam.cz>, 2024.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-03-26 13:18+0200\n"
+"PO-Revision-Date: 2024-11-21 08:15+0100\n"
+"Last-Translator: Jaroslav Svoboda <multi.flexi@seznam.cz>\n"
+"Language-Team: Czech\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
+"X-Generator: Poedit 3.5\n"
+
+#: ../../eduvpn/ui/ui.py:110
+#, python-brace-format
+msgid " and <b>{0} hour</b>"
+msgid_plural " and <b>{0} hours</b>"
+msgstr[0] " a <b>{0} hodinu</b>"
+msgstr[1] " a <b>{0} hodiny</b>"
+msgstr[2] " a <b>{0} hodin</b>"
+
+#: ../eduvpn/builder/mainwindow.ui:253
+msgid "Add Server"
+msgstr "Přidat server"
+
+#: ../eduvpn/builder/mainwindow.ui:678
+msgid "Authorization required"
+msgstr "Nutná autorizace"
+
+#: ../eduvpn/builder/mainwindow.ui:740
+msgid "Cancel"
+msgstr "Zrušit"
+
+#: ../../eduvpn/network.py:287
+msgid "Certificate expired"
+msgstr "Certifikát vypršel"
+
+#: ../eduvpn/builder/mainwindow.ui:382
+msgid "Change Location"
+msgstr "Změnit umístění"
+
+#: ../../eduvpn/ui/ui.py:456
+msgid "Configuring"
+msgstr "Nastavování"
+
+#: ../../eduvpn/network.py:256
+msgid "Connection active"
+msgstr "Spojení aktivní"
+
+#: ../../eduvpn/network.py:302
+msgid "Connection failed"
+msgstr "Spojení selhalo"
+
+#: ../eduvpn/builder/mainwindow.ui:1225 ../eduvpn/builder/mainwindow.ui:1445
+msgid "Connection info"
+msgstr "Informace o spojení"
+
+#: ../../eduvpn/network.py:39
+msgid "Connection state unknown"
+msgstr "Neznámý stav spojení"
+
+#: ../eduvpn/builder/mainwindow.ui:1299
+msgid "DOWNLOADED"
+msgstr "STAŽENO"
+
+#: ../eduvpn/builder/mainwindow.ui:1271
+msgid "DURATION"
+msgstr "TRVÁNÍ"
+
+#: ../../eduvpn/network.py:120 ../../eduvpn/network.py:275
+msgid "Disconnected"
+msgstr "Odpojeno"
+
+#: ../eduvpn/builder/mainwindow.ui:1525 ../../eduvpn/ui/ui.py:512
+msgid "Error"
+msgstr "Chyba"
+
+#: ../eduvpn/builder/mainwindow.ui:206
+msgid "Find your institute"
+msgstr "Vyberte svoji instituci"
+
+#: ../../eduvpn/ui/ui.py:358
+msgid "Finishing Authorization"
+msgstr "Dokončuji autorizaci"
+
+#: ../eduvpn/builder/mainwindow.ui:1552
+msgid "General failure, please quit"
+msgstr "Obecná chyba, ukončete prosím"
+
+#: ../eduvpn/builder/mainwindow.ui:1353
+msgid "IPv4 ADDRESS"
+msgstr "IPv4 ADRESA"
+
+#: ../eduvpn/builder/mainwindow.ui:1380
+msgid "IPv6 ADDRESS"
+msgstr "IPv6 ADRESA"
+
+#: ../eduvpn/builder/mainwindow.ui:310
+msgid "Institute Access"
+msgstr "Institucionální přístup"
+
+#: ../eduvpn/builder/mainwindow.ui:786 ../../eduvpn/ui/ui.py:369
+msgid "Loading"
+msgstr "Načítám"
+
+#: ../eduvpn/builder/mainwindow.ui:984
+msgid "Not connected"
+msgstr "Nepřipojeno"
+
+#: ../../eduvpn/ui/ui.py:515
+msgid "Ok"
+msgstr "OK"
+
+#: ../eduvpn/builder/mainwindow.ui:440
+msgid "Other Servers"
+msgstr "Jiné servery"
+
+#: ../eduvpn/builder/mainwindow.ui:1022
+msgid "PROFILES"
+msgstr "PROFILY"
+
+#: ../eduvpn/builder/mainwindow.ui:609
+msgid "Please choose a location"
+msgstr "Prosím vyberte umístění"
+
+#: ../eduvpn/builder/mainwindow.ui:552
+msgid "Please choose a profile"
+msgstr "Prosím vyberte profil"
+
+#: ../eduvpn/builder/mainwindow.ui:804
+msgid "Please wait"
+msgstr "Prosím čekejte"
+
+#: ../../eduvpn/network.py:241
+msgid "Preparing to connect"
+msgstr "Příprava na připojení"
+
+#: ../eduvpn/builder/mainwindow.ui:1583
+msgid "Quit"
+msgstr "Odejít"
+
+#: ../eduvpn/builder/mainwindow.ui:1141
+msgid "Renew Session"
+msgstr "Obnovit relaci"
+
+#: ../eduvpn/builder/mainwindow.ui:229
+msgid "Search for your institute..."
+msgstr "Hledejte vaši instituci..."
+
+#: ../eduvpn/builder/mainwindow.ui:369
+msgid "Secure Internet"
+msgstr "Bezpečný internet"
+
+#: ../eduvpn/builder/mainwindow.ui:883
+msgid "Server Label"
+msgstr "Označení serveru"
+
+#: ../eduvpn/builder/mainwindow.ui:515
+msgid "Settings"
+msgstr "Nastavení"
+
+#: ../eduvpn/builder/mainwindow.ui:933 ../../eduvpn/ui/ui.py:230
+msgid "Support:"
+msgstr "Podpora:"
+
+#: ../../eduvpn/ui/ui.py:359
+msgid "The authorization token is being finished."
+msgstr "Autorizační token se připravuje."
+
+#: ../../eduvpn/ui/ui.py:370
+msgid "The server details are being loaded."
+msgstr "Podrobnosti o serveru se načítají."
+
+#: ../eduvpn/builder/mainwindow.ui:696
+msgid ""
+"This app needs authorization and has opened\n"
+"your webbrowser. It will proceed when you\n"
+"have completed the authorization"
+msgstr ""
+"Tato aplikace vyžaduje autorizaci a\n"
+"otevřela váš webový prohlížeč.\n"
+"Po dokončení autorizace bude pokračovat"
+
+#: ../../eduvpn/ui/ui.py:95
+msgid "This session has expired"
+msgstr "Relace vypršela"
+
+#: ../eduvpn/builder/mainwindow.ui:1326
+msgid "UPLOADED"
+msgstr "ODESLÁNO"
+
+#: ../../eduvpn/ui/ui.py:91
+msgid "Valid for <b>unknown</b>"
+msgstr "Platné <b>neznámá délka</b>"
+
+#: ../../eduvpn/ui/ui.py:108
+#, python-brace-format
+msgid "Valid for <b>{0} day</b>"
+msgid_plural "Valid for <b>{0} days</b>"
+msgstr[0] "Platné <b>{0} den</b>"
+msgstr[1] "Platné <b>{0} dny</b>"
+msgstr[2] "Platné <b>{0} dní</b>"
+
+#: ../../eduvpn/ui/ui.py:105
+#, python-brace-format
+msgid "Valid for <b>{0} hour</b>"
+msgid_plural "Valid for <b>{0} hours</b>"
+msgstr[0] "Platné <b>{0} hodinu</b>"
+msgstr[1] "Platné <b>{0} hodiny</b>"
+msgstr[2] "Platné <b>{0} hodin</b>"
+
+#: ../../eduvpn/ui/ui.py:102
+#, python-brace-format
+msgid "Valid for <b>{0} minute</b>"
+msgid_plural "Valid for <b>{0} minutes</b>"
+msgstr[0] "Platné <b>{0} minutu</b>"
+msgstr[1] "Platné <b>{0} minuty</b>"
+msgstr[2] "Platné <b>{0} minut</b>"
+
+#: ../../eduvpn/ui/ui.py:457
+msgid "Your connection is being configured."
+msgstr "Probíhá nastavení vašeho připojení."
+
+#: ../eduvpn/builder/mainwindow.ui:7
+msgid "eduVPN"
+msgstr "eduVPN"
