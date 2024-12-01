@@ -1,23 +1,22 @@
 import enum
-import ipaddress
 import logging
 import os
 import time
 import uuid
 from configparser import ConfigParser
+from contextlib import closing
 from ipaddress import ip_address, ip_interface
 from pathlib import Path
 from shutil import rmtree
-from socket import AF_INET, AF_INET6, IPPROTO_TCP
+from socket import AF_INET, AF_INET6, IPPROTO_TCP, SOCK_DGRAM, socket
 from tempfile import mkdtemp
-from typing import Any, Callable, Optional, TextIO, Tuple
+from typing import Any, Callable, Optional, TextIO
 
-from eduvpn_common.main import Jar
+from eduvpn_common.main import EduVPN, Jar
 from gi.repository.Gio import Cancellable, Task  # type: ignore
 
-from eduvpn.ovpn import Ovpn
-from eduvpn.storage import get_uuid, set_uuid, write_ovpn
-from eduvpn.utils import run_in_glib_thread
+from eduvpn.storage import get_uuid, set_uuid
+from eduvpn.utils import run_in_background_thread, run_in_glib_thread
 from eduvpn.variants import ApplicationVariant
 
 _logger = logging.getLogger(__name__)
@@ -79,17 +78,24 @@ class ConnectionState(enum.Enum):
             raise ValueError(state)
 
 
+def find_free_udp_port():
+    with closing(socket(AF_INET, SOCK_DGRAM)) as s:
+        s.bind(("", 0))
+        return s.getsockname()[1]
+
+
 # A manager for a manager :-)
 class NMManager:
-    def __init__(self, variant: ApplicationVariant):
+    def __init__(self, variant: ApplicationVariant, common_lib: EduVPN):
         self.variant = variant
         self.proxy = None
         try:
             self._client = NM.Client.new(None)
-            self.wg_gateway_ip: Optional[ipaddress.IPv4Address] = None
+            self.wg_gateway_ip: Optional[str] = None
         except Exception:
             self._client = None
         self.cancel_jar = Jar(lambda x: x.cancel())
+        self.common_lib = common_lib
 
     @property
     def client(self) -> "NM.Client":
@@ -100,6 +106,15 @@ class NMManager:
     @property
     def available(self) -> bool:
         return self._client is not None
+
+    @run_in_background_thread("proxyguard-tunnel")
+    def proxy_tunnel(self, listen_port):
+        assert self.proxy is not None
+        _logger.debug(f"tunneling proxyguard with listen port: {listen_port}")
+        try:
+            self.proxy.tunnel(listen_port)
+        except Exception as e:
+            self.proxy.forward_exception(e)
 
     # TODO: Move this somewhere else?
     def open_stats_file(self, filename: str) -> Optional[TextIO]:
@@ -304,7 +319,7 @@ class NMManager:
             if not self.wg_gateway_ip:
                 _logger.debug("no wg gateway ip found in failover endpoint")
                 return None
-            return str(self.wg_gateway_ip)
+            return self.wg_gateway_ip
         else:
             _logger.debug(f"Unknown protocol: {protocol}")
             return None
@@ -332,18 +347,7 @@ class NMManager:
         conn.normalize()
         return conn
 
-    def import_ovpn_with_certificate(self, ovpn: Ovpn, private_key: str, certificate: str) -> "NM.SimpleConnection":
-        """
-        Import the OVPN string into Network Manager.
-        """
-        target_parent = Path(mkdtemp())
-        target = target_parent / f"{self.variant.name}.ovpn"
-        write_ovpn(ovpn, private_key, certificate, target)
-        connection = self.ovpn_import(target)
-        rmtree(target_parent)
-        return connection
-
-    def import_ovpn(self, ovpn: Ovpn) -> "NM.SimpleConnection":
+    def import_ovpn(self, ovpn: str) -> "NM.SimpleConnection":
         """
         Import the OVPN string into Network Manager.
         """
@@ -351,7 +355,7 @@ class NMManager:
         target = target_parent / f"{self.variant.name}.ovpn"
         _logger.debug(f"Writing configuration to {target}")
         with open(target, mode="w+t") as f:
-            ovpn.write(f)
+            f.write(ovpn)
         connection = self.ovpn_import(target)
         rmtree(target_parent)
         return connection
@@ -396,7 +400,7 @@ class NMManager:
         con.add_setting(s_con)
         return con
 
-    def start_openvpn_connection(self, ovpn: Ovpn, default_gateway, dns_search_domains, *, callback=None) -> None:
+    def start_openvpn_connection(self, ovpn: str, default_gateway, dns_search_domains, *, callback=None) -> None:
         _logger.debug("writing ovpn configuration to Network Manager")
         new_con = self.import_ovpn(ovpn)
         s_ip4 = new_con.get_setting_ip4_config()
@@ -441,7 +445,6 @@ class NMManager:
         *,
         allow_wg_lan=False,
         proxy=None,
-        proxy_peer_ips=None,
         callback=None,
     ) -> None:
         _logger.debug("writing wireguard configuration to Network Manager")
@@ -452,7 +455,8 @@ class NMManager:
             addr = ip_interface(ip.strip())
             if addr.version == 4:
                 if not self.wg_gateway_ip:
-                    self.wg_gateway_ip = addr.network[1]
+                    net_str = str(addr.network)
+                    self.wg_gateway_ip = self.common_lib.calculate_gateway(net_str)
                 ipv4s.append(NM.IPAddress(AF_INET, str(addr.ip), addr.network.prefixlen))
             elif addr.version == 6:
                 ipv6s.append(NM.IPAddress(AF_INET6, str(addr.ip), addr.network.prefixlen))
@@ -546,6 +550,13 @@ class NMManager:
         fwmark = int(os.environ.get("EDUVPN_WG_FWMARK", 51860))
         listen_port = int(os.environ.get("EDUVPN_WG_LISTEN_PORT", 0))
 
+        # if we are using proxyguard we need to know the port beforehand
+        # just get an available port
+        # Yes, this can race but there is not other option right now
+        # the NM API just gives port 0 from device.get_listen_port()
+        if proxy is not None and listen_port == 0:
+            listen_port = find_free_udp_port()
+
         s_ip4.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
         s_ip6.set_property(NM.SETTING_IP_CONFIG_ROUTE_TABLE, fwmark)
         w_con.set_property(NM.DEVICE_WIREGUARD_FWMARK, fwmark)
@@ -571,7 +582,7 @@ class NMManager:
 
             if proxy:
                 dport_proxy = proxy.peer_port
-                for proxy_peer_ip in proxy_peer_ips:
+                for proxy_peer_ip in proxy.peer_ips:
                     address = ip_address(proxy_peer_ip)
                     if address.version != ipver:
                         continue
@@ -612,7 +623,13 @@ class NMManager:
 
         self.proxy = proxy
 
-        self.set_connection(profile, callback)  # type: ignore
+        def set_callback(success: bool):
+            if success and proxy is not None:
+                self.proxy_tunnel(listen_port)
+            if callback is not None:
+                callback(success)
+
+        self.set_connection(profile, set_callback)  # type: ignore
 
     def new_cancellable(self):
         c = Cancellable.new()
@@ -881,16 +898,6 @@ class NMManager:
         # Connect the active connection added signal
         self.client.connect("active-connection-added", wrapped_connection_added)
         return True
-
-    def connection_status(
-        self,
-    ) -> Tuple[Optional[str], Optional["NM.ActiveConnectionState"]]:
-        con = self.client.get_primary_connection()
-        if not isinstance(con, NM.VpnConnection):
-            return None, None
-        uuid = con.get_uuid()
-        status = con.get_state()
-        return uuid, status
 
 
 def action_with_mainloop(action: Callable):
