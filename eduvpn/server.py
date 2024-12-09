@@ -22,15 +22,22 @@ class Profile:
     :param: identifier: str: The identifier (id) of the profile
     :param: display_name: str: The display name of the profile
     :param: default_gateway: str: Whether or not this profile should have the default gateway set
+    :param: priority: int: The priority of the profile for sorting in the UI
     """
 
-    def __init__(self, identifier: str, display_name: Dict[str, str], default_gateway: bool):
+    def __init__(self, identifier: str, display_name: Dict[str, str], default_gateway: bool, priority: int):
         self.identifier = identifier
         self.display_name = display_name
         self.default_gateway = default_gateway
+        self.priority = priority
 
     def __str__(self):
         return extract_translation(self.display_name)
+
+    def __lt__(self, o) -> bool:
+        if self.priority == o.priority:
+            return str(self) < str(o)
+        return self.priority > o.priority
 
 
 class Profiles:
@@ -178,7 +185,7 @@ def parse_profiles(profiles: dict) -> Profiles:
     profile_map = profiles.get("map", {})
     for k, v in profile_map.items():
         # TODO: Default gateway
-        returned[k] = Profile(k, v["display_name"], False)
+        returned[k] = Profile(k, v["display_name"], False, int(v.get("priority", 0)))
     return Profiles(returned, profiles["current"])
 
 

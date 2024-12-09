@@ -67,7 +67,7 @@ def ask_profiles(setter, profiles, current: Optional[Profile] = None) -> bool:
         return False
 
     # Multiple profiles, print the index
-    sorted_profiles = sorted(profiles.profiles.items(), key=lambda pair: str(pair[1]))
+    sorted_profiles = sorted(profiles.profiles.items(), key=lambda pair: pair[1])
     # Multiple profiles, print the index
     index = 0
     choices = []

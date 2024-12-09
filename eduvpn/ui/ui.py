@@ -589,7 +589,7 @@ For detailed information, see the log file located at:
     def get_profile_combo_sorted(self, server_info) -> Tuple[int, Gtk.ListStore]:
         profile_store = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_PYOBJECT)  # type: ignore
         active_profile = 0
-        sorted_profiles = sorted(server_info.profiles.profiles.items(), key=lambda v: str(v[1]))
+        sorted_profiles = sorted(server_info.profiles.profiles.items(), key=lambda v: v[1])
         index = 0
         for _id, profile in sorted_profiles:
             if _id == server_info.profiles.current_id:
@@ -899,11 +899,18 @@ For detailed information, see the log file located at:
             profile_tree_view.append_column(column)
 
         sorted_model = Gtk.TreeModelSort(model=profiles_list_model)
-        sorted_model.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+
+        def custom_sort_func(model, iter1, iter2, user_data):
+            obj1 = model.get_value(iter1, 1)[2]
+            obj2 = model.get_value(iter2, 1)[2]
+            return -1 if obj1 < obj2 else (1 if obj2 < obj1 else 0)
+
+        sorted_model.set_sort_func(1, custom_sort_func, None)
+        sorted_model.set_sort_column_id(1, Gtk.SortType.ASCENDING)
         profile_tree_view.set_model(sorted_model)
         profiles_list_model.clear()
         for profile_id, profile in profiles.profiles.items():
-            profiles_list_model.append([str(profile), (setter, profile_id)])
+            profiles_list_model.append([str(profile), (setter, profile_id, profile)])
 
     @ui_transition(State.ASK_PROFILE, StateType.LEAVE)
     def exit_ChooseProfile(self, old_state, _data):
@@ -1327,13 +1334,13 @@ For detailed information, see the log file located at:
 
     def on_profile_row_activated(self, widget: TreeView, row: TreePath, _col: TreeViewColumn) -> None:
         model = widget.get_model()
-        setter, profile = model[row][1]
-        logger.debug(f"activated profile: {profile!r}")
+        setter, profile_id, _ = model[row][1]
+        logger.debug(f"activated profile: {profile_id!r}")
 
         @run_in_background_thread("set-profile")
         def set_profile():
             try:
-                setter(profile)
+                setter(profile_id)
             except Exception as e:
                 if should_show_error(e):
                     self.show_error_revealer(str(e))
