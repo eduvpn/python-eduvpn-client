@@ -139,7 +139,7 @@ class EduVpnGtkApplication(Gtk.Application):
         expired_deactivate()
 
     @ui_transition(State.GOT_CONFIG, StateType.ENTER)
-    def enter_NoActiveConnection(self, old_state, new_state):
+    def enter_NoActiveConnection(self, _old_state, _new_state):
         if not self.window.is_visible():
             # Quit the app if no window is open when the connection is deactivated.
             logger.debug("connection deactivated while window closed")
