@@ -458,6 +458,7 @@ class ApplicationModel:
                 if callback:
                     callback(False)
                 return
+            time.sleep(int(os.getenv("EDUVPN_RENEW_DELAY", "1")))
             # Delete the OAuth access and refresh token
             # Start the OAuth authorization flow
             self.common.renew_session()
