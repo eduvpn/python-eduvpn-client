@@ -731,3 +731,7 @@ def letsconnect():
     _common = common.EduVPN(LETSCONNECT_CLIENT_ID, __version__, str(LETSCONNECT_CONFIG_PREFIX))
     cmd = CommandLine("Let's Connect!", LETS_CONNECT, _common)
     cmd.start()
+
+
+if __name__ == "__main__":
+    eduvpn()
