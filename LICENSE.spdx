@@ -14,7 +14,7 @@ PackageComment: <text>The package includes the following libraries; see
 Relationship information.
                 </text>
 Created: 2017-06-06T09:00:00Z
-PackageDownloadLocation: git://github.com/eduvpn/python-eduvpn-client
-PackageDownloadLocation: git+https://github.com/eduvpn/python-eduvpn-client.git
-PackageDownloadLocation: git+ssh://github.com/eduvpn/python-eduvpn-client.git
+PackageDownloadLocation: git://codeberg.org/eduVPN/linux-app.git
+PackageDownloadLocation: git+https://codeberg.org/eduVPN/linux-app.git
+PackageDownloadLocation: git+ssh://codeberg.org/eduVPN/linux-app.git
 Creator: Person: Gijs Molenaar <gijs@pythonic.nl>

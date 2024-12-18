@@ -21,8 +21,8 @@ venv:
 
 # install all required binary packages on a debian based system
 deb:
-	sudo apt update
-	sudo apt install \
+	apt update
+	apt install -y \
 		gir1.2-nm-1.0 \
 		gir1.2-secret-1 \
 		gir1.2-gtk-3.0 \
@@ -38,7 +38,7 @@ deb:
 
 # install all required binary packages on a rpm based system
 dnf:
-	sudo dnf install \
+	dnf install -y \
 		libnotify \
 		libsecret \
 		gtk3 \

@@ -554,7 +554,7 @@ class NMManager:
         # The routing that is done by NM by default doesn't cut it
         # It automatically adds a suppress prefixlength rule such that LAN traffic is allowed
         # We want to make this configurable
-        # Additionally, the overlap case with split tunnel doesn't work: https://github.com/eduvpn/python-eduvpn-client/issues/551
+        # Additionally, the overlap case with split tunnel doesn't work: https://codeberg.org/eduvpn/linux-app/issues/551
 
         rules = [(4, AF_INET, s_ip4, 32), (6, AF_INET6, s_ip6, 128)]
         # priority 1 not fwmark fwmarknum table fwmarknum

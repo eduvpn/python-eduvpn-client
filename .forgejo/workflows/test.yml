@@ -1,0 +1,52 @@
+on: [ push ]
+
+jobs:
+  test:
+    runs-on: docker
+    container:
+      image: debian:latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          apt-get install -y git make python3.11-venv
+      - name: Clone Repository
+        run: |
+          mkdir app
+          git clone -b ${{ github.ref_name }} ${{ github.server_url }}/${{ github.repository }} app
+      - name: Install ubuntu deps
+        run: |
+          cd app
+          make deb
+      - name: Install eduvpn-common
+        run: |
+          cd app
+          make install-eduvpn-common
+      - name: Install linter
+        run: |
+          cd app
+          make install-lint
+      - name: Run linter
+        run: |
+          cd app
+          make lint
+      - name: Install mypy
+        run: |
+          cd app
+          make install-mypy
+      - name: Run mypy
+        run: |
+          cd app
+          make mypy
+      - name: Install pytest
+        run: |
+          cd app
+          make install-test
+      - name: Run pytest
+        run: |
+          cd app
+          make test
+      - name: Build wheel
+        run: |
+          cd app
+          make build

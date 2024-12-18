@@ -115,7 +115,7 @@ class EduVpnGtkApplication(Gtk.Application):
             title=_("Error Copied"),
             message=_(
                 "The error message has been copied to your clipboard. "
-                "Report it at https://github.com/eduvpn/python-eduvpn-client if you think it is an issue."
+                "Report it at https://codeberg.org/eduVPN/linux-app if you think it is an issue."
             ),
         )
 

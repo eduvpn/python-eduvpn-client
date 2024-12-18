@@ -1,7 +1,7 @@
 # Support
 
 If you experience any issues you could and should report them at our
-[issue tracker](https://github.com/eduvpn/python-eduvpn-client/issues).
+[issue tracker](https://codeberg.org/eduVPN/linux-app/issues).
 Please don't forget to mention:
 
 - Your distribution

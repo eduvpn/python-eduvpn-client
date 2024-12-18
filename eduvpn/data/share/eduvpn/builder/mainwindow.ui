@@ -1532,7 +1532,7 @@
                     <property name="can-focus">True</property>
                     <property name="halign">start</property>
                     <property name="label" translatable="yes">If you have found a bug/issue with the client itself,
-you can report an issue on the &lt;a href="https://github.com/eduvpn/python-eduvpn-client/issues"&gt;GitHub repository&lt;/a&gt;.
+you can report an issue on the &lt;a href="https://codeberg.org/eduVPN/linux-app/issues"&gt;Codeberg repository&lt;/a&gt;.
 Make sure to include the log file if applicable, which is available
 at the following location:</property>
                     <property name="use-markup">True</property>
